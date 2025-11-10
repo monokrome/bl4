@@ -9,6 +9,7 @@ PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 # File paths
 CARGO_TOML="$PROJECT_ROOT/Cargo.toml"
+CLI_CARGO_TOML="$PROJECT_ROOT/crates/bl4-cli/Cargo.toml"
 PACKAGE_JSON="$PROJECT_ROOT/crates/bl4/package.json"
 
 # Read current version from workspace Cargo.toml
@@ -52,8 +53,11 @@ NEW_VERSION="$MAJOR.$MINOR.$PATCH"
 
 echo "$CURRENT_VERSION -> $NEW_VERSION"
 
-# Update Cargo.toml
+# Update workspace Cargo.toml
 sed -i "s/^version = \".*\"/version = \"$NEW_VERSION\"/" "$CARGO_TOML"
+
+# Update bl4-cli dependency version
+sed -i "s/bl4 = { version = \"[^\"]*\"/bl4 = { version = \"$NEW_VERSION\"/" "$CLI_CARGO_TOML"
 
 # Update package.json
 sed -i "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/" "$PACKAGE_JSON"

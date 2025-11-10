@@ -133,7 +133,14 @@ pub fn encrypt_sav(yaml_data: &[u8], steam_id: &str) -> Result<Vec<u8>, CryptoEr
     // Compress with zlib
     let mut encoder = ZlibEncoder::new(Vec::new(), Compression::best());
     encoder.write_all(yaml_data)?;
-    let compressed = encoder.finish()?;
+    let mut compressed = encoder.finish()?;
+
+    // Append footer: adler32 checksum (4 bytes) + uncompressed length (4 bytes)
+    let adler32 = adler::adler32_slice(yaml_data);
+    let uncompressed_len = yaml_data.len() as u32;
+
+    compressed.extend_from_slice(&adler32.to_le_bytes());
+    compressed.extend_from_slice(&uncompressed_len.to_le_bytes());
 
     // Pad to 16-byte blocks
     let mut encrypted = pkcs7_pad(&compressed, 16);
