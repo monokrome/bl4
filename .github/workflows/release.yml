@@ -43,12 +43,14 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+        uses: jetli/wasm-pack-action@v0.4.0
+        with:
+          version: 'latest'
 
       - name: Build WASM package
         run: |
           cd crates/bl4
-          ./build-wasm.sh 2
+          ./build-wasm.sh
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
