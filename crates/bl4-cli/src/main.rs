@@ -143,6 +143,16 @@ enum Commands {
         #[arg(long)]
         show: bool,
     },
+
+    /// Decode an item serial number
+    Decode {
+        /// Item serial to decode (e.g. @Ugr$ZCm/&tH!t{KgK/Shxu>k)
+        serial: String,
+
+        /// Show detailed byte-by-byte breakdown
+        #[arg(short, long)]
+        verbose: bool,
+    },
 }
 
 /// Helper function to get Steam ID from argument or config
@@ -500,6 +510,19 @@ fn main() -> Result<()> {
             }
 
             eprintln!("Saved changes to {}", input.display());
+        }
+
+        Commands::Decode { serial, verbose } => {
+            let item = bl4::ItemSerial::decode(&serial).context("Failed to decode serial")?;
+
+            println!("Serial: {}", item.original);
+            println!("Item type: {}", item.item_type);
+            println!("Decoded bytes: {}", item.raw_bytes.len());
+            println!("Hex: {}", item.hex_dump());
+
+            if verbose {
+                println!("\n{}", item.detailed_dump());
+            }
         }
     }
 

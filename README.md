@@ -7,6 +7,7 @@ Borderlands 4 save editor library and CLI tool.
 - Decrypt and encrypt .sav files using Steam ID
 - Interactive editing via $EDITOR
 - Query and modify save data (level, currencies, XP, etc.)
+- Decode item serial numbers (weapons, equipment, etc.)
 - Hash-based backup system
 - Optional Steam ID configuration
 - WebAssembly support for JavaScript/TypeScript
@@ -92,6 +93,19 @@ cat save.yaml | bl4 encrypt > 1.sav
 bl4 inspect -i 1.sav
 bl4 inspect -i 1.sav --full
 ```
+
+### Item Serial Decoding
+
+```bash
+bl4 decode '@Ugr$ZCm/&tH!t{KgK/Shxu>k'
+bl4 decode '@Uge8jxm/)@{!gQaYMipv(G&-b*Z~_' --verbose
+```
+
+Decodes Borderlands 4 item serial numbers to show:
+- Item type (weapon, equipment, utility, etc.)
+- Raw decoded bytes
+- Parsed tokens (VarInt, VarBit, Part structures)
+- Extracted fields (manufacturer, rarity, level when available)
 
 ## Backup System
 

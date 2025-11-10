@@ -39,6 +39,7 @@
 pub mod backup;
 pub mod crypto;
 pub mod save;
+pub mod serial;
 
 #[cfg(feature = "wasm")]
 pub mod wasm;
@@ -47,3 +48,4 @@ pub mod wasm;
 pub use backup::{smart_backup, update_after_edit, BackupError};
 pub use crypto::{decrypt_sav, derive_key, encrypt_sav, CryptoError};
 pub use save::{ChangeSet, SaveError, SaveFile};
+pub use serial::{ItemSerial, SerialError};
