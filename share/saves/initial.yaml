@@ -1,0 +1,118 @@
+state: 
+  char_guid: 9ED2ABD241FC4551E19C9CBAE79EDD37
+  class: Char_DarkSiren
+  char_name: Vex
+  player_difficulty: Easy
+  experience: 
+  - type: Character
+    level: 1
+    points: 0
+  - type: Specialization
+    level: 1
+    points: 0
+  inventory: 
+    items: 
+      backpack: 
+        slot_0: 
+          serial: '@Uga`wSaA`L54ppc~ZK@8c7Ahy/90C'
+          flags: 1
+    equipped_inventory: 
+      equipped: 
+        slot_0: 
+        - serial: '@Uga`wSaA`L54ppc~ZK@8c7Ahy/90C'
+          flags: 1
+    active_slot: 0
+  player_customization: 
+  blackmarket_cooldown: 0
+  challenge_objectives: 
+  total_playtime: 11.743103
+  last_played_timestamp: 1762742642
+  first_timestamp: 
+  packages: 
+  - time_received: 1762742612
+    game_stage: '-1'
+    reward_scale: 1.0
+    rewards_def: RewardPackage_PreOrder
+    source: None
+    viewed: false
+  currencies: 
+    cash: 0
+    eridium: 0
+    golden_key: shift
+  ammo: 
+    assaultrifle: 0
+    pistol: 48
+    shotgun: 0
+    smg: 0
+    sniper: 0
+    repairkit: 0
+  checkpoint_name: Intro_P.Respawn
+  world_region_name: grasslands_Prison
+  personal_vehicle: PV_Borg
+  hover_drive: None
+  vehicle_weapon_slot: 0
+  lostloot: 
+    cooldown: '-1'
+    items: 
+onlinecharacterprefs: 
+  recentfriends: 
+pips: 
+  pips_list: !tags
+  - Character.inventory.rewards.RewardPackage_PreOrder
+  - Character.inventory.anynew
+  - Character.inventory.equippednew
+  - Character.missions.Mission_Main_PrisonPrologue
+gbx_discovery_pc: 
+  pins_state: 
+  saveid: 4522
+  fodsaveversion: 2
+  foddatas: 
+  - levelname: Intro_P
+    foddimensionx: 128
+    foddimensiony: 128
+    compressiontype: Zlib
+    foddata: eJzt1M8rw3Ecx/FPEqOWsBaaX6N2Ga35UX40irmYvrIDvi7KJKTJr29KkiS/VmS5aN8Dp6+Q/Dg4yAqTA7WDFE7TlEKccNDXar5Xx/f34PX4B56XVy/GAAAAAAAA4J9KyrOUlpgz49Wpx5lq+e5+d6ezwqBGPsHaLCytbUi+2b76fBX6hW1TUuAuHLo+8gmOLPK8gZvYuvmSI14vRLctkbpf3CMG5ag3v6fFSJzX1o0fPP/25dv1XitxX984d/Kt9J92RipjaPtpTQvnSl5+2Ru1xdL2Uxumjz+VfnhzsIw2zzTVwvaD0g+uugqI+8zc7j19j+ZD+5NcOnU/pWZADDxGJvhxf7jYUUSdZyzXMbSye3Z16Zfmu2zJ9H1mtLvGPN7lmWG+XKdCnjGdxe7kW7kqE/n5KrQZOdl6jVp1AAAAAAAAAAAAAAAAAAAAAAAAAAD4yw/AGot9
+  mapviewsavedata: 
+    hiddenfilters: 
+  metrics: 
+    lastworld: Intro_P
+    lastregion: grasslands_Prison
+    hasseenworldlist: 
+    - Intro_P
+    hasseenregionlist: 
+    - grasslands_Prison
+  non_hosted_dlblob: 
+gbx_discovery_pg: 
+  dlblob: 
+activities: 
+  allactivities: 
+missions: 
+  tracked_missions: 
+  - Mission_Main_PrisonPrologue
+  local_sets: 
+    missionset_main_prisonprologue: 
+      missions: 
+        mission_main_prisonprologue: 
+          status: Kickoffing
+oak.ui.progression_data: 
+  ui_progression_data: 
+    active_tree_index: 1
+    dont_ask_again_skills: false
+    dont_ask_again_respec_skills: false
+    dont_ask_again_specializations: false
+    dont_ask_again_respec_specializations: false
+    dont_ask_again_respec_node: false
+save_game_header: 
+  guid: BC16F37949742DF2BCB4C5A3FE8D1EDB
+  timestamp: 1762742642
+progression: 
+  progress_state_data: 
+    characterprogresspoints: 
+      id: AD9F96884F8AC0C56C2AAB83D56EFF11
+      reset_count: 0
+    specializationtokenpool: 
+      id: C59253D54DAE0E7A94E8BA8249D38F08
+      reset_count: 0
+globals: 
+timed_facts: 
+stats: 
