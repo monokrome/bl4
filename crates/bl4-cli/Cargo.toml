@@ -12,7 +12,7 @@ name = "bl4"
 path = "src/main.rs"
 
 [dependencies]
-bl4 = { version = "0.1.0", path = "../bl4" }
+bl4 = { version = "0.1.1", path = "../bl4" }
 clap.workspace = true
 anyhow.workspace = true
 serde_yaml.workspace = true
