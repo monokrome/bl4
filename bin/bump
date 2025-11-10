@@ -71,3 +71,4 @@ fi
 
 $CARGO_CMD update -p bl4 -p bl4-cli > /dev/null 2>&1
 $CARGO_CMD fmt --all > /dev/null 2>&1
+$CARGO_CMD clippy --all-targets --all-features -- -D warnings > /dev/null 2>&1

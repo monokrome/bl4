@@ -188,13 +188,7 @@ fn parse_tokens(reader: &mut BitReader) -> Vec<Token> {
     }
 
     // Parse tokens until terminator (00)
-    loop {
-        // Read token type (2-3 bits)
-        let prefix2 = match reader.read_bits(2) {
-            Some(p) => p,
-            None => break,
-        };
-
+    while let Some(prefix2) = reader.read_bits(2) {
         match prefix2 {
             0b00 => {
                 tokens.push(Token::Separator);
@@ -331,7 +325,7 @@ impl ItemSerial {
             })
             .collect();
 
-        if varints.len() > 0 {
+        if !varints.is_empty() {
             manufacturer = Some(varints[0]);
         }
         if varints.len() > 1 {
@@ -375,14 +369,14 @@ impl ItemSerial {
         if let Some(l) = self.level {
             output.push_str(&format!("  Level: {}\n", l));
         }
-        output.push_str("\n");
+        output.push('\n');
 
         // Show parsed tokens
         output.push_str(&format!("Tokens: {} total\n", self.tokens.len()));
         for (i, token) in self.tokens.iter().enumerate() {
             output.push_str(&format!("  [{:2}] {:?}\n", i, token));
         }
-        output.push_str("\n");
+        output.push('\n');
 
         // Show raw bytes
         output.push_str("Raw bytes:\n");
@@ -408,8 +402,8 @@ mod tests {
         let item = ItemSerial::decode(serial).unwrap();
 
         assert_eq!(item.item_type, 'r');
-        assert!(item.raw_bytes.len() > 0);
-        assert!(item.tokens.len() > 0, "Should parse at least one token");
+        assert!(!item.raw_bytes.is_empty());
+        assert!(!item.tokens.is_empty(), "Should parse at least one token");
 
         // First byte should be 0x21 (contains magic header 0010000)
         assert_eq!(item.raw_bytes[0], 0x21);
@@ -422,7 +416,7 @@ mod tests {
         let item = ItemSerial::decode(serial).unwrap();
 
         assert_eq!(item.item_type, 'e');
-        assert!(item.raw_bytes.len() > 0);
+        assert!(!item.raw_bytes.is_empty());
         assert_eq!(item.raw_bytes[0], 0x21); // Magic header
     }
 
@@ -433,7 +427,7 @@ mod tests {
         let item = ItemSerial::decode(serial).unwrap();
 
         assert_eq!(item.item_type, 'u');
-        assert!(item.tokens.len() > 0);
+        assert!(!item.tokens.is_empty());
 
         // Should have manufacturer extracted
         assert_eq!(item.manufacturer, Some(0));
