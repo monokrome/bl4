@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 env:
   CARGO_TERM_COLOR: always
 
@@ -45,7 +48,7 @@ jobs:
       - name: Build WASM package
         run: |
           cd crates/bl4
-          ./build-wasm.sh
+          ./build-wasm.sh 2
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

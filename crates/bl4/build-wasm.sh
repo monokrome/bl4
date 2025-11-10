@@ -17,36 +17,42 @@ if ! command -v wasm-pack &> /dev/null; then
     exit 1
 fi
 
-# Build for different targets
-echo "Choose target:"
-echo "  1) web       - For use in browsers via <script type=module>"
-echo "  2) bundler   - For webpack/rollup/parcel"
-echo "  3) nodejs    - For Node.js"
-echo "  4) all       - Build all targets"
-read -p "Select (1-4): " choice
+# Accept target from argument or prompt
+if [ -n "$1" ]; then
+    choice=$1
+else
+    # Build for different targets
+    echo "Choose target:"
+    echo "  1) web       - For use in browsers via <script type=module>"
+    echo "  2) bundler   - For webpack/rollup/parcel"
+    echo "  3) nodejs    - For Node.js"
+    echo "  4) all       - Build all targets"
+    read -p "Select (1-4): " choice
+fi
 
 build_target() {
     local target=$1
+    local outdir=${2:-pkg/$target}
     echo ""
     echo "Building for $target..."
-    wasm-pack build --target $target --features wasm --out-dir pkg/$target
-    echo "Built to pkg/$target/"
+    wasm-pack build --target $target --features wasm --out-dir $outdir
+    echo "Built to $outdir/"
 }
 
 case $choice in
     1)
-        build_target web
+        build_target web pkg
         ;;
     2)
-        build_target bundler
+        build_target bundler pkg
         ;;
     3)
-        build_target nodejs
+        build_target nodejs pkg
         ;;
     4)
-        build_target web
-        build_target bundler
-        build_target nodejs
+        build_target web pkg/web
+        build_target bundler pkg/bundler
+        build_target nodejs pkg/nodejs
         ;;
     *)
         echo "Invalid choice"
