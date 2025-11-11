@@ -38,6 +38,7 @@
 
 pub mod backup;
 pub mod crypto;
+pub mod paths;
 pub mod save;
 pub mod serial;
 
@@ -45,7 +46,22 @@ pub mod serial;
 pub mod wasm;
 
 // Re-export commonly used items
-pub use backup::{smart_backup, update_after_edit, BackupError};
+pub use backup::{
+    // Versioned backup functions
+    create_versioned_backup,
+    delete_backup_version,
+    list_backup_versions,
+    read_versioned_metadata,
+    restore_backup_version,
+    should_create_versioned_backup,
+    smart_backup,
+    update_after_edit,
+    update_backup_version_metadata,
+    BackupError,
+    BackupVersion,
+    VersionedBackupMetadata,
+};
 pub use crypto::{decrypt_sav, derive_key, encrypt_sav, CryptoError};
+pub use paths::{detect_save_directory, extract_steam_id_from_path};
 pub use save::{ChangeSet, SaveError, SaveFile};
 pub use serial::{ItemSerial, SerialError};

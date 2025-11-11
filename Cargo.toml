@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "crates/bl4",
     "crates/bl4-cli",
+    "crates/bl4-gui",
 ]
 
 [workspace.package]

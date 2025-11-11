@@ -3,6 +3,7 @@
 //! This module handles automatic backup creation with intelligent detection
 //! of when backups should be created or preserved.
 
+use blake3;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::fs;
@@ -16,6 +17,12 @@ pub enum BackupError {
 
     #[error("JSON error: {0}")]
     Json(#[from] serde_json::Error),
+
+    #[error("Save decryption error: {0}")]
+    SaveError(#[from] crate::save::SaveError),
+
+    #[error("Backup version not found: {0}")]
+    VersionNotFound(String),
 }
 
 /// Metadata tracking save file hashes for smart backup management
@@ -40,6 +47,119 @@ impl BackupMetadata {
     /// Update the last edit hash
     pub fn update_last_edit(&mut self, hash: String) {
         self.last_edit_hash = hash;
+    }
+}
+
+/// A single backup version with metadata
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BackupVersion {
+    /// Unique identifier for this backup version
+    pub id: String,
+
+    /// Timestamp when backup was created (RFC3339 format)
+    pub timestamp: String,
+
+    /// SHA-256 hash of the encrypted .sav file
+    pub file_hash_sha256: String,
+
+    /// BLAKE3 hash of the encrypted .sav file (for collision resistance)
+    pub file_hash_blake3: String,
+
+    /// SHA-256 hash of the decrypted YAML content
+    pub content_hash_sha256: Option<String>,
+
+    /// BLAKE3 hash of the decrypted YAML content
+    pub content_hash_blake3: Option<String>,
+
+    /// Optional user-provided tag/label
+    pub tag: Option<String>,
+
+    /// Optional user-provided description
+    pub description: Option<String>,
+
+    /// Whether this was auto-created or manually created
+    pub auto_created: bool,
+
+    /// File size in bytes
+    pub file_size: u64,
+}
+
+/// Metadata for versioned backup system
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VersionedBackupMetadata {
+    /// List of all backup versions, sorted by timestamp (newest first)
+    pub versions: Vec<BackupVersion>,
+
+    /// Maximum number of auto-created versions to keep (None = unlimited)
+    pub max_auto_versions: Option<usize>,
+}
+
+impl Default for VersionedBackupMetadata {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl VersionedBackupMetadata {
+    /// Create new empty metadata
+    pub fn new() -> Self {
+        VersionedBackupMetadata {
+            versions: Vec::new(),
+            max_auto_versions: Some(10), // Default to keeping 10 auto-backups
+        }
+    }
+
+    /// Add a new version and sort by timestamp
+    pub fn add_version(&mut self, version: BackupVersion) {
+        self.versions.push(version);
+        // Sort newest first
+        self.versions.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
+    }
+
+    /// Get a version by ID
+    pub fn get_version(&self, id: &str) -> Option<&BackupVersion> {
+        self.versions.iter().find(|v| v.id == id)
+    }
+
+    /// Remove a version by ID
+    pub fn remove_version(&mut self, id: &str) -> bool {
+        if let Some(pos) = self.versions.iter().position(|v| v.id == id) {
+            self.versions.remove(pos);
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Clean up old auto-created versions beyond max_auto_versions
+    pub fn cleanup_old_auto_versions(&mut self) -> Vec<String> {
+        let Some(max) = self.max_auto_versions else {
+            return Vec::new();
+        };
+
+        let auto_versions: Vec<_> = self
+            .versions
+            .iter()
+            .filter(|v| v.auto_created)
+            .cloned()
+            .collect();
+
+        if auto_versions.len() <= max {
+            return Vec::new();
+        }
+
+        // Keep newest max versions, remove the rest
+        let to_remove: Vec<String> = auto_versions
+            .iter()
+            .skip(max)
+            .map(|v| v.id.clone())
+            .collect();
+
+        for id in &to_remove {
+            self.remove_version(id);
+        }
+
+        to_remove
     }
 }
 
@@ -159,6 +279,244 @@ pub fn smart_backup(save_path: &Path) -> Result<bool, BackupError> {
     } else {
         Ok(false)
     }
+}
+
+// ============================================================================
+// Versioned Backup System
+// ============================================================================
+
+/// Compute dual hashes (SHA-256 and BLAKE3) of file data
+pub fn compute_dual_hashes(data: &[u8]) -> (String, String) {
+    // SHA-256
+    let mut sha256 = Sha256::new();
+    sha256.update(data);
+    let sha256_hash = hex::encode(sha256.finalize());
+
+    // BLAKE3
+    let blake3_hash = blake3::hash(data).to_hex().to_string();
+
+    (sha256_hash, blake3_hash)
+}
+
+/// Get the backup directory path for a save file
+pub fn versioned_backup_dir(save_path: &Path) -> PathBuf {
+    let mut dir = save_path.to_path_buf();
+    let filename = dir.file_name().unwrap().to_str().unwrap();
+    dir.set_file_name(format!("{}.backups", filename));
+    dir
+}
+
+/// Get the metadata path for versioned backups
+pub fn versioned_metadata_path(save_path: &Path) -> PathBuf {
+    versioned_backup_dir(save_path).join("metadata.json")
+}
+
+/// Read versioned backup metadata
+pub fn read_versioned_metadata(save_path: &Path) -> Result<VersionedBackupMetadata, BackupError> {
+    let metadata_path = versioned_metadata_path(save_path);
+
+    if !metadata_path.exists() {
+        return Ok(VersionedBackupMetadata::new());
+    }
+
+    let data = fs::read_to_string(&metadata_path)?;
+    let metadata: VersionedBackupMetadata = serde_json::from_str(&data)?;
+    Ok(metadata)
+}
+
+/// Write versioned backup metadata
+pub fn write_versioned_metadata(
+    save_path: &Path,
+    metadata: &VersionedBackupMetadata,
+) -> Result<(), BackupError> {
+    let backup_dir = versioned_backup_dir(save_path);
+    fs::create_dir_all(&backup_dir)?;
+
+    let metadata_path = versioned_metadata_path(save_path);
+    let json = serde_json::to_string_pretty(metadata)?;
+    fs::write(&metadata_path, json)?;
+    Ok(())
+}
+
+/// Create a versioned backup
+pub fn create_versioned_backup(
+    save_path: &Path,
+    steam_id: Option<&str>,
+    tag: Option<String>,
+    description: Option<String>,
+    auto_created: bool,
+) -> Result<BackupVersion, BackupError> {
+    // Generate unique ID
+    let id = uuid::Uuid::new_v4().to_string();
+    let timestamp = chrono::Utc::now().to_rfc3339();
+
+    // Read and hash the file
+    let file_data = fs::read(save_path)?;
+    let (file_hash_sha256, file_hash_blake3) = compute_dual_hashes(&file_data);
+    let file_size = file_data.len() as u64;
+
+    // Optionally compute content hashes (if we can decrypt)
+    let (content_hash_sha256, content_hash_blake3) = if let Some(steam_id) = steam_id {
+        match crate::decrypt_sav(&file_data, steam_id) {
+            Ok(yaml) => {
+                let (sha256, blake3) = compute_dual_hashes(&yaml);
+                (Some(sha256), Some(blake3))
+            }
+            Err(_) => (None, None), // Can't decrypt, skip content hashes
+        }
+    } else {
+        (None, None)
+    };
+
+    // Create backup directory
+    let backup_dir = versioned_backup_dir(save_path);
+    fs::create_dir_all(&backup_dir)?;
+
+    // Copy file to backup directory
+    let backup_file_path = backup_dir.join(format!("{}.sav", id));
+    fs::copy(save_path, &backup_file_path)?;
+
+    // Create version metadata
+    let version = BackupVersion {
+        id: id.clone(),
+        timestamp,
+        file_hash_sha256,
+        file_hash_blake3,
+        content_hash_sha256,
+        content_hash_blake3,
+        tag,
+        description,
+        auto_created,
+        file_size,
+    };
+
+    // Update metadata
+    let mut metadata = read_versioned_metadata(save_path)?;
+    metadata.add_version(version.clone());
+
+    // Cleanup old auto-backups if needed
+    if auto_created {
+        let removed_ids = metadata.cleanup_old_auto_versions();
+        for old_id in removed_ids {
+            let old_path = backup_dir.join(format!("{}.sav", old_id));
+            let _ = fs::remove_file(old_path); // Ignore errors
+        }
+    }
+
+    write_versioned_metadata(save_path, &metadata)?;
+
+    Ok(version)
+}
+
+/// Check if a versioned backup should be created (based on dual hashes)
+pub fn should_create_versioned_backup(
+    save_path: &Path,
+    steam_id: Option<&str>,
+) -> Result<bool, BackupError> {
+    let metadata = read_versioned_metadata(save_path)?;
+
+    if metadata.versions.is_empty() {
+        return Ok(true);
+    }
+
+    // Read current file and compute hashes
+    let file_data = fs::read(save_path)?;
+    let (file_sha256, file_blake3) = compute_dual_hashes(&file_data);
+
+    // Check if current hashes match any existing backup
+    for version in &metadata.versions {
+        if version.file_hash_sha256 == file_sha256 && version.file_hash_blake3 == file_blake3 {
+            return Ok(false); // Already have this exact file backed up
+        }
+    }
+
+    // If we have steam_id, also check content hashes
+    if let Some(steam_id) = steam_id {
+        if let Ok(yaml) = crate::decrypt_sav(&file_data, steam_id) {
+            let (content_sha256, content_blake3) = compute_dual_hashes(&yaml);
+
+            for version in &metadata.versions {
+                if let (Some(v_sha256), Some(v_blake3)) =
+                    (&version.content_hash_sha256, &version.content_hash_blake3)
+                {
+                    if *v_sha256 == content_sha256 && *v_blake3 == content_blake3 {
+                        return Ok(false); // Same content, don't need backup
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(true) // Hashes don't match any existing backup
+}
+
+/// List all backup versions for a save file
+pub fn list_backup_versions(save_path: &Path) -> Result<Vec<BackupVersion>, BackupError> {
+    let metadata = read_versioned_metadata(save_path)?;
+    Ok(metadata.versions)
+}
+
+/// Restore a specific backup version
+pub fn restore_backup_version(save_path: &Path, version_id: &str) -> Result<(), BackupError> {
+    let backup_dir = versioned_backup_dir(save_path);
+    let backup_file = backup_dir.join(format!("{}.sav", version_id));
+
+    if !backup_file.exists() {
+        return Err(BackupError::VersionNotFound(version_id.to_string()));
+    }
+
+    // Verify the backup exists in metadata
+    let metadata = read_versioned_metadata(save_path)?;
+    if metadata.get_version(version_id).is_none() {
+        return Err(BackupError::VersionNotFound(version_id.to_string()));
+    }
+
+    // Copy backup to save location
+    fs::copy(&backup_file, save_path)?;
+    Ok(())
+}
+
+/// Delete a specific backup version
+pub fn delete_backup_version(save_path: &Path, version_id: &str) -> Result<(), BackupError> {
+    let backup_dir = versioned_backup_dir(save_path);
+    let backup_file = backup_dir.join(format!("{}.sav", version_id));
+
+    // Remove from metadata
+    let mut metadata = read_versioned_metadata(save_path)?;
+    if !metadata.remove_version(version_id) {
+        return Err(BackupError::VersionNotFound(version_id.to_string()));
+    }
+    write_versioned_metadata(save_path, &metadata)?;
+
+    // Delete backup file
+    if backup_file.exists() {
+        fs::remove_file(&backup_file)?;
+    }
+
+    Ok(())
+}
+
+/// Update tag and description for a backup version
+pub fn update_backup_version_metadata(
+    save_path: &Path,
+    version_id: &str,
+    tag: Option<String>,
+    description: Option<String>,
+) -> Result<(), BackupError> {
+    let mut metadata = read_versioned_metadata(save_path)?;
+
+    // Find the version and update it
+    let version = metadata
+        .versions
+        .iter_mut()
+        .find(|v| v.id == version_id)
+        .ok_or_else(|| BackupError::VersionNotFound(version_id.to_string()))?;
+
+    version.tag = tag;
+    version.description = description;
+
+    write_versioned_metadata(save_path, &metadata)?;
+    Ok(())
 }
 
 #[cfg(test)]
