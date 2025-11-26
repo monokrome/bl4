@@ -127,41 +127,123 @@ The `bl4 decode` command outputs tokens in human-readable format:
 
 ### Item Type Characters
 
-| Char | Item Category | First Token Value |
-|------|---------------|-------------------|
-| `b` | Pistol | VarInt(2) |
-| `d` | SMG | VarInt(9) |
-| `x` | Shotgun | VarInt(134) |
-| `y` | Sniper Rifle | (unknown) |
-| `e` | Equipment/Shield | VarBit(107200) |
-| `u` | Utility | VarInt(128) |
-| `r` | Weapon (generic) | VarBit(180928) |
+| Char | Count | Primary Type |
+|------|-------|--------------|
+| `r` | 6174 | shields |
+| `e` | 4853 | enhancements |
+| `v` | 676 | assault rifles |
+| `x` | 596 | SMGs |
+| `#` | 583 | classmod_paladin |
+| `!` | 572 | classmod_dark_siren |
+| `w` | 526 | SMGs |
+| `f` | 480 | shotguns |
+| `c` | 436 | pistols |
+| `u` | 434 | snipers |
+| `y` | 342 | snipers |
+| `d` | 330 | shotguns |
+| `b` | 218 | pistols |
+| `g` | 154 | assault rifles |
+| `a` | 93 | pistols |
+| `z` | 73 | assault rifles |
+
+### First VarInt = Manufacturer ID
+
+The first VarInt in a weapon serial identifies the manufacturer:
+
+| VarInt | Manufacturer | Internal Code | Weapon Types |
+|--------|--------------|---------------|--------------|
+| 4 | Daedalus | DAD | SMG, Shotgun, AR, Pistol |
+| 6 | Torgue | TOR | Shotgun, AR, Heavy, Pistol |
+| 10 | Tediore | TED | AR, Shotgun, Pistol |
+| 14 | Ripper | - | Unknown |
+| 15 | Order | ORD | Sniper, Pistol, AR |
+| 129 | Jakobs | JAK | AR, Pistol, Shotgun, Sniper |
+| 134 | Vladof | VLA | SMG, AR, Heavy, Sniper |
+| 138 | Maliwan | MAL | SMG, Shotgun, Heavy, Sniper |
+
+**Unconfirmed manufacturers** (from game files):
+- BOR (Borg?) - SMG, Shotgun, Heavy, Sniper
+- COV - Unknown
+
+**Note**: These mappings are derived from weapons only. Class mods and other equipment use the "brand" field differently (e.g., class name for class mods).
+
+### Weapon Type by Manufacturer (from pak extraction)
+
+| Type | Manufacturers |
+|------|---------------|
+| SMG | BOR, DAD, MAL, VLA |
+| Pistol | DAD, JAK, ORD, TED, TOR |
+| Shotgun | BOR, DAD, JAK, MAL, TED, TOR |
+| Sniper | BOR, JAK, MAL, ORD, VLA |
+| Heavy | BOR, MAL, TOR, VLA |
+| AssaultRifle | DAD, JAK, ORD, TED, TOR, VLA |
 
 ### Common Serial Structure
 
-Most serials follow this general pattern:
+Most weapons follow this pattern:
 
 ```
-[item_subtype], [values...] | [level/info] | [data] || [parts...]
+<manufacturer_id>, 0, 8, 196 | 4, <stat_value> | | {part1} {part2} ... {partN}
+```
+
+The `0, 8, 196` appears constant for standard weapons. Class mods and equipment use different patterns (e.g., `| 49 | ""`).
+
+**Example weapon** (pistol):
+```
+4 ,  0 ,  8 ,  196 | 4 ,  3657 | | {198} {4} {12} {2} {10} {8} {207} {199} {11} {137}
+│                    │   │        └── Parts list
+│                    │   └── Stat/seed value
+│                    └── Constant separator pattern
+└── Manufacturer ID (4 = Daedalus pistol)
+```
+
+**Example class mod** (different pattern):
+```
+255 ,  0 ,  8 ,  196 | 4 ,  2708 | | {138} {7} {2189} {2213} ... {117} ,  100 6071
+                                     └── Skill parts in 2000+ range
 ```
 
 The double separator `||` typically precedes the parts list.
 
-**Example breakdown** (type `r` weapon):
-```
-180928 | 50 | {0:1} 1660 | | {8} {14} {252:4}
-  │      │     │     │       └── Parts list
-  │      │     │     └── Unknown ID
-  │      │     └── Part with value
-  │      └── Level (50)
-  └── Item subtype ID
-```
+### Part Index Mapping (Weapon Naming System)
+
+The parts database is primarily a **weapon naming table**. Part indices in serials map to naming entries that determine weapon prefixes.
+
+**Structure:**
+- **Part index** (e.g., `{4}`, `{8}`) identifies the primary modifier type
+- **Secondary modifiers** (stored in the database as `modd`, `modc`, `accuracy`, etc.) determine the specific prefix
+- **Prefix name** is the third value in each stat entry (e.g., "Cursed", "Rotten", "Hungry")
+
+| Index | Modifier Type | Example Prefixes |
+|-------|---------------|------------------|
+| 2 | Damage | "Tortuous", "Agonizing", "Festering" |
+| 3 | CritDamage | "Bleeding", "Hemorrhaging", "Pooling" |
+| 4 | ReloadSpeed | "Frenetic", "Manic", "Rotten" |
+| 5 | MagSize | "Bloated", "Gluttonous", "Hoarding" |
+| 7 | body_mod_a | "Chosen", "Promised", "Tainted" |
+| 8 | body_mod_b | "Bestowed", "Cursed", "Offered" |
+| 9 | body_mod_c | "Ritualized", "Summoned" |
+| 10 | body_mod_d | "Strange" |
+| 15-18 | barrel_mod_a through d | "Herald", "Harbinger", "Oracle", "Prophecy" |
+
+**Example:** A weapon with part `{8}` (body_mod_b) and secondary modifier `modd` gets the prefix "Cursed" → displayed as "Cursed Linebacker"
+
+The combination of primary part index + secondary modifier determines the final weapon prefix shown to players.
 
 ### CLI Usage
 
 ```bash
 # Basic decode (shows tokens in formatted notation)
-bl4 decode '@Ugr$ZCm/&tH!t{KgK/Shxu>k'
+bl4 decode '@Ugw$Yw2}TYgOvDMQhbq)?p-8<%Z7L5c7pfd;cmn_'
+
+# Example output:
+# Serial: @Ugw$Yw2}TYgOvDMQhbq)?p-8<%Z7L5c7pfd;cmn_
+# Item type: w (Weapon (variant v-z))
+# Manufacturer: Maliwan
+# Decoded bytes: 31
+# Hex: 212b06019062704432239055e1542b0e8512bd22b654f054e8553856964e4e
+# Tokens: 138 ,  0 ,  8 ,  196 | 4 ,  2328 | | {197} {4} {8:13} ...
+# Named:  Maliwan ,  0 ,  8 ,  196 | 4 ,  2328 | | {part_197} {ReloadSpeed} {body_mod_b:13} ...
 
 # Verbose output (shows all tokens, raw bytes, extracted fields)
 bl4 decode --verbose '@Ugr$ZCm/&tH!t{KgK/Shxu>k'
@@ -318,51 +400,72 @@ Part modifiers are typically floats in the 0.5-1.0 range.
 
 This section documents findings from memory dump analysis for future reference.
 
+### Important Notes
+
+**ASLR Warning**: Both Windows and Proton use Address Space Layout Randomization. Absolute virtual addresses change every game launch. The relative offsets and patterns documented here are consistent, but base addresses will vary.
+
 ### Environment
 
-- **Process**: `Borderlands4.exe` under Wine/Proton
-- **Dump method**: `gcore`
-- **Dump files**:
-  - `share/dumps/vex_level50_uvh5_shotguns.dump.107180` (8.3 GB)
-  - `share/dumps/vex_level50_uvh5_bank.dump.107180` (26 GB)
+| Platform | Dump Method | Dump Size | Notes |
+|----------|-------------|-----------|-------|
+| Linux (GE-Proton10-25) | `gcore` | ~27 GB | File offset ≈ VA |
+| Windows 11 (24H2) | Process Hacker | ~21 GB | Requires VA mapping extraction |
 
-### Serial Storage in Memory
+**Dump files** (in `share/dumps/`):
+- `vex_level50_uvh5_bank.dmp` - Windows 11 (Process Hacker full dump)
+- `vex_level50_uvh5_shotguns.dmp` - Windows 11 (Process Hacker full dump)
+- `vex_level50_uvh5_bank.dump.107180` - Linux/GE-Proton10-25 (gcore)
+- `vex_level50_uvh5_shotguns.dump.107180` - Linux/GE-Proton10-25 (gcore)
 
-Serials stored as length-prefixed strings:
+### Item Entry Structure - Linux (GE-Proton10-25)
 
-```
-[2-byte LE length][serial string][2-byte LE length][serial string]...
-```
-
-Length includes `@Ug` prefix and null terminator.
-
-### Item Entry Structure (Runtime)
-
-Observed at offset `0x014cd0c8`:
+Example serial `@Ugr$ZCm/&tH!t{KgK/Shxu>k` at file offset `0x14d21a8`:
 
 ```
-Offset | Size | Content
--------|------|--------
--0x10  | 8    | Header/flags
--0x08  | 4    | Float (unknown)
-0x00   | var  | Serial string (null-terminated)
-+len+2 | 8    | Length/type info
-+0x0A  | 4    | ID or hash
-+0x0E  | 2    | Version/flags
-+0x10  | 4    | Float (possibly level)
+Offset      Raw Bytes              Description
+------      ---------              -----------
+-0x40       00 00 00 00 00 00 00 00   (zeros)
+-0x38       00 00 00 00 00 00 80 3f   1.0 float32 at +4
+-0x30       00 00 00 00 00 00 00 00   (zeros)
+-0x28       00 00 00 00 00 00 80 3f   1.0 float32 at +4
+-0x20       00 00 00 00 00 00 00 00   (zeros)
+-0x18       00 00 00 00 00 00 00 00   (zeros)
+-0x10       00 00 00 00 00 00 00 00   (zeros)
+-0x08       04 00 00 08 80 00 00 00   Flags/header
++0x00       40 55 67 72 24 5a 43...   Serial string (@Ugr$ZC...)
++0x20       00 00 00 00 00 00 00 00   (zeros after serial)
++0x28       00 00 00 00 00 00 80 3f   1.0 float32 at +4
++0x30       00 00 00 00 00 00 00 00   (zeros)
++0x38       00 00 00 00 00 00 80 3f   1.0 float32 at +4
 ```
 
-### Stat Modifier Floats
+### Item Entry Structure - Windows 11 (Native)
 
-Found near item entries (offset `0x014cd018`):
+Example serial `@Ugr$ZCm/&tH!t{KgK/Shxu>k` at VA `0x11a6ed80` (raw offset `0x958fd80`):
 
-| Float | Possible Use |
-|-------|--------------|
-| 1.0000 | Base multiplier |
-| 0.8078 | Stat modifier |
-| 0.8510 | Stat modifier |
-| 0.8941 | Stat modifier |
-| 0.5647 | Stat modifier |
+```
+Offset      Raw Bytes              Description
+------      ---------              -----------
+-0x28       80 d5 b2 4e 01 00 00 00   Pointer (0x14eb2d580)
+-0x20       00 00 00 00 00 00 00 00   (zeros)
+-0x18       dc 1d 00 00 00 00 00 00   ID (0x1ddc)
+-0x10       01 00 00 00 00 00 00 00   Flags
+-0x08       00 00 00 00 00 00 00 00   (zeros)
++0x00       40 55 67 72 24 5a 43...   Serial string (@Ugr$ZC...)
++0x20       80 d5 b2 4e 01 00 00 00   Pointer (0x14eb2d580)
++0x28       00 00 00 00 00 00 00 00   (zeros)
++0x30       d8 1d 00 00 00 00 00 00   ID (0x1dd8)
++0x38       01 00 00 00 00 00 00 00   Flags
++0x40       40 55 67 72 25 53 63...   Next serial (@Ugr%Sc...)
+```
+
+Items in Windows are packed in ~64-byte aligned entries.
+
+### Signature Patterns
+
+**Linux (Proton)**: Look for `00 00 80 3F` (1.0 float) at -0x38 and -0x28 before `@Ug`
+
+**Windows**: Look for pointer + ID + flags pattern before `@Ug`
 
 ### Serial Byte Correlation
 
@@ -404,26 +507,135 @@ The memory dump contains:
 
 **Not found**: Explicit part index → asset name mapping tables. These are likely stored in PAK files.
 
+## Data Extraction Status
+
+### What We've Extracted (via uextract tool)
+
+| Category | Count | With Stats | Notes |
+|----------|-------|------------|-------|
+| Total Assets | 81,097 | 301 | From pak files |
+| Weapons | 3,200 | 23 | Template structures only |
+| Shields | 191 | 4 | Template structures only |
+| Gadgets | 157 | 6 | |
+| ClassMods | 40 | 0 | Scripts/params exist, no item definitions |
+| Repair Kits | 29 | 3 | |
+| Enhancements | 37 | 1 | |
+| Firmware | - | 1 | |
+| Grenades | - | 3 | |
+
+### Reference Data Comparison (guncode_export.csv)
+
+The reference CSV contains 16,541 items with full stats:
+
+| Category | Reference Count | Our Count | Gap |
+|----------|-----------------|-----------|-----|
+| Weapons | 5,707 | 23 | Missing actual item instances |
+| Shields | 2,534 | 4 | Only init templates |
+| Class Mods | 2,359 | 0 | Completely absent |
+| Repair Kits | 2,336 | 3 | Only init templates |
+| Enhancements | 2,260 | 1 | Only init templates |
+| Gadgets | 1,344 | 6 | Only init templates |
+
+### What We Have vs What We Need
+
+**What we extracted** are `Struct_*` templates - schema definitions with default/init values:
+- `Struct_Weapon_Barrel_Init.uasset` - Default barrel stat values
+- `Struct_Weapon_Magazine_Init.uasset` - Default magazine values
+- etc.
+
+**What serial decoding gives us:**
+- The serial **contains the item's parts/mods** - the actual configuration is encoded
+- We can decode tokens like `{197} {4} {8:13} {1} {46}` from any serial
+- These tokens likely represent indices into part pools
+
+**What we need** for a GUI editor:
+
+1. **Part POOL definitions** - "For a Maliwan SMG, what are the valid barrels/grips/etc?"
+   - Token `{4}` on a Maliwan SMG ≠ `{4}` on a Jakobs Pistol
+   - Indices are likely per-weapon-type, not global
+
+2. **Mod/augment pool definitions** - Same for shields, ClassMods, etc.
+   - Shields have modifiers (prefixes like "Absorbing", "Berserkr", elements)
+   - Unclear if these use "parts" terminology or something else
+
+3. **Item name lookups** - Map base item to display name ("Guardian Angel", "Zipper")
+
+4. **Manufacturer ID table** - Complete mapping (mostly done: DAD=4, TOR=6, etc.)
+
+### ClassMod Data Details
+
+**What we have** in game files:
+- **Skill scripts** (e.g., `SkillScript_PLD_CM_Blacksmith.uasset`) - Define ClassMod behavior/perks
+- **Skill parameters** (e.g., `SkillParam_DarkSiren_PhaseAvatar_ClassMod_Technomancer.uasset`)
+- **Attribute definitions** (e.g., `Att_Calc_PLD_CM_BlackSmith_GunDamage`)
+- **DataTable references** (e.g., `DataTable_Paladin_ClassMods`)
+
+**What's missing**:
+- Item balance/definition files that specify part combinations
+- Per-item stat ranges and rarity modifiers
+- PartSet definitions for ClassMod assembly
+
+**Reference data** (from guncode_export.csv) has 2,359 ClassMod entries including:
+
+| Character | ClassMod Types |
+|-----------|---------------|
+| Dark Siren | Avatar, Illusionist, Kindread Spirits, Technomancer, Teen Witch |
+| Paladin | Blacksmith, Elementalist, Furnace, ShatterWight, Viking |
+| Gravitar | Driver, Generator, Pundit, Scientist, Slider |
+| Exo Soldier | Filantropo, various L01-L06 types |
+
+**64 unique ClassMod base types** found in reference:
+Agente, Alchemist, Assistant, Avatar, Bio-Robot, Blacksmith, Bookworm, Brawler, Breaker, Buster, Chemist, Commander, Commando, Compiler, Controller, Cyborg, Dancer, Demolitionist, Driver, Elementalist, Esgrimidor, Eye, Filantropo, Firedancer, Furnace, Gearhead, Generator, Genio, Grenadier, Grenazerker, Guardian, Hunter, Icebringer, Illusionist, Instigator, Master, Mercenario, Naturalist, Outlaw, Physicist, Practitioner, Psion, Radiance, Radiologist, Reactor, Ritualist, Savant, Scientist, Shatterwight, Skeptic, Soldado, Soldier, Specialist, Spirits, Stormcaller, Tanker, Technomancer, Tecnico, Torchbearer, Transistor, Trooper, Viking, Weaver, Witch
+
+**Note**: "Guardian Angel" is a **Shield** (Daedalus legendary), NOT a ClassMod. The reference has 100+ Guardian Angel shield variants with different prefixes and elements.
+
+### Key Finding
+
+Item stats in Borderlands are **derived from parts**, not stored directly. A weapon's DPS comes from:
+- Base weapon type + manufacturer stats
+- Barrel modifier × Grip modifier × Magazine modifier × ...
+- Level scaling
+
+The reference data (guncode_export.csv) was likely generated via:
+- In-game item inspection
+- Memory extraction during gameplay
+- Modding tools that hook into game runtime
+
 ## Next Steps
+
+### Understanding the Problem
+
+The serial **already contains** all the parts/mods on an item. What we're missing is the **part pool data** that tells us:
+- What valid options exist for each slot on each item type
+- What name/effect corresponds to each index in the pool
 
 ### High Priority
 
-1. **Extract PAK files** - Use FModel or UModel to extract weapon/part definitions
-2. **Build part index table** - Map Part tokens `{index}` to actual game parts
-3. **Empirical testing** - Compare serials of items with known part differences
+1. **Find part pool definitions** - Where does the game store "Maliwan SMG can have barrels X, Y, Z"?
+   - Check for PartSet, InvBal, or similar assets we haven't found
+   - May require FModel for full DataTable extraction
+   - Could be in compiled Blueprint bytecode
+
+2. **Correlate reference serials with decoded data** - Use guncode_export.csv
+   - Compare items with known parts to find patterns
+   - Build mapping empirically if game files don't reveal it
+
+3. **Determine terminology** - Are shield/ClassMod modifiers called "parts"?
+   - Or do they use augments/mods/components?
+   - Affects where to look in game files
 
 ### Medium Priority
 
-4. **Trace attribute resolution** - Understand how `BaseDamage` etc. resolve to final values
-5. **Decode more item types** - Verify patterns hold for all weapon/equipment types
-6. **Serial encoding** - Implement the reverse (encoding) to create/modify items
+4. **Complete manufacturer ID table** - A few IDs still unknown (BOR, COV)
+5. **Implement serial encoding** - Create/modify items (reverse of decoding)
+6. **GUI editor data model** - Define what data structure the editor needs
 
-### Future Work
+### Research Tasks
 
-7. **PAK file analysis** - Extract part definitions from game assets
-8. **Static binary analysis** - Use radare2 to find serialization code
-9. **WASM bindings** - Expose serial decoding to browser-based editor
+7. **FModel DataTable extraction** - May reveal part pool data we can't parse with uextract
+8. **Memory analysis** - Runtime extraction of part pools from running game
+9. **Compare BL3 tools** - How did they solve this? May have similar structure
 
 ---
 
-*Last updated during memory dump analysis session*
+*Last updated: Corrected understanding of part pool requirements*

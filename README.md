@@ -224,10 +224,6 @@ affiliated with or endorsed by Gearbox Software or 2K.
 **Use at your own risk.**
 
 
-## Credits
-
-Based on initial work by [glacierpiece](https://github.com/glacierpiece/borderlands-4-save-utlity)
-
 ## License
 
 BSD-2-Clause

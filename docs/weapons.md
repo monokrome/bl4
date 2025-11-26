@@ -17,17 +17,19 @@ Extracted weapon part information from game assets. This data maps manufacturer 
 
 ## Manufacturers
 
-| Code | Name | Notes |
-|------|------|-------|
-| `BOR` | Borg | SMGs, Shotguns, Heavy Weapons, Sniper Rifles |
-| `DAD` | Daedalus | ARs, SMGs, Pistols, Shotguns |
-| `JAK` | Jakobs | High damage, semi-auto weapons across all types |
-| `MAL` | Maliwan | Elemental weapons, energy-based |
-| `ORD` | Order | ARs, Pistols, Sniper Rifles |
-| `TED` | Tediore | Throwable reloads, all weapon types |
-| `TOR` | Torgue | Explosive weapons, gyrojet rounds |
-| `UAS` | Unknown | Possibly unique/mission weapons |
-| `VLA` | Vladof | High fire rate, ARs, SMGs, Heavy Weapons, Snipers |
+| Code | Name | Serial ID | Notes |
+|------|------|-----------|-------|
+| `BOR` | Borg | ? | SMGs, Shotguns, Heavy Weapons, Sniper Rifles |
+| `DAD` | Daedalus | 4 | ARs, SMGs, Pistols, Shotguns |
+| `JAK` | Jakobs | 129 | High damage, semi-auto weapons across all types |
+| `MAL` | Maliwan | 138 | Elemental weapons, energy-based |
+| `ORD` | Order | 15 | ARs, Pistols, Sniper Rifles |
+| `TED` | Tediore | 10 | Throwable reloads, ARs, Shotguns, Pistols |
+| `TOR` | Torgue | 6 | Explosive weapons, gyrojet rounds |
+| `VLA` | Vladof | 134 | High fire rate, ARs, SMGs, Heavy Weapons, Snipers |
+| `COV` | COV | ? | (Found in game files, weapon types unknown) |
+
+**Serial ID** is the VarInt value that appears as the first token in decoded item serials.
 
 ---
 
@@ -442,14 +444,6 @@ Decoded: 180928 | 51 | {0:1} | 9 0 , 4 , 1943331 "Y'ecz" , , , , ,
    - Use radare2/Ghidra on `Borderlands4.exe`
    - Search for part name strings referenced by index
    - Find the serialization/deserialization routines
-
-### Research Findings
-
-**External Tools Checked:**
-- [borderlands.be](https://www.borderlands.be/) - Has a parts viewer and 16k+ deserialized items, but displays raw indices without name mappings
-- [glacierpiece save utility](https://github.com/glacierpiece/borderlands-4-save-utility) - Extracts raw stats but no part mappings
-
-**Key Finding:** No existing open-source tool has publicly available part index-to-name mappings. All tools display raw indices.
 
 ### Tools Status
 

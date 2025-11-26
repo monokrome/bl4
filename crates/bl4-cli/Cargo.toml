@@ -19,3 +19,8 @@ serde_yaml.workspace = true
 serde = { workspace = true, features = ["derive"] }
 toml = "0.8"
 dirs = "5.0"
+
+# For process injection/memory access
+process-memory = "0.5"
+sysinfo = "0.35"
+byteorder = "1.5"

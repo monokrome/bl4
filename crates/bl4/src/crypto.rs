@@ -1,7 +1,4 @@
 //! Borderlands 4 save file encryption and decryption
-//!
-//! Based on work from glacierpiece:
-//! https://github.com/glacierpiece/borderlands-4-save-utlity
 
 #[allow(deprecated)]
 use aes::cipher::generic_array::GenericArray;

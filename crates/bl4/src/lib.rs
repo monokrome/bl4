@@ -38,6 +38,7 @@
 
 pub mod backup;
 pub mod crypto;
+pub mod parts;
 pub mod save;
 pub mod serial;
 
@@ -47,5 +48,6 @@ pub mod wasm;
 // Re-export commonly used items
 pub use backup::{smart_backup, update_after_edit, BackupError};
 pub use crypto::{decrypt_sav, derive_key, encrypt_sav, CryptoError};
+pub use parts::{item_type_name, manufacturer_name, PartInfo, PartsDatabase};
 pub use save::{ChangeSet, SaveError, SaveFile};
 pub use serial::{ItemSerial, SerialError};
