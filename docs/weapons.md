@@ -19,15 +19,16 @@ Extracted weapon part information from game assets. This data maps manufacturer 
 
 | Code | Name | Serial ID | Notes |
 |------|------|-----------|-------|
-| `BOR` | Borg | ? | SMGs, Shotguns, Heavy Weapons, Sniper Rifles |
+| `BOR` | Borg | - | SMGs, Shotguns, Heavy Weapons, Sniper Rifles |
+| `COV` | Children of the Vault | - | Various weapon types |
 | `DAD` | Daedalus | 4 | ARs, SMGs, Pistols, Shotguns |
+| `DPL` | Dahl | - | Turrets/Gadgets (not weapons) |
 | `JAK` | Jakobs | 129 | High damage, semi-auto weapons across all types |
 | `MAL` | Maliwan | 138 | Elemental weapons, energy-based |
 | `ORD` | Order | 15 | ARs, Pistols, Sniper Rifles |
 | `TED` | Tediore | 10 | Throwable reloads, ARs, Shotguns, Pistols |
 | `TOR` | Torgue | 6 | Explosive weapons, gyrojet rounds |
 | `VLA` | Vladof | 134 | High fire rate, ARs, SMGs, Heavy Weapons, Snipers |
-| `COV` | COV | ? | (Found in game files, weapon types unknown) |
 
 **Serial ID** is the VarInt value that appears as the first token in decoded item serials.
 
@@ -435,12 +436,7 @@ Decoded: 180928 | 51 | {0:1} | 9 0 , 4 , 1943331 "Y'ecz" , , , , ,
    - Decode their serials and track which index changes
    - Build correlation between index values and part names
 
-2. **FModel Extraction** (Recommended)
-   - Use FModel (has UE5 Zen format support)
-   - Extract DataTable assets containing part definitions
-   - Part arrays in these tables should correspond to serial indices
-
-3. **Static Binary Analysis**
+2. **Static Binary Analysis**
    - Use radare2/Ghidra on `Borderlands4.exe`
    - Search for part name strings referenced by index
    - Find the serialization/deserialization routines
@@ -450,7 +446,7 @@ Decoded: 180928 | 51 | {0:1} | 9 0 , 4 , 1943331 "Y'ecz" , , , , ,
 | Tool | Status | Use |
 |------|--------|-----|
 | `retoc` | ✅ Installed | IoStore extraction, asset unpacking |
-| `FModel` | 🔜 Recommended | Full UE5 asset parsing, DataTable export |
+| `uextract` | ✅ Created | UE5 asset parsing with property extraction |
 | `radare2` | ✅ Available | Binary analysis (careful with DRM!) |
 | `bl4-research` | ✅ Created | Project research tools in `crates/bl4-research` |
 
@@ -461,7 +457,7 @@ Using `retoc unpack`, we extracted 19,623 files from pakchunk4 including:
 - Animation assets (fire modes, etc.)
 - Scope/barrel visual assets
 
-The `.uasset` files are in UE5 Zen format and require FModel or similar for proper DataTable extraction.
+The `.uasset` files are in UE5 Zen format and can be parsed with uextract.
 
 ---
 

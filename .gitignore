@@ -7,8 +7,10 @@ target/
 *.lock
 !/Cargo.lock
 
-# BL4 data files
+# BL4 data files (manifests tracked via LFS)
 /share/*
+!/share/manifest
+/share/manifest/extracted/
 
 # Backup files
 *.bak

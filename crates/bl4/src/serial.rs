@@ -14,6 +14,11 @@ use crate::parts::{item_type_name, manufacturer_name, PartsDatabase};
 const BL4_BASE85_ALPHABET: &[u8; 85] =
     b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{/}~";
 
+/// Maximum reasonable part index. Part indices above this threshold indicate
+/// we're parsing garbage data (likely over-reading past the end of valid tokens).
+/// Based on analysis: most parts have indices < 100, max observed valid is ~300.
+const MAX_REASONABLE_PART_INDEX: u64 = 1000;
+
 /// Errors that can occur during serial decoding
 #[derive(Debug, thiserror::Error)]
 pub enum SerialError {
@@ -98,6 +103,12 @@ impl BitReader {
     #[allow(dead_code)]
     fn current_bit_offset(&self) -> usize {
         self.bit_offset
+    }
+
+    /// Returns the number of bits remaining in the stream
+    fn remaining_bits(&self) -> usize {
+        let total_bits = self.bytes.len() * 8;
+        total_bits.saturating_sub(self.bit_offset)
     }
 }
 
@@ -213,10 +224,18 @@ fn parse_tokens_impl(reader: &mut BitReader, debug: bool) -> Vec<Token> {
         match prefix2 {
             0b00 => {
                 if debug {
-                    eprintln!("         -> Separator (possible terminator, continuing...)");
+                    eprintln!("         -> Separator (remaining bits: {})", reader.remaining_bits());
                 }
                 tokens.push(Token::Separator);
-                // Don't break - continue to see what else is there
+                // If we have very few bits left after a separator, stop parsing.
+                // This prevents interpreting trailing padding/garbage as tokens.
+                // Minimum meaningful token is 3 bits (prefix) + 5 bits (min varint) = 8 bits
+                if reader.remaining_bits() < 8 {
+                    if debug {
+                        eprintln!("         -> Insufficient bits remaining, stopping parse");
+                    }
+                    break;
+                }
             }
             0b01 => {
                 if debug {
@@ -264,6 +283,16 @@ fn parse_tokens_impl(reader: &mut BitReader, debug: bool) -> Vec<Token> {
                         //     10 = no data
                         //     01 = value list until 00 terminator
                         if let Some(index) = reader.read_varint() {
+                            // Validate part index is reasonable. If it's too large,
+                            // we're likely parsing garbage data past the end of valid tokens.
+                            if index > MAX_REASONABLE_PART_INDEX {
+                                if debug {
+                                    eprintln!("         -> Part index {} exceeds max ({}), stopping parse",
+                                              index, MAX_REASONABLE_PART_INDEX);
+                                }
+                                break;
+                            }
+
                             let mut values = Vec::new();
 
                             if let Some(type_flag) = reader.read_bits(1) {
@@ -561,6 +590,49 @@ impl ItemSerial {
         self.manufacturer.and_then(manufacturer_name)
     }
 
+    /// Extract Part Group ID from the serial
+    ///
+    /// For weapon serials (r, a-d, f-g, v-z): group_id = first_varbit / 8192
+    /// For equipment (e): group_id = first_varbit / 384
+    /// Returns None if the serial format doesn't use Part Group IDs
+    pub fn part_group_id(&self) -> Option<i64> {
+        // Find the first VarBit token
+        let first_varbit = self.tokens.iter().find_map(|t| {
+            if let Token::VarBit(v) = t {
+                Some(*v)
+            } else {
+                None
+            }
+        })?;
+
+        match self.item_type {
+            'r' | 'a'..='d' | 'f' | 'g' | 'v'..='z' => {
+                // Weapons: group_id = first_token / 8192
+                Some((first_varbit / 8192) as i64)
+            }
+            'e' => {
+                // Equipment: group_id = first_token / 384
+                Some((first_varbit / 384) as i64)
+            }
+            _ => None, // Unknown format
+        }
+    }
+
+    /// Get all Part tokens from this serial
+    /// Returns (index, values) pairs for each Part token
+    pub fn parts(&self) -> Vec<(u64, Vec<u64>)> {
+        self.tokens
+            .iter()
+            .filter_map(|t| {
+                if let Token::Part { index, values } = t {
+                    Some((*index, values.clone()))
+                } else {
+                    None
+                }
+            })
+            .collect()
+    }
+
     /// Display detailed byte-by-byte breakdown
     pub fn detailed_dump(&self) -> String {
         let mut output = String::new();
@@ -663,5 +735,34 @@ mod tests {
         assert_eq!(mirror_byte(0b10101010), 0b01010101);
         assert_eq!(mirror_byte(0b00000000), 0b00000000);
         assert_eq!(mirror_byte(0b11111111), 0b11111111);
+    }
+
+    #[test]
+    fn test_part_group_id_extraction() {
+        // Weapon serial - Vladof SMG (group 22)
+        let item = ItemSerial::decode("@Ugr$ZCm/&tH!t{KgK/Shxu>k").unwrap();
+        assert_eq!(item.part_group_id(), Some(22));
+
+        // Equipment serial - Shield (group 279)
+        let item = ItemSerial::decode("@Uge8jxm/)@{!gQaYMipv(G&-b*Z~_").unwrap();
+        assert_eq!(item.part_group_id(), Some(279));
+
+        // Utility items don't use Part Group ID
+        let item =
+            ItemSerial::decode("@Uguq~c2}TYg3/>%aRG}8ts7KXA-9&{!<w2c7r9#z0g+sMN<wF1").unwrap();
+        assert_eq!(item.part_group_id(), None);
+    }
+
+    #[test]
+    fn test_parts_extraction() {
+        // Weapon with one part
+        let item = ItemSerial::decode("@Ugr$ZCm/&tH!t{KgK/Shxu>k").unwrap();
+        let parts = item.parts();
+        assert!(!parts.is_empty(), "Should have at least one part");
+
+        // Check first part has index 0 and value
+        let (index, values) = &parts[0];
+        assert_eq!(*index, 0u64);
+        assert!(!values.is_empty());
     }
 }

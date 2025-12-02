@@ -218,6 +218,8 @@ dependencies = [
  "byteorder",
  "clap",
  "dirs",
+ "memchr",
+ "memmap2",
  "process-memory",
  "serde",
  "serde_yaml",
@@ -1078,7 +1080,7 @@ checksum = "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c"
 [[package]]
 name = "jmap"
 version = "0.1.0"
-source = "git+https://github.com/trumank/jmap.git#514c09ddaa7deaa459753a81cbee3a09158bbdd5"
+source = "git+https://github.com/trumank/jmap#514c09ddaa7deaa459753a81cbee3a09158bbdd5"
 dependencies = [
  "base64",
  "bitflags 2.10.0",
@@ -1213,6 +1215,15 @@ name = "memchr"
 version = "2.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f52b00d39961fc5b2736ea853c9cc86238e165017a493d1d5c8eac6bdc4cc273"
+
+[[package]]
+name = "memmap2"
+version = "0.9.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "744133e4a0e0a658e1374cf3bf8e415c4052a15a111acd372764c55b4177d490"
+dependencies = [
+ "libc",
+]
 
 [[package]]
 name = "miniz_oxide"
@@ -2361,6 +2372,7 @@ dependencies = [
  "serde",
  "serde_json",
  "texture2ddecoder",
+ "usmap",
 ]
 
 [[package]]
@@ -2466,6 +2478,23 @@ dependencies = [
  "idna",
  "percent-encoding",
  "serde",
+]
+
+[[package]]
+name = "usmap"
+version = "0.1.0"
+source = "git+https://github.com/trumank/jmap#514c09ddaa7deaa459753a81cbee3a09158bbdd5"
+dependencies = [
+ "anyhow",
+ "byteorder",
+ "clap",
+ "ser-hex",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "strum 0.27.2",
+ "tracing",
+ "zstd 0.13.3",
 ]
 
 [[package]]

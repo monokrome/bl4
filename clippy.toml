@@ -1,0 +1,12 @@
+# Clippy configuration for code quality checks
+# See: https://rust-lang.github.io/rust-clippy/master/index.html
+
+# Maximum cognitive complexity allowed per function
+# Lower values force simpler, more readable code
+cognitive-complexity-threshold = 25
+
+# Maximum number of lines per function
+too-many-lines-threshold = 150
+
+# Maximum number of arguments per function
+too-many-arguments-threshold = 7

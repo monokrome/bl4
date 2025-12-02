@@ -97,14 +97,67 @@ cargo build --release -p uextract
 # Extract all assets to JSON
 ./target/release/uextract "/path/to/Paks" -o /tmp/output
 
+# Extract with usmap schema (for full DataTable parsing)
+./target/release/uextract "/path/to/Paks" -o /tmp/output --usmap share/borderlands.usmap
+
 # Filter by pattern
 ./target/release/uextract "/path/to/Paks" --list --ifilter "BalanceData"
 ```
 
 **Capabilities:**
 - Parses UE5.5 IoStore format with Zen packages
-- Extracts unversioned properties using IEEE 754 float/double interpretation
+- Extracts unversioned properties using FUnversionedHeader fragment parsing
 - Outputs JSON with asset metadata and parsed property values
+- Supports usmap schema files (16,731 structs, 2,979 enums) for property resolution
+
+**Usmap Schema:**
+
+A `.usmap` file at `share/borderlands.usmap` contains the property schema for BL4's unversioned assets. The usmap contains engine and game class definitions but **not** user-defined DataTable row structs.
+
+**Unversioned Property Parsing:**
+
+UE5 uses a fragment-based header for unversioned serialization:
+- Each fragment is 16-bits: `SkipNum(7) | HasZeroes(1) | IsLast(1) | ValueCount(7)`
+- Fragments encode "skip N properties, then serialize M properties"
+- A zero mask follows if any fragment has `HasZeroes` set
+- Property values are serialized after the header in schema order
+
+**Current Limitations:**
+- DataTable row structs (e.g., `Struct_EnemyDrops`) are user-defined and not in usmap
+- Complex nested types require additional parsing not yet implemented
+
+### bl4 memory (Memory analysis)
+
+Part of the main bl4-cli. Analyzes game memory from dumps or live process.
+
+**Build:**
+```bash
+cargo build --release -p bl4-cli
+```
+
+**Commands:**
+```bash
+# Discover UE5 global structures (GNames, GUObjectArray)
+bl4 memory discover gnames
+bl4 memory discover guobjectarray
+
+# Read raw memory at address
+bl4 memory read 0x15125e310 --size 128
+
+# Dump usmap from memory dump
+bl4 memory --dump ./share/dumps/vex.raw dump-usmap
+```
+
+**Requirements:**
+- Memory dump file (MDMP format from procdump) for offline analysis
+- Or running BL4 process for live analysis (works with Wine/Proton on Linux)
+
+**Current Status:**
+- GNames discovery: Working
+- GUObjectArray discovery: Working
+- Usmap generation: Complete (64,917 names, 16,849 structs, 58,793 properties)
+
+See [Data Structures - UE5 Runtime Structure Discovery](data_structures.md#ue5-runtime-structure-discovery) for technical details.
 
 ### bl4-research (Manifest generation)
 
@@ -120,6 +173,12 @@ cargo build --release -p bl4-research
 # Generate manifest from extracted files
 bl4-research manifest
 
+# Build pak manifest from uextract output
+bl4-research pak-manifest -e share/manifest/extracted -o share/manifest
+
+# Generate items database with drop pools and stats
+bl4-research items-db -m share/manifest
+
 # Alternative commands (if extraction already done)
 bl4-research manufacturers
 bl4-research weapons
@@ -130,6 +189,8 @@ bl4-research weapons
 - `pak_manifest.json` - Full asset manifest (81,097 items)
 - `pak_summary.json` - Summary statistics
 - `weapons_breakdown.json` - Weapon counts by type/manufacturer
+- `items_database.json` - Item drop pools and stat modifiers
+- `mappings.usmap` - UE5 reflection data for asset parsing
 
 ## Game File Locations
 
@@ -368,7 +429,20 @@ echo "Found $(wc -l < weapon_assets.txt) weapon assets"
 retoc list "$GAME_DIR/OakGame/Content/Paks/pakchunk0-Windows_0_P.utoc" > asset_index.txt
 ```
 
+## Usmap Generation
+
+For parsing extracted .uasset files, you need a mappings file (`.usmap`) that describes all UE5 class/struct layouts. See [usmap.md](usmap.md) for details.
+
+**Quick generation:**
+```bash
+# Requires a memory dump from the running game
+bl4 memory --dump ./share/dumps/your_dump.raw dump-usmap
+
+# Output in share/manifest/mappings.usmap
+```
+
 ## Related Documentation
 
 - [Data Structures](data_structures.md) - Item serial format and game structures
 - [Weapons](weapons.md) - Weapon mechanics and part system
+- [Usmap](usmap.md) - Usmap generation from memory dumps

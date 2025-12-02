@@ -1,0 +1,118 @@
+/* BL4 Documentation Custom Styles */
+
+/* Borderlands-inspired color adjustments */
+:root {
+  --md-primary-fg-color: #ff6d00;
+  --md-primary-fg-color--light: #ff9e40;
+  --md-primary-fg-color--dark: #c43e00;
+  --md-accent-fg-color: #ffc400;
+}
+
+/* Code block styling */
+.highlight code {
+  font-size: 0.85em;
+}
+
+/* Table styling for data type tables */
+.md-typeset table:not([class]) {
+  font-size: 0.8rem;
+}
+
+.md-typeset table:not([class]) th {
+  background-color: var(--md-primary-fg-color);
+  color: white;
+}
+
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) th {
+  background-color: var(--md-primary-fg-color--dark);
+}
+
+/* Hex dump styling */
+.md-typeset code {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+[data-md-color-scheme="slate"] .md-typeset code {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Exercise details styling */
+.md-typeset details {
+  border-left: 4px solid var(--md-accent-fg-color);
+}
+
+/* Admonition customization */
+.md-typeset .admonition.note,
+.md-typeset details.note {
+  border-color: #448aff;
+}
+
+.md-typeset .admonition.tip,
+.md-typeset details.tip {
+  border-color: #00c853;
+}
+
+.md-typeset .admonition.warning,
+.md-typeset details.warning {
+  border-color: #ff9100;
+}
+
+/* Grid cards for home page */
+.md-typeset .grid.cards > ul > li {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.md-typeset .grid.cards > ul > li:hover {
+  border-color: var(--md-accent-fg-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Download button styling */
+.md-typeset .md-button--primary {
+  background-color: var(--md-primary-fg-color);
+}
+
+.md-typeset .md-button--primary:hover {
+  background-color: var(--md-primary-fg-color--dark);
+}
+
+/* Binary/hex data emphasis */
+.md-typeset code:contains("0x"),
+.md-typeset code:contains("0b") {
+  font-weight: 500;
+}
+
+/* Navigation improvements */
+.md-nav__link--active {
+  font-weight: 600;
+}
+
+/* Footer tweaks */
+.md-footer-meta {
+  background-color: var(--md-primary-fg-color--dark);
+}
+
+/* Print styles for PDF-like output */
+@media print {
+  .md-header,
+  .md-footer,
+  .md-sidebar {
+    display: none;
+  }
+
+  .md-content {
+    max-width: 100%;
+  }
+
+  .md-typeset h1 {
+    page-break-before: always;
+  }
+
+  .md-typeset pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+}

@@ -158,6 +158,17 @@ enum Commands {
         #[arg(short, long, default_value = "share/manifest")]
         output: PathBuf,
     },
+
+    /// Generate items database with drop pools and stats
+    ItemsDb {
+        /// Path to manifest directory (containing pak_manifest.json)
+        #[arg(short, long, default_value = "share/manifest")]
+        manifest_dir: PathBuf,
+
+        /// Output file
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+    },
 }
 
 fn parse_uasset(path: &PathBuf) -> Result<()> {
@@ -324,6 +335,22 @@ fn main() -> Result<()> {
 
         Commands::PakManifest { extracted_dir, output } => {
             manifest::generate_pak_manifest(&extracted_dir, &output)?;
+        }
+
+        Commands::ItemsDb { manifest_dir, output } => {
+            let db = manifest::generate_items_database(&manifest_dir)?;
+
+            let output_path = output.unwrap_or_else(|| manifest_dir.join("items_database.json"));
+            let json = serde_json::to_string_pretty(&db)?;
+            std::fs::write(&output_path, &json)?;
+
+            println!("\n=== Items Database Generated ===");
+            println!("Total pools: {}", db.stats_summary.total_pools);
+            println!("Total items with stats: {}", db.stats_summary.total_items);
+            println!("Categories: {:?}", db.stats_summary.categories);
+            println!("Manufacturers: {:?}", db.stats_summary.manufacturers);
+            println!("Stat types: {:?}", db.stats_summary.stat_types);
+            println!("\nSaved to: {}", output_path.display());
         }
     }
 

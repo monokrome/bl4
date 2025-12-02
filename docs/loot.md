@@ -2,6 +2,8 @@
 
 Research notes from live memory analysis of BL4 running under Proton.
 
+> **Note**: These are historical research notes from early reverse engineering sessions. For the latest extracted loot data, see `share/manifest/items_database.json` which contains 62 item pools.
+
 ## Memory Analysis Session
 
 **Date**: 2024-11-27 (Session 2)
@@ -270,7 +272,7 @@ Locations in code regions need further analysis to find which are used for loot 
 ## Summary: What We Have
 
 **Working:**
-- Process attachment via `bl4 inject`
+- Process attachment via `bl4 memory`
 - Memory reading from all mapped regions
 - Pattern scanning for strings and bytes
 - Memory writing capability (untested with game state)
@@ -427,30 +429,64 @@ This class resolves rarity values from a DataTable. Potential patching target:
 
 ---
 
-## Proposed Injection Templates
+## Injection Templates
 
-Commands to test (TBD implementation):
+### Two Implementation Modes
+
+BL4 supports two injection approaches:
+
+| Mode | Flag | Status | Description |
+|------|------|--------|-------------|
+| **Preload** | `--preload` | Working | Uses `LD_PRELOAD` to intercept RNG syscalls |
+| **Direct** | (default) | Not implemented | Direct memory patching via SDK offsets |
+
+### Preload Mode (Working)
+
+The preload mode uses `libbl4_preload.so` to intercept random number generation at the syscall level:
 
 ```bash
-# Max drop rate - increase probability of all drops
-bl4 inject dropRate=max
+# Run game with RNG bias for better drops
+bl4 memory --preload apply dropRate=max dropRarity=legendary
 
-# Max rarity - force legendary drops
-bl4 inject dropRarity=legendary
-
-# Combined
-bl4 inject dropRate=max dropRarity=legendary
-
-# Specific rarity
-bl4 inject dropRarity=epic
-
-# Max luck
-bl4 inject luck=max
+# This generates an LD_PRELOAD command with BL4_RNG_BIAS environment variable
 ```
 
-### Implementation Strategy
+**How it works:**
+- Intercepts `getrandom()` and similar RNG syscalls via `LD_PRELOAD`
+- Sets `BL4_RNG_BIAS=max` to bias all random numbers toward favorable outcomes
+- Works at syscall level - doesn't need SDK offsets or game structure knowledge
 
-1. Find live `InventoryRarityDataTableValueResolver` instances
+### Direct Mode (Not Implemented)
+
+The direct injection mode (`bl4 memory apply dropRate=max`) is stub code that prints what would need to be done:
+
+```bash
+# Current output (not functional):
+bl4 memory apply dropRate=max
+# > Template: dropRate=max
+# > Status: Not yet implemented
+# > Requires: Finding RarityWeightData instances
+```
+
+**What's needed for direct mode:**
+- `dropRate`: Find `RarityWeightData` instances and modify `BaseWeight`/`GrowthExponent`
+- `dropRarity`: Patch ItemPool selection code to force specific rarity
+- `luck`: Find `LuckGlobals` instance and modify values
+
+**Known FName addresses** (for future implementation):
+| Template | FName | Address |
+|----------|-------|---------|
+| dropRate | RarityWeightData | 0x5f9548e |
+| dropRate | BaseWeight | 0x6f3a44c4 |
+| dropRate | GrowthExponent | 0x6f3a44b4 |
+| luck | LuckGlobals | 0x5f95658 |
+| luck | LuckCategories | 0x6f3a4560 |
+
+### Implementation Strategy (Future)
+
+For direct mode implementation:
+
+1. Find live `InventoryRarityDataTableValueResolver` instances via FName search
 2. Locate the float weight values in the DataTable
 3. Patch weights to favor legendary (increase legendary weight, decrease others)
 
@@ -458,4 +494,36 @@ Alternative: Patch the comparison code that checks random value against weight t
 
 ---
 
-*Generated from live memory analysis using `bl4 inject` tool*
+## Extracted Items Database
+
+The `share/manifest/items_database.json` file contains extracted item pool and stat data from pak files.
+
+**Generate:**
+```bash
+bl4-research items-db -m share/manifest
+```
+
+**Contents:**
+- `item_pools`: 62 unique loot pools with references showing what enemies/containers use them
+- `items`: 26 balance data items with stat modifiers (Scale/Add/Value/Percent)
+- `stats_summary`: Summary of all stat types, categories, and manufacturers
+
+**Sample Pools:**
+- `ItemPoolList_Enemy_BaseLoot_Boss` - Boss enemy drops
+- `ItemPoolList_Enemy_BaseLoot_BossRaid` - Raid boss drops
+- `itempool_guns_01_common` - Common weapon pool
+- `itempool_guns_04_epic` - Epic weapon pool
+- `ItemPool_FishCollector_Reward_Legendary` - Legendary reward pool
+
+**Sample Stats:**
+- `Damage_Scale`, `Damage_Value` - Base damage modifiers
+- `CritDamage_Add` - Critical damage bonus
+- `FireRate_Scale`, `FireRate_Value` - Fire rate modifiers
+- `ReloadTime_Scale` - Reload speed modifier
+- `ElementalChance_Scale` - Elemental proc chance
+
+See [Extraction - bl4-research](extraction.md#bl4-research-manifest-generation) for usage details.
+
+---
+
+*Generated from live memory analysis using `bl4 memory` tool*

@@ -1,0 +1,145 @@
+name: Build Documentation
+
+on:
+  push:
+    branches: [main, feature/manifests]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
+      - 'mkdocs.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/**'
+  workflow_dispatch:  # Allow manual trigger
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true  # Fetch LFS files for manifest data
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('docs/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          pip install -r docs/requirements.txt
+
+      - name: Build MkDocs site
+        run: mkdocs build --strict
+
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/
+
+  build-books:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            pandoc \
+            texlive-xetex \
+            texlive-fonts-recommended \
+            texlive-fonts-extra \
+            texlive-latex-extra \
+            librsvg2-bin \
+            calibre
+
+      - name: Build all book formats
+        run: ./bin/build-book.sh --all
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bl4-guide-pdf
+          path: build/bl4-guide.pdf
+
+      - name: Upload EPUB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bl4-guide-epub
+          path: build/bl4-guide.epub
+
+      - name: Upload MOBI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bl4-guide-mobi
+          path: build/bl4-guide.mobi
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: [build, build-books]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Download PDF artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bl4-guide-pdf
+          path: books/
+
+      - name: Download EPUB artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bl4-guide-epub
+          path: books/
+
+      - name: Download MOBI artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bl4-guide-mobi
+          path: books/
+
+      - name: Download site artifact
+        uses: actions/download-pages-artifact@v1
+        with:
+          path: site/
+
+      - name: Add books to site
+        run: |
+          mkdir -p site/downloads
+          cp books/bl4-guide.pdf site/downloads/
+          cp books/bl4-guide.epub site/downloads/
+          cp books/bl4-guide.mobi site/downloads/
+
+      - name: Re-upload combined artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

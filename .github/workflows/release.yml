@@ -106,11 +106,50 @@ jobs:
           name: ${{ matrix.asset_name }}
           path: target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
 
+  build-books:
+    name: Build Guide Books
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            pandoc \
+            texlive-xetex \
+            texlive-fonts-recommended \
+            texlive-fonts-extra \
+            texlive-latex-extra \
+            librsvg2-bin \
+            calibre
+
+      - name: Build all book formats
+        run: ./bin/build-book.sh --all
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bl4-guide-pdf
+          path: build/bl4-guide.pdf
+
+      - name: Upload EPUB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bl4-guide-epub
+          path: build/bl4-guide.epub
+
+      - name: Upload MOBI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bl4-guide-mobi
+          path: build/bl4-guide.mobi
+
   create-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
     environment: build
-    needs: build-binaries
+    needs: [build-binaries, build-books]
     steps:
       - uses: actions/checkout@v4
 
@@ -119,10 +158,15 @@ jobs:
         with:
           path: artifacts
 
+      - name: Flatten artifacts
+        run: |
+          mkdir -p release
+          find artifacts -type f -exec cp {} release/ \;
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: artifacts/**/*
+          files: release/*
           draft: false
           prerelease: false
         env:

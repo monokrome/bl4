@@ -6,8 +6,11 @@ description = "UE5 IoStore extractor with JSON output - parses Zen format direct
 license = "BSD-2-Clause"
 
 [dependencies]
-# Use retoc for IoStore/Zen parsing
+# Use retoc for IoStore/Zen parsing (submodule in lib/retoc)
 retoc = { git = "https://github.com/trumank/retoc" }
+
+# Use usmap for property schema parsing (submodule in lib/jmap)
+usmap = { git = "https://github.com/trumank/jmap" }
 
 # CLI
 clap = { version = "4", features = ["derive"] }

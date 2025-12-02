@@ -162,7 +162,7 @@ pub fn parse_texture_info(data: &[u8], header_size: usize) -> Result<TextureInfo
     }
 
     let mut mips = Vec::with_capacity(num_mips);
-    let mut current_offset: u64 = 0;
+    let mut _current_offset: u64 = 0;
 
     for _i in 0..num_mips {
         // FTexture2DMipMap:
@@ -195,7 +195,7 @@ pub fn parse_texture_info(data: &[u8], header_size: usize) -> Result<TextureInfo
             data_offset: bulk_offset,
         });
 
-        current_offset += element_count;
+        _current_offset += element_count;
     }
 
     Ok(TextureInfo {

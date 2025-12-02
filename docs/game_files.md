@@ -1,6 +1,6 @@
 # Borderlands 4 Game File Structure
 
-This document describes the file structure found in BL4's pak files, extracted via FModel.
+This document describes the file structure found in BL4's pak files.
 
 ## Overview
 
@@ -10,7 +10,6 @@ This document describes the file structure found in BL4's pak files, extracted v
 - **Extraction Tools**:
   - `uextract` (custom Rust tool) - Primary extraction with property parsing
   - `retoc` - IoStore unpacking and legacy conversion
-  - FModel - Full UE5 asset parsing with DataTable support
 
 ## Top-Level Content Structure
 
@@ -205,7 +204,7 @@ Fields (DoubleProperty type):
 - `TrueBoss` - True boss drop chance
 - `TrueBossShiny` - True boss shiny chance
 
-**Extracted Default Values** (from FModel JSON export with .usmap mappings):
+**Extracted Default Values** (from uextract with .usmap mappings):
 | Tier | Probability |
 |------|-------------|
 | Primary | 20% (0.2) |
