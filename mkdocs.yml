@@ -1,0 +1,118 @@
+site_name: BL4 - Borderlands 4 Save Editor
+site_description: A Borderlands 4 save file editor and item serial decoder
+site_author: monokrome
+site_url: https://monokrome.github.io/bl4/
+
+repo_name: monokrome/bl4
+repo_url: https://github.com/monokrome/bl4
+
+theme:
+  name: material
+  palette:
+    # Dark mode by default (fits the Borderlands aesthetic)
+    - scheme: slate
+      primary: deep orange
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    - scheme: default
+      primary: deep orange
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+  font:
+    text: Roboto
+    code: Roboto Mono
+
+plugins:
+  - search
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: date
+
+markdown_extensions:
+  # Python Markdown
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+  # Python Markdown Extensions
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/monokrome/bl4
+  generator: false
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - Guide:
+    - Introduction: 00-introduction.md
+    - Binary Basics: 01-binary-basics.md
+    - Unreal Engine Architecture: 02-unreal-architecture.md
+    - Memory Analysis: 03-memory-analysis.md
+    - Save File Format: 04-save-files.md
+    - Item Serials: 05-item-serials.md
+    - Data Extraction: 06-data-extraction.md
+    - Using bl4 Tools: 07-bl4-tools.md
+  - Appendices:
+    - "A: SDK Class Layouts": appendix-a-sdk-layouts.md
+    - "B: Weapon Parts Reference": appendix-b-weapon-parts.md
+    - "C: Loot System Internals": appendix-c-loot-system.md
+    - "D: Game File Structure": appendix-d-game-files.md
+  - Glossary: glossary.md
+  - Downloads: downloads/index.md
+
+copyright: Copyright &copy; 2024-2025 monokrome and contributors

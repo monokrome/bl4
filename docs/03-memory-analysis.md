@@ -306,6 +306,9 @@ Common float values in games:
 
 ## Item Serial Discovery
 
+!!! note "Coming Up"
+    Item serials are the compact strings that encode weapon data (like `@Ugr$ZCm/&tH!t{KgK/Shxu>k`). We'll decode their format in [Chapter 5: Item Serials](05-item-serials.md). For now, we'll use them as landmarks to find item data in memory.
+
 BL4 items in memory contain their serial strings:
 
 ### Finding Items by Serial
@@ -417,9 +420,13 @@ bl4 memory --dump bl4.dump list-objects --class AOakCharacter
 
 ### Step 3: Calculate Health Offset
 
-From SDK analysis, we know:
+From our reflection data extraction (covered in [Chapter 2](02-unreal-architecture.md)), we know:
+
 - `AOakCharacter` has `HealthState` at offset 0x4640
 - `HealthState` contains the current/max health
+
+!!! tip
+    Appendix A contains complete SDK class layouts with all known offsets. Use it as a reference when exploring memory.
 
 ```bash
 # Read at player character address + health offset

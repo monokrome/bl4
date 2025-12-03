@@ -260,7 +260,7 @@ Zen Package Header:
 ```
 
 !!! tip
-    Use `retoc` to extract from IoStore containers, and our `uextract` tool to parse the Zen packages.
+    Use `retoc` to extract from IoStore containers. These extraction tools are covered in detail in [Chapter 6: Data Extraction](06-data-extraction.md).
 
 ---
 
@@ -299,7 +299,7 @@ Payload:
 
 ### Our Generated Usmap
 
-The bl4 project generates a complete usmap from memory:
+The bl4 project generates a complete usmap from memory dumps (see [Chapter 3: Memory Analysis](03-memory-analysis.md) for how dumps are created):
 
 | Metric | Count |
 |--------|-------|
@@ -403,6 +403,9 @@ class AWeapon : public AInventory {
 ---
 
 ## Practical: Finding a Class in Memory
+
+!!! note "Preview"
+    This section previews memory analysis techniques that we'll cover more thoroughly in [Chapter 3](03-memory-analysis.md). Don't worry if some concepts aren't clear yet—the goal here is to see how Unreal's architecture appears in practice.
 
 Let's trace how to find weapon data in memory:
 

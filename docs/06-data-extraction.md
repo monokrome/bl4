@@ -188,7 +188,7 @@ Struct: FWeaponStats
 
 ### Generating Usmap
 
-We generate usmap from memory dumps:
+We generate usmap from memory dumps (see [Chapter 3: Memory Analysis](03-memory-analysis.md) for dump creation):
 
 ```bash
 bl4 memory --dump share/dumps/game.raw dump-usmap
@@ -210,6 +210,9 @@ Use it with extraction tools:
 ```bash
 ./target/release/uextract /path/to/Paks -o ./output --usmap share/manifest/mappings.usmap
 ```
+
+!!! tip "Reference"
+    For a complete tree of the game's file structure, see [Appendix D: Game File Structure](appendix-d-game-files.md).
 
 ---
 
@@ -297,7 +300,91 @@ share/manifest/
 ├── weapons_breakdown.json
 ├── items_database.json  # Drop pools, stats
 ├── mappings.usmap       # Reflection data
+├── parts_dump.json      # Raw part names from memory
+├── parts_database.json  # 2615 parts with category mappings
 └── ...
+```
+
+---
+
+## Extracting Parts Data
+
+Part definitions (InventoryPartDef) are NOT stored in pak files - they're compiled into game code and only accessible at runtime. We extract them from memory dumps.
+
+### Step 1: Create Memory Dump
+
+See [Chapter 3: Memory Analysis](03-memory-analysis.md) for creating a memory dump. The dump is stored in `share/dumps/`.
+
+### Step 2: Extract Part Names
+
+```bash
+# Extract all part names from memory dump
+bl4 memory --dump share/dumps/Borderlands4_november_patch.exe dump-parts \
+    -o share/manifest/parts_dump.json
+```
+
+This scans memory for strings matching the pattern `XXX_YY.part_*` and produces a JSON file grouped by prefix:
+
+```json
+{
+  "DAD_AR": [
+    "DAD_AR.part_barrel_01",
+    "DAD_AR.part_barrel_01_a",
+    "DAD_AR.part_body",
+    ...
+  ],
+  "VLA_SM": [
+    "VLA_SM.part_barrel_01",
+    ...
+  ]
+}
+```
+
+### Step 3: Build Parts Database
+
+```bash
+# Build database with category/index mappings
+bl4 memory --dump share/dumps/Borderlands4_november_patch.exe build-parts-db \
+    -i share/manifest/parts_dump.json \
+    -o share/manifest/parts_database.json
+```
+
+This correlates part names with known Part Group IDs:
+
+```json
+{
+  "version": 1,
+  "parts": [
+    {"category": 2, "index": 0, "name": "DAD_PS.part_barrel_01", "group": "Daedalus Pistol"},
+    {"category": 22, "index": 5, "name": "VLA_SM.part_body_a", "group": "Vladof SMG"},
+    ...
+  ],
+  "categories": {
+    "2": {"count": 74, "name": "Daedalus Pistol"},
+    "22": {"count": 84, "name": "Vladof SMG"},
+    ...
+  }
+}
+```
+
+### Using the Parts Database
+
+The core library loads this database at compile time:
+
+```rust
+use bl4::{CategoryPartsDatabase, category_name};
+
+// Load embedded database
+let db = CategoryPartsDatabase::load_embedded();
+println!("Loaded {} parts", db.len());
+
+// Look up part by category and index
+if let Some(part) = db.get(22, 0) {
+    println!("Category 22, Index 0 = {}", part.name);
+}
+
+// Get category name
+assert_eq!(category_name(22), Some("Vladof SMG"));
 ```
 
 ---

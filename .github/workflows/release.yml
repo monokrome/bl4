@@ -122,7 +122,30 @@ jobs:
             texlive-fonts-extra \
             texlive-latex-extra \
             librsvg2-bin \
-            calibre
+            calibre \
+            wget \
+            unzip
+
+      - name: Install fonts for PDF generation
+        run: |
+          mkdir -p ~/.local/share/fonts
+
+          # Literata (body text)
+          wget -q "https://github.com/googlefonts/literata/releases/download/v3.103/Literata-v3.103.zip" -O /tmp/literata.zip
+          unzip -q /tmp/literata.zip -d /tmp/literata
+          cp /tmp/literata/fonts/ttf/*.ttf ~/.local/share/fonts/
+
+          # Jost (headings)
+          wget -q "https://github.com/indestructible-type/Jost/releases/download/v3.7/Jost-3.7.zip" -O /tmp/jost.zip
+          unzip -q /tmp/jost.zip -d /tmp/jost
+          cp /tmp/jost/fonts/ttf/*.ttf ~/.local/share/fonts/
+
+          # Hack (code)
+          wget -q "https://github.com/source-foundry/Hack/releases/download/v3.003/Hack-v3.003-ttf.zip" -O /tmp/hack.zip
+          unzip -q /tmp/hack.zip -d /tmp/hack
+          cp /tmp/hack/ttf/*.ttf ~/.local/share/fonts/
+
+          fc-cache -f
 
       - name: Build all book formats
         run: ./bin/build-book.sh --all

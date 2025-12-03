@@ -321,6 +321,8 @@ The first VarInt after the magic header identifies the manufacturer:
 !!! note
     IDs for BOR and COV are still being researched. The ID appears to be a hash or index into the manufacturer table.
 
+    *For a complete list of manufacturers and their weapon types, see [Appendix B: Weapon Parts Reference](appendix-b-weapon-parts.md).*
+
 ---
 
 ## Serial Layout by Type
@@ -393,9 +395,142 @@ $ bl4 decode --debug '@Ugr$ZCm/&tH!t{KgK/Shxu>k' 2>&1
 
 ---
 
+## Part Group ID Encoding
+
+The first token in a serial encodes the **Part Group ID**, which determines which part pool to use for decoding Part tokens. Different item categories use different multipliers:
+
+### Weapons (types r, a-d, f-g, v-z)
+
+```
+first_token = group_id * 8192 + offset
+group_id = first_token / 8192
+```
+
+**Example:** Serial with first token `180928`:
+- `180928 / 8192 = 22` (remainder 704)
+- Group ID 22 = **Vladof SMG**
+
+### Equipment (type e)
+
+```
+first_token = group_id * 384 + offset
+group_id = first_token / 384
+```
+
+**Example:** Serial with first token `107200`:
+- `107200 / 384 = 279` (remainder 64)
+- Group ID 279 = **Shield (Energy type)**
+
+### Complete Part Group ID Reference
+
+These mappings were extracted from memory analysis and verified against decoded serials.
+
+**Pistols (2-7):**
+
+| ID | Manufacturer | Code | Parts Count |
+|----|--------------|------|-------------|
+| 2 | Daedalus | DAD_PS | 74 |
+| 3 | Jakobs | JAK_PS | 73 |
+| 4 | Tediore | TED_PS | 81 |
+| 5 | Torgue | TOR_PS | 70 |
+| 6 | Order | ORD_PS | 75 |
+| 7 | Vladof | VLA_PS | - |
+
+**Shotguns (8-12):**
+
+| ID | Manufacturer | Code | Parts Count |
+|----|--------------|------|-------------|
+| 8 | Daedalus | DAD_SG | 74 |
+| 9 | Jakobs | JAK_SG | 89 |
+| 10 | Tediore | TED_SG | 76 |
+| 11 | Torgue | TOR_SG | 69 |
+| 12 | Bor | BOR_SG | 73 |
+
+**Assault Rifles (13-18):**
+
+| ID | Manufacturer | Code | Parts Count |
+|----|--------------|------|-------------|
+| 13 | Daedalus | DAD_AR | 78 |
+| 14 | Jakobs | JAK_AR | 74 |
+| 15 | Tediore | TED_AR | 79 |
+| 16 | Torgue | TOR_AR | 73 |
+| 17 | Vladof | VLA_AR | 89 |
+| 18 | Order | ORD_AR | 73 |
+
+**SMGs (20-23):**
+
+| ID | Manufacturer | Code | Parts Count |
+|----|--------------|------|-------------|
+| 20 | Daedalus | DAD_SM | 77 |
+| 21 | Bor | BOR_SM | 73 |
+| 22 | Vladof | VLA_SM | 84 |
+| 23 | Maliwan | MAL_SM | 74 |
+
+**Snipers (26-29):**
+
+| ID | Manufacturer | Code | Parts Count |
+|----|--------------|------|-------------|
+| 26 | Jakobs | JAK_SR | 72 |
+| 27 | Vladof | VLA_SR | 82 |
+| 28 | Order | ORD_SR | 75 |
+| 29 | Maliwan | MAL_SR | 76 |
+
+**Heavy Weapons (244-247):**
+
+| ID | Manufacturer | Code | Parts Count |
+|----|--------------|------|-------------|
+| 244 | Vladof | VLA_HW | 22 |
+| 245 | Torgue | TOR_HW | 32 |
+| 246 | Bor | BOR_HW | 25 |
+| 247 | Maliwan | MAL_HW | 19 |
+
+**Shields (279-288):**
+
+| ID | Type | Code | Parts Count |
+|----|------|------|-------------|
+| 279 | Energy Shield | energy_shield | 22 |
+| 280 | Bor Shield | bor_shield | 4 |
+| 281 | Daedalus Shield | dad_shield | 3 |
+| 282 | Jakobs Shield | jak_shield | 3 |
+| 283 | Armor Shield | Armor_Shield | 26 |
+| 284 | Maliwan Shield | mal_shield | 9 |
+| 285 | Order Shield | ord_shield | 3 |
+| 286 | Tediore Shield | ted_shield | 3 |
+| 287 | Torgue Shield | tor_shield | 3 |
+| 288 | Vladof Shield | vla_shield | 3 |
+
+**Gadgets and Gear (300-330):**
+
+| ID | Type | Parts Count |
+|----|------|-------------|
+| 300 | Grenade Gadget | 82 |
+| 310 | Turret Gadget | 52 |
+| 320 | Repair Kit | 107 |
+| 330 | Terminal Gadget | 61 |
+
+**Enhancements (400-409):**
+
+| ID | Manufacturer | Parts Count |
+|----|--------------|-------------|
+| 400 | Daedalus | 1 |
+| 401 | Bor | 1 |
+| 402 | Jakobs | 4 |
+| 403 | Maliwan | 4 |
+| 404 | Order | 4 |
+| 405 | Tediore | 4 |
+| 406 | Torgue | 4 |
+| 407 | Vladof | 4 |
+| 408 | COV | 1 |
+| 409 | Atlas | 1 |
+
+!!! tip "Parts Database"
+    The full parts database with 2615 parts across 53 categories is available at `share/manifest/parts_database.json`. Use `bl4 memory build-parts-db` to regenerate it from a memory dump.
+
+---
+
 ## Part Index Mapping
 
-Part indices in serials correspond to weapon naming/stats:
+Part indices in serials are **relative to the Part Group**. The same index means different things in different groups.
 
 | Index | Type | Example Prefixes |
 |-------|------|------------------|
@@ -407,12 +542,11 @@ Part indices in serials correspond to weapon naming/stats:
 | 15-18 | barrel_mod_a-d | "Herald", "Harbinger" |
 
 The actual part pool depends on:
-- Weapon type (SMG vs Shotgun)
-- Manufacturer
-- Rarity
+- Part Group ID (encodes manufacturer + weapon/item type)
+- Rarity tier
 
 !!! warning
-    Part indices are NOT global. `{4}` on a Maliwan SMG means something different than `{4}` on a Jakobs Pistol.
+    Part indices are NOT global. `{4}` on a Maliwan SMG means something different than `{4}` on a Jakobs Pistol. Always decode the Part Group ID first to know which part pool to use.
 
 ---
 
@@ -543,6 +677,84 @@ Decode these two similar weapons and identify which tokens differ:
 
 ---
 
+## UE5 Part Data Structures
+
+Parts in BL4 are defined using these UE5 structures (discovered via usmap analysis):
+
+### GbxSerialNumberIndex
+
+The core structure linking parts to serial encoding:
+
+```
+Category  : Int64   ← Part Group ID
+scope     : Byte    ← Root/Sub scope
+status    : Byte    ← Active/Static/etc.
+Index     : Int16   ← Part index within group
+```
+
+### InventoryPartDef
+
+Defines individual item parts (barrels, grips, scopes, etc.):
+
+```
+SerialIndex           : GbxSerialNumberIndex  ← Encoding info
+bCanBeRerolled        : Bool
+Aspects               : Array<InventoryAspect> ← Stat modifiers
+GestaltPartNames      : Array<FName>          ← Visual mesh parts
+DebugDisplayDescription : String
+params                : Struct                ← Custom parameters
+```
+
+### InventoryTypeDef
+
+Defines weapon/equipment types with their part pools:
+
+```
+BaseType              : GbxDefPtr
+Manufacturer          : GbxDefPtr
+Rarity                : GbxDefPtr
+PartTypes             : Array<FName>          ← Valid part types
+PrefixPartList        : Array<PartListEntry>  ← Prefix name parts
+TitlePartList         : Array<PartListEntry>  ← Title name parts
+SuffixPartList        : Array<PartListEntry>  ← Suffix name parts
+Aspects               : Array<InventoryAspect>
+```
+
+### EWeaponPartValue
+
+Enum defining weapon part slot types:
+
+| Value | Type |
+|-------|------|
+| 0 | Grip |
+| 1 | Foregrip |
+| 2 | Reload |
+| 3 | Barrel |
+| 4 | Scope |
+| 5 | Melee |
+| 6 | Mode |
+| 7 | ModeSwitch |
+| 8 | Underbarrel |
+| 9-16 | Custom0-7 |
+
+### Part Resolution Flow
+
+```
+Serial Token {42}
+       ↓
+Part Group ID (from first token)
+       ↓
+InventoryTypeDef.PartTypes[group_id]
+       ↓
+InventoryPartDef[index=42] in that pool
+       ↓
+SerialIndex.Category matches → Valid part
+       ↓
+Aspects → Applied stat modifiers
+```
+
+---
+
 ## Key Takeaways
 
 1. **Serials are self-contained** — All item data in one string
@@ -550,6 +762,7 @@ Decode these two similar weapons and identify which tokens differ:
 3. **Bit mirroring** — Extra obfuscation layer
 4. **Token-based** — VarInt, Part, String, Separators
 5. **Context-dependent** — Part indices vary by item type
+6. **Part Group ID** — First token encodes which part pool to use
 
 ---
 
