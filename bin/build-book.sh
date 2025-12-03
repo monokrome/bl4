@@ -27,7 +27,7 @@ set -euo pipefail
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-DOCS_DIR="$PROJECT_ROOT/docs/guide"
+DOCS_DIR="$PROJECT_ROOT/docs"
 
 # Book metadata
 BOOK_TITLE="Borderlands 4 Reverse Engineering Guide"
@@ -249,21 +249,175 @@ create_epub_metadata() {
 EOF
 }
 
+# Download fonts for embedding
+download_fonts() {
+    info "Downloading fonts for embedding..."
+
+    local font_dir="$OUTPUT_DIR/fonts"
+    mkdir -p "$font_dir"
+
+    # Download Literata (body text - optimized for e-readers)
+    if [ ! -f "$font_dir/Literata-Regular.ttf" ]; then
+        info "  Downloading Literata..."
+        wget -q "https://github.com/googlefonts/literata/releases/download/v3.103/Literata-v3.103.zip" -O /tmp/literata.zip
+        unzip -q -o /tmp/literata.zip -d /tmp/literata
+        cp /tmp/literata/fonts/ttf/Literata-Regular.ttf "$font_dir/"
+        cp /tmp/literata/fonts/ttf/Literata-Italic.ttf "$font_dir/"
+        cp /tmp/literata/fonts/ttf/Literata-Bold.ttf "$font_dir/"
+        cp /tmp/literata/fonts/ttf/Literata-BoldItalic.ttf "$font_dir/"
+        rm -rf /tmp/literata /tmp/literata.zip
+    fi
+
+    # Download Jost (headings - Futura-like)
+    if [ ! -f "$font_dir/Jost-Medium.ttf" ]; then
+        info "  Downloading Jost..."
+        wget -q "https://github.com/indestructible-type/Jost/releases/download/v3.7/Jost-3.7.zip" -O /tmp/jost.zip
+        unzip -q -o /tmp/jost.zip -d /tmp/jost
+        cp /tmp/jost/fonts/ttf/Jost-Regular.ttf "$font_dir/"
+        cp /tmp/jost/fonts/ttf/Jost-Medium.ttf "$font_dir/"
+        cp /tmp/jost/fonts/ttf/Jost-SemiBold.ttf "$font_dir/"
+        cp /tmp/jost/fonts/ttf/Jost-Bold.ttf "$font_dir/"
+        rm -rf /tmp/jost /tmp/jost.zip
+    fi
+
+    # Download Hack (code - monospace)
+    if [ ! -f "$font_dir/Hack-Regular.ttf" ]; then
+        info "  Downloading Hack..."
+        wget -q "https://github.com/source-foundry/Hack/releases/download/v3.003/Hack-v3.003-ttf.zip" -O /tmp/hack.zip
+        unzip -q -o /tmp/hack.zip -d /tmp/hack
+        cp /tmp/hack/ttf/Hack-Regular.ttf "$font_dir/"
+        cp /tmp/hack/ttf/Hack-Italic.ttf "$font_dir/"
+        cp /tmp/hack/ttf/Hack-Bold.ttf "$font_dir/"
+        cp /tmp/hack/ttf/Hack-BoldItalic.ttf "$font_dir/"
+        rm -rf /tmp/hack /tmp/hack.zip
+    fi
+
+    info "  Fonts ready in $font_dir"
+}
+
 # Create custom CSS for EPUB
 create_epub_css() {
     info "Creating EPUB stylesheet..."
 
     cat > "$OUTPUT_DIR/epub.css" << 'EOF'
-/* Base typography */
-body {
-    font-family: Georgia, "Times New Roman", serif;
-    line-height: 1.6;
-    margin: 1em;
+/*
+ * BL4 Reverse Engineering Guide - EPUB Stylesheet
+ *
+ * Fonts are embedded in the EPUB package (no external requests).
+ * E-readers can override these with user preferences.
+ */
+
+/* Embedded font declarations - these reference fonts bundled in the EPUB */
+@font-face {
+    font-family: 'Literata';
+    src: url('fonts/Literata-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
 }
 
-/* Headings */
+@font-face {
+    font-family: 'Literata';
+    src: url('fonts/Literata-Italic.ttf') format('truetype');
+    font-weight: normal;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Literata';
+    src: url('fonts/Literata-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Literata';
+    src: url('fonts/Literata-BoldItalic.ttf') format('truetype');
+    font-weight: bold;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Jost';
+    src: url('fonts/Jost-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Jost';
+    src: url('fonts/Jost-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Jost';
+    src: url('fonts/Jost-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Jost';
+    src: url('fonts/Jost-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Hack';
+    src: url('fonts/Hack-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Hack';
+    src: url('fonts/Hack-Italic.ttf') format('truetype');
+    font-weight: normal;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Hack';
+    src: url('fonts/Hack-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Hack';
+    src: url('fonts/Hack-BoldItalic.ttf') format('truetype');
+    font-weight: bold;
+    font-style: italic;
+}
+
+/*
+ * E-reader compatibility notes:
+ * - No absolute font sizes on body (let users control)
+ * - All sizes in em/rem (relative to user preference)
+ * - No !important (let users override)
+ * - Good fallback stacks for all font-family rules
+ */
+
+/* Base typography - Literata (serif, optimized for e-readers) */
+body {
+    font-family: 'Literata', 'Georgia', 'Cambria', 'Times New Roman', serif;
+    line-height: 1.6;
+    margin: 1em;
+    font-weight: normal;
+    /* Let e-readers control these: */
+    -epub-hyphens: auto;
+    -webkit-hyphens: auto;
+    hyphens: auto;
+    orphans: 2;
+    widows: 2;
+}
+
+/* Headings - Futura preferred, Jost as open-source alternative */
 h1, h2, h3, h4, h5, h6 {
-    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-family: 'Futura', 'Jost', 'Century Gothic', 'Avant Garde', sans-serif;
+    font-weight: 600;
     margin-top: 1.5em;
     margin-bottom: 0.5em;
     page-break-after: avoid;
@@ -285,9 +439,9 @@ h3 {
     color: #444;
 }
 
-/* Code blocks */
+/* Code blocks - Hack monospace font */
 pre, code {
-    font-family: "Courier New", Consolas, monospace;
+    font-family: 'Hack', 'Fira Code', 'Source Code Pro', 'Consolas', 'Monaco', monospace;
     font-size: 0.9em;
     background-color: #f4f4f4;
     border-radius: 3px;
@@ -531,10 +685,19 @@ linkcolor: blue
 urlcolor: blue
 header-includes: |
   \\usepackage{fancyhdr}
+  \\usepackage{fontspec}
   \\pagestyle{fancy}
   \\fancyhead[L]{BL4 Reverse Engineering Guide}
   \\fancyhead[R]{\\thepage}
   \\fancyfoot[C]{}
+  \\setmainfont{Literata}
+  \\setsansfont[Scale=0.95]{Jost}
+  \\setmonofont[Scale=0.85]{Hack}
+  \\newfontfamily\\headingfont{Jost}
+  \\usepackage{titlesec}
+  \\titleformat{\\chapter}{\\headingfont\\Huge\\bfseries}{\\thechapter.}{1em}{}
+  \\titleformat{\\section}{\\headingfont\\Large\\bfseries}{\\thesection}{1em}{}
+  \\titleformat{\\subsection}{\\headingfont\\large\\bfseries}{\\thesubsection}{1em}{}
 include-before:
   - cover.md
   - acknowledgments.md
@@ -633,6 +796,7 @@ build_pdf() {
 build_epub() {
     header "Building EPUB"
 
+    download_fonts
     create_cover_image
     create_epub_metadata
     create_epub_css
@@ -655,6 +819,18 @@ build_epub() {
         --toc-depth=3 \
         --epub-metadata=metadata.xml \
         --css=epub.css \
+        --epub-embed-font=fonts/Literata-Regular.ttf \
+        --epub-embed-font=fonts/Literata-Italic.ttf \
+        --epub-embed-font=fonts/Literata-Bold.ttf \
+        --epub-embed-font=fonts/Literata-BoldItalic.ttf \
+        --epub-embed-font=fonts/Jost-Regular.ttf \
+        --epub-embed-font=fonts/Jost-Medium.ttf \
+        --epub-embed-font=fonts/Jost-SemiBold.ttf \
+        --epub-embed-font=fonts/Jost-Bold.ttf \
+        --epub-embed-font=fonts/Hack-Regular.ttf \
+        --epub-embed-font=fonts/Hack-Italic.ttf \
+        --epub-embed-font=fonts/Hack-Bold.ttf \
+        --epub-embed-font=fonts/Hack-BoldItalic.ttf \
         $cover_option \
         --highlight-style=tango
 

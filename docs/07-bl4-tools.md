@@ -153,6 +153,57 @@ bl4 memory --dump share/dumps/game.raw dump-usmap
 # Output: BL4.usmap in current directory
 ```
 
+#### Extract Parts Database
+
+```bash
+# Step 1: Extract part names from memory dump
+bl4 memory --dump share/dumps/Borderlands4_november_patch.exe dump-parts \
+    -o share/manifest/parts_dump.json
+
+# Step 2: Build database with category/index mappings
+bl4 memory --dump share/dumps/Borderlands4_november_patch.exe build-parts-db \
+    -i share/manifest/parts_dump.json \
+    -o share/manifest/parts_database.json
+```
+
+Output:
+```
+Extracting part definitions from memory dump...
+Found 2615 unique part names across 110 weapon types
+Written to: share/manifest/parts_dump.json
+
+Building parts database from share/manifest/parts_dump.json...
+Built parts database with 2615 entries across 53 categories
+Written to: share/manifest/parts_database.json
+```
+
+#### Search Memory for Strings
+
+```bash
+# Search for a specific string in memory
+bl4 memory --dump share/dumps/game.raw scan-string "DAD_AR.part_body" \
+    -B 128 -A 128 -l 10
+```
+
+Shows matches with context bytes before (-B) and after (-A).
+
+#### Look Up FName
+
+```bash
+# Look up an FName by index
+bl4 memory --dump share/dumps/game.raw fname 12345
+
+# With debug info
+bl4 memory --dump share/dumps/game.raw fname 12345 --debug
+```
+
+#### Search FName Pool
+
+```bash
+# Search for names in the FName pool
+bl4 memory --dump share/dumps/game.raw fname-search "Damage"
+```
+
 ### Usmap Information
 
 ```bash
@@ -515,8 +566,13 @@ Areas still being worked on:
 
 - **Serial encoding** — Create new items from scratch
 - **WASM bindings** — Browser-based editor
-- **Part pool mapping** — Fully decode what each part index means
 - **Inventory manipulation API** — High-level item editing
+
+### Completed Features
+
+- ✅ **Parts database** — 2,615 parts extracted from memory with category/index mappings
+- ✅ **Part Group IDs** — All 53 categories mapped (weapons, shields, gadgets, enhancements)
+- ✅ **Memory extraction tools** — `dump-parts` and `build-parts-db` commands
 
 ### Contributing
 
@@ -536,15 +592,35 @@ Found something interesting? Want to help?
 bl4 <COMMAND>
 
 Commands:
-  decrypt    Decrypt a save file to YAML
-  encrypt    Encrypt YAML to a save file
-  query      Query save file data
-  decode     Decode an item serial
-  backup     Manage save backups
-  restore    Restore a save backup
-  memory     Memory analysis commands
-  usmap-info Display usmap file information
-  help       Show help
+  decrypt     Decrypt a save file to YAML
+  encrypt     Encrypt YAML to a save file
+  query       Query save file data
+  decode      Decode an item serial
+  backup      Manage save backups
+  restore     Restore a save backup
+  memory      Memory analysis commands
+  usmap-info  Display usmap file information
+  usmap-search Search usmap for struct/property names
+  help        Show help
+```
+
+### bl4 memory
+
+```
+bl4 memory --dump <FILE> <COMMAND>
+
+Commands:
+  info           Show info about the memory dump
+  discover       Discover UE5 structures (GNames, GUObjectArray)
+  objects        List UObjects by class name
+  dump-usmap     Generate usmap from memory
+  fname          Look up FName by index
+  fname-search   Search FName pool for string
+  read           Read bytes at address
+  scan-string    Search for string and show context
+  dump-parts     Extract part names (XXX_YY.part_*)
+  build-parts-db Build parts database with category mappings
+  help           Show help
 ```
 
 ### bl4-research
@@ -574,6 +650,18 @@ Options:
   --usmap <PATH>        Usmap file for property resolution
   -h, --help            Show help
 ```
+
+---
+
+## Further Reading
+
+Now that you've mastered the tools, explore the appendices for deep reference material:
+
+- **[Appendix A: SDK Class Layouts](appendix-a-sdk-layouts.md)** — Memory layouts for UObject, AOakCharacter, AWeapon
+- **[Appendix B: Weapon Parts Reference](appendix-b-weapon-parts.md)** — Complete catalog of weapon parts by manufacturer
+- **[Appendix C: Loot System Internals](appendix-c-loot-system.md)** — Drop pools, rarity weights, luck system
+- **[Appendix D: Game File Structure](appendix-d-game-files.md)** — Full asset tree and file organization
+- **[Glossary](glossary.md)** — Terms, definitions, and quick reference tables
 
 ---
 

@@ -139,7 +139,9 @@ Value:    0x12  0x34  0x56  0x78
 ```
 
 !!! warning
-    **BL4 uses both!** Save files are little-endian (x86), but item serial Base85 encoding is big-endian. Always check which you're dealing with.
+    **BL4 uses both!** Save files are little-endian (x86), but the item serial encoding uses big-endian byte order. Always check which you're dealing with.
+
+    *We'll cover item serials in detail in [Chapter 5](05-item-serials.md).*
 
 ### Quick Detection
 
@@ -304,6 +306,8 @@ H     e     l     l     o
 
 !!! note
     **Unreal Engine** typically uses length-prefixed strings with a character count, followed by null-terminated data. The exact format varies by context.
+
+    *We'll explore Unreal Engine's data structures in depth in [Chapter 2](02-unreal-architecture.md).*
 
 ---
 

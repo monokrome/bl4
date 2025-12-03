@@ -51,24 +51,24 @@ All documentation is available as Markdown in the [GitHub repository](https://gi
 
 | Chapter | Title | Description |
 |---------|-------|-------------|
-| 00 | [Introduction](../guide/00-introduction.md) | Prerequisites and overview |
-| 01 | [Binary Basics](../guide/01-binary-basics.md) | Hex, endianness, data types |
-| 02 | [Unreal Architecture](../guide/02-unreal-architecture.md) | UE5 internals |
-| 03 | [Memory Analysis](../guide/03-memory-analysis.md) | Process memory techniques |
-| 04 | [Save Files](../guide/04-save-files.md) | Encryption and structure |
-| 05 | [Item Serials](../guide/05-item-serials.md) | Serial encoding format |
-| 06 | [Data Extraction](../guide/06-data-extraction.md) | Pak file extraction |
-| 07 | [bl4 Tools](../guide/07-bl4-tools.md) | CLI reference |
+| 00 | [Introduction](../00-introduction.md) | Prerequisites and overview |
+| 01 | [Binary Basics](../01-binary-basics.md) | Hex, endianness, data types |
+| 02 | [Unreal Architecture](../02-unreal-architecture.md) | UE5 internals |
+| 03 | [Memory Analysis](../03-memory-analysis.md) | Process memory techniques |
+| 04 | [Save Files](../04-save-files.md) | Encryption and structure |
+| 05 | [Item Serials](../05-item-serials.md) | Serial encoding format |
+| 06 | [Data Extraction](../06-data-extraction.md) | Pak file extraction |
+| 07 | [bl4 Tools](../07-bl4-tools.md) | CLI reference |
 
 ### Appendices
 
 | Appendix | Title | Description |
 |----------|-------|-------------|
-| A | [SDK Class Layouts](../guide/appendix-a-sdk-layouts.md) | Memory layouts for UObject, AOakCharacter, AWeapon |
-| B | [Weapon Parts Reference](../guide/appendix-b-weapon-parts.md) | Complete catalog of weapon parts by manufacturer |
-| C | [Loot System Internals](../guide/appendix-c-loot-system.md) | Drop pools, rarity weights, luck system |
-| D | [Game File Structure](../guide/appendix-d-game-files.md) | Full asset tree and file organization |
-| | [Glossary](../guide/glossary.md) | Terms, definitions, and quick reference tables |
+| A | [SDK Class Layouts](../appendix-a-sdk-layouts.md) | Memory layouts for UObject, AOakCharacter, AWeapon |
+| B | [Weapon Parts Reference](../appendix-b-weapon-parts.md) | Complete catalog of weapon parts by manufacturer |
+| C | [Loot System Internals](../appendix-c-loot-system.md) | Drop pools, rarity weights, luck system |
+| D | [Game File Structure](../appendix-d-game-files.md) | Full asset tree and file organization |
+| | [Glossary](../glossary.md) | Terms, definitions, and quick reference tables |
 
 ## Manifest Data
 

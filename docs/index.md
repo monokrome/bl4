@@ -1,94 +1,112 @@
-# BL4 - Borderlands 4 Save Editor
+# Borderlands 4 Reverse Engineering Guide
 
-A Borderlands 4 save file editor and item serial decoder.
+**Zero to Hero**
+
+A comprehensive guide to understanding game internals, reverse engineering techniques, and using the bl4 tooling to analyze and modify Borderlands 4.
 
 ---
 
-## Features
-
-- **Save File Decryption/Encryption** — Read and modify save files
-- **Item Serial Decoding** — Understand how items are encoded
-- **Memory Analysis** — Extract data from running game
-- **Data Extraction** — Parse game assets from pak files
-- **Usmap Generation** — Create reflection data for asset parsing
-
-## Quick Start
-
-```bash
-# Install Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Clone and build
-git clone https://github.com/monokrome/bl4
-cd bl4
-cargo build --release
-
-# Decode an item serial
-./target/release/bl4 decode '@Ugr$ZCm/&tH!t{KgK/Shxu>k'
-```
-
-## Documentation
-
 <div class="grid cards" markdown>
 
--   :material-book-open-variant:{ .lg .middle } **Reverse Engineering Guide**
+-   :material-download:{ .lg .middle } **Download**
 
     ---
 
-    Learn reverse engineering from scratch with our zero-to-hero guide.
+    Get the complete guide for offline reading.
 
-    [:octicons-arrow-right-24: Start the Guide](guide/00-introduction.md)
-
--   :material-file-document:{ .lg .middle } **Reference Documentation**
-
-    ---
-
-    Detailed technical documentation on data structures and formats.
-
-    [:octicons-arrow-right-24: Data Structures](data_structures.md)
-
--   :material-download:{ .lg .middle } **Downloads**
-
-    ---
-
-    Download the complete guide as a PDF for offline reading.
-
-    [:octicons-arrow-right-24: Downloads](downloads/index.md)
-
--   :material-github:{ .lg .middle } **Source Code**
-
-    ---
-
-    View the source code and contribute on GitHub.
-
-    [:octicons-arrow-right-24: GitHub](https://github.com/monokrome/bl4)
+    [:material-file-pdf-box: PDF](downloads/bl4-guide.pdf){ .md-button .md-button--primary }
+    [:material-book-open-variant: EPUB](downloads/bl4-guide.epub){ .md-button }
+    [:material-kindle: MOBI](downloads/bl4-guide.mobi){ .md-button }
 
 </div>
 
-## Project Status
+---
 
-| Component | Status |
-|-----------|--------|
-| Save Decryption/Encryption | ✅ Complete |
-| Item Serial Decoding | ✅ Complete |
-| Memory Analysis | ✅ Complete |
-| Usmap Generation | ✅ Complete |
-| Data Extraction | ✅ Complete |
-| Serial Encoding | 🚧 In Progress |
-| WASM Bindings | 🚧 Planned |
+## Chapters
 
-## Extracted Data
+### Part I: Foundations
 
-The project includes pre-extracted game data:
+| Chapter | Title | Description |
+|:-------:|-------|-------------|
+| 1 | [Binary Basics](01-binary-basics.md) | Hexadecimal, endianness, data types, and memory layout |
+| 2 | [Unreal Engine Architecture](02-unreal-architecture.md) | UObjects, reflection system, pak files, and usmap |
 
-| Data | Count |
-|------|-------|
-| Game Assets | 81,097 |
-| Usmap Structs | 16,849 |
-| Usmap Properties | 58,793 |
-| Manufacturers | 10 |
-| Item Pools | 62 |
+### Part II: Analysis Techniques
 
-## License
+| Chapter | Title | Description |
+|:-------:|-------|-------------|
+| 3 | [Memory Analysis](03-memory-analysis.md) | Process memory, dumps, pattern scanning, pointer chains |
+| 4 | [Save File Format](04-save-files.md) | Encryption, compression, YAML structure, key derivation |
+| 5 | [Item Serials](05-item-serials.md) | Base85 encoding, bit manipulation, token parsing |
 
-BSD-2-Clause — See [LICENSE](https://github.com/monokrome/bl4/blob/main/LICENSE) for details.
+### Part III: Practical Application
+
+| Chapter | Title | Description |
+|:-------:|-------|-------------|
+| 6 | [Data Extraction](06-data-extraction.md) | Pak files, asset parsing, manifest generation |
+| 7 | [Using bl4 Tools](07-bl4-tools.md) | Complete CLI reference and practical workflows |
+
+### Appendices
+
+| Appendix | Title | Description |
+|:--------:|-------|-------------|
+| A | [SDK Class Layouts](appendix-a-sdk-layouts.md) | Memory layouts for UObject, AOakCharacter, AWeapon, etc. |
+| B | [Weapon Parts Reference](appendix-b-weapon-parts.md) | Complete catalog of weapon parts by manufacturer |
+| C | [Loot System Internals](appendix-c-loot-system.md) | Drop pools, rarity weights, luck system |
+| D | [Game File Structure](appendix-d-game-files.md) | Full asset tree and file organization |
+
+### Reference
+
+| | Title | Description |
+|:--:|-------|-------------|
+| | [Glossary](glossary.md) | Terms, definitions, and quick reference tables |
+
+---
+
+## Quick Start
+
+**New to reverse engineering?**
+Start with [Chapter 1: Binary Basics](01-binary-basics.md) and work through sequentially.
+
+**Want to edit saves?**
+Jump to [Chapter 4: Save File Format](04-save-files.md).
+
+**Need to decode an item?**
+See [Chapter 5: Item Serials](05-item-serials.md).
+
+**Just want the tool reference?**
+Go to [Chapter 7: Using bl4 Tools](07-bl4-tools.md).
+
+---
+
+## Prerequisites
+
+Before starting, ensure you have:
+
+- Basic programming knowledge (any language)
+- Command line familiarity
+- Rust toolchain installed ([rustup.rs](https://rustup.rs))
+- The bl4 repository cloned and built
+
+```bash
+git clone https://github.com/monokrome/bl4
+cd bl4
+cargo build --release
+```
+
+---
+
+## About This Guide
+
+This guide accompanies the **bl4** project—a Borderlands 4 save file editor and item serial decoder. It documents not just *how* to use the tools, but *why* they work, giving you the knowledge to explore further on your own.
+
+Each chapter includes:
+
+- **Concept explanations** with visual diagrams
+- **Practical examples** you can try immediately
+- **Exercises** to test your understanding
+- **Tips** from real reverse engineering sessions
+
+---
+
+*For the latest version of this guide, visit [bl4.monokro.me](https://bl4.monokro.me)*

@@ -469,19 +469,92 @@ Examples:
 
 ---
 
-## Part Count by Manufacturer
+## Part Count by Category
 
-| Manufacturer | Total Parts |
-|--------------|-------------|
-| BOR | 60 |
-| DAD | 79 |
-| JAK | 99 |
-| MAL | 84 |
-| ORD | 59 |
-| TED | 62 |
-| TOR | 66 |
-| VLA | 68 |
-| **Total** | **577** |
+Data extracted from memory dump using `bl4 memory dump-parts` and `bl4 memory build-parts-db`.
+
+### Weapons
+
+| Category ID | Manufacturer | Weapon Type | Parts Count |
+|-------------|--------------|-------------|-------------|
+| 2 | Daedalus | Pistol | 74 |
+| 3 | Jakobs | Pistol | 73 |
+| 4 | Tediore | Pistol | 81 |
+| 5 | Torgue | Pistol | 70 |
+| 6 | Order | Pistol | 75 |
+| 8 | Daedalus | Shotgun | 74 |
+| 9 | Jakobs | Shotgun | 89 |
+| 10 | Tediore | Shotgun | 76 |
+| 11 | Torgue | Shotgun | 69 |
+| 12 | Bor | Shotgun | 73 |
+| 13 | Daedalus | Assault Rifle | 78 |
+| 14 | Jakobs | Assault Rifle | 74 |
+| 15 | Tediore | Assault Rifle | 79 |
+| 16 | Torgue | Assault Rifle | 73 |
+| 17 | Vladof | Assault Rifle | 89 |
+| 18 | Order | Assault Rifle | 73 |
+| 20 | Daedalus | SMG | 77 |
+| 21 | Bor | SMG | 73 |
+| 22 | Vladof | SMG | 84 |
+| 23 | Maliwan | SMG | 74 |
+| 26 | Jakobs | Sniper | 72 |
+| 27 | Vladof | Sniper | 82 |
+| 28 | Order | Sniper | 75 |
+| 29 | Maliwan | Sniper | 76 |
+| 244 | Vladof | Heavy | 22 |
+| 245 | Torgue | Heavy | 32 |
+| 246 | Bor | Heavy | 25 |
+| 247 | Maliwan | Heavy | 19 |
+
+### Shields
+
+| Category ID | Type | Parts Count |
+|-------------|------|-------------|
+| 279 | Energy Shield | 22 |
+| 280 | Bor Shield | 4 |
+| 281 | Daedalus Shield | 3 |
+| 282 | Jakobs Shield | 3 |
+| 283 | Armor Shield | 26 |
+| 284 | Maliwan Shield | 9 |
+| 285 | Order Shield | 3 |
+| 286 | Tediore Shield | 3 |
+| 287 | Torgue Shield | 3 |
+| 288 | Vladof Shield | 3 |
+
+### Gadgets and Gear
+
+| Category ID | Type | Parts Count |
+|-------------|------|-------------|
+| 300 | Grenade Gadget | 82 |
+| 310 | Turret Gadget | 52 |
+| 320 | Repair Kit | 107 |
+| 330 | Terminal Gadget | 61 |
+
+### Enhancements
+
+| Category ID | Manufacturer | Parts Count |
+|-------------|--------------|-------------|
+| 400 | Daedalus | 1 |
+| 401 | Bor | 1 |
+| 402 | Jakobs | 4 |
+| 403 | Maliwan | 4 |
+| 404 | Order | 4 |
+| 405 | Tediore | 4 |
+| 406 | Torgue | 4 |
+| 407 | Vladof | 4 |
+| 408 | COV | 1 |
+| 409 | Atlas | 1 |
+
+### Summary
+
+| Category | Total Parts |
+|----------|-------------|
+| Weapons (all types) | 1,928 |
+| Shields | 79 |
+| Gadgets | 302 |
+| Enhancements | 28 |
+| Unmapped | 278 |
+| **Total** | **2,615** |
 
 ---
 
@@ -496,7 +569,20 @@ Examples:
 | Elements | Elemental effects |
 | VFX | Visual effects |
 | BASE | Base variant |
+| _a, _b, _c, _d | Stat variants |
+| _01, _02, _03 | Numbered variants |
 
 ---
 
-*Extracted from BL4 game assets using retoc IoStore extraction.*
+## Data Files
+
+The complete parts database is available at:
+
+- **`share/manifest/parts_dump.json`** - Raw part names grouped by prefix
+- **`share/manifest/parts_database.json`** - Full database with category/index mappings
+
+Use `bl4 memory dump-parts` and `bl4 memory build-parts-db` to regenerate from a fresh memory dump.
+
+---
+
+*Extracted from BL4 November 2025 patch memory dump using bl4 memory analysis tools.*
