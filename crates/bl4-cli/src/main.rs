@@ -1,4 +1,5 @@
 mod config;
+mod file_io;
 mod memory;
 
 use anyhow::{bail, Context, Result};
@@ -6,7 +7,7 @@ use byteorder::ByteOrder;
 use clap::{Parser, Subcommand};
 use config::Config;
 use std::fs;
-use std::io::{self, Read, Write};
+use std::io::{self, Write};
 use std::path::PathBuf;
 use std::process::Command;
 
@@ -478,29 +479,10 @@ fn main() -> Result<()> {
             steam_id,
         } => {
             let steam_id = get_steam_id(steam_id)?;
-            // Read from file or stdin
-            let encrypted = if let Some(path) = input {
-                fs::read(&path).with_context(|| format!("Failed to read {}", path.display()))?
-            } else {
-                let mut buf = Vec::new();
-                io::stdin()
-                    .read_to_end(&mut buf)
-                    .context("Failed to read from stdin")?;
-                buf
-            };
-
+            let encrypted = file_io::read_input(input.as_deref())?;
             let yaml_data =
                 bl4::decrypt_sav(&encrypted, &steam_id).context("Failed to decrypt save file")?;
-
-            // Write to file or stdout
-            if let Some(path) = output {
-                fs::write(&path, &yaml_data)
-                    .with_context(|| format!("Failed to write {}", path.display()))?;
-            } else {
-                io::stdout()
-                    .write_all(&yaml_data)
-                    .context("Failed to write to stdout")?;
-            }
+            file_io::write_output(output.as_deref(), &yaml_data)?;
         }
 
         Commands::Encrypt {
@@ -509,29 +491,10 @@ fn main() -> Result<()> {
             steam_id,
         } => {
             let steam_id = get_steam_id(steam_id)?;
-            // Read from file or stdin
-            let yaml_data = if let Some(path) = input {
-                fs::read(&path).with_context(|| format!("Failed to read {}", path.display()))?
-            } else {
-                let mut buf = Vec::new();
-                io::stdin()
-                    .read_to_end(&mut buf)
-                    .context("Failed to read from stdin")?;
-                buf
-            };
-
+            let yaml_data = file_io::read_input(input.as_deref())?;
             let encrypted =
                 bl4::encrypt_sav(&yaml_data, &steam_id).context("Failed to encrypt YAML data")?;
-
-            // Write to file or stdout
-            if let Some(path) = output {
-                fs::write(&path, &encrypted)
-                    .with_context(|| format!("Failed to write {}", path.display()))?;
-            } else {
-                io::stdout()
-                    .write_all(&encrypted)
-                    .context("Failed to write to stdout")?;
-            }
+            file_io::write_output(output.as_deref(), &encrypted)?;
         }
 
         Commands::Edit {
