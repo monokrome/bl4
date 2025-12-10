@@ -2,71 +2,110 @@
 
 ## Summary
 
-The part category mappings in bl4 are **hardcoded** based on initial serial analysis, not extracted from game data. This document details the missing categories and their likely mappings.
+This document tracks part category mappings in bl4. Categories are derived from serial analysis and memory dump extraction.
 
-## Current Category Mappings
+## Current Category Mappings (Implemented)
 
-From `/crates/bl4-cli/src/main.rs` lines 2100-2159:
+From `/crates/bl4/src/parts.rs` `category_name()` function:
+
+### Weapons
 
 | Range | Type | Categories |
 |-------|------|------------|
 | 2-7 | Pistols | DAD, JAK, TED, TOR, ORD, VLA |
 | 8-12 | Shotguns | DAD, JAK, TED, TOR, BOR |
 | 13-18 | Assault Rifles | DAD, JAK, TED, TOR, VLA, ORD |
-| 19 | GAP | ? |
+| 19 | Maliwan Shotgun | MAL_SG ✓ |
 | 20-23 | SMGs | DAD, BOR, VLA, MAL |
-| 24-25 | GAP | ? |
+| 25 | Bor Sniper | bor_sr ✓ |
 | 26-29 | Snipers | JAK, VLA, ORD, MAL |
-| 30-243 | GAP | |
 | 244-247 | Heavy Weapons | VLA, TOR, BOR, MAL |
-| 248-278 | GAP | |
+
+### Equipment
+
+| Category | Type | Status |
+|----------|------|--------|
+| 44 | Dark Siren Class Mod | ✓ Named (no parts in dump) |
+| 55 | Paladin Class Mod | ✓ Named (no parts in dump) |
+| 97 | Gravitar Class Mod | ✓ Named + 2 parts mapped |
+| 140 | Exo Soldier Class Mod | ✓ Named (no parts in dump) |
+| 151 | Firmware | ✓ Named (no parts in dump) |
 | 279-288 | Shields | energy, bor, dad, jak, armor, mal, ord, ted, tor, vla |
-| 289 | GAP | ? |
-| 290-299 | GAP | |
+| 289 | Shield Variant | ✓ Named (unknown subtype) |
 | 300-330 | Gadgets | grenade(300), turret(310), repair(320), terminal(330) |
-| 331-399 | GAP | |
 | 400-409 | Enhancements | DAD, BOR, JAK, MAL, ORD, TED, TOR, VLA, COV, ATL |
 
-## Missing Weapon Type Mappings
+## Implementation Status
 
-From `share/manifest/parts_dump.json`, these prefixes exist but have no category:
+### Completed (Dec 2025)
 
-| Prefix | Parts Count | Likely Category |
-|--------|-------------|-----------------|
-| MAL_SG | 74 | 19 (gap before SMGs) |
-| bor_sr | 71 | 24 or 25 (gap before snipers) |
+1. **Weapon categories filled**:
+   - Category 19: MAL_SG (Maliwan Shotgun)
+   - Category 25: bor_sr (Bor Sniper)
 
-## Missing Categories from Serial Validation
+2. **Class mod categories identified** (4 player classes):
+   - Category 44: Dark Siren Class Mod
+   - Category 55: Paladin Class Mod
+   - Category 97: Gravitar Class Mod
+   - Category 140: Exo Soldier Class Mod
 
-From test output in `cargo test -p bl4 validate`:
+3. **Other equipment categories**:
+   - Category 151: Firmware
+   - Category 289: Shield Variant
 
-### Weapon Serials (Type 'r'):
-- Category 25: Unknown - indices 0, 13, 184 (likely bor_sr)
+4. **Code updated**:
+   - `crates/bl4/src/parts.rs` - `category_name()` includes all categories
+   - `crates/bl4-cli/src/main.rs` - `known_groups` includes classmod_gravitar
+   - `share/manifest/parts_database.json` - Regenerated with 2,615 parts across 56 categories
 
-### Equipment Serials (Type 'e'):
-From decoded serials with first token / 384:
+5. **CLI enhanced**:
+   - `bl4 decode` now shows Category name and ID in output
 
-| Token | Category | Possible Type |
-|-------|----------|---------------|
-| 17088 | 44 | Class Mod (Dark Siren?) |
-| 21184 | 55 | Class Mod (Paladin?) |
-| 37248 | 97 | Class Mod (Gravitar?) |
-| 53760 | 140 | Class Mod (Exo Soldier?) |
-| 57984 | 151 | Firmware? |
-| 111296 | 289 | Shield variant? |
+### Still Missing
 
-## Evidence from Memory Dump
+**Part definitions not in parts_dump.json:**
+- `classmod_dark_siren.*` - No parts extracted
+- `classmod_paladin.*` - No parts extracted
+- `classmod_exo_soldier.*` - No parts extracted
+- `firmware.*` - No parts extracted (firmware parts exist under `grenade_gadget.part_firmware_*` etc.)
 
-Part names found in memory include:
-- `classmod_dark_siren.passive_*`
-- `classmod_paladin.passive_*`
-- `classmod_exo_soldier.passive_*`
-- `classmod_gravitar.part_*`
-- `firmware.*`
+**Validation test results** (from `cargo test -p bl4 validate`):
+
+Weapon serials: 12/16 parts found (75%)
+- Missing high indices (241, 246, 252, 184) likely rarity/legendary variants
+
+Equipment serials: 3/19 parts found (16%)
+- Most class mod/firmware parts not in database
+- Index 254 appears frequently (likely end-of-data marker)
+
+## Evidence Sources
+
+### Player Classes (from pak_manifest.json)
+
+Four playable characters confirmed:
+- DarkSiren (DS_*)
+- Paladin (PA_*)
+- Gravitar (GR_*)
+- ExoSoldier (EX_*)
+
+### Category Derivation Formula
+
+```
+Weapons (type 'r'):     category = first_varbit_token / 8192
+Equipment (type 'e'):   category = first_varbit_token / 384
+```
+
+### Parts Found in Memory
+
+Only `classmod_gravitar` has parts in the FName pool dump:
+- `classmod_gravitar.part_grav_asm_legendaryGravitar`
+- `classmod_gravitar.part_grav_asm_skill_test`
+
+Other class mod parts may exist but weren't loaded when the memory dump was taken.
 
 ## Data Location
 
-The authoritative source for category mappings is the `GbxSerialNumberIndex` structure embedded in `InventoryPartDef` UObject instances:
+The authoritative source for category mappings is the `GbxSerialNumberIndex` structure:
 
 ```
 GbxSerialNumberIndex:
@@ -76,52 +115,27 @@ GbxSerialNumberIndex:
   Index     : Int16   <- Part index within group
 ```
 
-**Problem**: Part definitions are compiled into game code and NOT stored in pak files. They can only be extracted from memory at runtime.
+**Problem**: Part definitions are compiled into game code and NOT present in GUObjectArray at runtime. Part names exist in FName pool but UObject instances are not registered.
 
-## Recommended Actions
+## Future Work
 
-### Immediate (Pattern-based guesses):
+To complete part mappings:
 
-1. Add to `known_groups` in main.rs:
-   ```rust
-   ("MAL_SG", 19, "Maliwan Shotgun"),
-   ("bor_sr", 24, "Bor Sniper"),  // or 25
-   ```
+1. **Memory dump with class mods equipped** - Take dumps while characters have class mods in inventory to capture more part names
 
-2. Add class mod categories (needs verification):
-   ```rust
-   ("classmod_dark_siren", 44, "Dark Siren Class Mod"),
-   ("classmod_paladin", 55, "Paladin Class Mod"),
-   ("classmod_gravitar", 97, "Gravitar Class Mod"),
-   ("classmod_exo_soldier", 140, "Exo Soldier Class Mod"),
-   ```
+2. **Pak file parsing** - Extract InventoryPartDef assets directly from pak files (requires UE5 asset parsing)
 
-3. Add firmware/shield variant:
-   ```rust
-   ("firmware", 151, "Firmware"),
-   // 289 might be another shield subtype
-   ```
+3. **Manual mapping** - Decode known items and map part indices by comparison
 
-### Long-term (Accurate extraction):
+## Verification
 
-Implement UObject scanning in memory.rs:
-1. Find `InventoryPartDef` UClass pointer
-2. Walk `GUObjectArray` for all instances
-3. For each instance, read `SerialIndex.Category`
-4. Correlate with object name FName
-5. Build complete category->prefix mapping
-
-## Files to Update
-
-- `/crates/bl4-cli/src/main.rs` - Add to `known_groups` vector
-- `/crates/bl4/src/parts.rs` - Add to `category_name()` function
-- `share/manifest/parts_database.json` - Regenerate with `build-parts-db`
-
-## Verification Method
-
-After adding mappings, run:
+Run validation tests:
 ```bash
 cargo test -p bl4 validate -- --nocapture
 ```
 
-Look for reduction in "Missing parts by category" output.
+Decode a serial to see category:
+```bash
+bl4 decode '@Uge8;)m/&zJ!tkr0N4>8ns8H{t!6ljj'
+# Output includes: Category: Paladin Class Mod (55)
+```

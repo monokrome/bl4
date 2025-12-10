@@ -36,7 +36,7 @@ Parts follow this pattern:
 | ORD | Order | 15 | AR, PS, SR |
 | TED | Tediore | 10 | AR, SG, PS |
 | TOR | Torgue | 6 | AR, SG, HW, PS |
-| VLA | Vladof | 134 | AR, SM, HW, SR |
+| VLA | Vladof | 134 | AR, SM, HW, SR, PS |
 
 **Serial ID** is the first VarInt in decoded item serials.
 
@@ -493,10 +493,12 @@ Data extracted from memory dump using `bl4 memory dump-parts` and `bl4 memory bu
 | 16 | Torgue | Assault Rifle | 73 |
 | 17 | Vladof | Assault Rifle | 89 |
 | 18 | Order | Assault Rifle | 73 |
+| 19 | Maliwan | Shotgun | 74 |
 | 20 | Daedalus | SMG | 77 |
 | 21 | Bor | SMG | 73 |
 | 22 | Vladof | SMG | 84 |
 | 23 | Maliwan | SMG | 74 |
+| 25 | Bor | Sniper | 71 |
 | 26 | Jakobs | Sniper | 72 |
 | 27 | Vladof | Sniper | 82 |
 | 28 | Order | Sniper | 75 |
@@ -505,6 +507,23 @@ Data extracted from memory dump using `bl4 memory dump-parts` and `bl4 memory bu
 | 245 | Torgue | Heavy | 32 |
 | 246 | Bor | Heavy | 25 |
 | 247 | Maliwan | Heavy | 19 |
+
+### Class Mods
+
+| Category ID | Player Class | Parts Count |
+|-------------|--------------|-------------|
+| 44 | Dark Siren | 0 (not in dump) |
+| 55 | Paladin | 0 (not in dump) |
+| 97 | Gravitar | 2 |
+| 140 | Exo Soldier | 0 (not in dump) |
+
+### Firmware
+
+| Category ID | Type | Parts Count |
+|-------------|------|-------------|
+| 151 | Firmware | 0 (parts under gadget prefixes) |
+
+Note: Firmware parts exist under `grenade_gadget.part_firmware_*`, `heavy_weapon_gadget.part_firmware_*`, and `repair_kit.part_firmware_*` prefixes.
 
 ### Shields
 
@@ -520,6 +539,7 @@ Data extracted from memory dump using `bl4 memory dump-parts` and `bl4 memory bu
 | 286 | Tediore Shield | 3 |
 | 287 | Torgue Shield | 3 |
 | 288 | Vladof Shield | 3 |
+| 289 | Shield Variant | Unknown |
 
 ### Gadgets and Gear
 
@@ -550,10 +570,11 @@ Data extracted from memory dump using `bl4 memory dump-parts` and `bl4 memory bu
 | Category | Total Parts |
 |----------|-------------|
 | Weapons (all types) | 1,928 |
+| Class Mods | 2 |
 | Shields | 79 |
 | Gadgets | 302 |
 | Enhancements | 28 |
-| Unmapped | 278 |
+| Unmapped | 276 |
 | **Total** | **2,615** |
 
 ---
@@ -586,3 +607,5 @@ Use `bl4 memory dump-parts` and `bl4 memory build-parts-db` to regenerate from a
 ---
 
 *Extracted from BL4 November 2025 patch memory dump using bl4 memory analysis tools.*
+
+*Last updated: December 2025 - Added MAL_SG (cat 19), bor_sr (cat 25), class mods (44, 55, 97, 140), firmware (151), shield variant (289).*
