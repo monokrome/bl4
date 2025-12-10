@@ -4,6 +4,16 @@
 //! UClass discovery, reflection data extraction, and part definitions.
 
 #![allow(dead_code)]
+#![allow(clippy::manual_range_contains)]
+#![allow(clippy::manual_div_ceil)]
+#![allow(clippy::manual_is_multiple_of)]
+#![allow(clippy::unnecessary_cast)]
+#![allow(clippy::wrong_self_convention)]
+#![allow(clippy::redundant_closure)]
+#![allow(clippy::single_match)]
+#![allow(clippy::ptr_arg)]
+#![allow(clippy::needless_borrow)]
+#![allow(unused_comparisons)]
 
 use super::constants::*;
 use super::pattern::scan_pattern_fast;
@@ -812,7 +822,7 @@ impl GUObjectArray {
         let num_chunks = LE::read_i32(&header[28..32]);
 
         // Validate the header
-        if objects_ptr == 0 || objects_ptr < MIN_VALID_POINTER || objects_ptr > MAX_VALID_POINTER {
+        if objects_ptr == 0 || !(MIN_VALID_POINTER..=MAX_VALID_POINTER).contains(&objects_ptr) {
             bail!(
                 "GUObjectArray Objects pointer {:#x} is invalid",
                 objects_ptr
@@ -872,7 +882,7 @@ impl GUObjectArray {
         let mut valid_16 = 0;
         for i in 0..10 {
             let ptr = LE::read_u64(&test_data[i * 16..i * 16 + 8]) as usize;
-            if ptr == 0 || (ptr >= MIN_VALID_POINTER && ptr < MAX_VALID_POINTER) {
+            if ptr == 0 || (MIN_VALID_POINTER..MAX_VALID_POINTER).contains(&ptr) {
                 valid_16 += 1;
             }
         }
@@ -881,7 +891,7 @@ impl GUObjectArray {
         let mut valid_24 = 0;
         for i in 0..10 {
             let ptr = LE::read_u64(&test_data[i * 24..i * 24 + 8]) as usize;
-            if ptr == 0 || (ptr >= MIN_VALID_POINTER && ptr < MAX_VALID_POINTER) {
+            if ptr == 0 || (MIN_VALID_POINTER..MAX_VALID_POINTER).contains(&ptr) {
                 valid_24 += 1;
             }
         }
@@ -3041,7 +3051,7 @@ pub fn discover_uclass_metaclass_exhaustive(
                     }
 
                     // Check if FName at this offset matches
-                    if &data[pos + name_offset..pos + name_offset + 4] != class_fname_bytes {
+                    if data[pos + name_offset..pos + name_offset + 4] != class_fname_bytes[..] {
                         continue;
                     }
 
@@ -3701,7 +3711,7 @@ fn extract_property(
     let prop_data = source.read_bytes(prop_ptr, 0x80)?;
 
     // FField base
-    let field_class_ptr =
+    let _field_class_ptr =
         LE::read_u64(&prop_data[FFIELD_CLASS_OFFSET..FFIELD_CLASS_OFFSET + 8]) as usize;
     let name_index = LE::read_u32(&prop_data[FFIELD_NAME_OFFSET..FFIELD_NAME_OFFSET + 4]);
 
@@ -3717,7 +3727,8 @@ fn extract_property(
 
     // Debug first few properties (disabled for production)
     let count = DEBUG_PROP_COUNT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-    let debug = count < 0; // Disabled
+    #[allow(clippy::absurd_extreme_comparisons)]
+    let debug = count < 0; // Disabled - always false for usize
 
     if debug {
         eprintln!("\nDEBUG Property {} at {:#x}:", count, prop_ptr);

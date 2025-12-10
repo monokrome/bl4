@@ -686,7 +686,7 @@ fn parse_unversioned_header(data: &[u8]) -> Option<(Vec<FFragment>, Vec<u8>, usi
     // Read zero mask if any fragments have zeroes
     let zero_mask = if total_zero_bits > 0 {
         // Zero mask is bit-packed, round up to bytes
-        let num_bytes = (total_zero_bits + 7) / 8;
+        let num_bytes = total_zero_bits.div_ceil(8);
         if pos + num_bytes > data.len() {
             return None;
         }
@@ -1182,8 +1182,8 @@ fn extract_texture_cmd(
 
     for i in 0..mip_level {
         // Calculate size of this mip
-        let blocks_x = (mip_width as u64 + 3) / 4;
-        let blocks_y = (mip_height as u64 + 3) / 4;
+        let blocks_x = (mip_width as u64).div_ceil(4);
+        let blocks_y = (mip_height as u64).div_ceil(4);
         let mip_size = blocks_x * blocks_y * bytes_per_block;
 
         offset += mip_size;
@@ -1205,8 +1205,8 @@ fn extract_texture_cmd(
     );
 
     // Calculate size needed for this mip
-    let blocks_x = (mip_width as usize + 3) / 4;
-    let blocks_y = (mip_height as usize + 3) / 4;
+    let blocks_x = (mip_width as usize).div_ceil(4);
+    let blocks_y = (mip_height as usize).div_ceil(4);
     let mip_size = blocks_x * blocks_y * bytes_per_block as usize;
 
     // Seek to the mip and read it
@@ -1631,8 +1631,8 @@ fn list_classes(
     eprintln!("Scanning {} .uasset files...", uasset_entries.len());
 
     // Collect classes: hash -> (class_name, count, sample_paths)
-    let class_map: Arc<Mutex<BTreeMap<String, (String, usize, Vec<String>)>>> =
-        Arc::new(Mutex::new(BTreeMap::new()));
+    type ClassInfo = (String, usize, Vec<String>);
+    let class_map: Arc<Mutex<BTreeMap<String, ClassInfo>>> = Arc::new(Mutex::new(BTreeMap::new()));
 
     let pb = ProgressBar::new(uasset_entries.len() as u64);
     pb.set_style(
@@ -1683,8 +1683,8 @@ fn list_classes(
     entries.sort_by(|a, b| b.1 .1.cmp(&a.1 .1));
 
     eprintln!("\n{} unique class types found:", entries.len());
-    println!("{:<20} {:<60} {}", "Hash", "Class Name", "Count");
-    println!("{}", "-".repeat(100));
+    println!("{:<20} {:<60} Count", "Hash", "Class Name");
+    println!("{:-<100}", "");
 
     for (hash, (name, count, sample_paths)) in entries {
         println!("{:<20} {:<60} {}", hash, name, count);

@@ -157,7 +157,7 @@ pub fn parse_texture_info(data: &[u8], header_size: usize) -> Result<TextureInfo
         cursor.seek(SeekFrom::Current(8))?;
     }
 
-    let first_mip = cursor.read_i32::<LittleEndian>()?;
+    let _first_mip = cursor.read_i32::<LittleEndian>()?;
     let num_mips = cursor.read_i32::<LittleEndian>()? as usize;
 
     if num_mips > 20 {
@@ -179,7 +179,7 @@ pub fn parse_texture_info(data: &[u8], header_size: usize) -> Result<TextureInfo
         // - int64 ElementCount (data size in bytes for textures)
         // - int64 BulkDataOffsetInFile
 
-        let bulk_flags = cursor.read_u32::<LittleEndian>()?;
+        let _bulk_flags = cursor.read_u32::<LittleEndian>()?;
         let element_count = cursor.read_i64::<LittleEndian>()? as u64;
         let bulk_offset = cursor.read_i64::<LittleEndian>()? as u64;
 
@@ -268,8 +268,8 @@ pub fn decode_bc7(data: &[u8], width: u32, height: u32) -> Result<Vec<u8>> {
     let h = height as usize;
 
     // BC7 uses 4x4 blocks, 16 bytes per block
-    let blocks_x = (w + 3) / 4;
-    let blocks_y = (h + 3) / 4;
+    let blocks_x = w.div_ceil(4);
+    let blocks_y = h.div_ceil(4);
     let expected_size = blocks_x * blocks_y * 16;
 
     if data.len() < expected_size {

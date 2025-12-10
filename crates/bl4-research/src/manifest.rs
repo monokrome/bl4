@@ -293,7 +293,7 @@ pub fn extract_manufacturers(extract_dir: &Path) -> HashMap<String, Manufacturer
                     let dir_name = entry.file_name().to_string_lossy().to_string();
                     if !dir_name.starts_with('_') {
                         // Scan for manufacturer subdirs in each weapon type
-                        if let Ok(mfr_entries) = fs::read_dir(&entry.path()) {
+                        if let Ok(mfr_entries) = fs::read_dir(entry.path()) {
                             for mfr_entry in mfr_entries.flatten() {
                                 if mfr_entry.path().is_dir() {
                                     let code = mfr_entry.file_name().to_string_lossy().to_string();
@@ -397,7 +397,7 @@ pub fn extract_weapon_types(extract_dir: &Path) -> HashMap<String, WeaponType> {
                     .unwrap_or_default();
 
                 let mut manufacturers = Vec::new();
-                if let Ok(mfr_entries) = fs::read_dir(&entry.path()) {
+                if let Ok(mfr_entries) = fs::read_dir(entry.path()) {
                     for mfr_entry in mfr_entries.flatten() {
                         if mfr_entry.path().is_dir() {
                             let code = mfr_entry.file_name().to_string_lossy().to_string();
@@ -456,7 +456,7 @@ pub fn extract_balance_data(extract_dir: &Path) -> Result<HashMap<String, Balanc
                 let mut assets = Vec::new();
 
                 // Find all .uasset files in this category
-                for asset_entry in WalkDir::new(&entry.path())
+                for asset_entry in WalkDir::new(entry.path())
                     .into_iter()
                     .filter_map(|e| e.ok())
                     .filter(|e| {
@@ -601,7 +601,7 @@ pub fn extract_gear_types(extract_dir: &Path) -> HashMap<String, GearType> {
             let mut manufacturers = Vec::new();
 
             // Find balance data
-            for bd_entry in WalkDir::new(&entry.path())
+            for bd_entry in WalkDir::new(entry.path())
                 .into_iter()
                 .filter_map(|e| e.ok())
                 .filter(|e| {
@@ -1565,7 +1565,7 @@ pub fn generate_pak_manifest(extracted_dir: &Path, output_dir: &Path) -> Result<
             }
 
             // Extract manufacturer
-            for (code, _) in &mfr_names {
+            for code in mfr_names.keys() {
                 let code_lower = code.to_lowercase();
                 if path_str.contains(&format!("/{}/", code_lower))
                     || path_str.contains(&format!("/{}_", code_lower))
@@ -1588,7 +1588,7 @@ pub fn generate_pak_manifest(extracted_dir: &Path, output_dir: &Path) -> Result<
             weapon_type = Some("Heavy".to_string());
 
             // Extract manufacturer for heavy weapons
-            for (code, _) in &mfr_names {
+            for code in mfr_names.keys() {
                 let code_lower = code.to_lowercase();
                 if path_str.contains(&format!("/{}/", code_lower))
                     || path_str.contains(&format!("/{}_", code_lower))
@@ -1621,7 +1621,7 @@ pub fn generate_pak_manifest(extracted_dir: &Path, output_dir: &Path) -> Result<
             gear_types.insert("Enhancement".to_string());
 
             // Extract manufacturer from enhancement name
-            for (code, _) in &mfr_names {
+            for code in mfr_names.keys() {
                 let code_lower = code.to_lowercase();
                 if path_str.contains(&format!("_{}_", code_lower))
                     || path_str.contains(&format!("/{}/", code_lower))
@@ -2027,7 +2027,7 @@ pub fn extract_item_stats(manifest_dir: &Path) -> Result<Vec<ItemStats>> {
             if rarity.is_none() {
                 if let Some(cap) = rarity_pattern.captures(prop) {
                     let tier: usize = cap[1].parse().unwrap_or(1);
-                    if tier >= 1 && tier <= 5 {
+                    if (1..=5).contains(&tier) {
                         rarity = Some(rarities[tier - 1].to_string());
                     }
                 }

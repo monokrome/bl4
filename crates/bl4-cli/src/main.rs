@@ -433,7 +433,7 @@ fn get_steam_id(provided: Option<String>) -> Result<String> {
 }
 
 /// Helper function to update backup metadata after editing a save file
-fn update_backup_metadata(input: &PathBuf) -> Result<()> {
+fn update_backup_metadata(input: &std::path::Path) -> Result<()> {
     let (_, metadata_path) = bl4::backup::backup_paths(input);
     bl4::update_after_edit(input, &metadata_path).context("Failed to update backup metadata")
 }
@@ -1677,7 +1677,7 @@ fn main() -> Result<()> {
                     let source = mem_source!();
 
                     // First discover FNamePool to resolve names
-                    let gnames =
+                    let _gnames =
                         memory::discover_gnames(source).context("Failed to find GNames pool")?;
                     let pool = memory::FNamePool::discover(source)
                         .context("Failed to discover FNamePool")?;
@@ -1741,7 +1741,7 @@ fn main() -> Result<()> {
                                 // Check vtable pointer - must be in valid data range
                                 let vtable_ptr =
                                     byteorder::LE::read_u64(&data[offset..offset + 8]) as usize;
-                                if vtable_ptr < 0x140000000 || vtable_ptr > 0x175000000 {
+                                if !(0x140000000..=0x175000000).contains(&vtable_ptr) {
                                     continue;
                                 }
 
@@ -1816,7 +1816,7 @@ fn main() -> Result<()> {
                     let source = mem_source!();
 
                     // Discover FNamePool to resolve names
-                    let gnames =
+                    let _gnames =
                         memory::discover_gnames(source).context("Failed to find GNames pool")?;
                     let pool = memory::FNamePool::discover(source)
                         .context("Failed to discover FNamePool")?;
@@ -1991,7 +1991,7 @@ fn main() -> Result<()> {
                         }
 
                         // Progress indicator
-                        if total_valid % 50000 == 0 {
+                        if total_valid.is_multiple_of(50000) {
                             eprint!("\r  Scanned {} objects...", total_valid);
                         }
                     }
@@ -2521,7 +2521,13 @@ fn main() -> Result<()> {
                                     // ASCII representation
                                     let ascii: String = line_bytes
                                         .iter()
-                                        .map(|&b| if b >= 32 && b < 127 { b as char } else { '.' })
+                                        .map(|&b| {
+                                            if (32..127).contains(&b) {
+                                                b as char
+                                            } else {
+                                                '.'
+                                            }
+                                        })
                                         .collect();
 
                                     // Mark if this line contains the match
@@ -2947,7 +2953,7 @@ fn main() -> Result<()> {
                 Ok(match type_id {
                     26 => {
                         // EnumProperty
-                        let inner = read_property_type(r, names, type_names)?;
+                        let _inner = read_property_type(r, names, type_names)?;
                         let enum_idx = r.read_u32::<LE>()? as usize;
                         let enum_name = names.get(enum_idx).cloned().unwrap_or_default();
                         format!("Enum<{}>", enum_name)

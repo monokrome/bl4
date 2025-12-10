@@ -218,7 +218,7 @@ fn search_strings(path: &PathBuf, pattern: Option<&str>) -> Result<()> {
     use regex::Regex;
     use walkdir::WalkDir;
 
-    let pattern_re = pattern.map(|p| Regex::new(p)).transpose()?;
+    let pattern_re = pattern.map(Regex::new).transpose()?;
 
     let files: Vec<PathBuf> = if path.is_file() {
         vec![path.clone()]

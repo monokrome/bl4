@@ -23,7 +23,6 @@ pub mod pattern;
 
 // Re-export constants at module level for backwards compatibility
 pub use constants::*;
-pub use pattern::scan_pattern_fast;
 
 // The rest of the original memory.rs functionality is included here
 // TODO: Split into separate submodules:

@@ -49,7 +49,7 @@ static LOG_FILE: Lazy<Mutex<Option<File>>> = Lazy::new(|| {
 
 // Original function pointers (resolved via dlsym)
 static REAL_RAND: Lazy<unsafe extern "C" fn() -> c_int> = Lazy::new(|| unsafe {
-    let ptr = libc::dlsym(libc::RTLD_NEXT, b"rand\0".as_ptr() as *const _);
+    let ptr = libc::dlsym(libc::RTLD_NEXT, c"rand".as_ptr());
     if ptr.is_null() {
         panic!("Failed to find real rand()");
     }
@@ -57,7 +57,7 @@ static REAL_RAND: Lazy<unsafe extern "C" fn() -> c_int> = Lazy::new(|| unsafe {
 });
 
 static REAL_SRAND: Lazy<unsafe extern "C" fn(c_uint)> = Lazy::new(|| unsafe {
-    let ptr = libc::dlsym(libc::RTLD_NEXT, b"srand\0".as_ptr() as *const _);
+    let ptr = libc::dlsym(libc::RTLD_NEXT, c"srand".as_ptr());
     if ptr.is_null() {
         panic!("Failed to find real srand()");
     }
@@ -67,11 +67,14 @@ static REAL_SRAND: Lazy<unsafe extern "C" fn(c_uint)> = Lazy::new(|| unsafe {
 use libc::c_long;
 
 static REAL_RANDOM: Lazy<Option<unsafe extern "C" fn() -> c_long>> = Lazy::new(|| unsafe {
-    let ptr = libc::dlsym(libc::RTLD_NEXT, b"random\0".as_ptr() as *const _);
+    let ptr = libc::dlsym(libc::RTLD_NEXT, c"random".as_ptr());
     if ptr.is_null() {
         None
     } else {
-        Some(std::mem::transmute(ptr))
+        Some(std::mem::transmute::<
+            *mut c_void,
+            unsafe extern "C" fn() -> c_long,
+        >(ptr))
     }
 });
 
@@ -160,7 +163,7 @@ fn should_log_this_call() -> bool {
     *count += 1;
 
     // Log every 1000th call by default, or all if BL4_PRELOAD_ALL=1
-    *count % 1000 == 0
+    (*count).is_multiple_of(1000)
 }
 
 fn get_timestamp() -> u64 {
@@ -211,7 +214,11 @@ fn log_call(func: &str, result: i64, return_addr: usize) {
     }
 }
 
-// Hook for rand()
+/// Hook for rand()
+///
+/// # Safety
+/// This function is called by the dynamic linker as a replacement for libc rand().
+/// It must maintain the same ABI and semantics as the original function.
 #[no_mangle]
 pub unsafe extern "C" fn rand() -> c_int {
     let result = REAL_RAND();
@@ -229,7 +236,11 @@ pub unsafe extern "C" fn rand() -> c_int {
     biased
 }
 
-// Hook for srand()
+/// Hook for srand()
+///
+/// # Safety
+/// This function is called by the dynamic linker as a replacement for libc srand().
+/// It must maintain the same ABI and semantics as the original function.
 #[no_mangle]
 pub unsafe extern "C" fn srand(seed: c_uint) {
     let return_addr = get_return_address();
@@ -237,7 +248,11 @@ pub unsafe extern "C" fn srand(seed: c_uint) {
     REAL_SRAND(seed);
 }
 
-// Hook for random() (BSD-style)
+/// Hook for random() (BSD-style)
+///
+/// # Safety
+/// This function is called by the dynamic linker as a replacement for libc random().
+/// It must maintain the same ABI and semantics as the original function.
 #[no_mangle]
 pub unsafe extern "C" fn random() -> c_long {
     let result = match *REAL_RANDOM {
@@ -249,11 +264,15 @@ pub unsafe extern "C" fn random() -> c_long {
     result
 }
 
-// Hook for arc4random() - common on BSD/macOS, sometimes available on Linux
+/// Hook for arc4random() - common on BSD/macOS, sometimes available on Linux
+///
+/// # Safety
+/// This function is called by the dynamic linker as a replacement for libc arc4random().
+/// It must maintain the same ABI and semantics as the original function.
 #[no_mangle]
 pub unsafe extern "C" fn arc4random() -> c_uint {
     // Try to find the real arc4random
-    let ptr = libc::dlsym(libc::RTLD_NEXT, b"arc4random\0".as_ptr() as *const _);
+    let ptr = libc::dlsym(libc::RTLD_NEXT, c"arc4random".as_ptr());
     let result = if ptr.is_null() {
         // Fallback to rand if arc4random doesn't exist
         rand() as c_uint
@@ -267,10 +286,15 @@ pub unsafe extern "C" fn arc4random() -> c_uint {
     result
 }
 
-// Hook for getrandom() syscall wrapper - used by BCryptGenRandom via Wine
+/// Hook for getrandom() syscall wrapper - used by BCryptGenRandom via Wine
+///
+/// # Safety
+/// This function is called by the dynamic linker as a replacement for libc getrandom().
+/// It must maintain the same ABI and semantics as the original function.
+/// The caller must ensure `buf` points to valid memory of at least `buflen` bytes.
 #[no_mangle]
 pub unsafe extern "C" fn getrandom(buf: *mut c_void, buflen: usize, flags: c_uint) -> isize {
-    let ptr = libc::dlsym(libc::RTLD_NEXT, b"getrandom\0".as_ptr() as *const _);
+    let ptr = libc::dlsym(libc::RTLD_NEXT, c"getrandom".as_ptr());
     let result = if ptr.is_null() {
         -1
     } else {
