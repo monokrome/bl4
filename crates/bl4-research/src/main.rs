@@ -280,7 +280,10 @@ fn main() -> Result<()> {
             parse_uasset(&file)?;
         }
 
-        Commands::Manifest { extract_dir, output } => {
+        Commands::Manifest {
+            extract_dir,
+            output,
+        } => {
             let output_dir = output.unwrap_or_else(|| {
                 std::env::current_dir()
                     .unwrap()
@@ -290,37 +293,58 @@ fn main() -> Result<()> {
             manifest::extract_manifest(&extract_dir, &output_dir)?;
         }
 
-        Commands::Manufacturers { extract_dir, output } => {
+        Commands::Manufacturers {
+            extract_dir,
+            output,
+        } => {
             let data = manifest::extract_manufacturers(&extract_dir);
             output_json(&data, output.as_ref())?;
         }
 
-        Commands::Weapons { extract_dir, output } => {
+        Commands::Weapons {
+            extract_dir,
+            output,
+        } => {
             let data = manifest::extract_weapon_types(&extract_dir);
             output_json(&data, output.as_ref())?;
         }
 
-        Commands::Balance { extract_dir, output } => {
+        Commands::Balance {
+            extract_dir,
+            output,
+        } => {
             let data = manifest::extract_balance_data(&extract_dir)?;
             output_json(&data, output.as_ref())?;
         }
 
-        Commands::Naming { extract_dir, output } => {
+        Commands::Naming {
+            extract_dir,
+            output,
+        } => {
             let data = manifest::extract_naming_data(&extract_dir)?;
             output_json(&data, output.as_ref())?;
         }
 
-        Commands::Gear { extract_dir, output } => {
+        Commands::Gear {
+            extract_dir,
+            output,
+        } => {
             let data = manifest::extract_gear_types(&extract_dir);
             output_json(&data, output.as_ref())?;
         }
 
-        Commands::Rarity { extract_dir, output } => {
+        Commands::Rarity {
+            extract_dir,
+            output,
+        } => {
             let data = manifest::extract_rarity_data(&extract_dir);
             output_json(&data, output.as_ref())?;
         }
 
-        Commands::Elemental { extract_dir, output } => {
+        Commands::Elemental {
+            extract_dir,
+            output,
+        } => {
             let data = manifest::extract_elemental_data(&extract_dir);
             output_json(&data, output.as_ref())?;
         }
@@ -333,11 +357,17 @@ fn main() -> Result<()> {
             manifest::generate_reference_manifest(&output)?;
         }
 
-        Commands::PakManifest { extracted_dir, output } => {
+        Commands::PakManifest {
+            extracted_dir,
+            output,
+        } => {
             manifest::generate_pak_manifest(&extracted_dir, &output)?;
         }
 
-        Commands::ItemsDb { manifest_dir, output } => {
+        Commands::ItemsDb {
+            manifest_dir,
+            output,
+        } => {
             let db = manifest::generate_items_database(&manifest_dir)?;
 
             let output_path = output.unwrap_or_else(|| manifest_dir.join("items_database.json"));

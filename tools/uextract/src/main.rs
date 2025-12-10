@@ -2,7 +2,10 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::prelude::*;
-use retoc::{AesKey, Config, FGuid, iostore, zen::FZenPackageHeader, container_header::EIoContainerHeaderVersion, EIoStoreTocVersion};
+use retoc::{
+    container_header::EIoContainerHeaderVersion, iostore, zen::FZenPackageHeader, AesKey, Config,
+    EIoStoreTocVersion, FGuid,
+};
 use serde::Serialize;
 use std::collections::HashMap;
 use std::io::Cursor;
@@ -150,28 +153,52 @@ fn main() -> Result<()> {
     // Handle subcommands
     if let Some(command) = args.command {
         return match command {
-            Commands::Texture { ubulk, width, height, output, mip, format } => {
-                extract_texture_cmd(&ubulk, width, height, &output, mip, &format)
-            }
-            Commands::ScriptObjects { input, output, aes_key } => {
-                extract_script_objects(&input, &output, aes_key.as_deref())
-            }
-            Commands::FindByClass { input, class_name, scriptobjects, aes_key, output } => {
-                find_assets_by_class(&input, &class_name, &scriptobjects, aes_key.as_deref(), output.as_deref())
-            }
-            Commands::ListClasses { input, scriptobjects, aes_key, samples } => {
-                list_classes(&input, &scriptobjects, aes_key.as_deref(), samples)
-            }
+            Commands::Texture {
+                ubulk,
+                width,
+                height,
+                output,
+                mip,
+                format,
+            } => extract_texture_cmd(&ubulk, width, height, &output, mip, &format),
+            Commands::ScriptObjects {
+                input,
+                output,
+                aes_key,
+            } => extract_script_objects(&input, &output, aes_key.as_deref()),
+            Commands::FindByClass {
+                input,
+                class_name,
+                scriptobjects,
+                aes_key,
+                output,
+            } => find_assets_by_class(
+                &input,
+                &class_name,
+                &scriptobjects,
+                aes_key.as_deref(),
+                output.as_deref(),
+            ),
+            Commands::ListClasses {
+                input,
+                scriptobjects,
+                aes_key,
+                samples,
+            } => list_classes(&input, &scriptobjects, aes_key.as_deref(), samples),
         };
     }
 
     // Need input for main extraction mode
-    let input = args.input.clone().context("Input path is required for extraction")?;
+    let input = args
+        .input
+        .clone()
+        .context("Input path is required for extraction")?;
 
     // Build retoc config
     let mut aes_keys = HashMap::new();
     if let Some(key) = &args.aes_key {
-        let parsed_key: AesKey = key.parse()
+        let parsed_key: AesKey = key
+            .parse()
             .context("Invalid AES key format (use hex or base64)")?;
         aes_keys.insert(FGuid::default(), parsed_key);
     }
@@ -182,28 +209,31 @@ fn main() -> Result<()> {
     });
 
     // Load scriptobjects if provided (for class resolution)
-    let _class_lookup: Option<Arc<HashMap<String, String>>> = if let Some(so_path) = &args.scriptobjects {
-        let so_data = std::fs::read_to_string(so_path)
-            .with_context(|| format!("Failed to read scriptobjects file {:?}", so_path))?;
-        let so_json: serde_json::Value = serde_json::from_str(&so_data)
-            .with_context(|| format!("Failed to parse scriptobjects file {:?}", so_path))?;
+    let _class_lookup: Option<Arc<HashMap<String, String>>> =
+        if let Some(so_path) = &args.scriptobjects {
+            let so_data = std::fs::read_to_string(so_path)
+                .with_context(|| format!("Failed to read scriptobjects file {:?}", so_path))?;
+            let so_json: serde_json::Value = serde_json::from_str(&so_data)
+                .with_context(|| format!("Failed to parse scriptobjects file {:?}", so_path))?;
 
-        let hash_to_path = so_json.get("hash_to_path")
-            .and_then(|v| v.as_object())
-            .context("scriptobjects.json missing hash_to_path")?;
+            let hash_to_path = so_json
+                .get("hash_to_path")
+                .and_then(|v| v.as_object())
+                .context("scriptobjects.json missing hash_to_path")?;
 
-        let lookup: HashMap<String, String> = hash_to_path.iter()
-            .map(|(k, v)| (k.clone(), v.as_str().unwrap_or("").to_string()))
-            .collect();
+            let lookup: HashMap<String, String> = hash_to_path
+                .iter()
+                .map(|(k, v)| (k.clone(), v.as_str().unwrap_or("").to_string()))
+                .collect();
 
-        eprintln!("Loaded {} class hashes from scriptobjects", lookup.len());
-        Some(Arc::new(lookup))
-    } else {
-        if !args.class_filter.is_empty() {
-            eprintln!("Warning: --class-filter requires --scriptobjects to be set");
-        }
-        None
-    };
+            eprintln!("Loaded {} class hashes from scriptobjects", lookup.len());
+            Some(Arc::new(lookup))
+        } else {
+            if !args.class_filter.is_empty() {
+                eprintln!("Warning: --class-filter requires --scriptobjects to be set");
+            }
+            None
+        };
 
     // Load usmap if provided
     let usmap_schema: Option<Arc<Usmap>> = if let Some(usmap_path) = &args.usmap {
@@ -211,7 +241,11 @@ fn main() -> Result<()> {
             .with_context(|| format!("Failed to read usmap file {:?}", usmap_path))?;
         let usmap = Usmap::read(&mut Cursor::new(usmap_data))
             .with_context(|| format!("Failed to parse usmap file {:?}", usmap_path))?;
-        eprintln!("Loaded usmap with {} structs, {} enums", usmap.structs.len(), usmap.enums.len());
+        eprintln!(
+            "Loaded usmap with {} structs, {} enums",
+            usmap.structs.len(),
+            usmap.enums.len()
+        );
 
         // In verbose mode, show some struct examples
         if args.verbose {
@@ -236,17 +270,17 @@ fn main() -> Result<()> {
     }
 
     // Get container versions for Zen parsing
-    let toc_version = store.container_file_version()
+    let toc_version = store
+        .container_file_version()
         .unwrap_or(EIoStoreTocVersion::ReplaceIoChunkHashWithIoHash);
-    let container_header_version = store.container_header_version()
+    let container_header_version = store
+        .container_header_version()
         .unwrap_or(EIoContainerHeaderVersion::NoExportInfo);
 
     // Collect matching entries (only .uasset files for JSON)
     let entries: Vec<_> = store
         .chunks()
-        .filter_map(|chunk| {
-            chunk.path().map(|path| (chunk, path))
-        })
+        .filter_map(|chunk| chunk.path().map(|path| (chunk, path)))
         .filter(|(_, path)| matches_filters(path, &args))
         .collect();
 
@@ -277,7 +311,14 @@ fn main() -> Result<()> {
     let results: Vec<_> = entries
         .par_iter()
         .map(|(chunk, path)| {
-            let result = extract_entry(chunk, path, &args, toc_version, container_header_version, usmap_schema.as_ref());
+            let result = extract_entry(
+                chunk,
+                path,
+                &args,
+                toc_version,
+                container_header_version,
+                usmap_schema.as_ref(),
+            );
             pb.inc(1);
             if let Err(ref e) = result {
                 eprintln!("Error {}: {:?}", path, e);
@@ -367,7 +408,14 @@ fn extract_entry(
     if (args.format == OutputFormat::Json || args.format == OutputFormat::Both)
         && path.ends_with(".uasset")
     {
-        match parse_zen_to_json(&data, path, toc_version, container_header_version, usmap_schema, args.verbose) {
+        match parse_zen_to_json(
+            &data,
+            path,
+            toc_version,
+            container_header_version,
+            usmap_schema,
+            args.verbose,
+        ) {
             Ok(json) => {
                 let json_path = args.output.join(format!("{}.json", clean_path));
                 if let Some(parent) = json_path.parent() {
@@ -467,9 +515,12 @@ fn parse_export_properties(
         .filter(|n| {
             // Match stat properties with index_GUID pattern
             let parts: Vec<&str> = n.split('_').collect();
-            parts.len() >= 3 &&
-            parts.iter().any(|p| p.len() == 32 && p.chars().all(|c| c.is_ascii_hexdigit())) &&
-            !n.starts_with('/') && !n.contains("Property")
+            parts.len() >= 3
+                && parts
+                    .iter()
+                    .any(|p| p.len() == 32 && p.chars().all(|c| c.is_ascii_hexdigit()))
+                && !n.starts_with('/')
+                && !n.contains("Property")
         })
         .collect();
 
@@ -491,10 +542,12 @@ fn parse_export_properties(
         let mut double_values: Vec<f64> = Vec::new();
 
         for i in (scan_start..export_data.len().saturating_sub(7)).step_by(8) {
-            if let Ok(bytes) = export_data[i..i+8].try_into() {
+            if let Ok(bytes) = export_data[i..i + 8].try_into() {
                 let bytes: [u8; 8] = bytes;
                 let val = f64::from_le_bytes(bytes);
-                if val.is_finite() && (val == 0.0 || (val.abs() >= 0.0001 && val.abs() <= 1_000_000.0)) {
+                if val.is_finite()
+                    && (val == 0.0 || (val.abs() >= 0.0001 && val.abs() <= 1_000_000.0))
+                {
                     double_values.push(val);
                 }
             }
@@ -530,10 +583,12 @@ fn parse_export_properties(
         let mut float_values: Vec<f32> = Vec::new();
 
         for i in (scan_start..export_data.len().saturating_sub(3)).step_by(4) {
-            if let Ok(bytes) = export_data[i..i+4].try_into() {
+            if let Ok(bytes) = export_data[i..i + 4].try_into() {
                 let bytes: [u8; 4] = bytes;
                 let val = f32::from_le_bytes(bytes);
-                if val.is_finite() && (val == 0.0 || (val.abs() >= 0.0001 && val.abs() <= 1_000_000.0)) {
+                if val.is_finite()
+                    && (val == 0.0 || (val.abs() >= 0.0001 && val.abs() <= 1_000_000.0))
+                {
                     float_values.push(val);
                 }
             }
@@ -577,10 +632,10 @@ fn parse_export_properties(
 /// FFragment from UE5 unversioned header - packed into 16 bits
 #[derive(Debug, Clone, Default)]
 struct FFragment {
-    skip_num: u8,        // 7 bits: properties to skip
+    skip_num: u8,         // 7 bits: properties to skip
     has_any_zeroes: bool, // 1 bit: zero mask follows
-    is_last: bool,       // 1 bit: final fragment marker
-    value_count: u8,     // 7 bits: property count in this fragment
+    is_last: bool,        // 1 bit: final fragment marker
+    value_count: u8,      // 7 bits: property count in this fragment
 }
 
 impl FFragment {
@@ -750,12 +805,8 @@ fn parse_property_value(
             // Bools are handled separately in zero mask
             return None;
         }
-        usmap::PropertyInner::Byte => {
-            ("Byte", None, Some(slice[0] as i64))
-        }
-        usmap::PropertyInner::Int8 => {
-            ("Int8", None, Some(slice[0] as i8 as i64))
-        }
+        usmap::PropertyInner::Byte => ("Byte", None, Some(slice[0] as i64)),
+        usmap::PropertyInner::Int8 => ("Int8", None, Some(slice[0] as i8 as i64)),
         usmap::PropertyInner::Int16 => {
             let val = i16::from_le_bytes([slice[0], slice[1]]);
             ("Int16", None, Some(val as i64))
@@ -818,7 +869,10 @@ fn extract_property_info_from_names(names: &[String]) -> Vec<(String, u32, Strin
         let parts: Vec<&str> = name.split('_').collect();
         if parts.len() >= 3 {
             // Find the GUID part (32 hex chars)
-            if let Some(guid_idx) = parts.iter().position(|p| p.len() == 32 && p.chars().all(|c| c.is_ascii_hexdigit())) {
+            if let Some(guid_idx) = parts
+                .iter()
+                .position(|p| p.len() == 32 && p.chars().all(|c| c.is_ascii_hexdigit()))
+            {
                 // The index should be the part before GUID
                 if guid_idx >= 2 {
                     if let Ok(index) = parts[guid_idx - 1].parse::<u32>() {
@@ -862,11 +916,13 @@ fn parse_export_properties_with_schema(
     let has_float = names.iter().any(|n| n == "FloatProperty");
 
     // Try to find the struct type from usmap
-    let struct_type = names.iter()
+    let struct_type = names
+        .iter()
         .find(|n| struct_lookup.contains_key(*n))
         .cloned()
         .or_else(|| {
-            names.iter()
+            names
+                .iter()
                 .find(|n| {
                     let prefixed = format!("F{}", n);
                     struct_lookup.contains_key(&prefixed)
@@ -878,22 +934,23 @@ fn parse_export_properties_with_schema(
     if let Some(ref type_name) = struct_type {
         if struct_lookup.contains_key(type_name) {
             // Parse unversioned header
-            if let Some((fragments, zero_mask, header_size)) = parse_unversioned_header(export_data) {
+            if let Some((fragments, zero_mask, header_size)) = parse_unversioned_header(export_data)
+            {
                 let serialized_indices = get_serialized_property_indices(&fragments, &zero_mask);
 
                 if !serialized_indices.is_empty() {
                     let all_props = get_all_struct_properties(type_name, struct_lookup);
-                    let index_to_prop: HashMap<usize, &usmap::Property> = all_props
-                        .iter()
-                        .map(|p| (p.index as usize, *p))
-                        .collect();
+                    let index_to_prop: HashMap<usize, &usmap::Property> =
+                        all_props.iter().map(|p| (p.index as usize, *p)).collect();
 
                     let mut properties = Vec::new();
                     let mut pos = header_size;
 
                     for prop_index in serialized_indices {
                         if let Some(prop_def) = index_to_prop.get(&prop_index) {
-                            if let Some((mut parsed, consumed)) = parse_property_value(export_data, pos, &prop_def.inner) {
+                            if let Some((mut parsed, consumed)) =
+                                parse_property_value(export_data, pos, &prop_def.inner)
+                            {
                                 parsed.name = prop_def.name.clone();
                                 properties.push(parsed);
                                 pos += consumed;
@@ -934,7 +991,13 @@ fn parse_export_properties_with_schema(
             let mut pos = header_size;
 
             // Determine value size based on property types in names
-            let value_size = if has_double { 8 } else if has_float { 4 } else { 8 };
+            let value_size = if has_double {
+                8
+            } else if has_float {
+                4
+            } else {
+                8
+            };
 
             for prop_index in serialized_indices {
                 if pos + value_size > export_data.len() {
@@ -947,7 +1010,7 @@ fn parse_export_properties_with_schema(
                     .unwrap_or_else(|| format!("prop_{}", prop_index));
 
                 if value_size == 8 {
-                    let val = f64::from_le_bytes(export_data[pos..pos+8].try_into().ok()?);
+                    let val = f64::from_le_bytes(export_data[pos..pos + 8].try_into().ok()?);
                     if val.is_finite() {
                         properties.push(ParsedProperty {
                             name: prop_name,
@@ -958,7 +1021,7 @@ fn parse_export_properties_with_schema(
                         });
                     }
                 } else {
-                    let val = f32::from_le_bytes(export_data[pos..pos+4].try_into().ok()?);
+                    let val = f32::from_le_bytes(export_data[pos..pos + 4].try_into().ok()?);
                     if val.is_finite() {
                         properties.push(ParsedProperty {
                             name: prop_name,
@@ -1010,15 +1073,12 @@ fn parse_zen_to_json(
 
     // Build struct lookup from usmap if available
     let struct_lookup: HashMap<String, &usmap::Struct> = usmap_schema
-        .map(|schema| {
-            schema.structs.iter()
-                .map(|s| (s.name.clone(), s))
-                .collect()
-        })
+        .map(|schema| schema.structs.iter().map(|s| (s.name.clone(), s)).collect())
         .unwrap_or_default();
 
     // Extract imports
-    let imports: Vec<ZenImportInfo> = header.import_map
+    let imports: Vec<ZenImportInfo> = header
+        .import_map
         .iter()
         .enumerate()
         .map(|(i, import)| {
@@ -1030,7 +1090,8 @@ fn parse_zen_to_json(
         .collect();
 
     // Extract exports with property data
-    let exports: Vec<ZenExportInfo> = header.export_map
+    let exports: Vec<ZenExportInfo> = header
+        .export_map
         .iter()
         .enumerate()
         .map(|(i, export)| {
@@ -1112,8 +1173,7 @@ fn extract_texture_cmd(
     eprintln!("Dimensions: {}x{}, format: {}", width, height, format);
 
     // Read the ubulk file
-    let mut file = std::fs::File::open(ubulk_path)
-        .context("Failed to open ubulk file")?;
+    let mut file = std::fs::File::open(ubulk_path).context("Failed to open ubulk file")?;
 
     // Calculate mip dimensions and offsets
     let mut mip_width = width;
@@ -1130,10 +1190,19 @@ fn extract_texture_cmd(
         mip_width = (mip_width / 2).max(1);
         mip_height = (mip_height / 2).max(1);
 
-        eprintln!("Skipping mip {}: {}x{} ({} bytes)", i, mip_width * 2, mip_height * 2, mip_size);
+        eprintln!(
+            "Skipping mip {}: {}x{} ({} bytes)",
+            i,
+            mip_width * 2,
+            mip_height * 2,
+            mip_size
+        );
     }
 
-    eprintln!("Extracting mip {}: {}x{} at offset {}", mip_level, mip_width, mip_height, offset);
+    eprintln!(
+        "Extracting mip {}: {}x{} at offset {}",
+        mip_level, mip_width, mip_height, offset
+    );
 
     // Calculate size needed for this mip
     let blocks_x = (mip_width as usize + 3) / 4;
@@ -1162,8 +1231,7 @@ fn extract_texture_cmd(
     eprintln!("Decoded to {} bytes of RGBA", rgba.len());
 
     // Save as PNG
-    texture::save_png(&rgba, mip_width, mip_height, output_path)
-        .context("Failed to save PNG")?;
+    texture::save_png(&rgba, mip_width, mip_height, output_path).context("Failed to save PNG")?;
 
     eprintln!("Saved to {:?}", output_path);
 
@@ -1214,7 +1282,8 @@ fn extract_script_objects(
     // Build retoc config
     let mut aes_keys = HashMap::new();
     if let Some(key) = aes_key {
-        let parsed_key: AesKey = key.parse()
+        let parsed_key: AesKey = key
+            .parse()
             .context("Invalid AES key format (use hex or base64)")?;
         aes_keys.insert(FGuid::default(), parsed_key);
     }
@@ -1225,21 +1294,28 @@ fn extract_script_objects(
     });
 
     // Open IoStore
-    let store = iostore::open(input, config)
-        .with_context(|| format!("Failed to open {:?}", input))?;
+    let store =
+        iostore::open(input, config).with_context(|| format!("Failed to open {:?}", input))?;
 
     // Load ScriptObjects
-    let script_objects = store.load_script_objects()
+    let script_objects = store
+        .load_script_objects()
         .context("Failed to load ScriptObjects (is this the Paks directory with global.utoc?)")?;
 
-    eprintln!("Found {} script objects", script_objects.script_objects.len());
+    eprintln!(
+        "Found {} script objects",
+        script_objects.script_objects.len()
+    );
 
     // Build the entries
     let mut objects = Vec::new();
     let mut hash_to_path = HashMap::new();
 
     for obj in &script_objects.script_objects {
-        let name = script_objects.global_name_map.get(obj.object_name).to_string();
+        let name = script_objects
+            .global_name_map
+            .get(obj.object_name)
+            .to_string();
 
         // Build the full path by resolving outer chain
         let path = resolve_script_object_path(obj, &script_objects);
@@ -1255,7 +1331,8 @@ fn extract_script_objects(
             None
         };
 
-        let cdo_class_hash = if obj.cdo_class_index.kind() == FPackageObjectIndexType::ScriptImport {
+        let cdo_class_hash = if obj.cdo_class_index.kind() == FPackageObjectIndexType::ScriptImport
+        {
             Some(format!("{:X}", obj.cdo_class_index.raw_index()))
         } else {
             None
@@ -1281,13 +1358,14 @@ fn extract_script_objects(
 
     // Write to JSON
     let json = serde_json::to_string_pretty(&dump)?;
-    std::fs::write(output, &json)
-        .with_context(|| format!("Failed to write {:?}", output))?;
+    std::fs::write(output, &json).with_context(|| format!("Failed to write {:?}", output))?;
 
     eprintln!("Wrote {} script objects to {:?}", dump.count, output);
 
     // Print some stats
-    let inventory_parts: Vec<_> = dump.objects.iter()
+    let inventory_parts: Vec<_> = dump
+        .objects
+        .iter()
         .filter(|o| o.name.contains("InventoryPart") || o.name.contains("PartDef"))
         .collect();
     if !inventory_parts.is_empty() {
@@ -1310,7 +1388,10 @@ fn resolve_script_object_path(
 ) -> String {
     use retoc::script_objects::FPackageObjectIndexType;
 
-    let name = script_objects.global_name_map.get(obj.object_name).to_string();
+    let name = script_objects
+        .global_name_map
+        .get(obj.object_name)
+        .to_string();
 
     // If no outer, this is a top-level package
     if obj.outer_index.kind() != FPackageObjectIndexType::ScriptImport {
@@ -1362,13 +1443,22 @@ fn find_assets_by_class(
         .and_then(|v| v.as_array())
         .and_then(|arr| {
             arr.iter().find(|obj| {
-                obj.get("name").and_then(|n| n.as_str()) == Some(class_name) ||
-                obj.get("path").and_then(|p| p.as_str()).map(|p| p.ends_with(&format!(".{}", class_name))).unwrap_or(false)
+                obj.get("name").and_then(|n| n.as_str()) == Some(class_name)
+                    || obj
+                        .get("path")
+                        .and_then(|p| p.as_str())
+                        .map(|p| p.ends_with(&format!(".{}", class_name)))
+                        .unwrap_or(false)
             })
         })
-        .and_then(|obj| obj.get("hash").and_then(|h| h.as_str()).map(|s| s.to_string()));
+        .and_then(|obj| {
+            obj.get("hash")
+                .and_then(|h| h.as_str())
+                .map(|s| s.to_string())
+        });
 
-    let target_hash = target_hash.context(format!("Class '{}' not found in scriptobjects", class_name))?;
+    let target_hash =
+        target_hash.context(format!("Class '{}' not found in scriptobjects", class_name))?;
     let target_path = hash_to_path.get(&target_hash).cloned().unwrap_or_default();
     eprintln!("Target class: {} -> {}", target_hash, target_path);
 
@@ -1388,9 +1478,11 @@ fn find_assets_by_class(
     let store = iostore::open(input, config)?;
 
     // Get container versions
-    let toc_version = store.container_file_version()
+    let toc_version = store
+        .container_file_version()
         .unwrap_or(EIoStoreTocVersion::ReplaceIoChunkHashWithIoHash);
-    let container_header_version = store.container_header_version()
+    let container_header_version = store
+        .container_header_version()
         .unwrap_or(EIoContainerHeaderVersion::NoExportInfo);
 
     // Scan all .uasset files
@@ -1434,7 +1526,8 @@ fn find_assets_by_class(
                 toc_version,
                 container_header_version,
                 None,
-            ).ok()?;
+            )
+            .ok()?;
 
             // Check each export's class_index
             for export in &header.export_map {
@@ -1451,7 +1544,11 @@ fn find_assets_by_class(
 
     pb.finish_and_clear();
 
-    eprintln!("Found {} assets of class {}", matching_paths.len(), class_name);
+    eprintln!(
+        "Found {} assets of class {}",
+        matching_paths.len(),
+        class_name
+    );
 
     // Output results
     for path in &matching_paths {
@@ -1475,18 +1572,23 @@ fn list_classes(
     aes_key: Option<&str>,
     samples: usize,
 ) -> Result<()> {
+    use retoc::script_objects::FPackageObjectIndexType;
     use std::collections::BTreeMap;
     use std::sync::Mutex;
-    use retoc::script_objects::FPackageObjectIndexType;
 
     // Load scriptobjects for name resolution
     let so_data = std::fs::read_to_string(scriptobjects_path)
         .with_context(|| format!("Failed to read scriptobjects file {:?}", scriptobjects_path))?;
     let so_json: serde_json::Value = serde_json::from_str(&so_data)?;
 
-    let hash_to_path: HashMap<String, String> = so_json.get("hash_to_path")
+    let hash_to_path: HashMap<String, String> = so_json
+        .get("hash_to_path")
         .and_then(|v| v.as_object())
-        .map(|obj| obj.iter().map(|(k, v)| (k.clone(), v.as_str().unwrap_or("").to_string())).collect())
+        .map(|obj| {
+            obj.iter()
+                .map(|(k, v)| (k.clone(), v.as_str().unwrap_or("").to_string()))
+                .collect()
+        })
         .unwrap_or_default();
 
     // Build retoc config
@@ -1505,9 +1607,11 @@ fn list_classes(
     let store = iostore::open(input, config)?;
 
     // Get container versions
-    let toc_version = store.container_file_version()
+    let toc_version = store
+        .container_file_version()
         .unwrap_or(EIoStoreTocVersion::ReplaceIoChunkHashWithIoHash);
-    let container_header_version = store.container_header_version()
+    let container_header_version = store
+        .container_header_version()
         .unwrap_or(EIoContainerHeaderVersion::NoExportInfo);
 
     // Scan all .uasset files
@@ -1527,7 +1631,8 @@ fn list_classes(
     eprintln!("Scanning {} .uasset files...", uasset_entries.len());
 
     // Collect classes: hash -> (class_name, count, sample_paths)
-    let class_map: Arc<Mutex<BTreeMap<String, (String, usize, Vec<String>)>>> = Arc::new(Mutex::new(BTreeMap::new()));
+    let class_map: Arc<Mutex<BTreeMap<String, (String, usize, Vec<String>)>>> =
+        Arc::new(Mutex::new(BTreeMap::new()));
 
     let pb = ProgressBar::new(uasset_entries.len() as u64);
     pb.set_style(
@@ -1554,7 +1659,10 @@ fn list_classes(
                         let class_hash = format!("{:X}", export.class_index.raw_index());
                         let mut map = class_map.lock().unwrap();
                         let entry = map.entry(class_hash.clone()).or_insert_with(|| {
-                            let name = hash_to_path.get(&class_hash).cloned().unwrap_or_else(|| "UNKNOWN".to_string());
+                            let name = hash_to_path
+                                .get(&class_hash)
+                                .cloned()
+                                .unwrap_or_else(|| "UNKNOWN".to_string());
                             (name, 0, Vec::new())
                         });
                         entry.1 += 1;
@@ -1572,7 +1680,7 @@ fn list_classes(
     // Print results sorted by count
     let map = class_map.lock().unwrap();
     let mut entries: Vec<_> = map.iter().collect();
-    entries.sort_by(|a, b| b.1.1.cmp(&a.1.1));
+    entries.sort_by(|a, b| b.1 .1.cmp(&a.1 .1));
 
     eprintln!("\n{} unique class types found:", entries.len());
     println!("{:<20} {:<60} {}", "Hash", "Class Name", "Count");

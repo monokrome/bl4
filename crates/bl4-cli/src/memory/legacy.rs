@@ -59,12 +59,16 @@ pub trait MemorySource: Send + Sync {
 
     /// Find a region containing the given address
     fn find_region(&self, address: usize) -> Option<&MemoryRegion> {
-        self.regions().iter().find(|r| address >= r.start && address < r.end)
+        self.regions()
+            .iter()
+            .find(|r| address >= r.start && address < r.end)
     }
 
     /// Check if an address is readable
     fn is_readable(&self, address: usize) -> bool {
-        self.find_region(address).map(|r| r.is_readable()).unwrap_or(false)
+        self.find_region(address)
+            .map(|r| r.is_readable())
+            .unwrap_or(false)
     }
 }
 
@@ -97,13 +101,17 @@ impl DumpFile {
     /// - Raw/gcore dumps - file offset ≈ virtual address
     pub fn open<P: AsRef<Path>>(path: P) -> Result<Self> {
         let path = path.as_ref().to_path_buf();
-        let file = File::open(&path)
-            .with_context(|| format!("Failed to open dump file: {:?}", path))?;
+        let file =
+            File::open(&path).with_context(|| format!("Failed to open dump file: {:?}", path))?;
 
         let mmap = unsafe { Mmap::map(&file) }
             .with_context(|| format!("Failed to mmap dump file: {:?}", path))?;
 
-        eprintln!("Opened dump file: {:?} ({} MB)", path, mmap.len() / 1_000_000);
+        eprintln!(
+            "Opened dump file: {:?} ({} MB)",
+            path,
+            mmap.len() / 1_000_000
+        );
 
         // Check for MDMP signature
         if mmap.len() >= 4 && LE::read_u32(&mmap[0..4]) == Self::MDMP_SIGNATURE {
@@ -146,7 +154,10 @@ impl DumpFile {
         let num_streams = LE::read_u32(&mmap[0x08..0x0C]) as usize;
         let stream_dir_rva = LE::read_u32(&mmap[0x0C..0x10]) as usize;
 
-        eprintln!("MDMP: {} streams, directory at {:#x}", num_streams, stream_dir_rva);
+        eprintln!(
+            "MDMP: {} streams, directory at {:#x}",
+            num_streams, stream_dir_rva
+        );
 
         // Each MINIDUMP_DIRECTORY entry is 12 bytes:
         // 0x00: StreamType (4 bytes)
@@ -166,7 +177,10 @@ impl DumpFile {
             let rva = LE::read_u32(&mmap[entry_offset + 8..entry_offset + 12]) as usize;
 
             if stream_type == Self::MEMORY_64_LIST_STREAM {
-                eprintln!("Found Memory64ListStream at RVA {:#x}, size {}", rva, data_size);
+                eprintln!(
+                    "Found Memory64ListStream at RVA {:#x}, size {}",
+                    rva, data_size
+                );
 
                 // MINIDUMP_MEMORY64_LIST structure:
                 // 0x00: NumberOfMemoryRanges (8 bytes)
@@ -182,7 +196,10 @@ impl DumpFile {
                 let num_ranges = LE::read_u64(&mmap[rva..rva + 8]) as usize;
                 let base_rva = LE::read_u64(&mmap[rva + 8..rva + 16]);
 
-                eprintln!("Memory64List: {} ranges, data starts at RVA {:#x}", num_ranges, base_rva);
+                eprintln!(
+                    "Memory64List: {} ranges, data starts at RVA {:#x}",
+                    num_ranges, base_rva
+                );
 
                 let mut current_file_offset = base_rva;
 
@@ -225,24 +242,37 @@ impl DumpFile {
         let gnames_va = PE_IMAGE_BASE + GNAMES_OFFSET;
 
         // Debug: show all ranges near the SDK offset
-        eprintln!("Memory ranges near SDK GObjects offset ({:#x}):", gobjects_va);
+        eprintln!(
+            "Memory ranges near SDK GObjects offset ({:#x}):",
+            gobjects_va
+        );
         for region in &regions {
             // Show ranges within 1MB of the SDK offset
             if region.end > gobjects_va.saturating_sub(0x100000)
-               && region.start < gobjects_va.saturating_add(0x100000) {
-                eprintln!("  {:#x}-{:#x} (size {:#x}, file offset {:#x})",
-                         region.start, region.end, region.end - region.start, region.offset);
+                && region.start < gobjects_va.saturating_add(0x100000)
+            {
+                eprintln!(
+                    "  {:#x}-{:#x} (size {:#x}, file offset {:#x})",
+                    region.start,
+                    region.end,
+                    region.end - region.start,
+                    region.offset
+                );
             }
         }
 
         for region in &regions {
             if gobjects_va >= region.start && gobjects_va < region.end {
-                eprintln!("GObjects ({:#x}) found in region {:#x}-{:#x}, file offset {:#x}",
-                         gobjects_va, region.start, region.end, region.offset);
+                eprintln!(
+                    "GObjects ({:#x}) found in region {:#x}-{:#x}, file offset {:#x}",
+                    gobjects_va, region.start, region.end, region.offset
+                );
             }
             if gnames_va >= region.start && gnames_va < region.end {
-                eprintln!("GNames ({:#x}) found in region {:#x}-{:#x}, file offset {:#x}",
-                         gnames_va, region.start, region.end, region.offset);
+                eprintln!(
+                    "GNames ({:#x}) found in region {:#x}-{:#x}, file offset {:#x}",
+                    gnames_va, region.start, region.end, region.offset
+                );
             }
         }
 
@@ -265,8 +295,12 @@ impl DumpFile {
 
         let regions = Self::parse_maps_file(maps_path.as_ref())?;
 
-        eprintln!("Opened dump file: {:?} ({} MB) with {} regions",
-                 dump_path, mmap.len() / 1_000_000, regions.len());
+        eprintln!(
+            "Opened dump file: {:?} ({} MB) with {} regions",
+            dump_path,
+            mmap.len() / 1_000_000,
+            regions.len()
+        );
 
         Ok(DumpFile {
             mmap,
@@ -278,8 +312,8 @@ impl DumpFile {
 
     /// Parse a maps file (supports both /proc/pid/maps and custom dump format)
     fn parse_maps_file(path: &Path) -> Result<Vec<MemoryRegion>> {
-        let file = File::open(path)
-            .with_context(|| format!("Failed to open maps file: {:?}", path))?;
+        let file =
+            File::open(path).with_context(|| format!("Failed to open maps file: {:?}", path))?;
 
         let reader = BufReader::new(file);
         let mut regions = Vec::new();
@@ -308,10 +342,12 @@ impl DumpFile {
                     continue;
                 }
 
-                let start = usize::from_str_radix(parts[0].trim_start_matches("0x"), 16).unwrap_or(0);
+                let start =
+                    usize::from_str_radix(parts[0].trim_start_matches("0x"), 16).unwrap_or(0);
                 let end = usize::from_str_radix(parts[1].trim_start_matches("0x"), 16).unwrap_or(0);
                 // parts[2] is size (decimal), we can compute it
-                let file_offset = usize::from_str_radix(parts[3].trim_start_matches("0x"), 16).unwrap_or(0);
+                let file_offset =
+                    usize::from_str_radix(parts[3].trim_start_matches("0x"), 16).unwrap_or(0);
 
                 regions.push(MemoryRegion {
                     start,
@@ -422,7 +458,8 @@ impl DumpFile {
 
 impl MemorySource for DumpFile {
     fn read_bytes(&self, address: usize, size: usize) -> Result<Vec<u8>> {
-        let offset = self.va_to_offset(address)
+        let offset = self
+            .va_to_offset(address)
             .ok_or_else(|| anyhow::anyhow!("Address {:#x} out of dump range", address))?;
 
         if offset + size > self.mmap.len() {
@@ -763,7 +800,8 @@ impl GUObjectArray {
         let addr = GUOBJECTARRAY_VA;
 
         // Read the GUObjectArray header (32 bytes)
-        let header = source.read_bytes(addr, 32)
+        let header = source
+            .read_bytes(addr, 32)
             .context("Failed to read GUObjectArray header")?;
 
         let objects_ptr = LE::read_u64(&header[0..8]) as usize;
@@ -775,7 +813,10 @@ impl GUObjectArray {
 
         // Validate the header
         if objects_ptr == 0 || objects_ptr < MIN_VALID_POINTER || objects_ptr > MAX_VALID_POINTER {
-            bail!("GUObjectArray Objects pointer {:#x} is invalid", objects_ptr);
+            bail!(
+                "GUObjectArray Objects pointer {:#x} is invalid",
+                objects_ptr
+            );
         }
 
         if max_elements <= 0 || max_elements > 10_000_000 {
@@ -783,7 +824,11 @@ impl GUObjectArray {
         }
 
         if num_elements <= 0 || num_elements > max_elements {
-            bail!("GUObjectArray NumElements {} is invalid (max={})", num_elements, max_elements);
+            bail!(
+                "GUObjectArray NumElements {} is invalid (max={})",
+                num_elements,
+                max_elements
+            );
         }
 
         eprintln!("Found GUObjectArray at {:#x}:", addr);
@@ -841,8 +886,10 @@ impl GUObjectArray {
             }
         }
 
-        eprintln!("  Item size detection: 16-byte validity={}/10, 24-byte validity={}/10",
-                 valid_16, valid_24);
+        eprintln!(
+            "  Item size detection: 16-byte validity={}/10, 24-byte validity={}/10",
+            valid_16, valid_24
+        );
 
         // Prefer 24-byte if both seem valid (UE5.5 likely uses 24)
         if valid_24 >= 8 {
@@ -893,7 +940,11 @@ impl<'a> Iterator for UObjectIterator<'a> {
 
             let items_in_chunk = if self.chunk_idx == num_chunks - 1 {
                 let remainder = (self.array.num_elements as usize) % GUOBJECTARRAY_CHUNK_SIZE;
-                if remainder == 0 { GUOBJECTARRAY_CHUNK_SIZE } else { remainder }
+                if remainder == 0 {
+                    GUOBJECTARRAY_CHUNK_SIZE
+                } else {
+                    remainder
+                }
             } else {
                 GUOBJECTARRAY_CHUNK_SIZE
             };
@@ -920,12 +971,17 @@ impl<'a> Iterator for UObjectIterator<'a> {
                 // Read chunk data
                 let items_to_read = if self.chunk_idx == num_chunks - 1 {
                     let remainder = (self.array.num_elements as usize) % GUOBJECTARRAY_CHUNK_SIZE;
-                    if remainder == 0 { GUOBJECTARRAY_CHUNK_SIZE } else { remainder }
+                    if remainder == 0 {
+                        GUOBJECTARRAY_CHUNK_SIZE
+                    } else {
+                        remainder
+                    }
                 } else {
                     GUOBJECTARRAY_CHUNK_SIZE
                 };
 
-                self.chunk_data = self.source
+                self.chunk_data = self
+                    .source
                     .read_bytes(self.chunk_ptr, items_to_read * self.array.item_size)
                     .ok()?;
             }
@@ -973,7 +1029,9 @@ pub struct CodeBounds {
 impl CodeBounds {
     /// Check if an address is within any code section
     pub fn contains(&self, addr: usize) -> bool {
-        self.ranges.iter().any(|(start, end)| addr >= *start && addr < *end)
+        self.ranges
+            .iter()
+            .any(|(start, end)| addr >= *start && addr < *end)
     }
 }
 
@@ -990,7 +1048,10 @@ pub fn find_code_bounds(source: &dyn MemorySource) -> Result<CodeBounds> {
     for &base in &pe_bases {
         if let Ok(bounds) = parse_pe_code_section(source, base) {
             for (start, end) in &bounds.ranges {
-                eprintln!("Found code range: {:#x}-{:#x} (from PE at {:#x})", start, end, base);
+                eprintln!(
+                    "Found code range: {:#x}-{:#x} (from PE at {:#x})",
+                    start, end, base
+                );
             }
             return Ok(bounds);
         }
@@ -1007,7 +1068,10 @@ pub fn find_code_bounds(source: &dyn MemorySource) -> Result<CodeBounds> {
             if header == b"MZ" {
                 if let Ok(bounds) = parse_pe_code_section(source, region.start) {
                     for (start, end) in &bounds.ranges {
-                        eprintln!("Found code range: {:#x}-{:#x} (from PE at {:#x})", start, end, region.start);
+                        eprintln!(
+                            "Found code range: {:#x}-{:#x} (from PE at {:#x})",
+                            start, end, region.start
+                        );
                     }
                     return Ok(bounds);
                 }
@@ -1047,7 +1111,10 @@ pub fn discover_class_uclass(source: &dyn MemorySource) -> Result<usize> {
             continue;
         }
 
-        eprintln!("  Scanning region {:#x}-{:#x} for Class UClass...", region.start, region.end);
+        eprintln!(
+            "  Scanning region {:#x}-{:#x} for Class UClass...",
+            region.start, region.end
+        );
 
         let data = match source.read_bytes(region.start, region.size()) {
             Ok(d) => d,
@@ -1084,14 +1151,19 @@ pub fn discover_class_uclass(source: &dyn MemorySource) -> Result<usize> {
             }
 
             // Found a candidate!
-            eprintln!("  Found self-referential object at {:#x} (vtable={:#x})", obj_addr, vtable_ptr);
+            eprintln!(
+                "  Found self-referential object at {:#x} (vtable={:#x})",
+                obj_addr, vtable_ptr
+            );
             candidates.push(obj_addr);
         }
     }
 
     if candidates.is_empty() {
         // Try alternative offsets - maybe ClassPrivate is at a different offset
-        eprintln!("  No self-referential UClass found at offset 0x10, trying alternative offsets...");
+        eprintln!(
+            "  No self-referential UClass found at offset 0x10, trying alternative offsets..."
+        );
 
         for class_offset in [0x08, 0x18, 0x20, 0x28] {
             for region in source.regions() {
@@ -1120,7 +1192,8 @@ pub fn discover_class_uclass(source: &dyn MemorySource) -> Result<usize> {
                         continue;
                     }
 
-                    let class_private = LE::read_u64(&data[i + class_offset..i + class_offset + 8]) as usize;
+                    let class_private =
+                        LE::read_u64(&data[i + class_offset..i + class_offset + 8]) as usize;
 
                     if class_private != obj_addr {
                         continue;
@@ -1135,7 +1208,10 @@ pub fn discover_class_uclass(source: &dyn MemorySource) -> Result<usize> {
                         continue;
                     }
 
-                    eprintln!("  Found self-referential at {:#x} with class_offset={:#x}", obj_addr, class_offset);
+                    eprintln!(
+                        "  Found self-referential at {:#x} with class_offset={:#x}",
+                        obj_addr, class_offset
+                    );
                     candidates.push(obj_addr);
 
                     if candidates.len() >= 3 {
@@ -1174,7 +1250,9 @@ fn parse_pe_code_section(source: &dyn MemorySource, base: usize) -> Result<CodeB
     }
 
     // Get PE header offset (e_lfanew)
-    let pe_offset = LE::read_u32(&dos_header[PE_HEADER_OFFSET_LOCATION..PE_HEADER_OFFSET_LOCATION + 4]) as usize;
+    let pe_offset =
+        LE::read_u32(&dos_header[PE_HEADER_OFFSET_LOCATION..PE_HEADER_OFFSET_LOCATION + 4])
+            as usize;
     if pe_offset == 0 || pe_offset > PE_HEADER_MAX_OFFSET {
         bail!("Invalid PE offset: {:#x}", pe_offset);
     }
@@ -1227,25 +1305,34 @@ fn parse_pe_code_section(source: &dyn MemorySource, base: usize) -> Result<CodeB
 
         // Check if this is an actual code section (not just executable metadata)
         // Only include sections that actually contain code, not .pdata/.reloc/etc
-        let is_code_section = section.is_executable() &&
-            (name.contains("text") || name.contains("code") || name == ".ecode" ||
-             name.starts_with(".text") || name.starts_with(".code"));
+        let is_code_section = section.is_executable()
+            && (name.contains("text")
+                || name.contains("code")
+                || name == ".ecode"
+                || name.starts_with(".text")
+                || name.starts_with(".code"));
 
         let section_start = base + virtual_address;
         let section_end = section_start + virtual_size;
 
         if is_code_section {
             code_ranges.push((section_start, section_end));
-            eprintln!("  Found code section '{}': {:#x}-{:#x}",
-                     name, section_start, section_end);
+            eprintln!(
+                "  Found code section '{}': {:#x}-{:#x}",
+                name, section_start, section_end
+            );
         } else if section.is_executable() {
-            eprintln!("  Skipping executable non-code '{}': {:#x}-{:#x}",
-                     name, section_start, section_end);
+            eprintln!(
+                "  Skipping executable non-code '{}': {:#x}-{:#x}",
+                name, section_start, section_end
+            );
         } else {
             // Print non-executable sections for debugging (like .rdata where vtables live)
             if name.contains("data") || name.contains("rdata") {
-                eprintln!("  Found data section '{}': {:#x}-{:#x} (chars: {:#x})",
-                         name, section_start, section_end, characteristics);
+                eprintln!(
+                    "  Found data section '{}': {:#x}-{:#x} (chars: {:#x})",
+                    name, section_start, section_end, characteristics
+                );
             }
         }
     }
@@ -1254,7 +1341,9 @@ fn parse_pe_code_section(source: &dyn MemorySource, base: usize) -> Result<CodeB
         bail!("No code sections found in PE at {:#x}", base);
     }
 
-    Ok(CodeBounds { ranges: code_ranges })
+    Ok(CodeBounds {
+        ranges: code_ranges,
+    })
 }
 
 // ============================================================================
@@ -1331,7 +1420,8 @@ pub fn discover_gnames(source: &dyn MemorySource) -> Result<GNamesPool> {
                             let start = offset + 2; // Skip length byte and flags byte
                             let end = start + string_len as usize;
                             if end <= pool_data.len() {
-                                if let Ok(name) = String::from_utf8(pool_data[start..end].to_vec()) {
+                                if let Ok(name) = String::from_utf8(pool_data[start..end].to_vec())
+                                {
                                     if name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
                                         sample_names.push((index, name));
                                     }
@@ -1356,10 +1446,7 @@ pub fn discover_gnames(source: &dyn MemorySource) -> Result<GNamesPool> {
     let gnames_addr = results[0];
 
     // Read sample names
-    let sample_names = vec![
-        (0, "None".to_string()),
-        (1, "ByteProperty".to_string()),
-    ];
+    let sample_names = vec![(0, "None".to_string()), (1, "ByteProperty".to_string())];
 
     Ok(GNamesPool {
         address: gnames_addr,
@@ -1379,7 +1466,10 @@ fn is_valid_pointer(ptr: usize) -> bool {
 /// Uses the code pattern: 48 8B 05 ?? ?? ?? ?? 48 8B 0C C8 48 8D 04 D1
 /// This is: mov rax, [rip+offset]; mov rcx, [rax+rcx*8]; lea rax, [rcx+rdx*8]
 /// The RIP-relative offset in the first instruction points to GUObjectArray
-pub fn discover_guobject_array(source: &dyn MemorySource, _gnames_addr: usize) -> Result<GUObjectArray> {
+pub fn discover_guobject_array(
+    source: &dyn MemorySource,
+    _gnames_addr: usize,
+) -> Result<GUObjectArray> {
     // First, try to find GUObjectArray via code pattern scanning
     // Pattern: 48 8B 05 ?? ?? ?? ?? 48 8B 0C C8 48 8D 04 D1 EB ??
     // This is: mov rax, [rip+disp32]; mov rcx, [rax+rcx*8]; lea rax, [rcx+rdx*8]; jmp
@@ -1406,8 +1496,12 @@ pub fn discover_guobject_array(source: &dyn MemorySource, _gnames_addr: usize) -
             continue;
         }
 
-        eprintln!("  Scanning {:#x}-{:#x} ({} MB)...",
-                 region.start, region.end, region.size() / (1024 * 1024));
+        eprintln!(
+            "  Scanning {:#x}-{:#x} ({} MB)...",
+            region.start,
+            region.end,
+            region.size() / (1024 * 1024)
+        );
 
         // Read the region in chunks to avoid huge allocations
         let chunk_size = 16 * 1024 * 1024; // 16MB chunks
@@ -1452,21 +1546,31 @@ pub fn discover_guobject_array(source: &dyn MemorySource, _gnames_addr: usize) -
                             eprintln!("  NumChunks: {}", num_chunks);
 
                             // Validate structure
-                            if objects_ptr > MIN_VALID_POINTER && objects_ptr < MAX_VALID_POINTER
-                                && max_elements > 0 && max_elements <= 10_000_000
-                                && num_elements > 0 && num_elements <= max_elements
-                                && num_chunks > 0 && num_chunks <= 100
+                            if objects_ptr > MIN_VALID_POINTER
+                                && objects_ptr < MAX_VALID_POINTER
+                                && max_elements > 0
+                                && max_elements <= 10_000_000
+                                && num_elements > 0
+                                && num_elements <= max_elements
+                                && num_chunks > 0
+                                && num_chunks <= 100
                             {
                                 // Read first chunk pointer
                                 if let Ok(chunk_data) = source.read_bytes(objects_ptr, 8) {
                                     let first_chunk = LE::read_u64(&chunk_data) as usize;
 
-                                    if first_chunk > MIN_VALID_POINTER && first_chunk < MAX_VALID_POINTER {
+                                    if first_chunk > MIN_VALID_POINTER
+                                        && first_chunk < MAX_VALID_POINTER
+                                    {
                                         // Detect item size
-                                        let item_size = GUObjectArray::detect_item_size(source, first_chunk)
-                                            .unwrap_or(24);
+                                        let item_size =
+                                            GUObjectArray::detect_item_size(source, first_chunk)
+                                                .unwrap_or(24);
 
-                                        eprintln!("*** Found valid GUObjectArray at {:#x}! ***", guobject_addr);
+                                        eprintln!(
+                                            "*** Found valid GUObjectArray at {:#x}! ***",
+                                            guobject_addr
+                                        );
                                         return Ok(GUObjectArray {
                                             address: guobject_addr,
                                             objects_ptr,
@@ -1540,9 +1644,14 @@ pub fn discover_guobject_array(source: &dyn MemorySource, _gnames_addr: usize) -
                         {
                             let expected_chunks = (num_elements + 65535) / 65536;
                             if (num_chunks - expected_chunks).abs() <= 2 {
-                                eprintln!("Generic scan found candidate at {:#x} -> {:#x}", instruction_addr, target_addr);
-                                eprintln!("  Objects**: {:#x}, MaxElem: {}, NumElem: {}, Chunks: {}",
-                                         objects_ptr, max_elements, num_elements, num_chunks);
+                                eprintln!(
+                                    "Generic scan found candidate at {:#x} -> {:#x}",
+                                    instruction_addr, target_addr
+                                );
+                                eprintln!(
+                                    "  Objects**: {:#x}, MaxElem: {}, NumElem: {}, Chunks: {}",
+                                    objects_ptr, max_elements, num_elements, num_chunks
+                                );
                                 found_candidates.push((instruction_addr, target_addr));
                             }
                         }
@@ -1556,7 +1665,10 @@ pub fn discover_guobject_array(source: &dyn MemorySource, _gnames_addr: usize) -
 
     // Validate candidates
     for (code_addr, guobj_addr) in &found_candidates {
-        eprintln!("Validating candidate from {:#x} -> {:#x}", code_addr, guobj_addr);
+        eprintln!(
+            "Validating candidate from {:#x} -> {:#x}",
+            code_addr, guobj_addr
+        );
 
         if let Ok(header) = source.read_bytes(*guobj_addr, 32) {
             let objects_ptr = LE::read_u64(&header[0..8]) as usize;
@@ -1567,7 +1679,8 @@ pub fn discover_guobject_array(source: &dyn MemorySource, _gnames_addr: usize) -
                 let first_chunk = LE::read_u64(&chunk_data) as usize;
 
                 if first_chunk > MIN_VALID_POINTER && first_chunk < MAX_VALID_POINTER {
-                    let item_size = GUObjectArray::detect_item_size(source, first_chunk).unwrap_or(24);
+                    let item_size =
+                        GUObjectArray::detect_item_size(source, first_chunk).unwrap_or(24);
 
                     eprintln!("*** FOUND GUObjectArray at {:#x}! ***", guobj_addr);
                     return Ok(GUObjectArray {
@@ -1606,8 +1719,12 @@ pub fn discover_guobject_array(source: &dyn MemorySource, _gnames_addr: usize) -
     const MAX_VALID_FNAME_INDEX: u32 = 20_000_000; // ~305 blocks worth
 
     // Count heap regions for debug
-    let heap_regions: Vec<_> = source.regions().iter()
-        .filter(|r| r.start < 0x140000000 && r.size() >= 1024 * 1024 && r.size() <= 1024 * 1024 * 1024)
+    let heap_regions: Vec<_> = source
+        .regions()
+        .iter()
+        .filter(|r| {
+            r.start < 0x140000000 && r.size() >= 1024 * 1024 && r.size() <= 1024 * 1024 * 1024
+        })
         .collect();
     eprintln!("Found {} heap regions to scan", heap_regions.len());
 
@@ -1620,8 +1737,12 @@ pub fn discover_guobject_array(source: &dyn MemorySource, _gnames_addr: usize) -
             continue;
         }
 
-        eprintln!("  Scanning heap {:#x}-{:#x} ({} MB)...",
-                 region.start, region.end, region.size() / (1024 * 1024));
+        eprintln!(
+            "  Scanning heap {:#x}-{:#x} ({} MB)...",
+            region.start,
+            region.end,
+            region.size() / (1024 * 1024)
+        );
 
         let data = match source.read_bytes(region.start, region.size().min(100 * 1024 * 1024)) {
             Ok(d) => d,
@@ -1660,8 +1781,10 @@ pub fn discover_guobject_array(source: &dyn MemorySource, _gnames_addr: usize) -
 
             eprintln!("Heap candidate at {:#x}:", region.start + i);
             eprintln!("  ptr={:#x}, prealloc={:#x}", ptr, prealloc);
-            eprintln!("  max_elem={}, num_elem={}, max_chunks={}, num_chunks={}",
-                     max_elem, num_elem, max_chunks, num_chunks);
+            eprintln!(
+                "  max_elem={}, num_elem={}, max_chunks={}, num_chunks={}",
+                max_elem, num_elem, max_chunks, num_chunks
+            );
 
             // Validate by reading chunk pointers
             if let Ok(chunk_data) = source.read_bytes(ptr, 8 * num_chunks as usize) {
@@ -1683,7 +1806,8 @@ pub fn discover_guobject_array(source: &dyn MemorySource, _gnames_addr: usize) -
                                 if obj_ptr > MIN_VALID_POINTER && obj_ptr < MAX_VALID_POINTER {
                                     if let Ok(obj) = source.read_bytes(obj_ptr, 0x20) {
                                         let vtable = LE::read_u64(&obj) as usize;
-                                        if vtable > MIN_VALID_POINTER && vtable < MAX_VALID_POINTER {
+                                        if vtable > MIN_VALID_POINTER && vtable < MAX_VALID_POINTER
+                                        {
                                             if let Ok(vt) = source.read_bytes(vtable, 8) {
                                                 let func = LE::read_u64(&vt) as usize;
                                                 if code_bounds.contains(func) {
@@ -1711,8 +1835,9 @@ pub fn discover_guobject_array(source: &dyn MemorySource, _gnames_addr: usize) -
                                 }
                                 score += (num_elem / 10000) as i32;
 
-                                let detected_item_size = GUObjectArray::detect_item_size(source, first_chunk)
-                                    .unwrap_or(item_size);
+                                let detected_item_size =
+                                    GUObjectArray::detect_item_size(source, first_chunk)
+                                        .unwrap_or(item_size);
 
                                 eprintln!("Heap candidate at {:#x}: vtable_valid={}, fname_valid={}, score={}, first_chunk={:#x}",
                                          region.start + i, vtable_valid, fname_valid, score, first_chunk);
@@ -1743,7 +1868,10 @@ pub fn discover_guobject_array(source: &dyn MemorySource, _gnames_addr: usize) -
     let srdata_end = 0x15175c000usize;
     let sdk_gobjects = 0x1513878f0usize;
 
-    eprintln!("DEBUG: Targeted scan of .srdata section ({:#x}-{:#x})...", srdata_start, srdata_end);
+    eprintln!(
+        "DEBUG: Targeted scan of .srdata section ({:#x}-{:#x})...",
+        srdata_start, srdata_end
+    );
     eprintln!("DEBUG: SDK says GObjects at {:#x}", sdk_gobjects);
 
     if let Ok(data) = source.read_bytes(srdata_start, srdata_end - srdata_start) {
@@ -1751,14 +1879,23 @@ pub fn discover_guobject_array(source: &dyn MemorySource, _gnames_addr: usize) -
         let sdk_offset_in_section = sdk_gobjects - srdata_start;
         if sdk_offset_in_section + 32 <= data.len() {
             eprintln!("DEBUG: Data at SDK GObjects offset ({:#x}):", sdk_gobjects);
-            let ptr = LE::read_u64(&data[sdk_offset_in_section..sdk_offset_in_section + 8]) as usize;
-            let prealloc = LE::read_u64(&data[sdk_offset_in_section + 8..sdk_offset_in_section + 16]) as usize;
-            let max_elem = LE::read_i32(&data[sdk_offset_in_section + 16..sdk_offset_in_section + 20]);
-            let num_elem = LE::read_i32(&data[sdk_offset_in_section + 20..sdk_offset_in_section + 24]);
-            let max_chunks = LE::read_i32(&data[sdk_offset_in_section + 24..sdk_offset_in_section + 28]);
-            let num_chunks = LE::read_i32(&data[sdk_offset_in_section + 28..sdk_offset_in_section + 32]);
+            let ptr =
+                LE::read_u64(&data[sdk_offset_in_section..sdk_offset_in_section + 8]) as usize;
+            let prealloc =
+                LE::read_u64(&data[sdk_offset_in_section + 8..sdk_offset_in_section + 16]) as usize;
+            let max_elem =
+                LE::read_i32(&data[sdk_offset_in_section + 16..sdk_offset_in_section + 20]);
+            let num_elem =
+                LE::read_i32(&data[sdk_offset_in_section + 20..sdk_offset_in_section + 24]);
+            let max_chunks =
+                LE::read_i32(&data[sdk_offset_in_section + 24..sdk_offset_in_section + 28]);
+            let num_chunks =
+                LE::read_i32(&data[sdk_offset_in_section + 28..sdk_offset_in_section + 32]);
             eprintln!("  ptr={:#x}, prealloc={:#x}", ptr, prealloc);
-            eprintln!("  max_elem={}, num_elem={}, max_chunks={}, num_chunks={}", max_elem, num_elem, max_chunks, num_chunks);
+            eprintln!(
+                "  max_elem={}, num_elem={}, max_chunks={}, num_chunks={}",
+                max_elem, num_elem, max_chunks, num_chunks
+            );
         }
 
         // Find anything that looks like a count in expected range (100k-3M)
@@ -1769,7 +1906,10 @@ pub fn discover_guobject_array(source: &dyn MemorySource, _gnames_addr: usize) -
                 count_candidates.push((i, val));
             }
         }
-        eprintln!("DEBUG: Found {} values in 100k-3M range in .srdata", count_candidates.len());
+        eprintln!(
+            "DEBUG: Found {} values in 100k-3M range in .srdata",
+            count_candidates.len()
+        );
 
         // For the first few, show context
         for (idx, (offset, val)) in count_candidates.iter().take(10).enumerate() {
@@ -1784,10 +1924,17 @@ pub fn discover_guobject_array(source: &dyn MemorySource, _gnames_addr: usize) -
                 let expected_chunks = (*val + 65535) / 65536;
 
                 if ptr > 0x10000 && ptr < 0x800000000000 && ptr % 8 == 0 {
-                    eprintln!("DEBUG[{}]: count={} at .srdata+{:#x} (VA {:#x})",
-                             idx, val, offset, srdata_start + offset);
-                    eprintln!("  ptr={:#x}, prealloc={:#x}, max_elem={}, num_chunks={} (expected={})",
-                             ptr, prealloc, max_elem, num_chunks, expected_chunks);
+                    eprintln!(
+                        "DEBUG[{}]: count={} at .srdata+{:#x} (VA {:#x})",
+                        idx,
+                        val,
+                        offset,
+                        srdata_start + offset
+                    );
+                    eprintln!(
+                        "  ptr={:#x}, prealloc={:#x}, max_elem={}, num_chunks={} (expected={})",
+                        ptr, prealloc, max_elem, num_chunks, expected_chunks
+                    );
 
                     // Try to read the chunk pointer
                     if let Ok(chunk_data) = source.read_bytes(ptr, 8) {
@@ -1833,7 +1980,9 @@ pub fn discover_guobject_array(source: &dyn MemorySource, _gnames_addr: usize) -
             if ptr == 0 || ptr < 0x10000 || ptr > 0x800000000000 || ptr % 8 != 0 {
                 continue;
             }
-            if prealloc != 0 && (prealloc < 0x10000 || prealloc > 0x800000000000 || prealloc % 8 != 0) {
+            if prealloc != 0
+                && (prealloc < 0x10000 || prealloc > 0x800000000000 || prealloc % 8 != 0)
+            {
                 continue;
             }
             // NumElements should be reasonably large (100k-3M for loaded game)
@@ -1858,8 +2007,14 @@ pub fn discover_guobject_array(source: &dyn MemorySource, _gnames_addr: usize) -
             if let Ok(chunk_data) = source.read_bytes(ptr, 8) {
                 let first_chunk = LE::read_u64(&chunk_data) as usize;
                 if first_chunk > 0x10000 && first_chunk < 0x800000000000 && first_chunk % 8 == 0 {
-                    eprintln!("Candidate at {:#x}: ptr={:#x}, num_elem={}, chunks={}, first_chunk={:#x}",
-                             region.start + i, ptr, num_elem, num_chunks, first_chunk);
+                    eprintln!(
+                        "Candidate at {:#x}: ptr={:#x}, num_elem={}, chunks={}, first_chunk={:#x}",
+                        region.start + i,
+                        ptr,
+                        num_elem,
+                        num_chunks,
+                        first_chunk
+                    );
 
                     // Validate objects and compute score
                     for item_size in [24usize, 16] {
@@ -1912,8 +2067,9 @@ pub fn discover_guobject_array(source: &dyn MemorySource, _gnames_addr: usize) -
                                 // Bonus for more objects
                                 score += (num_elem / 10000) as i32;
 
-                                let detected_item_size = GUObjectArray::detect_item_size(source, first_chunk)
-                                    .unwrap_or(item_size);
+                                let detected_item_size =
+                                    GUObjectArray::detect_item_size(source, first_chunk)
+                                        .unwrap_or(item_size);
 
                                 eprintln!("Candidate at {:#x}: vtable_valid={}, fname_valid={}, score={}, first_chunk={:#x}",
                                          region.start + i, vtable_valid, fname_valid, score, first_chunk);
@@ -1948,12 +2104,17 @@ pub fn discover_guobject_array(source: &dyn MemorySource, _gnames_addr: usize) -
 
     eprintln!("\n=== Top GUObjectArray candidates ===");
     for (i, c) in candidates.iter().take(5).enumerate() {
-        eprintln!("[{}] {:#x}: score={}, num_elem={}, first_chunk={:#x}, item_size={}",
-                 i, c.address, c.score, c.num_elements, c.first_chunk_ptr, c.item_size);
+        eprintln!(
+            "[{}] {:#x}: score={}, num_elem={}, first_chunk={:#x}, item_size={}",
+            i, c.address, c.score, c.num_elements, c.first_chunk_ptr, c.item_size
+        );
     }
 
     let best = &candidates[0];
-    eprintln!("\n*** Selected GUObjectArray at {:#x} (score={}) ***", best.address, best.score);
+    eprintln!(
+        "\n*** Selected GUObjectArray at {:#x} (score={}) ***",
+        best.address, best.score
+    );
 
     Ok(GUObjectArray {
         address: best.address,
@@ -2082,7 +2243,9 @@ impl EPropertyType {
             "StrProperty" => Self::StrProperty,
             "TextProperty" => Self::TextProperty,
             "InterfaceProperty" => Self::InterfaceProperty,
-            "MulticastDelegateProperty" | "MulticastInlineDelegateProperty" | "MulticastSparseDelegateProperty" => Self::MulticastDelegateProperty,
+            "MulticastDelegateProperty"
+            | "MulticastInlineDelegateProperty"
+            | "MulticastSparseDelegateProperty" => Self::MulticastDelegateProperty,
             "WeakObjectProperty" => Self::WeakObjectProperty,
             "LazyObjectProperty" => Self::LazyObjectProperty,
             "AssetObjectProperty" => Self::AssetObjectProperty,
@@ -2345,7 +2508,10 @@ impl FNamePool {
     /// Discover FNamePool using the known GNames pool address
     /// Searches for header structures that have Block0 == gnames_addr
     pub fn discover_with_gnames(source: &dyn MemorySource, gnames_addr: usize) -> Result<Self> {
-        eprintln!("Searching for FNamePool header with Block0 = {:#x}...", gnames_addr);
+        eprintln!(
+            "Searching for FNamePool header with Block0 = {:#x}...",
+            gnames_addr
+        );
 
         // Search in PE data sections for a header pointing to gnames_addr
         for region in source.regions() {
@@ -2457,7 +2623,11 @@ impl FNameReader {
         let block_addr = if block_index < self.pool.blocks.len() {
             self.pool.blocks[block_index]
         } else {
-            bail!("FName block {} out of range (have {} blocks)", block_index, self.pool.blocks.len());
+            bail!(
+                "FName block {} out of range (have {} blocks)",
+                block_index,
+                self.pool.blocks.len()
+            );
         };
 
         if block_addr == 0 {
@@ -2487,17 +2657,18 @@ impl FNameReader {
             }
             bail!(
                 "Invalid FName length {} at index {} (block={}, offset={:#x}, header={:#x})",
-                len, fname_index, block_index, block_offset, header_val
+                len,
+                fname_index,
+                block_index,
+                block_offset,
+                header_val
             );
         }
 
         let name = if is_wide {
             // UTF-16
             let bytes = source.read_bytes(entry_addr + 2, len * 2)?;
-            let chars: Vec<u16> = bytes
-                .chunks_exact(2)
-                .map(|c| LE::read_u16(c))
-                .collect();
+            let chars: Vec<u16> = bytes.chunks_exact(2).map(|c| LE::read_u16(c)).collect();
             String::from_utf16_lossy(&chars)
         } else {
             // ASCII/UTF-8
@@ -2515,7 +2686,10 @@ impl FNameReader {
         let block_index = (comparison_index >> 16) as usize;
         let block_offset = ((comparison_index & 0xFFFF) * 2) as usize;
 
-        eprintln!("FName {} -> block={}, offset={:#x}", fname_index, block_index, block_offset);
+        eprintln!(
+            "FName {} -> block={}, offset={:#x}",
+            fname_index, block_index, block_offset
+        );
 
         if block_index >= self.pool.blocks.len() {
             eprintln!("  Block out of range!");
@@ -2524,7 +2698,10 @@ impl FNameReader {
 
         let block_addr = self.pool.blocks[block_index];
         let entry_addr = block_addr + block_offset;
-        eprintln!("  Block addr: {:#x}, Entry addr: {:#x}", block_addr, entry_addr);
+        eprintln!(
+            "  Block addr: {:#x}, Entry addr: {:#x}",
+            block_addr, entry_addr
+        );
 
         let data = source.read_bytes(entry_addr, 32)?;
         eprint!("  Data: ");
@@ -2616,7 +2793,10 @@ impl FNameReader {
 
         // Search for it
         if let Some(idx) = self.search_name(source, "Class")? {
-            eprintln!("Found 'Class' FName at index {} (SDK said {})", idx, FNAME_CLASS_INDEX);
+            eprintln!(
+                "Found 'Class' FName at index {} (SDK said {})",
+                idx, FNAME_CLASS_INDEX
+            );
             return Ok(idx);
         }
 
@@ -2634,14 +2814,16 @@ impl FNameReader {
 
         // Search for it
         if let Some(idx) = self.search_name(source, "Object")? {
-            eprintln!("Found 'Object' FName at index {} (SDK said {})", idx, FNAME_OBJECT_INDEX);
+            eprintln!(
+                "Found 'Object' FName at index {} (SDK said {})",
+                idx, FNAME_OBJECT_INDEX
+            );
             return Ok(idx);
         }
 
         bail!("Could not find 'Object' FName in pool")
     }
 }
-
 
 /// Find all UClass instances by scanning for objects with ClassPrivate == UCLASS_METACLASS_ADDR
 /// This is more reliable than walking GUObjectArray when the array location is uncertain
@@ -2653,7 +2835,10 @@ pub fn find_all_uclasses(
     let mut results = Vec::new();
     let mut scanned_bytes = 0usize;
 
-    eprintln!("Scanning for UClass instances (ClassPrivate == {:#x})...", UCLASS_METACLASS_ADDR);
+    eprintln!(
+        "Scanning for UClass instances (ClassPrivate == {:#x})...",
+        UCLASS_METACLASS_ADDR
+    );
 
     // Scan all readable regions in the executable's data space
     for region in source.regions() {
@@ -2687,7 +2872,9 @@ pub fn find_all_uclasses(
                 continue;
             }
 
-            let class_ptr = LE::read_u64(&data[i + UOBJECT_CLASS_OFFSET..i + UOBJECT_CLASS_OFFSET + 8]) as usize;
+            let class_ptr =
+                LE::read_u64(&data[i + UOBJECT_CLASS_OFFSET..i + UOBJECT_CLASS_OFFSET + 8])
+                    as usize;
 
             if class_ptr != UCLASS_METACLASS_ADDR {
                 continue;
@@ -2712,7 +2899,8 @@ pub fn find_all_uclasses(
             }
 
             // Read FName
-            let name_index = LE::read_u32(&data[i + UOBJECT_NAME_OFFSET..i + UOBJECT_NAME_OFFSET + 4]);
+            let name_index =
+                LE::read_u32(&data[i + UOBJECT_NAME_OFFSET..i + UOBJECT_NAME_OFFSET + 4]);
 
             // Resolve name
             let name = match fname_reader.read_name(source, name_index) {
@@ -2730,8 +2918,11 @@ pub fn find_all_uclasses(
         }
     }
 
-    eprintln!("Scanned {} MB, found {} UClass instances",
-             scanned_bytes / 1_000_000, results.len());
+    eprintln!(
+        "Scanned {} MB, found {} UClass instances",
+        scanned_bytes / 1_000_000,
+        results.len()
+    );
 
     // Sort by name for easier reading
     results.sort_by(|a, b| a.name.cmp(&b.name));
@@ -2792,9 +2983,13 @@ pub fn discover_uclass_metaclass_exhaustive(
     eprintln!("=== Exhaustive UClass Metaclass Discovery ===");
 
     // Find the actual FName index for "Class" dynamically
-    let class_fname_idx = fname_reader.find_class_index(source)
+    let class_fname_idx = fname_reader
+        .find_class_index(source)
         .unwrap_or(FNAME_CLASS_INDEX);
-    eprintln!("Looking for self-referential object with FName 'Class' ({})...", class_fname_idx);
+    eprintln!(
+        "Looking for self-referential object with FName 'Class' ({})...",
+        class_fname_idx
+    );
 
     // Possible offsets to try
     let class_offsets = [0x08, 0x10, 0x18, 0x20, 0x28];
@@ -2804,7 +2999,10 @@ pub fn discover_uclass_metaclass_exhaustive(
     let class_fname_bytes = class_fname_idx.to_le_bytes();
 
     // Scan ALL readable memory for objects with FName "Class"
-    eprintln!("Scanning all memory for objects with FName {} ('Class')...", class_fname_idx);
+    eprintln!(
+        "Scanning all memory for objects with FName {} ('Class')...",
+        class_fname_idx
+    );
 
     let mut scanned_mb = 0usize;
     for region in source.regions() {
@@ -2877,15 +3075,19 @@ pub fn discover_uclass_metaclass_exhaustive(
                         }
 
                         // Check if ClassPrivate == self (self-referential)
-                        let class_ptr = LE::read_u64(&data[pos + class_offset..pos + class_offset + 8]) as usize;
+                        let class_ptr =
+                            LE::read_u64(&data[pos + class_offset..pos + class_offset + 8])
+                                as usize;
                         if class_ptr == obj_addr {
                             eprintln!("\rFound UClass metaclass at {:#x}!", obj_addr);
                             eprintln!("  vtable: {:#x}", vtable_ptr);
                             eprintln!("  ClassPrivate offset: {:#x}", class_offset);
                             eprintln!("  NamePrivate offset: {:#x}", name_offset);
 
-                            let fname_idx = LE::read_u32(&data[pos + name_offset..pos + name_offset + 4]);
-                            let name = fname_reader.read_name(source, fname_idx)
+                            let fname_idx =
+                                LE::read_u32(&data[pos + name_offset..pos + name_offset + 4]);
+                            let name = fname_reader
+                                .read_name(source, fname_idx)
                                 .unwrap_or_else(|_| format!("FName_{}", fname_idx));
 
                             return Ok(UClassMetaclassInfo {
@@ -2908,7 +3110,10 @@ pub fn discover_uclass_metaclass_exhaustive(
     eprintln!("\r  Scanned {} MB total", scanned_mb);
 
     // Second approach: find any self-referential object and check its FName
-    eprintln!("\nNo self-referential object with FName {} found.", class_fname_idx);
+    eprintln!(
+        "\nNo self-referential object with FName {} found.",
+        class_fname_idx
+    );
     eprintln!("Searching all memory for any self-referential objects...");
 
     let mut self_refs: Vec<(usize, usize, usize, usize, u32, String)> = Vec::new();
@@ -2952,7 +3157,8 @@ pub fn discover_uclass_metaclass_exhaustive(
                         let obj_addr = chunk_start + i;
 
                         // Check ClassPrivate == self first (fast filter)
-                        let class_ptr = LE::read_u64(&data[i + class_offset..i + class_offset + 8]) as usize;
+                        let class_ptr =
+                            LE::read_u64(&data[i + class_offset..i + class_offset + 8]) as usize;
                         if class_ptr != obj_addr {
                             continue;
                         }
@@ -2974,10 +3180,18 @@ pub fn discover_uclass_metaclass_exhaustive(
 
                         // Read FName
                         let fname_idx = LE::read_u32(&data[i + name_offset..i + name_offset + 4]);
-                        let name = fname_reader.read_name(source, fname_idx)
+                        let name = fname_reader
+                            .read_name(source, fname_idx)
                             .unwrap_or_else(|_| format!("FName_{}", fname_idx));
 
-                        self_refs.push((obj_addr, vtable_ptr, class_offset, name_offset, fname_idx, name));
+                        self_refs.push((
+                            obj_addr,
+                            vtable_ptr,
+                            class_offset,
+                            name_offset,
+                            fname_idx,
+                            name,
+                        ));
 
                         if self_refs.len() >= 50 {
                             break 'outer;
@@ -2991,16 +3205,27 @@ pub fn discover_uclass_metaclass_exhaustive(
     }
     eprintln!("\r  Scanned {} MB for self-refs", scanned_mb2);
 
-    eprintln!("Found {} self-referential objects with valid vtables:", self_refs.len());
+    eprintln!(
+        "Found {} self-referential objects with valid vtables:",
+        self_refs.len()
+    );
     for (addr, vt, cls_off, name_off, idx, name) in &self_refs {
-        let marker = if *idx == class_fname_idx || name == "Class" { " <-- METACLASS!" } else { "" };
-        eprintln!("  {:#x}: vt={:#x}, cls@+{:#x}, name@+{:#x}, FName={}(\"{}\"){}",
-                 addr, vt, cls_off, name_off, idx, name, marker);
+        let marker = if *idx == class_fname_idx || name == "Class" {
+            " <-- METACLASS!"
+        } else {
+            ""
+        };
+        eprintln!(
+            "  {:#x}: vt={:#x}, cls@+{:#x}, name@+{:#x}, FName={}(\"{}\"){}",
+            addr, vt, cls_off, name_off, idx, name, marker
+        );
     }
 
     // Check if any is "Class"
-    if let Some((addr, vt, cls_off, name_off, idx, name)) = self_refs.iter()
-        .find(|(_, _, _, _, idx, name)| *idx == class_fname_idx || name == "Class") {
+    if let Some((addr, vt, cls_off, name_off, idx, name)) = self_refs
+        .iter()
+        .find(|(_, _, _, _, idx, name)| *idx == class_fname_idx || name == "Class")
+    {
         return Ok(UClassMetaclassInfo {
             address: *addr,
             vtable: *vt,
@@ -3029,7 +3254,11 @@ pub fn analyze_dump(source: &dyn MemorySource) -> Result<()> {
     let pool = match FNamePool::discover(source) {
         Ok(p) => {
             eprintln!("  FNamePool at {:#x}", p.header_addr);
-            eprintln!("  {} blocks, cursor at {}", p.current_block + 1, p.current_cursor);
+            eprintln!(
+                "  {} blocks, cursor at {}",
+                p.current_block + 1,
+                p.current_cursor
+            );
             p
         }
         Err(e) => {
@@ -3046,7 +3275,10 @@ pub fn analyze_dump(source: &dyn MemorySource) -> Result<()> {
     // Find "Class" FName dynamically
     let class_idx = match fname_reader.find_class_index(source) {
         Ok(idx) => {
-            eprintln!("  FName 'Class' found at index {} (SDK constant was {})", idx, FNAME_CLASS_INDEX);
+            eprintln!(
+                "  FName 'Class' found at index {} (SDK constant was {})",
+                idx, FNAME_CLASS_INDEX
+            );
             idx
         }
         Err(e) => {
@@ -3058,7 +3290,10 @@ pub fn analyze_dump(source: &dyn MemorySource) -> Result<()> {
     // Find "Object" FName dynamically
     let object_idx = match fname_reader.find_object_index(source) {
         Ok(idx) => {
-            eprintln!("  FName 'Object' found at index {} (SDK constant was {})", idx, FNAME_OBJECT_INDEX);
+            eprintln!(
+                "  FName 'Object' found at index {} (SDK constant was {})",
+                idx, FNAME_OBJECT_INDEX
+            );
             idx
         }
         Err(e) => {
@@ -3072,7 +3307,10 @@ pub fn analyze_dump(source: &dyn MemorySource) -> Result<()> {
         match fname_reader.read_name(source, idx) {
             Ok(name) => {
                 let status = if name == expected { "OK" } else { "MISMATCH" };
-                eprintln!("  FName {} = \"{}\" (expected \"{}\") [{}]", idx, name, expected, status);
+                eprintln!(
+                    "  FName {} = \"{}\" (expected \"{}\") [{}]",
+                    idx, name, expected, status
+                );
             }
             Err(e) => {
                 eprintln!("  FName {} = ERROR: {}", idx, e);
@@ -3093,10 +3331,22 @@ pub fn analyze_dump(source: &dyn MemorySource) -> Result<()> {
 
             // Update the constants for future use
             eprintln!("\nRecommended constant updates:");
-            eprintln!("  pub const UCLASS_METACLASS_ADDR: usize = {:#x};", info.address);
-            eprintln!("  pub const UCLASS_METACLASS_VTABLE: usize = {:#x};", info.vtable);
-            eprintln!("  pub const UOBJECT_CLASS_OFFSET: usize = {:#x};", info.class_offset);
-            eprintln!("  pub const UOBJECT_NAME_OFFSET: usize = {:#x};", info.name_offset);
+            eprintln!(
+                "  pub const UCLASS_METACLASS_ADDR: usize = {:#x};",
+                info.address
+            );
+            eprintln!(
+                "  pub const UCLASS_METACLASS_VTABLE: usize = {:#x};",
+                info.vtable
+            );
+            eprintln!(
+                "  pub const UOBJECT_CLASS_OFFSET: usize = {:#x};",
+                info.class_offset
+            );
+            eprintln!(
+                "  pub const UOBJECT_NAME_OFFSET: usize = {:#x};",
+                info.name_offset
+            );
         }
         Err(e) => {
             eprintln!("  Failed: {}", e);
@@ -3182,13 +3432,20 @@ pub fn walk_guobject_array(
                 Err(_) => continue,
             };
 
-            let class_ptr = LE::read_u64(&obj_data[offsets.class_offset..offsets.class_offset + 8]) as usize;
+            let class_ptr =
+                LE::read_u64(&obj_data[offsets.class_offset..offsets.class_offset + 8]) as usize;
             let name_index = LE::read_u32(&obj_data[offsets.name_offset..offsets.name_offset + 4]);
 
             // Debug: print first few FName indices we see
             if scanned <= 5 {
-                eprintln!("  UObject[{}] at {:#x}: class={:#x}, name_idx={} ({:#x})",
-                         scanned - 1, obj_ptr, class_ptr, name_index, name_index);
+                eprintln!(
+                    "  UObject[{}] at {:#x}: class={:#x}, name_idx={} ({:#x})",
+                    scanned - 1,
+                    obj_ptr,
+                    class_ptr,
+                    name_index,
+                    name_index
+                );
                 let _ = fname_reader.debug_read(source, name_index);
             }
 
@@ -3199,7 +3456,10 @@ pub fn walk_guobject_array(
                     if name == "Class" && class_ptr == obj_ptr {
                         class_class_ptr = Some(obj_ptr);
                         class_candidate = Some((obj_ptr, class_ptr));
-                        eprintln!("  Found UClass 'Class' at {:#x} (self-referential)", obj_ptr);
+                        eprintln!(
+                            "  Found UClass 'Class' at {:#x} (self-referential)",
+                            obj_ptr
+                        );
                     } else if name == "ScriptStruct" {
                         scriptstruct_candidate = Some((obj_ptr, class_ptr));
                     } else if name == "Enum" {
@@ -3207,7 +3467,10 @@ pub fn walk_guobject_array(
                     }
 
                     // Stop early if we found all three candidates
-                    if class_candidate.is_some() && scriptstruct_candidate.is_some() && enum_candidate.is_some() {
+                    if class_candidate.is_some()
+                        && scriptstruct_candidate.is_some()
+                        && enum_candidate.is_some()
+                    {
                         break;
                     }
                 }
@@ -3220,12 +3483,16 @@ pub fn walk_guobject_array(
 
             // Progress indicator
             if scanned % 50000 == 0 {
-                eprint!("\r  Scanned {}/{} objects...", scanned, guobj_array.num_elements);
+                eprint!(
+                    "\r  Scanned {}/{} objects...",
+                    scanned, guobj_array.num_elements
+                );
             }
         }
 
         // Stop early if we found all three candidates
-        if class_candidate.is_some() && scriptstruct_candidate.is_some() && enum_candidate.is_some() {
+        if class_candidate.is_some() && scriptstruct_candidate.is_some() && enum_candidate.is_some()
+        {
             break;
         }
     }
@@ -3293,7 +3560,8 @@ pub fn walk_guobject_array(
                 Err(_) => continue,
             };
 
-            let class_ptr = LE::read_u64(&obj_data[offsets.class_offset..offsets.class_offset + 8]) as usize;
+            let class_ptr =
+                LE::read_u64(&obj_data[offsets.class_offset..offsets.class_offset + 8]) as usize;
             let name_index = LE::read_u32(&obj_data[offsets.name_offset..offsets.name_offset + 4]);
 
             // Check if this object is a UClass, UScriptStruct, or UEnum
@@ -3318,17 +3586,27 @@ pub fn walk_guobject_array(
             }
 
             if scanned % 100000 == 0 {
-                eprint!("\r  Scanned {}/{} objects, found {} reflection types...",
-                       scanned, guobj_array.num_elements, results.len());
+                eprint!(
+                    "\r  Scanned {}/{} objects, found {} reflection types...",
+                    scanned,
+                    guobj_array.num_elements,
+                    results.len()
+                );
             }
         }
     }
 
-    eprintln!("\r  Second pass complete: {} reflection objects found", results.len());
+    eprintln!(
+        "\r  Second pass complete: {} reflection objects found",
+        results.len()
+    );
 
     // Summary
     let class_count = results.iter().filter(|o| o.class_name == "Class").count();
-    let struct_count = results.iter().filter(|o| o.class_name == "ScriptStruct").count();
+    let struct_count = results
+        .iter()
+        .filter(|o| o.class_name == "ScriptStruct")
+        .count();
     let enum_count = results.iter().filter(|o| o.class_name == "Enum").count();
 
     eprintln!(
@@ -3355,7 +3633,10 @@ fn read_property_type(
     let class_data = source.read_bytes(field_class_ptr, 0x180)?;
 
     if debug {
-        eprintln!("  FFieldClass at {:#x} (raw dump - 0x180 bytes):", field_class_ptr);
+        eprintln!(
+            "  FFieldClass at {:#x} (raw dump - 0x180 bytes):",
+            field_class_ptr
+        );
         // Dump all 0x180 bytes as hex for analysis
         for i in 0..24 {
             let offset = i * 16;
@@ -3390,7 +3671,10 @@ fn read_property_type(
                 if let Ok(name) = fname_reader.read_name(source, name_index) {
                     if name.ends_with("Property") {
                         if debug {
-                            eprintln!("    Found Property type at +{:#x}: idx={}, name='{}'", offset, name_index, name);
+                            eprintln!(
+                                "    Found Property type at +{:#x}: idx={}, name='{}'",
+                                offset, name_index, name
+                            );
                         }
                         return Ok(name);
                     }
@@ -3417,13 +3701,18 @@ fn extract_property(
     let prop_data = source.read_bytes(prop_ptr, 0x80)?;
 
     // FField base
-    let field_class_ptr = LE::read_u64(&prop_data[FFIELD_CLASS_OFFSET..FFIELD_CLASS_OFFSET + 8]) as usize;
+    let field_class_ptr =
+        LE::read_u64(&prop_data[FFIELD_CLASS_OFFSET..FFIELD_CLASS_OFFSET + 8]) as usize;
     let name_index = LE::read_u32(&prop_data[FFIELD_NAME_OFFSET..FFIELD_NAME_OFFSET + 4]);
 
     // FProperty fields
-    let array_dim = LE::read_i32(&prop_data[FPROPERTY_ARRAYDIM_OFFSET..FPROPERTY_ARRAYDIM_OFFSET + 4]);
-    let element_size = LE::read_i32(&prop_data[FPROPERTY_ELEMENTSIZE_OFFSET..FPROPERTY_ELEMENTSIZE_OFFSET + 4]);
-    let property_flags = LE::read_u64(&prop_data[FPROPERTY_PROPERTYFLAGS_OFFSET..FPROPERTY_PROPERTYFLAGS_OFFSET + 8]);
+    let array_dim =
+        LE::read_i32(&prop_data[FPROPERTY_ARRAYDIM_OFFSET..FPROPERTY_ARRAYDIM_OFFSET + 4]);
+    let element_size =
+        LE::read_i32(&prop_data[FPROPERTY_ELEMENTSIZE_OFFSET..FPROPERTY_ELEMENTSIZE_OFFSET + 4]);
+    let property_flags = LE::read_u64(
+        &prop_data[FPROPERTY_PROPERTYFLAGS_OFFSET..FPROPERTY_PROPERTYFLAGS_OFFSET + 8],
+    );
     let offset = LE::read_i32(&prop_data[FPROPERTY_OFFSET_OFFSET..FPROPERTY_OFFSET_OFFSET + 4]);
 
     // Debug first few properties (disabled for production)
@@ -3533,7 +3822,9 @@ fn extract_property(
                     // Could be StructProperty or ObjectProperty - distinguish by class
                     if let Ok(class_data) = source.read_bytes(ptr_at_78 + UOBJECT_CLASS_OFFSET, 8) {
                         let class_ptr = LE::read_u64(&class_data) as usize;
-                        if let Ok(class_name_data) = source.read_bytes(class_ptr + UOBJECT_NAME_OFFSET, 4) {
+                        if let Ok(class_name_data) =
+                            source.read_bytes(class_ptr + UOBJECT_NAME_OFFSET, 4)
+                        {
                             let class_name_idx = LE::read_u32(&class_name_data);
                             if let Ok(class_name) = fname_reader.read_name(source, class_name_idx) {
                                 if class_name == "ScriptStruct" {
@@ -3560,19 +3851,44 @@ fn extract_property(
     // If still unknown, infer from element size
     if inferred_type == EPropertyType::Unknown {
         inferred_type_name = match element_size {
-            1 => { inferred_type = EPropertyType::ByteProperty; "ByteProperty" }
-            2 => { inferred_type = EPropertyType::Int16Property; "Int16Property" }
-            4 => { inferred_type = EPropertyType::IntProperty; "IntProperty" }
-            8 => { inferred_type = EPropertyType::Int64Property; "Int64Property" }
-            12 => { inferred_type = EPropertyType::StructProperty; "StructProperty" } // Likely FVector
-            16 => { inferred_type = EPropertyType::StrProperty; "StrProperty" } // FString is 16 bytes
-            24 => { inferred_type = EPropertyType::StructProperty; "StructProperty" } // Likely FRotator or Transform
-            _ => "Unknown"
-        }.to_string();
+            1 => {
+                inferred_type = EPropertyType::ByteProperty;
+                "ByteProperty"
+            }
+            2 => {
+                inferred_type = EPropertyType::Int16Property;
+                "Int16Property"
+            }
+            4 => {
+                inferred_type = EPropertyType::IntProperty;
+                "IntProperty"
+            }
+            8 => {
+                inferred_type = EPropertyType::Int64Property;
+                "Int64Property"
+            }
+            12 => {
+                inferred_type = EPropertyType::StructProperty;
+                "StructProperty"
+            } // Likely FVector
+            16 => {
+                inferred_type = EPropertyType::StrProperty;
+                "StrProperty"
+            } // FString is 16 bytes
+            24 => {
+                inferred_type = EPropertyType::StructProperty;
+                "StructProperty"
+            } // Likely FRotator or Transform
+            _ => "Unknown",
+        }
+        .to_string();
     }
 
     if debug {
-        eprintln!("  Resolved: name='{}', inferred_type='{}'", name, inferred_type_name);
+        eprintln!(
+            "  Resolved: name='{}', inferred_type='{}'",
+            name, inferred_type_name
+        );
     }
 
     Ok(PropertyInfo {
@@ -3620,7 +3936,9 @@ pub fn extract_struct_properties(
     // Get ChildProperties pointer (linked list of FProperty)
     // Note: USTRUCT_CHILDREN_OFFSET (0x48) points to UField* (UFunctions)
     // USTRUCT_CHILDPROPERTIES_OFFSET (0x50) points to FField* (FProperties)
-    let children_ptr = LE::read_u64(&header[USTRUCT_CHILDPROPERTIES_OFFSET..USTRUCT_CHILDPROPERTIES_OFFSET + 8]) as usize;
+    let children_ptr =
+        LE::read_u64(&header[USTRUCT_CHILDPROPERTIES_OFFSET..USTRUCT_CHILDPROPERTIES_OFFSET + 8])
+            as usize;
 
     // Walk property linked list
     let mut properties = Vec::new();
@@ -3638,7 +3956,10 @@ pub fn extract_struct_properties(
             Err(e) => {
                 // Log but continue - some properties may be unreadable
                 if safety_counter <= 3 {
-                    eprintln!("    Warning: Failed to read property at {:#x}: {}", prop_ptr, e);
+                    eprintln!(
+                        "    Warning: Failed to read property at {:#x}: {}",
+                        prop_ptr, e
+                    );
                 }
                 break;
             }
@@ -3709,13 +4030,16 @@ pub fn extract_enum_values(
         let count = LE::read_i32(&tarray_data[8..12]) as usize;
 
         if debug {
-            eprintln!("  Trying offset +{:#x}: data_ptr={:#x}, count={}", names_offset, data_ptr, count);
+            eprintln!(
+                "  Trying offset +{:#x}: data_ptr={:#x}, count={}",
+                names_offset, data_ptr, count
+            );
         }
 
         // Data pointer should be in heap range (0x7ff4... for this dump) or reasonable heap (> 0x1000000)
         // and count should be small (enum shouldn't have millions of values)
-        let is_heap_ptr = (data_ptr >= 0x1000000 && data_ptr < 0x140000000) ||
-                          (data_ptr >= 0x7ff000000000 && data_ptr < 0x800000000000);
+        let is_heap_ptr = (data_ptr >= 0x1000000 && data_ptr < 0x140000000)
+            || (data_ptr >= 0x7ff000000000 && data_ptr < 0x800000000000);
 
         if data_ptr != 0 && is_heap_ptr && count > 0 && count < 1000 {
             // Read all pairs at once
@@ -3729,10 +4053,13 @@ pub fn extract_enum_values(
                         for j in 0..16 {
                             eprint!("{:02x} ", pairs_data[off + j]);
                         }
-                        let name_idx = LE::read_u32(&pairs_data[off..off+4]);
-                        let name_extra = LE::read_u32(&pairs_data[off+4..off+8]);
-                        let val = LE::read_i64(&pairs_data[off+8..off+16]);
-                        eprintln!(" name_idx={}, extra={}, value={}", name_idx, name_extra, val);
+                        let name_idx = LE::read_u32(&pairs_data[off..off + 4]);
+                        let name_extra = LE::read_u32(&pairs_data[off + 4..off + 8]);
+                        let val = LE::read_i64(&pairs_data[off + 8..off + 16]);
+                        eprintln!(
+                            " name_idx={}, extra={}, value={}",
+                            name_idx, name_extra, val
+                        );
                     }
                 }
                 for i in 0..count {
@@ -3757,7 +4084,11 @@ pub fn extract_enum_values(
             // If we found values, stop trying other offsets
             if !values.is_empty() {
                 if debug {
-                    eprintln!("  Found {} values at offset +{:#x}", values.len(), names_offset);
+                    eprintln!(
+                        "  Found {} values at offset +{:#x}",
+                        values.len(),
+                        names_offset
+                    );
                 }
                 break;
             }
@@ -3792,7 +4123,7 @@ fn infer_property_type(
     match element_size {
         1 => "ByteProperty".to_string(),
         2 => "Int16Property".to_string(),
-        4 => "Int32Property".to_string(),  // Could also be FloatProperty
+        4 => "Int32Property".to_string(), // Could also be FloatProperty
         8 => {
             if is_object_like {
                 "ObjectProperty".to_string()
@@ -3801,7 +4132,7 @@ fn infer_property_type(
             }
         }
         12 => "StructProperty".to_string(), // Likely FVector (3 floats)
-        16 => "StrProperty".to_string(), // FString or FVector4/FQuat
+        16 => "StrProperty".to_string(),    // FString or FVector4/FQuat
         _ => format!("UnknownProperty(size={})", element_size),
     }
 }
@@ -3818,7 +4149,10 @@ pub fn extract_reflection_data(
 
     let _total = objects.len();
     let classes: Vec<_> = objects.iter().filter(|o| o.class_name == "Class").collect();
-    let script_structs: Vec<_> = objects.iter().filter(|o| o.class_name == "ScriptStruct").collect();
+    let script_structs: Vec<_> = objects
+        .iter()
+        .filter(|o| o.class_name == "ScriptStruct")
+        .collect();
     let enum_objects: Vec<_> = objects.iter().filter(|o| o.class_name == "Enum").collect();
 
     eprintln!("Extracting properties from {} classes...", classes.len());
@@ -3833,7 +4167,10 @@ pub fn extract_reflection_data(
     }
     eprintln!("\r  Processed {} classes", classes.len());
 
-    eprintln!("Extracting properties from {} structs...", script_structs.len());
+    eprintln!(
+        "Extracting properties from {} structs...",
+        script_structs.len()
+    );
     for (i, obj) in script_structs.iter().enumerate() {
         if i % 500 == 0 {
             eprint!("\r  Processing struct {}/{}...", i, script_structs.len());
@@ -3873,9 +4210,15 @@ pub fn extract_reflection_data(
     let total_enum_vals: usize = enums.iter().map(|e| e.values.len()).sum();
     eprintln!(
         "Extracted {} structs/classes with {} properties, {} enums with {} values",
-        structs.len(), total_props, enums.len(), total_enum_vals
+        structs.len(),
+        total_props,
+        enums.len(),
+        total_enum_vals
     );
-    eprintln!("Found {} unique FFieldClass pointers (property types)", ffc_pointers.len());
+    eprintln!(
+        "Found {} unique FFieldClass pointers (property types)",
+        ffc_pointers.len()
+    );
 
     // List unique FFieldClass pointers for debugging
     if ffc_pointers.len() < 50 {
@@ -4027,15 +4370,15 @@ pub fn write_usmap(
         payload.extend_from_slice(&name_idx.to_le_bytes());
 
         // Super type name index (0 for none - empty string)
-        let super_idx = st.super_name.as_ref()
+        let super_idx = st
+            .super_name
+            .as_ref()
             .and_then(|s| name_to_index.get(s).copied())
             .unwrap_or(0);
         payload.extend_from_slice(&super_idx.to_le_bytes());
 
         // Property count (sum of array_dim values - accounts for static arrays)
-        let prop_count: u16 = st.properties.iter()
-            .map(|p| p.array_dim as u16)
-            .sum();
+        let prop_count: u16 = st.properties.iter().map(|p| p.array_dim as u16).sum();
         payload.extend_from_slice(&prop_count.to_le_bytes());
 
         // Serializable property count (number of property entries)
@@ -4123,19 +4466,25 @@ fn write_property_type(
                 payload.push(EPropertyType::ByteProperty.to_usmap_id());
             }
             // Enum name
-            let enum_idx = prop.enum_type.as_ref()
+            let enum_idx = prop
+                .enum_type
+                .as_ref()
                 .and_then(|s| name_to_index.get(s).copied())
                 .unwrap_or(0);
             payload.extend_from_slice(&enum_idx.to_le_bytes());
         }
         EPropertyType::StructProperty => {
             // Struct type name
-            let struct_idx = prop.struct_type.as_ref()
+            let struct_idx = prop
+                .struct_type
+                .as_ref()
                 .and_then(|s| name_to_index.get(s).copied())
                 .unwrap_or(0);
             payload.extend_from_slice(&struct_idx.to_le_bytes());
         }
-        EPropertyType::ArrayProperty | EPropertyType::SetProperty | EPropertyType::OptionalProperty => {
+        EPropertyType::ArrayProperty
+        | EPropertyType::SetProperty
+        | EPropertyType::OptionalProperty => {
             // Inner type
             if let Some(ref inner) = prop.inner_type {
                 write_property_type(payload, inner, name_to_index)?;
@@ -4216,11 +4565,19 @@ pub fn find_objects_by_pattern(
         let name_index = LE::read_u32(&header[UOBJECT_NAME_OFFSET..UOBJECT_NAME_OFFSET + 4]);
         if let Ok(name) = fname_reader.read_name(source, name_index) {
             if name.contains(name_pattern) {
-                let class_ptr = LE::read_u64(&header[UOBJECT_CLASS_OFFSET..UOBJECT_CLASS_OFFSET + 8]) as usize;
-                let class_name = if class_ptr != 0 && class_ptr >= MIN_VALID_POINTER && class_ptr < MAX_VALID_POINTER {
+                let class_ptr =
+                    LE::read_u64(&header[UOBJECT_CLASS_OFFSET..UOBJECT_CLASS_OFFSET + 8]) as usize;
+                let class_name = if class_ptr != 0
+                    && class_ptr >= MIN_VALID_POINTER
+                    && class_ptr < MAX_VALID_POINTER
+                {
                     if let Ok(class_header) = source.read_bytes(class_ptr, UOBJECT_HEADER_SIZE) {
-                        let class_name_idx = LE::read_u32(&class_header[UOBJECT_NAME_OFFSET..UOBJECT_NAME_OFFSET + 4]);
-                        fname_reader.read_name(source, class_name_idx).unwrap_or_else(|_| "Unknown".to_string())
+                        let class_name_idx = LE::read_u32(
+                            &class_header[UOBJECT_NAME_OFFSET..UOBJECT_NAME_OFFSET + 4],
+                        );
+                        fname_reader
+                            .read_name(source, class_name_idx)
+                            .unwrap_or_else(|_| "Unknown".to_string())
                     } else {
                         "Unknown".to_string()
                     }
@@ -4236,11 +4593,19 @@ pub fn find_objects_by_pattern(
         }
 
         if idx % 100000 == 0 && idx > 0 {
-            eprintln!("  Scanned {} objects, found {} matches...", idx, results.len());
+            eprintln!(
+                "  Scanned {} objects, found {} matches...",
+                idx,
+                results.len()
+            );
         }
     }
 
-    eprintln!("Found {} objects matching '{}'", results.len(), name_pattern);
+    eprintln!(
+        "Found {} objects matching '{}'",
+        results.len(),
+        name_pattern
+    );
     Ok(results)
 }
 
@@ -4264,7 +4629,8 @@ pub fn generate_object_map(
     let pool = FNamePool::discover(source)?;
     let mut fname_reader = FNameReader::new(pool);
 
-    let mut map: std::collections::BTreeMap<String, Vec<ObjectMapEntry>> = std::collections::BTreeMap::new();
+    let mut map: std::collections::BTreeMap<String, Vec<ObjectMapEntry>> =
+        std::collections::BTreeMap::new();
     let mut total = 0;
 
     for (idx, obj_ptr) in guobjects.iter_objects(source) {
@@ -4283,17 +4649,22 @@ pub fn generate_object_map(
             Err(_) => continue,
         };
 
-        let class_ptr = LE::read_u64(&header[UOBJECT_CLASS_OFFSET..UOBJECT_CLASS_OFFSET + 8]) as usize;
-        let class_name = if class_ptr != 0 && class_ptr >= MIN_VALID_POINTER && class_ptr < MAX_VALID_POINTER {
-            if let Ok(class_header) = source.read_bytes(class_ptr, UOBJECT_HEADER_SIZE) {
-                let class_name_idx = LE::read_u32(&class_header[UOBJECT_NAME_OFFSET..UOBJECT_NAME_OFFSET + 4]);
-                fname_reader.read_name(source, class_name_idx).unwrap_or_else(|_| "Unknown".to_string())
+        let class_ptr =
+            LE::read_u64(&header[UOBJECT_CLASS_OFFSET..UOBJECT_CLASS_OFFSET + 8]) as usize;
+        let class_name =
+            if class_ptr != 0 && class_ptr >= MIN_VALID_POINTER && class_ptr < MAX_VALID_POINTER {
+                if let Ok(class_header) = source.read_bytes(class_ptr, UOBJECT_HEADER_SIZE) {
+                    let class_name_idx =
+                        LE::read_u32(&class_header[UOBJECT_NAME_OFFSET..UOBJECT_NAME_OFFSET + 4]);
+                    fname_reader
+                        .read_name(source, class_name_idx)
+                        .unwrap_or_else(|_| "Unknown".to_string())
+                } else {
+                    "Unknown".to_string()
+                }
             } else {
                 "Unknown".to_string()
-            }
-        } else {
-            "Unknown".to_string()
-        };
+            };
 
         map.entry(class_name.clone())
             .or_default()
@@ -4311,7 +4682,11 @@ pub fn generate_object_map(
         }
     }
 
-    eprintln!("Object map complete: {} objects across {} classes", total, map.len());
+    eprintln!(
+        "Object map complete: {} objects across {} classes",
+        total,
+        map.len()
+    );
     Ok(map)
 }
 
@@ -4343,7 +4718,8 @@ pub fn find_uclass_by_name(
         };
 
         // Get ClassPrivate - for a UClass, this points to the "Class" UClass
-        let class_ptr = LE::read_u64(&header[UOBJECT_CLASS_OFFSET..UOBJECT_CLASS_OFFSET + 8]) as usize;
+        let class_ptr =
+            LE::read_u64(&header[UOBJECT_CLASS_OFFSET..UOBJECT_CLASS_OFFSET + 8]) as usize;
 
         // Get name index
         let name_index = LE::read_u32(&header[UOBJECT_NAME_OFFSET..UOBJECT_NAME_OFFSET + 4]);
@@ -4352,18 +4728,28 @@ pub fn find_uclass_by_name(
         if let Ok(name) = fname_reader.read_name(source, name_index) {
             if name == class_name {
                 // Verify this is actually a UClass by checking its Class is "Class" or "BlueprintGeneratedClass"
-                if class_ptr != 0 && class_ptr >= MIN_VALID_POINTER && class_ptr < MAX_VALID_POINTER {
+                if class_ptr != 0 && class_ptr >= MIN_VALID_POINTER && class_ptr < MAX_VALID_POINTER
+                {
                     if let Ok(class_header) = source.read_bytes(class_ptr, UOBJECT_HEADER_SIZE) {
-                        let class_name_idx = LE::read_u32(&class_header[UOBJECT_NAME_OFFSET..UOBJECT_NAME_OFFSET + 4]);
-                        if let Ok(class_class_name) = fname_reader.read_name(source, class_name_idx) {
+                        let class_name_idx = LE::read_u32(
+                            &class_header[UOBJECT_NAME_OFFSET..UOBJECT_NAME_OFFSET + 4],
+                        );
+                        if let Ok(class_class_name) = fname_reader.read_name(source, class_name_idx)
+                        {
                             // Accept both native Class and Blueprint-generated classes
-                            if class_class_name == "Class" || class_class_name == "BlueprintGeneratedClass" {
-                                eprintln!("Found UClass '{}' at {:#x} (index {}, type={})",
-                                         class_name, obj_ptr, idx, class_class_name);
+                            if class_class_name == "Class"
+                                || class_class_name == "BlueprintGeneratedClass"
+                            {
+                                eprintln!(
+                                    "Found UClass '{}' at {:#x} (index {}, type={})",
+                                    class_name, obj_ptr, idx, class_class_name
+                                );
                                 return Ok(obj_ptr);
                             } else {
-                                eprintln!("  Partial match: '{}' at {:#x} is a '{}', not a UClass",
-                                         class_name, obj_ptr, class_class_name);
+                                eprintln!(
+                                    "  Partial match: '{}' at {:#x} is a '{}', not a UClass",
+                                    class_name, obj_ptr, class_class_name
+                                );
                             }
                         }
                     }
@@ -4378,7 +4764,11 @@ pub fn find_uclass_by_name(
         }
     }
 
-    bail!("UClass '{}' not found (checked {} partial matches)", class_name, found_count)
+    bail!(
+        "UClass '{}' not found (checked {} partial matches)",
+        class_name,
+        found_count
+    )
 }
 
 /// Extract InventoryPartDef objects and their SerialIndex values
@@ -4408,34 +4798,35 @@ pub fn extract_part_definitions(
     // UObject base is 0x28 bytes, then class-specific data follows
     // GbxSerialNumberAwareDef likely adds the SerialIndex early in its layout
     let candidate_offsets = [
-        0x28,  // Right after UObject
-        0x30,  // Common first property offset
-        0x38,  //
-        0x40,  //
-        0x48,  // After some padding
-        0x50,  //
-        0x58,  //
-        0x60,  //
-        0x68,  //
-        0x70,  //
-        0x78,  //
-        0x80,  //
-        0x88,  //
-        0x90,  //
-        0x98,  //
-        0xA0,  //
-        0xA8,  //
-        0xB0,  //
-        0xB8,  //
-        0xC0,  //
-        0xC8,  //
-        0xD0,  //
-        0xD8,  //
-        0xE0,  //
+        0x28, // Right after UObject
+        0x30, // Common first property offset
+        0x38, //
+        0x40, //
+        0x48, // After some padding
+        0x50, //
+        0x58, //
+        0x60, //
+        0x68, //
+        0x70, //
+        0x78, //
+        0x80, //
+        0x88, //
+        0x90, //
+        0x98, //
+        0xA0, //
+        0xA8, //
+        0xB0, //
+        0xB8, //
+        0xC0, //
+        0xC8, //
+        0xD0, //
+        0xD8, //
+        0xE0, //
     ];
 
     // First pass: find the correct offset by looking for valid Category patterns
-    let mut offset_scores: std::collections::HashMap<usize, usize> = std::collections::HashMap::new();
+    let mut offset_scores: std::collections::HashMap<usize, usize> =
+        std::collections::HashMap::new();
     let mut sample_count = 0;
 
     for (_idx, obj_ptr) in guobjects.iter_objects(source) {
@@ -4450,7 +4841,8 @@ pub fn extract_part_definitions(
         };
 
         // Check if this object's class matches InventoryPartDef
-        let class_ptr = LE::read_u64(&header[UOBJECT_CLASS_OFFSET..UOBJECT_CLASS_OFFSET + 8]) as usize;
+        let class_ptr =
+            LE::read_u64(&header[UOBJECT_CLASS_OFFSET..UOBJECT_CLASS_OFFSET + 8]) as usize;
         if class_ptr != inventory_part_def_class {
             continue;
         }
@@ -4474,11 +4866,10 @@ pub fn extract_part_definitions(
 
                 // Valid category values are typically small positive integers
                 // Weapons: 2-29, Heavy: 244-247, Shields: 279-288, Gadgets: 300-330, Enhancements: 400-409
-                let is_valid_category =
-                    (category >= 2 && category <= 30) ||
-                    (category >= 244 && category <= 250) ||
-                    (category >= 279 && category <= 350) ||
-                    (category >= 400 && category <= 420);
+                let is_valid_category = (category >= 2 && category <= 30)
+                    || (category >= 244 && category <= 250)
+                    || (category >= 279 && category <= 350)
+                    || (category >= 400 && category <= 420);
 
                 // Valid index values are typically 0-300
                 let is_valid_index = index >= 0 && index < 500;
@@ -4495,14 +4886,18 @@ pub fn extract_part_definitions(
     }
 
     // Find the best offset
-    let best_offset = offset_scores.iter()
+    let best_offset = offset_scores
+        .iter()
         .max_by_key(|&(_, score)| score)
         .map(|(&offset, _)| offset);
 
     let serial_index_offset = match best_offset {
         Some(offset) => {
-            eprintln!("Detected SerialIndex offset: {:#x} (score: {})",
-                     offset, offset_scores.get(&offset).unwrap_or(&0));
+            eprintln!(
+                "Detected SerialIndex offset: {:#x} (score: {})",
+                offset,
+                offset_scores.get(&offset).unwrap_or(&0)
+            );
             offset
         }
         None => {
@@ -4526,7 +4921,8 @@ pub fn extract_part_definitions(
         };
 
         // Check if this object's class matches InventoryPartDef
-        let class_ptr = LE::read_u64(&header[UOBJECT_CLASS_OFFSET..UOBJECT_CLASS_OFFSET + 8]) as usize;
+        let class_ptr =
+            LE::read_u64(&header[UOBJECT_CLASS_OFFSET..UOBJECT_CLASS_OFFSET + 8]) as usize;
         if class_ptr != inventory_part_def_class {
             continue;
         }
@@ -4564,8 +4960,11 @@ pub fn extract_part_definitions(
         }
     }
 
-    eprintln!("Extraction complete: scanned {} InventoryPartDef objects, extracted {} parts",
-             scanned, parts.len());
+    eprintln!(
+        "Extraction complete: scanned {} InventoryPartDef objects, extracted {} parts",
+        scanned,
+        parts.len()
+    );
 
     Ok(parts)
 }

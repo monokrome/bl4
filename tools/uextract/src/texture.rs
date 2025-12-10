@@ -3,9 +3,9 @@
 //! Parses FTexturePlatformData from cooked texture assets and decodes
 //! BC7 compressed textures to RGBA.
 
-use anyhow::{Result, bail, Context};
+use anyhow::{bail, Context, Result};
 use byteorder::{LittleEndian, ReadBytesExt};
-use std::io::{Read, Cursor, Seek, SeekFrom};
+use std::io::{Cursor, Read, Seek, SeekFrom};
 use std::path::Path;
 
 /// Pixel formats we support
@@ -46,8 +46,11 @@ impl PixelFormat {
     /// Block size in pixels (4x4 for BC formats, 1x1 for uncompressed)
     pub fn block_size(&self) -> usize {
         match self {
-            PixelFormat::BC1 | PixelFormat::BC3 | PixelFormat::BC4 |
-            PixelFormat::BC5 | PixelFormat::BC7 => 4,
+            PixelFormat::BC1
+            | PixelFormat::BC3
+            | PixelFormat::BC4
+            | PixelFormat::BC5
+            | PixelFormat::BC7 => 4,
             PixelFormat::RGBA8 => 1,
             PixelFormat::Unknown => 1,
         }
@@ -61,7 +64,7 @@ pub struct TextureMip {
     pub height: u32,
     pub depth: u32,
     pub data_size: u64,
-    pub data_offset: u64,  // Offset within ubulk file
+    pub data_offset: u64, // Offset within ubulk file
 }
 
 /// Parsed texture metadata from .uasset
@@ -73,7 +76,7 @@ pub struct TextureInfo {
     pub format_name: String,
     pub num_slices: u32,
     pub mips: Vec<TextureMip>,
-    pub ubulk_offset: u64,  // Total offset to first mip in ubulk
+    pub ubulk_offset: u64, // Total offset to first mip in ubulk
 }
 
 /// Parse texture metadata from the cooked serial data within a .uasset
@@ -230,9 +233,10 @@ fn find_pixel_format(data: &[u8]) -> Result<usize> {
         let len_bytes = pattern_len.to_le_bytes();
 
         for i in 0..data.len().saturating_sub(pattern.len() + 4) {
-            if data[i..i+4] == len_bytes &&
-               i + 4 + pattern.len() <= data.len() &&
-               &data[i+4..i+4+pattern.len()] == *pattern {
+            if data[i..i + 4] == len_bytes
+                && i + 4 + pattern.len() <= data.len()
+                && &data[i + 4..i + 4 + pattern.len()] == *pattern
+            {
                 return Ok(i);
             }
         }
@@ -269,7 +273,11 @@ pub fn decode_bc7(data: &[u8], width: u32, height: u32) -> Result<Vec<u8>> {
     let expected_size = blocks_x * blocks_y * 16;
 
     if data.len() < expected_size {
-        bail!("BC7 data too small: got {}, expected {}", data.len(), expected_size);
+        bail!(
+            "BC7 data too small: got {}, expected {}",
+            data.len(),
+            expected_size
+        );
     }
 
     let mut output = vec![0u32; w * h];
@@ -322,7 +330,7 @@ pub fn extract_texture(
     ubulk_data: &[u8],
     header_size: usize,
     output_path: &Path,
-    mip_level: usize,  // 0 = highest resolution
+    mip_level: usize, // 0 = highest resolution
 ) -> Result<()> {
     let info = parse_texture_info(uasset_data, header_size)?;
 
@@ -340,7 +348,9 @@ pub fn extract_texture(
     if data_end > ubulk_data.len() {
         bail!(
             "Mip data out of bounds: offset {} + size {} > ubulk size {}",
-            data_start, mip.data_size, ubulk_data.len()
+            data_start,
+            mip.data_size,
+            ubulk_data.len()
         );
     }
 

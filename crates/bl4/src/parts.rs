@@ -411,15 +411,9 @@ mod tests {
             Some(("Vladof", "Sniper"))
         );
         // Verified in-game: slot 2 Torgue AR = first VarInt 136
-        assert_eq!(
-            weapon_info_from_first_varint(136),
-            Some(("Torgue", "AR"))
-        );
+        assert_eq!(weapon_info_from_first_varint(136), Some(("Torgue", "AR")));
         // Verified in-game: slot 4 Maliwan SMG = first VarInt 138
-        assert_eq!(
-            weapon_info_from_first_varint(138),
-            Some(("Maliwan", "SMG"))
-        );
+        assert_eq!(weapon_info_from_first_varint(138), Some(("Maliwan", "SMG")));
         // Unknown ID returns None
         assert_eq!(weapon_info_from_first_varint(999), None);
     }
@@ -504,12 +498,12 @@ mod tests {
 
         // Test several weapon serials from example saves
         let weapon_serials = [
-            "@Ugr$ZCm/&tH!t{KgK/Shxu>k",         // Vladof SMG
-            "@Ugr$-Om/)@{!br-XMkT6!aX/4)00",     // Weapon
-            "@Ugr$`Rm/&zJ!r-c)M!l~mXi)E?;UaJW",  // Weapon
-            "@Ugr%Scm/&tH!fZ*PK~(/",             // Weapon
-            "@Ugr%DXm/)@{!u+qGK~(/",             // Weapon
-            "@Ugr$iFm/&tH!bF&$I;cyHK>z",         // Weapon
+            "@Ugr$ZCm/&tH!t{KgK/Shxu>k",        // Vladof SMG
+            "@Ugr$-Om/)@{!br-XMkT6!aX/4)00",    // Weapon
+            "@Ugr$`Rm/&zJ!r-c)M!l~mXi)E?;UaJW", // Weapon
+            "@Ugr%Scm/&tH!fZ*PK~(/",            // Weapon
+            "@Ugr%DXm/)@{!u+qGK~(/",            // Weapon
+            "@Ugr$iFm/&tH!bF&$I;cyHK>z",        // Weapon
         ];
 
         let mut total_parts = 0;

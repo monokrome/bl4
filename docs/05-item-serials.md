@@ -28,36 +28,38 @@ This encodes:
 ## Serial Structure
 
 ```
-@Ug<type><base85_data>
-│  │ │    └── Encoded item data
-│  │ └── Item type character
-│  └── Magic prefix
-└── Start marker
+@U g r $ Z C m / & t H ! ...
+└┬┘ │ └─────────────────────── Base85-encoded data
+ │  └── Item type character (position 3)
+ └── Magic prefix (stripped during decode)
 ```
 
 | Component | Example | Description |
 |-----------|---------|-------------|
-| Prefix | `@Ug` | Constant identifier |
-| Type | `r` | Item category (weapon, equipment, etc.) |
-| Data | `$ZCm/&tH!...` | Base85-encoded bitstream |
+| Prefix | `@U` | Magic prefix, stripped during decode |
+| Type | `r` | Item type character at position 3 |
+| Data | `gr$ZCm/&tH!...` | Base85 data (includes type char) |
+
+!!! note
+    The type character (`r` in this example) is at position 3 of the string. During decoding, only `@U` is stripped - the type character remains part of the Base85 data.
 
 ---
 
 ## Item Type Characters
 
-| Char | Category | Description |
-|------|----------|-------------|
-| `a`-`d` | Weapons | Pistols, some shotguns |
-| `e` | Equipment | Shields, enhancements |
-| `f`-`g` | Weapons | Shotguns, some ARs |
-| `r` | Weapons | Mixed (common type) |
-| `u` | Utilities | Grenades, consumables |
-| `v`-`z` | Weapons | ARs, SMGs, snipers |
-| `!` | ClassMod | Dark Siren class mods |
-| `#` | ClassMod | Paladin class mods |
+| Char | Serial Format | Description |
+|------|---------------|-------------|
+| `a`-`d` | VarInt-first | Pistols, shotguns (low ID manufacturers) |
+| `e` | Both | Equipment (shields, class mods, enhancements) |
+| `f`-`g` | VarInt-first | ARs, some shotguns |
+| `r` | VarBit-first | Compact weapon format |
+| `u` | VarInt-first | Snipers (some manufacturers) |
+| `v`-`z` | VarInt-first | ARs, SMGs, snipers (high ID manufacturers) |
 
 !!! tip
-    The type character affects decoding. Different types have slightly different bitstream layouts.
+    The type character determines which serial format is used:
+    - Type `r`: VarBit-first format (compact, Part Group ID in first VarBit)
+    - Types `a-g`, `u-z`: VarInt-first format (extended, manufacturer+type in first VarInt)
 
 ---
 

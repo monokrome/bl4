@@ -780,8 +780,8 @@ fn main() -> Result<()> {
                                 println!("  Group ID: {} (offset {})", group_id, offset);
 
                                 // Use the authoritative category_name function from parts.rs
-                                let group_name = bl4::category_name(group_id as i64)
-                                    .unwrap_or("Unknown");
+                                let group_name =
+                                    bl4::category_name(group_id as i64).unwrap_or("Unknown");
                                 println!("  Identified: {}", group_name);
                             }
                             'e' => {
@@ -807,7 +807,10 @@ fn main() -> Result<()> {
                                 println!("  Raw value: {}", value);
                             }
                             _ => {
-                                println!("  Unknown item type '{}' - encoding formula not determined", item.item_type);
+                                println!(
+                                    "  Unknown item type '{}' - encoding formula not determined",
+                                    item.item_type
+                                );
                             }
                         }
 
@@ -826,7 +829,12 @@ fn main() -> Result<()> {
             }
         }
 
-        Commands::Memory { preload, dump, maps, action } => {
+        Commands::Memory {
+            preload,
+            dump,
+            maps,
+            action,
+        } => {
             // Handle commands that don't require process attachment first
             match action {
                 MemoryAction::Templates => {
@@ -853,7 +861,10 @@ fn main() -> Result<()> {
                     println!("      library and affect RNG at the syscall level.");
                     return Ok(());
                 }
-                MemoryAction::BuildPartsDb { ref input, ref output } => {
+                MemoryAction::BuildPartsDb {
+                    ref input,
+                    ref output,
+                } => {
                     // This command doesn't need memory access - just reads/writes JSON
                     println!("Building parts database from {}...", input.display());
 
@@ -924,8 +935,8 @@ fn main() -> Result<()> {
                         ("classmod_gravitar", 97, "Gravitar Class Mod"),
                     ];
 
-                    let parts_json = std::fs::read_to_string(input)
-                        .context("Failed to read parts dump file")?;
+                    let parts_json =
+                        std::fs::read_to_string(input).context("Failed to read parts dump file")?;
 
                     let mut parts_by_prefix: std::collections::BTreeMap<String, Vec<String>> =
                         std::collections::BTreeMap::new();
@@ -961,7 +972,12 @@ fn main() -> Result<()> {
                     for (prefix, category, description) in &known_groups {
                         if let Some(parts) = parts_by_prefix.get(*prefix) {
                             for (idx, part_name) in parts.iter().enumerate() {
-                                db_entries.push((*category, idx as i16, part_name.clone(), description.to_string()));
+                                db_entries.push((
+                                    *category,
+                                    idx as i16,
+                                    part_name.clone(),
+                                    description.to_string(),
+                                ));
                             }
                         }
                     }
@@ -972,7 +988,12 @@ fn main() -> Result<()> {
                     for (prefix, parts) in &parts_by_prefix {
                         if !known_prefixes.contains(prefix.as_str()) {
                             for (idx, part_name) in parts.iter().enumerate() {
-                                db_entries.push((-1, idx as i16, part_name.clone(), format!("{} (unmapped)", prefix)));
+                                db_entries.push((
+                                    -1,
+                                    idx as i16,
+                                    part_name.clone(),
+                                    format!("{} (unmapped)", prefix),
+                                ));
                             }
                         }
                     }
@@ -985,7 +1006,9 @@ fn main() -> Result<()> {
                             "    {{\"category\": {}, \"index\": {}, \"name\": \"{}\", \"group\": \"{}\"}}",
                             category, index, escaped_name, escaped_group
                         ));
-                        if i < db_entries.len() - 1 { json.push(','); }
+                        if i < db_entries.len() - 1 {
+                            json.push(',');
+                        }
                         json.push('\n');
                     }
                     json.push_str("  ],\n  \"categories\": {\n");
@@ -993,20 +1016,31 @@ fn main() -> Result<()> {
                     let mut category_counts: std::collections::BTreeMap<i64, (usize, String)> =
                         std::collections::BTreeMap::new();
                     for (category, _, _, group) in &db_entries {
-                        let entry = category_counts.entry(*category).or_insert((0, group.clone()));
+                        let entry = category_counts
+                            .entry(*category)
+                            .or_insert((0, group.clone()));
                         entry.0 += 1;
                     }
                     let cat_count = category_counts.len();
                     for (i, (category, (count, name))) in category_counts.iter().enumerate() {
                         let escaped = name.replace('\\', "\\\\").replace('"', "\\\"");
-                        json.push_str(&format!("    \"{}\": {{\"count\": {}, \"name\": \"{}\"}}", category, count, escaped));
-                        if i < cat_count - 1 { json.push(','); }
+                        json.push_str(&format!(
+                            "    \"{}\": {{\"count\": {}, \"name\": \"{}\"}}",
+                            category, count, escaped
+                        ));
+                        if i < cat_count - 1 {
+                            json.push(',');
+                        }
                         json.push('\n');
                     }
                     json.push_str("  }\n}\n");
 
                     std::fs::write(output, &json)?;
-                    println!("Built parts database with {} entries across {} categories", db_entries.len(), category_counts.len());
+                    println!(
+                        "Built parts database with {} entries across {} categories",
+                        db_entries.len(),
+                        category_counts.len()
+                    );
                     println!("Written to: {}", output.display());
                     return Ok(());
                 }
@@ -1014,7 +1048,9 @@ fn main() -> Result<()> {
                     // This command requires a memory dump to extract UObjects
                     let dump_path = match dump {
                         Some(ref p) => p.clone(),
-                        None => bail!("ExtractParts requires a memory dump file. Use --dump <path>"),
+                        None => {
+                            bail!("ExtractParts requires a memory dump file. Use --dump <path>")
+                        }
                     };
 
                     println!("Extracting part definitions from dump...");
@@ -1028,7 +1064,8 @@ fn main() -> Result<()> {
 
                     // Discover GUObjectArray
                     println!("Discovering GUObjectArray...");
-                    let guobjects = memory::discover_guobject_array(source.as_ref(), gnames.address)?;
+                    let guobjects =
+                        memory::discover_guobject_array(source.as_ref(), gnames.address)?;
                     println!("  GUObjectArray at: {:#x}", guobjects.address);
                     println!("  NumElements: {}", guobjects.num_elements);
 
@@ -1040,7 +1077,10 @@ fn main() -> Result<()> {
                         &guobjects,
                         "InventoryPartDef",
                     )?;
-                    println!("  InventoryPartDef UClass at: {:#x}", inventory_part_def_class);
+                    println!(
+                        "  InventoryPartDef UClass at: {:#x}",
+                        inventory_part_def_class
+                    );
 
                     // Extract part definitions
                     println!("Extracting part definitions with SerialIndex...");
@@ -1054,8 +1094,10 @@ fn main() -> Result<()> {
                     println!("Found {} part definitions", parts.len());
 
                     // Group by category for summary
-                    let mut by_category: std::collections::BTreeMap<i64, Vec<&memory::PartDefinition>> =
-                        std::collections::BTreeMap::new();
+                    let mut by_category: std::collections::BTreeMap<
+                        i64,
+                        Vec<&memory::PartDefinition>,
+                    > = std::collections::BTreeMap::new();
                     for part in &parts {
                         by_category.entry(part.category).or_default().push(part);
                     }
@@ -1082,11 +1124,7 @@ fn main() -> Result<()> {
 
                     let cat_count = by_category.len();
                     for (i, (category, cat_parts)) in by_category.iter().enumerate() {
-                        json.push_str(&format!(
-                            "    \"{}\": {}",
-                            category,
-                            cat_parts.len()
-                        ));
+                        json.push_str(&format!("    \"{}\": {}", category, cat_parts.len()));
                         if i < cat_count - 1 {
                             json.push(',');
                         }
@@ -1102,7 +1140,9 @@ fn main() -> Result<()> {
                     // This command requires a memory dump
                     let dump_path = match dump {
                         Some(ref p) => p.clone(),
-                        None => bail!("FindObjectsByPattern requires a memory dump file. Use --dump <path>"),
+                        None => bail!(
+                            "FindObjectsByPattern requires a memory dump file. Use --dump <path>"
+                        ),
                     };
 
                     println!("Searching for objects matching '{}'...", pattern);
@@ -1115,7 +1155,8 @@ fn main() -> Result<()> {
                     println!("  GNames at: {:#x}", gnames.address);
 
                     println!("Discovering GUObjectArray...");
-                    let guobjects = memory::discover_guobject_array(source.as_ref(), gnames.address)?;
+                    let guobjects =
+                        memory::discover_guobject_array(source.as_ref(), gnames.address)?;
                     println!("  GUObjectArray at: {:#x}", guobjects.address);
                     println!("  NumElements: {}", guobjects.num_elements);
 
@@ -1138,7 +1179,9 @@ fn main() -> Result<()> {
                     // This command requires a memory dump
                     let dump_path = match dump {
                         Some(ref p) => p.clone(),
-                        None => bail!("GenerateObjectMap requires a memory dump file. Use --dump <path>"),
+                        None => bail!(
+                            "GenerateObjectMap requires a memory dump file. Use --dump <path>"
+                        ),
                     };
 
                     // Default output path is next to the dump file
@@ -1158,7 +1201,8 @@ fn main() -> Result<()> {
                     println!("  GNames at: {:#x}", gnames.address);
 
                     println!("Discovering GUObjectArray...");
-                    let guobjects = memory::discover_guobject_array(source.as_ref(), gnames.address)?;
+                    let guobjects =
+                        memory::discover_guobject_array(source.as_ref(), gnames.address)?;
                     println!("  GUObjectArray at: {:#x}", guobjects.address);
                     println!("  NumElements: {}", guobjects.num_elements);
 
@@ -1192,9 +1236,11 @@ fn main() -> Result<()> {
 
                     std::fs::write(&output_path, &json)?;
                     println!("Object map written to: {}", output_path.display());
-                    println!("  {} classes, {} total objects",
-                             map.len(),
-                             map.values().map(|v| v.len()).sum::<usize>());
+                    println!(
+                        "  {} classes, {} total objects",
+                        map.len(),
+                        map.values().map(|v| v.len()).sum::<usize>()
+                    );
 
                     return Ok(());
                 }
@@ -1238,7 +1284,10 @@ fn main() -> Result<()> {
                         for template in &templates {
                             let parts: Vec<&str> = template.splitn(2, '=').collect();
                             if parts.len() != 2 {
-                                eprintln!("Invalid template format: {} (expected key=value)", template);
+                                eprintln!(
+                                    "Invalid template format: {} (expected key=value)",
+                                    template
+                                );
                                 continue;
                             }
 
@@ -1290,7 +1339,11 @@ fn main() -> Result<()> {
                         if env_vars.is_empty() {
                             println!("LD_PRELOAD={} %command%", lib_path.display());
                         } else {
-                            println!("LD_PRELOAD={} {} %command%", lib_path.display(), env_vars.join(" "));
+                            println!(
+                                "LD_PRELOAD={} {} %command%",
+                                lib_path.display(),
+                                env_vars.join(" ")
+                            );
                         }
 
                         return Ok(());
@@ -1300,8 +1353,10 @@ fn main() -> Result<()> {
                         // This is handled below in the main match
                     }
                     _ => {
-                        bail!("This command is not available in --preload mode. \
-                               Remove --preload to use direct memory injection.");
+                        bail!(
+                            "This command is not available in --preload mode. \
+                               Remove --preload to use direct memory injection."
+                        );
                     }
                 }
             }
@@ -1315,8 +1370,7 @@ fn main() -> Result<()> {
                         memory::DumpFile::open_with_maps(dump_path, maps_path)
                             .context("Failed to open dump file with maps")?
                     } else {
-                        memory::DumpFile::open(dump_path)
-                            .context("Failed to open dump file")?
+                        memory::DumpFile::open(dump_path).context("Failed to open dump file")?
                     };
                     (None, Some(dump))
                 } else {
@@ -1372,9 +1426,15 @@ fn main() -> Result<()> {
 
                                     if target == "all" {
                                         println!("\nSearching for GUObjectArray...");
-                                        match memory::discover_guobject_array(source, gnames.address) {
+                                        match memory::discover_guobject_array(
+                                            source,
+                                            gnames.address,
+                                        ) {
                                             Ok(arr) => {
-                                                println!("GUObjectArray found at: {:#x}", arr.address);
+                                                println!(
+                                                    "GUObjectArray found at: {:#x}",
+                                                    arr.address
+                                                );
                                                 println!("  Objects ptr: {:#x}", arr.objects_ptr);
                                                 println!("  NumElements: {}", arr.num_elements);
                                                 println!("  MaxElements: {}", arr.max_elements);
@@ -1410,7 +1470,10 @@ fn main() -> Result<()> {
                                     }
                                 }
                                 Err(e) => {
-                                    eprintln!("GNames not found (required for GUObjectArray): {}", e);
+                                    eprintln!(
+                                        "GNames not found (required for GUObjectArray): {}",
+                                        e
+                                    );
                                 }
                             }
                         }
@@ -1443,8 +1506,8 @@ fn main() -> Result<()> {
                 MemoryAction::Objects { class, limit } => {
                     let source = mem_source!();
                     // First discover GNames
-                    let gnames = memory::discover_gnames(source)
-                        .context("Failed to find GNames pool")?;
+                    let gnames =
+                        memory::discover_gnames(source).context("Failed to find GNames pool")?;
 
                     println!("GNames at: {:#x}", gnames.address);
 
@@ -1455,9 +1518,14 @@ fn main() -> Result<()> {
 
                         // Search for the class name in memory
                         let pattern = class_name.as_bytes();
-                        let results = memory::scan_pattern(source, pattern, &vec![1u8; pattern.len()])?;
+                        let results =
+                            memory::scan_pattern(source, pattern, &vec![1u8; pattern.len()])?;
 
-                        println!("Found {} occurrences of '{}':", results.len().min(limit), class_name);
+                        println!(
+                            "Found {} occurrences of '{}':",
+                            results.len().min(limit),
+                            class_name
+                        );
                         for (i, addr) in results.iter().take(limit).enumerate() {
                             println!("  {}: {:#x}", i + 1, addr);
 
@@ -1548,10 +1616,13 @@ fn main() -> Result<()> {
                 MemoryAction::FnameSearch { query } => {
                     let source = mem_source!();
 
-                    let gnames = memory::discover_gnames(source)
-                        .context("Failed to find GNames pool")?;
+                    let gnames =
+                        memory::discover_gnames(source).context("Failed to find GNames pool")?;
 
-                    println!("Searching for \"{}\" in FName pool at {:#x}...", query, gnames.address);
+                    println!(
+                        "Searching for \"{}\" in FName pool at {:#x}...",
+                        query, gnames.address
+                    );
 
                     // Search in block 0 (where common names like "Class" reside)
                     let search_bytes = query.as_bytes();
@@ -1565,7 +1636,7 @@ fn main() -> Result<()> {
                             // Found match - try to find the entry start
                             // Look backwards for header bytes
                             if pos >= 2 {
-                                let header = &block0_data[pos-2..pos];
+                                let header = &block0_data[pos - 2..pos];
                                 let header_val = byteorder::LE::read_u16(header);
                                 let len = (header_val >> 6) as usize;
 
@@ -1590,7 +1661,8 @@ fn main() -> Result<()> {
 
                             // Read and show the entry
                             if *byte_offset + 16 < block0_data.len() {
-                                let entry_data = &block0_data[*byte_offset..*byte_offset + 16.min(block0_data.len() - byte_offset)];
+                                let entry_data = &block0_data[*byte_offset
+                                    ..*byte_offset + 16.min(block0_data.len() - byte_offset)];
                                 print!("    Raw: ");
                                 for b in entry_data.iter().take(16) {
                                     print!("{:02x} ", b);
@@ -1605,8 +1677,8 @@ fn main() -> Result<()> {
                     let source = mem_source!();
 
                     // First discover FNamePool to resolve names
-                    let gnames = memory::discover_gnames(source)
-                        .context("Failed to find GNames pool")?;
+                    let gnames =
+                        memory::discover_gnames(source).context("Failed to find GNames pool")?;
                     let pool = memory::FNamePool::discover(source)
                         .context("Failed to discover FNamePool")?;
                     let mut fname_reader = memory::FNameReader::new(pool);
@@ -1628,7 +1700,10 @@ fn main() -> Result<()> {
                     ];
 
                     for &(class_off, name_off, desc) in offset_combos {
-                        println!("\nTrying {} - ClassPrivate={:#x}, NamePrivate={:#x}...", desc, class_off, name_off);
+                        println!(
+                            "\nTrying {} - ClassPrivate={:#x}, NamePrivate={:#x}...",
+                            desc, class_off, name_off
+                        );
 
                         let mut found_self_refs: Vec<(usize, usize, u32, String)> = Vec::new();
                         let mut found_class = false;
@@ -1664,7 +1739,8 @@ fn main() -> Result<()> {
                                 let obj_addr = region.start + offset;
 
                                 // Check vtable pointer - must be in valid data range
-                                let vtable_ptr = byteorder::LE::read_u64(&data[offset..offset + 8]) as usize;
+                                let vtable_ptr =
+                                    byteorder::LE::read_u64(&data[offset..offset + 8]) as usize;
                                 if vtable_ptr < 0x140000000 || vtable_ptr > 0x175000000 {
                                     continue;
                                 }
@@ -1679,32 +1755,54 @@ fn main() -> Result<()> {
                                 }
 
                                 // Check ClassPrivate for self-reference
-                                let class_ptr = byteorder::LE::read_u64(&data[offset + class_off..offset + class_off + 8]) as usize;
+                                let class_ptr = byteorder::LE::read_u64(
+                                    &data[offset + class_off..offset + class_off + 8],
+                                ) as usize;
                                 if class_ptr != obj_addr {
                                     continue;
                                 }
 
                                 // Self-referential! Read the name
-                                let fname_idx = byteorder::LE::read_u32(&data[offset + name_off..offset + name_off + 4]);
-                                let name = fname_reader.read_name(source, fname_idx)
+                                let fname_idx = byteorder::LE::read_u32(
+                                    &data[offset + name_off..offset + name_off + 4],
+                                );
+                                let name = fname_reader
+                                    .read_name(source, fname_idx)
                                     .unwrap_or_else(|_| format!("<idx:{}>", fname_idx));
 
-                                found_self_refs.push((obj_addr, vtable_ptr, fname_idx, name.clone()));
+                                found_self_refs.push((
+                                    obj_addr,
+                                    vtable_ptr,
+                                    fname_idx,
+                                    name.clone(),
+                                ));
 
                                 if fname_idx == memory::FNAME_CLASS_INDEX || name == "Class" {
                                     println!("\n*** FOUND Class UClass at {:#x} ***", obj_addr);
-                                    println!("  VTable: {:#x}, vtable[0]: {:#x}", vtable_ptr, first_func);
+                                    println!(
+                                        "  VTable: {:#x}, vtable[0]: {:#x}",
+                                        vtable_ptr, first_func
+                                    );
                                     println!("  FName index: {} = \"{}\"", fname_idx, name);
                                     found_class = true;
                                 }
                             }
                         }
 
-                        println!("  Found {} self-referential objects:", found_self_refs.len());
+                        println!(
+                            "  Found {} self-referential objects:",
+                            found_self_refs.len()
+                        );
                         for (addr, vtable, fname_idx, name) in found_self_refs.iter().take(10) {
-                            let marker = if *fname_idx == memory::FNAME_CLASS_INDEX { " <-- CLASS!" } else { "" };
-                            println!("    {:#x}: vtable={:#x}, fname={} \"{}\"{}",
-                                    addr, vtable, fname_idx, name, marker);
+                            let marker = if *fname_idx == memory::FNAME_CLASS_INDEX {
+                                " <-- CLASS!"
+                            } else {
+                                ""
+                            };
+                            println!(
+                                "    {:#x}: vtable={:#x}, fname={} \"{}\"{}",
+                                addr, vtable, fname_idx, name, marker
+                            );
                         }
 
                         if found_class {
@@ -1718,15 +1816,17 @@ fn main() -> Result<()> {
                     let source = mem_source!();
 
                     // Discover FNamePool to resolve names
-                    let gnames = memory::discover_gnames(source)
-                        .context("Failed to find GNames pool")?;
+                    let gnames =
+                        memory::discover_gnames(source).context("Failed to find GNames pool")?;
                     let pool = memory::FNamePool::discover(source)
                         .context("Failed to discover FNamePool")?;
                     let mut fname_reader = memory::FNameReader::new(pool);
 
                     // Find all UClass instances
-                    println!("Finding all UClass instances (ClassPrivate == {:#x})...\n",
-                             memory::UCLASS_METACLASS_ADDR);
+                    println!(
+                        "Finding all UClass instances (ClassPrivate == {:#x})...\n",
+                        memory::UCLASS_METACLASS_ADDR
+                    );
 
                     let classes = memory::find_all_uclasses(source, &mut fname_reader)
                         .context("Failed to enumerate UClass instances")?;
@@ -1734,34 +1834,59 @@ fn main() -> Result<()> {
                     // Apply filter if provided
                     let filtered: Vec<_> = if let Some(ref pattern) = filter {
                         let pattern_lower = pattern.to_lowercase();
-                        classes.iter()
+                        classes
+                            .iter()
                             .filter(|c| c.name.to_lowercase().contains(&pattern_lower))
                             .collect()
                     } else {
                         classes.iter().collect()
                     };
 
-                    println!("Found {} UClass instances{}\n",
-                             filtered.len(),
-                             filter.as_ref().map(|f| format!(" matching '{}'", f)).unwrap_or_default());
+                    println!(
+                        "Found {} UClass instances{}\n",
+                        filtered.len(),
+                        filter
+                            .as_ref()
+                            .map(|f| format!(" matching '{}'", f))
+                            .unwrap_or_default()
+                    );
 
                     // Show results
-                    let show_count = if limit == 0 { filtered.len() } else { limit.min(filtered.len()) };
+                    let show_count = if limit == 0 {
+                        filtered.len()
+                    } else {
+                        limit.min(filtered.len())
+                    };
                     for class in filtered.iter().take(show_count) {
-                        println!("  {:#x}: {} (FName {})",
-                                class.address, class.name, class.name_index);
+                        println!(
+                            "  {:#x}: {} (FName {})",
+                            class.address, class.name, class.name_index
+                        );
                     }
 
                     if show_count < filtered.len() {
-                        println!("\n  ... and {} more (use --limit 0 to show all)", filtered.len() - show_count);
+                        println!(
+                            "\n  ... and {} more (use --limit 0 to show all)",
+                            filtered.len() - show_count
+                        );
                     }
 
                     // Show some stats
-                    let game_classes: Vec<_> = filtered.iter()
-                        .filter(|c| c.name.starts_with("U") || c.name.starts_with("A") || c.name.contains("_"))
+                    let game_classes: Vec<_> = filtered
+                        .iter()
+                        .filter(|c| {
+                            c.name.starts_with("U")
+                                || c.name.starts_with("A")
+                                || c.name.contains("_")
+                        })
                         .collect();
-                    let core_classes: Vec<_> = filtered.iter()
-                        .filter(|c| !c.name.starts_with("U") && !c.name.starts_with("A") && !c.name.contains("_"))
+                    let core_classes: Vec<_> = filtered
+                        .iter()
+                        .filter(|c| {
+                            !c.name.starts_with("U")
+                                && !c.name.starts_with("A")
+                                && !c.name.contains("_")
+                        })
                         .collect();
 
                     println!("\nClass categories:");
@@ -1769,13 +1894,18 @@ fn main() -> Result<()> {
                     println!("  Core/Native classes: {}", core_classes.len());
                 }
 
-                MemoryAction::ListObjects { limit, class_filter, name_filter, stats } => {
+                MemoryAction::ListObjects {
+                    limit,
+                    class_filter,
+                    name_filter,
+                    stats,
+                } => {
                     let source = mem_source!();
 
                     // Discover GNames first (needed for FName resolution)
                     eprintln!("Searching for GNames pool...");
-                    let gnames = memory::discover_gnames(source)
-                        .context("Failed to discover GNames")?;
+                    let gnames =
+                        memory::discover_gnames(source).context("Failed to discover GNames")?;
                     eprintln!("GNames found at: {:#x}\n", gnames.address);
 
                     // Discover GUObjectArray via pattern-based search
@@ -1794,7 +1924,8 @@ fn main() -> Result<()> {
 
                     // Statistics tracking
                     let mut total_valid = 0usize;
-                    let mut class_counts: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+                    let mut class_counts: std::collections::HashMap<String, usize> =
+                        std::collections::HashMap::new();
                     let mut shown = 0usize;
 
                     let class_filter_lower = class_filter.as_ref().map(|s| s.to_lowercase());
@@ -1803,22 +1934,37 @@ fn main() -> Result<()> {
                     // Iterate over all objects
                     for (idx, obj_ptr) in guobj.iter_objects(source) {
                         // Read UObject header
-                        let obj_data = match source.read_bytes(obj_ptr, memory::UOBJECT_HEADER_SIZE) {
+                        let obj_data = match source.read_bytes(obj_ptr, memory::UOBJECT_HEADER_SIZE)
+                        {
                             Ok(d) => d,
                             Err(_) => continue,
                         };
 
-                        let class_ptr = byteorder::LE::read_u64(&obj_data[memory::UOBJECT_CLASS_OFFSET..memory::UOBJECT_CLASS_OFFSET + 8]) as usize;
-                        let name_idx = byteorder::LE::read_u32(&obj_data[memory::UOBJECT_NAME_OFFSET..memory::UOBJECT_NAME_OFFSET + 4]);
+                        let class_ptr = byteorder::LE::read_u64(
+                            &obj_data
+                                [memory::UOBJECT_CLASS_OFFSET..memory::UOBJECT_CLASS_OFFSET + 8],
+                        ) as usize;
+                        let name_idx = byteorder::LE::read_u32(
+                            &obj_data[memory::UOBJECT_NAME_OFFSET..memory::UOBJECT_NAME_OFFSET + 4],
+                        );
 
                         // Read object name
-                        let obj_name = fname_reader.read_name(source, name_idx).unwrap_or_else(|_| format!("FName_{}", name_idx));
+                        let obj_name = fname_reader
+                            .read_name(source, name_idx)
+                            .unwrap_or_else(|_| format!("FName_{}", name_idx));
 
                         // Read class name (need to read the class object's name)
                         let class_name = if class_ptr != 0 {
-                            if let Ok(class_data) = source.read_bytes(class_ptr, memory::UOBJECT_HEADER_SIZE) {
-                                let class_name_idx = byteorder::LE::read_u32(&class_data[memory::UOBJECT_NAME_OFFSET..memory::UOBJECT_NAME_OFFSET + 4]);
-                                fname_reader.read_name(source, class_name_idx).unwrap_or_else(|_| format!("FName_{}", class_name_idx))
+                            if let Ok(class_data) =
+                                source.read_bytes(class_ptr, memory::UOBJECT_HEADER_SIZE)
+                            {
+                                let class_name_idx = byteorder::LE::read_u32(
+                                    &class_data[memory::UOBJECT_NAME_OFFSET
+                                        ..memory::UOBJECT_NAME_OFFSET + 4],
+                                );
+                                fname_reader
+                                    .read_name(source, class_name_idx)
+                                    .unwrap_or_else(|_| format!("FName_{}", class_name_idx))
                             } else {
                                 "Unknown".to_string()
                             }
@@ -1830,10 +1976,12 @@ fn main() -> Result<()> {
                         *class_counts.entry(class_name.clone()).or_insert(0) += 1;
 
                         // Apply filters
-                        let class_match = class_filter_lower.as_ref()
+                        let class_match = class_filter_lower
+                            .as_ref()
                             .map(|f| class_name.to_lowercase().contains(f))
                             .unwrap_or(true);
-                        let name_match = name_filter_lower.as_ref()
+                        let name_match = name_filter_lower
+                            .as_ref()
                             .map(|f| obj_name.to_lowercase().contains(f))
                             .unwrap_or(true);
 
@@ -1866,7 +2014,10 @@ fn main() -> Result<()> {
                     }
 
                     if !stats && shown >= limit && limit > 0 {
-                        println!("\n... showing first {} matches (use --limit N to see more)", limit);
+                        println!(
+                            "\n... showing first {} matches (use --limit N to see more)",
+                            limit
+                        );
                     }
                 }
 
@@ -1874,16 +2025,15 @@ fn main() -> Result<()> {
                     let source = mem_source!();
 
                     // Run comprehensive dump analysis
-                    memory::analyze_dump(source)
-                        .context("Dump analysis failed")?;
+                    memory::analyze_dump(source).context("Dump analysis failed")?;
                 }
 
                 MemoryAction::DumpUsmap { output } => {
                     let source = mem_source!();
                     // Step 1: Find GNames pool
                     println!("Step 1: Finding GNames pool...");
-                    let gnames = memory::discover_gnames(source)
-                        .context("Failed to find GNames pool")?;
+                    let gnames =
+                        memory::discover_gnames(source).context("Failed to find GNames pool")?;
                     println!("  GNames at: {:#x}", gnames.address);
 
                     // Step 2: Find GUObjectArray
@@ -1899,13 +2049,23 @@ fn main() -> Result<()> {
                     let pool = memory::FNamePool::discover(source)
                         .context("Failed to discover FNamePool")?;
                     let mut fname_reader = memory::FNameReader::new(pool);
-                    let reflection_objects = memory::walk_guobject_array(source, &guobj_array, &mut fname_reader)
-                        .context("Failed to walk GUObjectArray")?;
+                    let reflection_objects =
+                        memory::walk_guobject_array(source, &guobj_array, &mut fname_reader)
+                            .context("Failed to walk GUObjectArray")?;
 
                     // Print summary
-                    let class_count = reflection_objects.iter().filter(|o| o.class_name == "Class").count();
-                    let struct_count = reflection_objects.iter().filter(|o| o.class_name == "ScriptStruct").count();
-                    let enum_count = reflection_objects.iter().filter(|o| o.class_name == "Enum").count();
+                    let class_count = reflection_objects
+                        .iter()
+                        .filter(|o| o.class_name == "Class")
+                        .count();
+                    let struct_count = reflection_objects
+                        .iter()
+                        .filter(|o| o.class_name == "ScriptStruct")
+                        .count();
+                    let enum_count = reflection_objects
+                        .iter()
+                        .filter(|o| o.class_name == "Enum")
+                        .count();
 
                     println!("\nFound {} reflection objects:", reflection_objects.len());
                     println!("  {} UClass", class_count);
@@ -1914,35 +2074,59 @@ fn main() -> Result<()> {
 
                     // Print some samples
                     println!("\nSample classes:");
-                    for obj in reflection_objects.iter().filter(|o| o.class_name == "Class").take(10) {
+                    for obj in reflection_objects
+                        .iter()
+                        .filter(|o| o.class_name == "Class")
+                        .take(10)
+                    {
                         println!("  {}: {} at {:#x}", obj.class_name, obj.name, obj.address);
                     }
 
                     println!("\nSample structs:");
-                    for obj in reflection_objects.iter().filter(|o| o.class_name == "ScriptStruct").take(10) {
+                    for obj in reflection_objects
+                        .iter()
+                        .filter(|o| o.class_name == "ScriptStruct")
+                        .take(10)
+                    {
                         println!("  {}: {} at {:#x}", obj.class_name, obj.name, obj.address);
                     }
 
                     println!("\nSample enums:");
-                    for obj in reflection_objects.iter().filter(|o| o.class_name == "Enum").take(10) {
+                    for obj in reflection_objects
+                        .iter()
+                        .filter(|o| o.class_name == "Enum")
+                        .take(10)
+                    {
                         println!("  {}: {} at {:#x}", obj.class_name, obj.name, obj.address);
                     }
 
                     // Step 4: Extract properties from each struct/class
                     println!("\nStep 4: Extracting properties...");
-                    let (structs, enums) = memory::extract_reflection_data(source, &reflection_objects, &mut fname_reader)
-                        .context("Failed to extract reflection data")?;
+                    let (structs, enums) = memory::extract_reflection_data(
+                        source,
+                        &reflection_objects,
+                        &mut fname_reader,
+                    )
+                    .context("Failed to extract reflection data")?;
 
                     // Print some sample properties
                     println!("\nSample struct properties:");
                     for s in structs.iter().filter(|s| !s.properties.is_empty()).take(5) {
-                        println!("  {} ({}): {} props, super={:?}",
-                                s.name, if s.is_class { "class" } else { "struct" },
-                                s.properties.len(), s.super_name);
+                        println!(
+                            "  {} ({}): {} props, super={:?}",
+                            s.name,
+                            if s.is_class { "class" } else { "struct" },
+                            s.properties.len(),
+                            s.super_name
+                        );
                         for prop in s.properties.iter().take(3) {
-                            println!("    +{:#x} {} : {} ({:?})",
-                                    prop.offset, prop.name, prop.type_name,
-                                    prop.struct_type.as_ref().or(prop.enum_type.as_ref()));
+                            println!(
+                                "    +{:#x} {} : {} ({:?})",
+                                prop.offset,
+                                prop.name,
+                                prop.type_name,
+                                prop.struct_type.as_ref().or(prop.enum_type.as_ref())
+                            );
                         }
                         if s.properties.len() > 3 {
                             println!("    ... and {} more", s.properties.len() - 3);
@@ -1977,8 +2161,7 @@ fn main() -> Result<()> {
                     let source = mem_source!();
                     // Parse hex address
                     let addr = if address.starts_with("0x") || address.starts_with("0X") {
-                        usize::from_str_radix(&address[2..], 16)
-                            .context("Invalid hex address")?
+                        usize::from_str_radix(&address[2..], 16).context("Invalid hex address")?
                     } else {
                         address.parse::<usize>().context("Invalid address")?
                     };
@@ -2019,13 +2202,13 @@ fn main() -> Result<()> {
 
                 MemoryAction::Write { address, bytes } => {
                     // Writing requires a live process
-                    let proc = process.as_ref()
+                    let proc = process
+                        .as_ref()
                         .context("Write requires a live process (not available in dump mode)")?;
 
                     // Parse hex address
                     let addr = if address.starts_with("0x") || address.starts_with("0X") {
-                        usize::from_str_radix(&address[2..], 16)
-                            .context("Invalid hex address")?
+                        usize::from_str_radix(&address[2..], 16).context("Invalid hex address")?
                     } else {
                         address.parse::<usize>().context("Invalid address")?
                     };
@@ -2097,15 +2280,19 @@ fn main() -> Result<()> {
                     }
                 }
 
-                MemoryAction::Patch { address, nop, bytes } => {
+                MemoryAction::Patch {
+                    address,
+                    nop,
+                    bytes,
+                } => {
                     // Patching requires a live process
-                    let proc = process.as_ref()
+                    let proc = process
+                        .as_ref()
                         .context("Patch requires a live process (not available in dump mode)")?;
 
                     // Parse hex address
                     let addr = if address.starts_with("0x") || address.starts_with("0X") {
-                        usize::from_str_radix(&address[2..], 16)
-                            .context("Invalid hex address")?
+                        usize::from_str_radix(&address[2..], 16).context("Invalid hex address")?
                     } else {
                         address.parse::<usize>().context("Invalid address")?
                     };
@@ -2189,7 +2376,9 @@ fn main() -> Result<()> {
                                     }
                                     _ => {
                                         eprintln!("  Unknown rarity: {}", value);
-                                        eprintln!("  Valid: legendary, epic, rare, uncommon, common");
+                                        eprintln!(
+                                            "  Valid: legendary, epic, rare, uncommon, common"
+                                        );
                                     }
                                 }
                             }
@@ -2262,7 +2451,8 @@ fn main() -> Result<()> {
                                 if game_only {
                                     if let Some(caller_pos) = line.find("caller=0x") {
                                         let addr_str = &line[caller_pos + 9..];
-                                        if let Some(end) = addr_str.find(|c: char| !c.is_ascii_hexdigit())
+                                        if let Some(end) =
+                                            addr_str.find(|c: char| !c.is_ascii_hexdigit())
                                         {
                                             if let Ok(addr) =
                                                 usize::from_str_radix(&addr_str[..end], 16)
@@ -2286,7 +2476,12 @@ fn main() -> Result<()> {
                     }
                 }
 
-                MemoryAction::ScanString { query, before, after, limit } => {
+                MemoryAction::ScanString {
+                    query,
+                    before,
+                    after,
+                    limit,
+                } => {
                     let source = mem_source!();
 
                     println!("Searching for \"{}\" in memory...", query);
@@ -2317,19 +2512,29 @@ fn main() -> Result<()> {
                                     let line_bytes = &data[j..line_end];
 
                                     // Hex bytes
-                                    let hex: String = line_bytes.iter()
+                                    let hex: String = line_bytes
+                                        .iter()
                                         .map(|b| format!("{:02x}", b))
                                         .collect::<Vec<_>>()
                                         .join(" ");
 
                                     // ASCII representation
-                                    let ascii: String = line_bytes.iter()
+                                    let ascii: String = line_bytes
+                                        .iter()
                                         .map(|&b| if b >= 32 && b < 127 { b as char } else { '.' })
                                         .collect();
 
                                     // Mark if this line contains the match
-                                    let marker = if ctx_start + j <= addr && addr < ctx_start + j + 16 { " <--" } else { "" };
-                                    println!("{:#010x}: {:<48} {}{}", line_addr, hex, ascii, marker);
+                                    let marker =
+                                        if ctx_start + j <= addr && addr < ctx_start + j + 16 {
+                                            " <--"
+                                        } else {
+                                            ""
+                                        };
+                                    println!(
+                                        "{:#010x}: {:<48} {}{}",
+                                        line_addr, hex, ascii, marker
+                                    );
                                 }
                             }
                         }
@@ -2350,9 +2555,13 @@ fn main() -> Result<()> {
                     let mask = vec![1u8; pattern.len()];
 
                     let results = memory::scan_pattern(source, pattern, &mask)?;
-                    println!("Found {} occurrences of '.part_', analyzing...", results.len());
+                    println!(
+                        "Found {} occurrences of '.part_', analyzing...",
+                        results.len()
+                    );
 
-                    let mut parts: std::collections::BTreeMap<String, Vec<String>> = std::collections::BTreeMap::new();
+                    let mut parts: std::collections::BTreeMap<String, Vec<String>> =
+                        std::collections::BTreeMap::new();
 
                     for &addr in &results {
                         // Read 64 bytes before and 64 after the match
@@ -2389,7 +2598,8 @@ fn main() -> Result<()> {
                                 if name.contains('.') && name.len() > 10 {
                                     let prefix = name.split('.').next().unwrap_or("");
                                     if prefix.len() >= 5 && prefix.contains('_') {
-                                        parts.entry(prefix.to_string())
+                                        parts
+                                            .entry(prefix.to_string())
                                             .or_default()
                                             .push(name.to_string());
                                     }
@@ -2427,11 +2637,13 @@ fn main() -> Result<()> {
                     std::fs::write(&output, &json)?;
 
                     let total_unique: usize = parts.values().map(|v| v.len()).sum();
-                    println!("Found {} unique part names across {} weapon types",
-                             total_unique, parts.len());
+                    println!(
+                        "Found {} unique part names across {} weapon types",
+                        total_unique,
+                        parts.len()
+                    );
                     println!("Written to: {}", output.display());
                 }
-
             }
         }
 
@@ -2466,14 +2678,13 @@ fn main() -> Result<()> {
             };
 
             // Build the launch options string
-            let launch_options = format!(
-                "LD_PRELOAD={} %command%",
-                lib_path.display()
-            );
+            let launch_options = format!("LD_PRELOAD={} %command%", lib_path.display());
 
             println!("Add to Steam launch options:\n");
             println!("  {}\n", launch_options);
-            println!("Options: BL4_RNG_BIAS=max|high|low|min  BL4_PRELOAD_ALL=1  BL4_PRELOAD_STACKS=1");
+            println!(
+                "Options: BL4_RNG_BIAS=max|high|low|min  BL4_PRELOAD_ALL=1  BL4_PRELOAD_STACKS=1"
+            );
             println!("Log: /tmp/bl4_preload.log\n");
 
             // Prompt for confirmation
@@ -2524,8 +2735,17 @@ fn main() -> Result<()> {
             println!("Magic: {:#x}", magic);
             println!("Version: {}", version);
             println!("HasVersionInfo: {}", has_version_info);
-            println!("Compression: {} ({})", compression,
-                match compression { 0 => "None", 1 => "Oodle", 2 => "Brotli", 3 => "ZStandard", _ => "Unknown" });
+            println!(
+                "Compression: {} ({})",
+                compression,
+                match compression {
+                    0 => "None",
+                    1 => "Oodle",
+                    2 => "Brotli",
+                    3 => "ZStandard",
+                    _ => "Unknown",
+                }
+            );
             println!("CompressedSize: {} bytes", compressed_size);
             println!("DecompressedSize: {} bytes", decompressed_size);
 
@@ -2579,17 +2799,21 @@ fn main() -> Result<()> {
                         fn skip_property_type<R: std::io::Read>(r: &mut R) -> Result<()> {
                             let type_id = r.read_u8()?;
                             match type_id {
-                                26 => { // EnumProperty
+                                26 => {
+                                    // EnumProperty
                                     skip_property_type(r)?; // inner
                                     r.read_u32::<LE>()?; // enum name
                                 }
-                                9 => { // StructProperty
+                                9 => {
+                                    // StructProperty
                                     r.read_u32::<LE>()?; // struct name
                                 }
-                                8 | 25 | 28 => { // Array/Set/Optional
+                                8 | 25 | 28 => {
+                                    // Array/Set/Optional
                                     skip_property_type(r)?; // inner
                                 }
-                                24 => { // MapProperty
+                                24 => {
+                                    // MapProperty
                                     skip_property_type(r)?; // key
                                     skip_property_type(r)?; // value
                                 }
@@ -2607,7 +2831,11 @@ fn main() -> Result<()> {
             println!("\nFile size: {} bytes", file_size);
         }
 
-        Commands::UsmapSearch { path, pattern, verbose } => {
+        Commands::UsmapSearch {
+            path,
+            pattern,
+            verbose,
+        } => {
             use byteorder::{LittleEndian as LE, ReadBytesExt};
             use std::io::{BufReader, Read, Seek, SeekFrom};
 
@@ -2675,47 +2903,83 @@ fn main() -> Result<()> {
 
             // Property type names for display
             let type_names = [
-                "Byte", "Bool", "Int", "Float", "Object", "Name", "Delegate", "Double",
-                "Array", "Struct", "Str", "Text", "Interface", "MulticastDelegate",
-                "WeakObject", "LazyObject", "AssetObject", "SoftObject", "UInt64", "UInt32",
-                "UInt16", "Int64", "Int16", "Int8", "Map", "Set", "Enum", "FieldPath",
-                "Optional", "Utf8Str", "AnsiStr"
+                "Byte",
+                "Bool",
+                "Int",
+                "Float",
+                "Object",
+                "Name",
+                "Delegate",
+                "Double",
+                "Array",
+                "Struct",
+                "Str",
+                "Text",
+                "Interface",
+                "MulticastDelegate",
+                "WeakObject",
+                "LazyObject",
+                "AssetObject",
+                "SoftObject",
+                "UInt64",
+                "UInt32",
+                "UInt16",
+                "Int64",
+                "Int16",
+                "Int8",
+                "Map",
+                "Set",
+                "Enum",
+                "FieldPath",
+                "Optional",
+                "Utf8Str",
+                "AnsiStr",
             ];
 
-            fn read_property_type<R: std::io::Read>(r: &mut R, names: &[String], type_names: &[&str]) -> Result<String> {
+            fn read_property_type<R: std::io::Read>(
+                r: &mut R,
+                names: &[String],
+                type_names: &[&str],
+            ) -> Result<String> {
                 let type_id = r.read_u8()? as usize;
                 let base_type = type_names.get(type_id).unwrap_or(&"Unknown");
 
                 Ok(match type_id {
-                    26 => { // EnumProperty
+                    26 => {
+                        // EnumProperty
                         let inner = read_property_type(r, names, type_names)?;
                         let enum_idx = r.read_u32::<LE>()? as usize;
                         let enum_name = names.get(enum_idx).cloned().unwrap_or_default();
                         format!("Enum<{}>", enum_name)
                     }
-                    9 => { // StructProperty
+                    9 => {
+                        // StructProperty
                         let struct_idx = r.read_u32::<LE>()? as usize;
                         let struct_name = names.get(struct_idx).cloned().unwrap_or_default();
                         format!("Struct<{}>", struct_name)
                     }
-                    8 => { // ArrayProperty
+                    8 => {
+                        // ArrayProperty
                         let inner = read_property_type(r, names, type_names)?;
                         format!("Array<{}>", inner)
                     }
-                    25 => { // SetProperty
+                    25 => {
+                        // SetProperty
                         let inner = read_property_type(r, names, type_names)?;
                         format!("Set<{}>", inner)
                     }
-                    28 => { // OptionalProperty
+                    28 => {
+                        // OptionalProperty
                         let inner = read_property_type(r, names, type_names)?;
                         format!("Optional<{}>", inner)
                     }
-                    24 => { // MapProperty
+                    24 => {
+                        // MapProperty
                         let key = read_property_type(r, names, type_names)?;
                         let value = read_property_type(r, names, type_names)?;
                         format!("Map<{}, {}>", key, value)
                     }
-                    _ => base_type.to_string()
+                    _ => base_type.to_string(),
                 })
             }
 
@@ -2751,7 +3015,11 @@ fn main() -> Result<()> {
 
             // Print results
             if !found_enums.is_empty() {
-                println!("=== Enums matching '{}' ({}) ===", pattern, found_enums.len());
+                println!(
+                    "=== Enums matching '{}' ({}) ===",
+                    pattern,
+                    found_enums.len()
+                );
                 for (name, entries) in &found_enums {
                     println!("\n{} ({} values)", name, entries.len());
                     if verbose {
@@ -2763,16 +3031,28 @@ fn main() -> Result<()> {
             }
 
             if !found_structs.is_empty() {
-                println!("\n=== Structs matching '{}' ({}) ===", pattern, found_structs.len());
+                println!(
+                    "\n=== Structs matching '{}' ({}) ===",
+                    pattern,
+                    found_structs.len()
+                );
                 for (name, super_name, properties) in &found_structs {
-                    println!("\n{}{} ({} properties)",
+                    println!(
+                        "\n{}{} ({} properties)",
                         name,
-                        super_name.as_ref().map(|s| format!(" : {}", s)).unwrap_or_default(),
+                        super_name
+                            .as_ref()
+                            .map(|s| format!(" : {}", s))
+                            .unwrap_or_default(),
                         properties.len()
                     );
                     if verbose {
                         for (prop_name, prop_type, array_dim) in properties {
-                            let dim_str = if *array_dim > 1 { format!("[{}]", array_dim) } else { String::new() };
+                            let dim_str = if *array_dim > 1 {
+                                format!("[{}]", array_dim)
+                            } else {
+                                String::new()
+                            };
                             println!("  {} {}{}", prop_type, prop_name, dim_str);
                         }
                     }

@@ -22,9 +22,7 @@ pub fn read_input(path: Option<&Path>) -> Result<Vec<u8>> {
 /// Write bytes to a file path or stdout if path is None
 pub fn write_output(path: Option<&Path>, data: &[u8]) -> Result<()> {
     match path {
-        Some(p) => {
-            fs::write(p, data).with_context(|| format!("Failed to write {}", p.display()))
-        }
+        Some(p) => fs::write(p, data).with_context(|| format!("Failed to write {}", p.display())),
         None => io::stdout()
             .write_all(data)
             .context("Failed to write to stdout"),

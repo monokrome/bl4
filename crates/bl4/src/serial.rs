@@ -224,7 +224,10 @@ fn parse_tokens_impl(reader: &mut BitReader, debug: bool) -> Vec<Token> {
         match prefix2 {
             0b00 => {
                 if debug {
-                    eprintln!("         -> Separator (remaining bits: {})", reader.remaining_bits());
+                    eprintln!(
+                        "         -> Separator (remaining bits: {})",
+                        reader.remaining_bits()
+                    );
                 }
                 tokens.push(Token::Separator);
                 // If we have very few bits left after a separator, stop parsing.
@@ -327,12 +330,16 @@ fn parse_tokens_impl(reader: &mut BitReader, debug: bool) -> Vec<Token> {
                                                             let prefix3 = (peek << 1) | bit3;
                                                             match prefix3 {
                                                                 0b100 => {
-                                                                    if let Some(v) = reader.read_varint() {
+                                                                    if let Some(v) =
+                                                                        reader.read_varint()
+                                                                    {
                                                                         values.push(v);
                                                                     }
                                                                 }
                                                                 0b110 => {
-                                                                    if let Some(v) = reader.read_varbit() {
+                                                                    if let Some(v) =
+                                                                        reader.read_varbit()
+                                                                    {
                                                                         values.push(v);
                                                                     }
                                                                 }
@@ -359,7 +366,10 @@ fn parse_tokens_impl(reader: &mut BitReader, debug: bool) -> Vec<Token> {
                             }
 
                             if debug {
-                                eprintln!("         -> Part {{ index: {}, values: {:?} }}", index, values);
+                                eprintln!(
+                                    "         -> Part {{ index: {}, values: {:?} }}",
+                                    index, values
+                                );
                             }
                             tokens.push(Token::Part { index, values });
                         }
@@ -368,7 +378,11 @@ fn parse_tokens_impl(reader: &mut BitReader, debug: bool) -> Vec<Token> {
                         // String: VARINT length + 7-bit ASCII chars
                         if let Some(length) = reader.read_varint() {
                             if debug {
-                                eprintln!("         -> String length: {} (would need {} bits)", length, length * 7);
+                                eprintln!(
+                                    "         -> String length: {} (would need {} bits)",
+                                    length,
+                                    length * 7
+                                );
                             }
                             // Sanity check - don't read more than 128 chars
                             if length > 128 {
@@ -394,7 +408,9 @@ fn parse_tokens_impl(reader: &mut BitReader, debug: bool) -> Vec<Token> {
                                     eprintln!("         -> String (binary): {:?}", chars);
                                 }
                                 // Store as lossy string anyway
-                                tokens.push(Token::String(String::from_utf8_lossy(&chars).to_string()));
+                                tokens.push(Token::String(
+                                    String::from_utf8_lossy(&chars).to_string(),
+                                ));
                             }
                         }
                     }

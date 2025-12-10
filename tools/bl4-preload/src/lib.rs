@@ -77,31 +77,33 @@ static REAL_RANDOM: Lazy<Option<unsafe extern "C" fn() -> c_long>> = Lazy::new(|
 
 // Configurable options via environment variables
 fn should_log_stacks() -> bool {
-    std::env::var("BL4_PRELOAD_STACKS").map(|v| v == "1").unwrap_or(false)
+    std::env::var("BL4_PRELOAD_STACKS")
+        .map(|v| v == "1")
+        .unwrap_or(false)
 }
 
 fn should_log_all() -> bool {
-    std::env::var("BL4_PRELOAD_ALL").map(|v| v == "1").unwrap_or(false)
+    std::env::var("BL4_PRELOAD_ALL")
+        .map(|v| v == "1")
+        .unwrap_or(false)
 }
 
 /// Drop bias mode - how to modify RNG values
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum DropBias {
-    None,   // No modification
-    Max,    // Always maximum
-    High,   // Bias toward high (75th percentile)
-    Low,    // Bias toward low (25th percentile)
-    Min,    // Always minimum
+    None, // No modification
+    Max,  // Always maximum
+    High, // Bias toward high (75th percentile)
+    Low,  // Bias toward low (25th percentile)
+    Min,  // Always minimum
 }
 
-static RNG_BIAS: Lazy<DropBias> = Lazy::new(|| {
-    match std::env::var("BL4_RNG_BIAS").as_deref() {
-        Ok("max") => DropBias::Max,
-        Ok("high") => DropBias::High,
-        Ok("low") => DropBias::Low,
-        Ok("min") => DropBias::Min,
-        _ => DropBias::None,
-    }
+static RNG_BIAS: Lazy<DropBias> = Lazy::new(|| match std::env::var("BL4_RNG_BIAS").as_deref() {
+    Ok("max") => DropBias::Max,
+    Ok("high") => DropBias::High,
+    Ok("low") => DropBias::Low,
+    Ok("min") => DropBias::Min,
+    _ => DropBias::None,
 });
 
 /// Apply bias to a c_int (for rand())
@@ -216,7 +218,11 @@ pub unsafe extern "C" fn rand() -> c_int {
     let biased = apply_bias_int(result);
     let return_addr = get_return_address();
     if biased != result {
-        log_call(&format!("rand[{}->{}]", result, biased), biased as i64, return_addr);
+        log_call(
+            &format!("rand[{}->{}]", result, biased),
+            biased as i64,
+            return_addr,
+        );
     } else {
         log_call("rand", result as i64, return_addr);
     }
@@ -283,13 +289,24 @@ pub unsafe extern "C" fn getrandom(buf: *mut c_void, buflen: usize, flags: c_uin
     // Log first few bytes of random data for correlation
     let preview = if !buf.is_null() && buflen >= 4 && result > 0 {
         let bytes = std::slice::from_raw_parts(buf as *const u8, 4.min(buflen));
-        format!("{:02x}{:02x}{:02x}{:02x}", bytes[0], bytes[1], bytes[2], bytes[3])
+        format!(
+            "{:02x}{:02x}{:02x}{:02x}",
+            bytes[0], bytes[1], bytes[2], bytes[3]
+        )
     } else {
         "????".to_string()
     };
 
-    let bias_tag = if *RNG_BIAS != DropBias::None { "[BIASED]" } else { "" };
-    log_call(&format!("getrandom({}b,{}){}", buflen, preview, bias_tag), result as i64, return_addr);
+    let bias_tag = if *RNG_BIAS != DropBias::None {
+        "[BIASED]"
+    } else {
+        ""
+    };
+    log_call(
+        &format!("getrandom({}b,{}){}", buflen, preview, bias_tag),
+        result as i64,
+        return_addr,
+    );
     result
 }
 
