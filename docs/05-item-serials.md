@@ -68,16 +68,18 @@ Serials go through multiple transformations:
 ```
 "@Ugr$ZCm/&tH!..."     Original serial string
          ↓
-"gr$ZCm/&tH!..."       Strip "@U" prefix, keep type
+"gr$ZCm/&tH!..."       Strip "@U" prefix (keep 'g' and everything after)
          ↓
-[0x21, 0x30, 0xC0...]  Base85 decode to bytes
+[0x84, 0xA5, 0x86...]  Base85 decode to bytes
          ↓
-[0x84, 0x0C, 0x03...]  Bit-mirror each byte
+[0x21, 0xA5, 0x61...]  Bit-mirror each byte
          ↓
-100 0010 0011...       Parse as bitstream (tokens)
+001 0000 1101...       Parse as bitstream (tokens)
          ↓
-{Manufacturer: 4, Level: 50, Parts: [...]}
+{Category: 22, Level: 50, Parts: [...]}
 ```
+
+Note: The item type character (e.g., `r`) is extracted from position 3 of the original string but is NOT removed from the Base85 data.
 
 ---
 
@@ -133,16 +135,16 @@ fn base85_decode(input: &str) -> Vec<u8> {
 
 **Example**:
 ```
-Input:  "$ZCm/"
-Values: [67, 35, 12, 48, 84]  (positions in alphabet)
+Input:  "gr$ZC" (first 5 chars of "gr$ZCm/&")
+Values: [42, 53, 64, 35, 12]  (positions in alphabet)
 
 Calculation:
-67 × 85⁴ + 35 × 85³ + 12 × 85² + 48 × 85¹ + 84 × 85⁰
-= 67 × 52,200,625 + 35 × 614,125 + 12 × 7,225 + 48 × 85 + 84
-= 3,497,441,875 + 21,494,375 + 86,700 + 4,080 + 84
-= 3,519,027,114
+42 × 85⁴ + 53 × 85³ + 64 × 85² + 35 × 85¹ + 12 × 85⁰
+= 42 × 52,200,625 + 53 × 614,125 + 64 × 7,225 + 35 × 85 + 12
+= 2,192,426,250 + 32,548,625 + 462,400 + 2,975 + 12
+= 2,225,440,262
 
-As bytes (big-endian): [0xD1, 0xB8, 0x1C, 0x2A]
+As bytes (big-endian): [0x84, 0xA5, 0x86, 0x06]
 ```
 
 ---
@@ -578,49 +580,51 @@ Let's manually decode a short serial:
 ### Step 1: Parse Structure
 
 ```
-@U   → Strip (header)
-g    → Strip (part of header)
-r    → Item type: weapon (variant r)
-$ZCm/& → Base85 data
+@U       → Strip (header prefix)
+gr$ZCm/& → Base85 data (includes 'g' which encodes more data)
+r        → Item type extracted separately (char at index 3)
 ```
 
-### Step 2: Base85 Decode `$ZCm/&`
+Note: The `g` after `@U` is NOT stripped - it's part of the Base85 data. Only `@U` is removed.
+
+### Step 2: Base85 Decode `gr$ZCm/&`
 
 ```
-Characters: $ Z C m / &
-Positions:  67 35 12 48 84 69
+Characters: g r $ Z C   (first chunk of 5)
+Positions:  42 53 64 35 12
 
-Group 1: $ZCm/ (5 chars)
-Value = 67×85⁴ + 35×85³ + 12×85² + 48×85 + 84
-      = 3,519,027,114
-Bytes = [0xD1, 0xB8, 0x1C, 0x2A]
+Group 1: gr$ZC (5 chars)
+Value = 42×85⁴ + 53×85³ + 64×85² + 35×85 + 12
+      = 2,225,440,262
+Bytes = [0x84, 0xA5, 0x86, 0x06]
 
-Group 2: & (1 char, padded)
-Value = 69 × 85⁰ = 69
-Bytes = [0x00, 0x00, 0x00, 0x45]
+Group 2: m/& (3 chars → 2 output bytes)
+Positions: 48, 82, 66
+Value = 48×85² + 82×85 + 66 = 353,836
+Bytes = [0x66, 0x2C]
 ```
 
 ### Step 3: Mirror Bytes
 
 ```
-Original: D1 B8 1C 2A 00 00 00 45
-Mirrored: 8B 1D 38 54 00 00 00 A2
+Original: 84 A5 86 06 66 2C
+Mirrored: 21 A5 61 60 66 34
 ```
+
+You can verify: `bl4 decode '@Ugr$ZCm/&'` outputs `Hex: 21a561606634`
 
 ### Step 4: Parse Bitstream
 
 ```
-Binary: 10001011 00011101 00111000 01010100 ...
+Binary: 00100001 10100101 01100001 01100000 01100110 00110100
 
-Bit 0-6:   0010000  → Magic (valid!)
-Bit 7-9:   100      → VarInt prefix
-Bit 10-13: 0101     → Value 5
-Bit 14:    1        → Continue
-Bit 15-18: 1000     → Value 8
-Bit 19:    0        → Stop
+Bit 0-6:   0010000  → Magic (0x10, valid!)
+Bit 7-9:   110      → VarBit prefix
+Bit 10-14: 10000    → Length = 16 bits
+Bit 15-30: (16 bits of data) → Part Group ID encoded value
 
-VarInt = (8 << 4) | 5 = 133
-...
+First VarBit decodes to 180928
+Category = 180928 / 8192 = 22 (Vladof SMG)
 ```
 
 ---
