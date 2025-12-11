@@ -328,7 +328,7 @@ VarBit(180928) | VarBit(50) | {parts...}
 
 ### Format 2: VarInt-First (Extended)
 
-Used by: Types `a-g`, `u-z` serials
+Used by: Types `a-d`, `f-g`, `u-z` serials (NOT type `e` equipment)
 
 ```
 @Uga`vnFg_4r>@?6{RG/(PsgbBn%/Yct<wUJR00
@@ -336,9 +336,25 @@ Used by: Types `a-g`, `u-z` serials
 VarInt(4), VarInt(0), VarInt(8), VarInt(9) | VarInt(4), VarInt(seed) | | {parts...}
 ```
 
+#### Header Structure
+
+| Position | Name | Description |
+|----------|------|-------------|
+| Token 0 | **Weapon ID** | Combined manufacturer + weapon type (see table below) |
+| Token 1 | **Constant** | Always `0` (format marker) |
+| Token 2 | **Constant** | Always `8` (purpose unknown) |
+| Token 3 | **Level** | Item level (matches in-game display) |
+| Separator | `|` | End of header |
+| Token 4 | **Constant** | Always `4` after separator |
+| Token 5 | **Seed** | Random seed (7-260631 range) for stat rolls |
+| Separator | `|` | |
+| Separator | `|` | Double separator before parts |
+| Remaining | **Parts** | Part indices `{N}` or `{N:V}` |
+
 - First token is **VarInt** (prefix `100`)
 - First VarInt encodes **both manufacturer AND weapon type** (see table below)
 - Typically longer serials with more metadata
+- **Level is token 3** (fourth VarInt, index 3)
 
 !!! note
     Both formats can appear in the same save file. The game generates different formats depending on item source (drops, quest rewards, vendors, etc.).

@@ -749,6 +749,15 @@ fn main() -> Result<()> {
                     println!("Manufacturer ID: {} (unknown)", mfr_id);
                 }
             }
+
+            // Show level and seed for VarInt-first format
+            if let Some(level) = item.level {
+                println!("Level: {}", level);
+            }
+            if let Some(seed) = item.seed {
+                println!("Seed: {}", seed);
+            }
+
             println!("Decoded bytes: {}", item.raw_bytes.len());
             println!("Hex: {}", item.hex_dump());
             println!("Tokens: {}", item.format_tokens());

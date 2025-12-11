@@ -141,9 +141,12 @@ pub struct ItemSerial {
     pub tokens: Vec<Token>,
 
     /// Decoded fields (extracted from tokens)
+    /// For VarInt-first format: Combined manufacturer + weapon type ID
     pub manufacturer: Option<u64>,
-    pub rarity: Option<u64>,
+    /// Item level (fourth VarInt for VarInt-first format)
     pub level: Option<u64>,
+    /// Random seed for stat rolls (second VarInt after first separator)
+    pub seed: Option<u64>,
 }
 
 /// Decode Base85 with custom BL4 alphabet
@@ -471,31 +474,55 @@ impl ItemSerial {
         let mut reader = BitReader::new(raw_bytes.clone());
         let tokens = parse_tokens(&mut reader);
 
-        // Extract common fields from tokens (basic heuristic)
+        // Extract common fields from tokens based on format
         let mut manufacturer = None;
-        let mut rarity = None;
         let mut level = None;
+        let mut seed = None;
 
-        // First few VarInts are typically manufacturer, rarity, level
-        let varints: Vec<u64> = tokens
-            .iter()
-            .filter_map(|t| {
-                if let Token::VarInt(v) = t {
-                    Some(*v)
-                } else {
-                    None
+        // Collect VarInts before first separator for header analysis
+        let mut header_varints: Vec<u64> = Vec::new();
+        let mut after_first_sep: Vec<u64> = Vec::new();
+        let mut seen_separator = false;
+
+        for token in &tokens {
+            match token {
+                Token::VarInt(v) => {
+                    if seen_separator {
+                        after_first_sep.push(*v);
+                    } else {
+                        header_varints.push(*v);
+                    }
                 }
-            })
-            .collect();
+                Token::Separator => {
+                    seen_separator = true;
+                }
+                _ => {}
+            }
+        }
 
-        if !varints.is_empty() {
-            manufacturer = Some(varints[0]);
-        }
-        if varints.len() > 1 {
-            rarity = Some(varints[1]);
-        }
-        if varints.len() > 2 {
-            level = Some(varints[2]);
+        // VarInt-first format (types a-d, f-g, u-z): <mfg_id>, 0, 8, <level> | 4, <seed> | ...
+        // VarBit-first format (type r): Different layout
+        match item_type {
+            'a'..='d' | 'f' | 'g' | 'u'..='z' => {
+                // VarInt-first weapon format
+                if !header_varints.is_empty() {
+                    manufacturer = Some(header_varints[0]);
+                }
+                // Fourth VarInt (index 3) is the level
+                if header_varints.len() >= 4 {
+                    level = Some(header_varints[3]);
+                }
+                // After separator: 4, <seed>
+                if after_first_sep.len() >= 2 {
+                    seed = Some(after_first_sep[1]);
+                }
+            }
+            _ => {
+                // VarBit-first or equipment - use first VarInt as manufacturer if present
+                if !header_varints.is_empty() {
+                    manufacturer = Some(header_varints[0]);
+                }
+            }
         }
 
         Ok(ItemSerial {
@@ -504,8 +531,8 @@ impl ItemSerial {
             item_type,
             tokens,
             manufacturer,
-            rarity,
             level,
+            seed,
         })
     }
 
@@ -677,8 +704,8 @@ impl ItemSerial {
         if let Some(m) = self.manufacturer {
             output.push_str(&format!("  Manufacturer: {}\n", m));
         }
-        if let Some(r) = self.rarity {
-            output.push_str(&format!("  Rarity: {}\n", r));
+        if let Some(s) = self.seed {
+            output.push_str(&format!("  Seed: {}\n", s));
         }
         if let Some(l) = self.level {
             output.push_str(&format!("  Level: {}\n", l));
