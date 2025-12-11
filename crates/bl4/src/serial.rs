@@ -476,7 +476,7 @@ impl ItemSerial {
 
         // Extract common fields from tokens based on format
         let mut manufacturer = None;
-        let mut level = None;
+        let level = None; // Level location in serial still unknown
         let mut seed = None;
 
         // Collect VarInts before first separator for header analysis
@@ -500,17 +500,14 @@ impl ItemSerial {
             }
         }
 
-        // VarInt-first format (types a-d, f-g, u-z): <mfg_id>, 0, 8, <level> | 4, <seed> | ...
+        // VarInt-first format (types a-d, f-g, u-z): <mfg_id>, 0, 8, <unknown> | 4, <seed> | ...
+        // Fourth token appears to be another weapon ID, NOT level. Level location unknown.
         // VarBit-first format (type r): Different layout
         match item_type {
             'a'..='d' | 'f' | 'g' | 'u'..='z' => {
                 // VarInt-first weapon format
                 if !header_varints.is_empty() {
                     manufacturer = Some(header_varints[0]);
-                }
-                // Fourth VarInt (index 3) is the level
-                if header_varints.len() >= 4 {
-                    level = Some(header_varints[3]);
                 }
                 // After separator: 4, <seed>
                 if after_first_sep.len() >= 2 {
