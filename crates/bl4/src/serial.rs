@@ -10,7 +10,6 @@
 
 use crate::parts::{
     item_type_name, level_from_code, manufacturer_name, weapon_info_from_first_varint,
-    PartsDatabase,
 };
 
 /// Custom Base85 alphabet used by Borderlands 4
@@ -562,55 +561,6 @@ impl ItemSerial {
                     } else {
                         let vals: Vec<String> = values.iter().map(|v| v.to_string()).collect();
                         output.push_str(&format!("{{{}:[{}]}}", index, vals.join(" ")));
-                    }
-                }
-                Token::String(s) => {
-                    if s.is_empty() {
-                        output.push_str("\"\"");
-                    } else {
-                        output.push_str(&format!("{:?}", s));
-                    }
-                }
-            }
-            output.push(' ');
-        }
-
-        output.trim().to_string()
-    }
-
-    /// Format tokens with named parts from the database
-    /// Example: `Stoker, 0, 8, 196| 4, 2379|| {body_mod_b} {ReloadSpeed} {Damage}`
-    pub fn format_tokens_named(&self, db: &PartsDatabase) -> String {
-        let mut output = String::new();
-        let mut is_first_varint = true;
-
-        for token in &self.tokens {
-            match token {
-                Token::Separator => output.push('|'),
-                Token::SoftSeparator => output.push_str(", "),
-                Token::VarInt(v) => {
-                    // First VarInt is manufacturer
-                    if is_first_varint {
-                        if let Some(name) = manufacturer_name(*v) {
-                            output.push_str(name);
-                        } else {
-                            output.push_str(&format!("{}", v));
-                        }
-                        is_first_varint = false;
-                    } else {
-                        output.push_str(&format!("{}", v));
-                    }
-                }
-                Token::VarBit(v) => output.push_str(&format!("{}", v)),
-                Token::Part { index, values } => {
-                    let name = db.get_name(*index);
-                    if values.is_empty() {
-                        output.push_str(&format!("{{{}}}", name));
-                    } else if values.len() == 1 {
-                        output.push_str(&format!("{{{}:{}}}", name, values[0]));
-                    } else {
-                        let vals: Vec<String> = values.iter().map(|v| v.to_string()).collect();
-                        output.push_str(&format!("{{{}:[{}]}}", name, vals.join(" ")));
                     }
                 }
                 Token::String(s) => {

@@ -6,10 +6,28 @@ use anyhow::{bail, Context, Result};
 use byteorder::ByteOrder;
 use clap::{Parser, Subcommand};
 use config::Config;
+use serde::Deserialize;
 use std::fs;
 use std::io::{self, Write};
 use std::path::PathBuf;
 use std::process::Command;
+
+#[derive(Debug, Deserialize)]
+struct PartCategoriesFile {
+    categories: Vec<PartCategory>,
+}
+
+#[derive(Debug, Deserialize)]
+struct PartCategory {
+    prefix: String,
+    category: i64,
+    #[serde(default)]
+    weapon_type: Option<String>,
+    #[serde(default)]
+    gear_type: Option<String>,
+    #[serde(default)]
+    manufacturer: Option<String>,
+}
 
 #[derive(Parser)]
 #[command(name = "bl4")]
@@ -208,6 +226,17 @@ enum Commands {
         #[arg(short, long)]
         verbose: bool,
     },
+
+    /// Extract part pools from the parts database (category groupings)
+    ExtractPartPools {
+        /// Input parts database JSON
+        #[arg(short, long, default_value = "share/manifest/parts_database.json")]
+        input: PathBuf,
+
+        /// Output part pools JSON
+        #[arg(short, long, default_value = "share/manifest/part_pools.json")]
+        output: PathBuf,
+    },
 }
 
 #[derive(Subcommand)]
@@ -393,6 +422,10 @@ enum MemoryAction {
         /// Output parts database JSON
         #[arg(short, long, default_value = "share/manifest/parts_database.json")]
         output: PathBuf,
+
+        /// Part categories mapping JSON (prefix -> category ID)
+        #[arg(short, long, default_value = "share/manifest/part_categories.json")]
+        categories: PathBuf,
     },
 
     /// Extract part definitions from UObjects with authoritative Category/Index from SerialIndex
@@ -722,7 +755,6 @@ fn main() -> Result<()> {
             analyze,
         } => {
             let item = bl4::ItemSerial::decode(&serial).context("Failed to decode serial")?;
-            let parts_db = bl4::PartsDatabase::load_embedded();
 
             println!("Serial: {}", item.original);
             println!(
@@ -761,7 +793,6 @@ fn main() -> Result<()> {
             println!("Decoded bytes: {}", item.raw_bytes.len());
             println!("Hex: {}", item.hex_dump());
             println!("Tokens: {}", item.format_tokens());
-            println!("Named:  {}", item.format_tokens_named(&parts_db));
 
             if verbose {
                 println!("\n{}", item.detailed_dump());
@@ -885,76 +916,43 @@ fn main() -> Result<()> {
                 MemoryAction::BuildPartsDb {
                     ref input,
                     ref output,
+                    ref categories,
                 } => {
                     // This command doesn't need memory access - just reads/writes JSON
                     println!("Building parts database from {}...", input.display());
+                    println!("Loading categories from {}...", categories.display());
 
-                    // Known part group IDs (from serial analysis)
-                    let known_groups: Vec<(&str, i64, &str)> = vec![
-                        // Weapons (categories 2-30)
-                        ("DAD_PS", 2, "Daedalus Pistol"),
-                        ("JAK_PS", 3, "Jakobs Pistol"),
-                        ("TED_PS", 4, "Tediore Pistol"),
-                        ("TOR_PS", 5, "Torgue Pistol"),
-                        ("ORD_PS", 6, "Order Pistol"),
-                        ("VLA_PS", 7, "Vladof Pistol"),
-                        ("DAD_SG", 8, "Daedalus Shotgun"),
-                        ("JAK_SG", 9, "Jakobs Shotgun"),
-                        ("TED_SG", 10, "Tediore Shotgun"),
-                        ("TOR_SG", 11, "Torgue Shotgun"),
-                        ("BOR_SG", 12, "Bor Shotgun"),
-                        ("DAD_AR", 13, "Daedalus Assault Rifle"),
-                        ("JAK_AR", 14, "Jakobs Assault Rifle"),
-                        ("TED_AR", 15, "Tediore Assault Rifle"),
-                        ("TOR_AR", 16, "Torgue Assault Rifle"),
-                        ("VLA_AR", 17, "Vladof Assault Rifle"),
-                        ("ORD_AR", 18, "Order Assault Rifle"),
-                        ("MAL_SG", 19, "Maliwan Shotgun"),
-                        ("DAD_SM", 20, "Daedalus SMG"),
-                        ("BOR_SM", 21, "Bor SMG"),
-                        ("VLA_SM", 22, "Vladof SMG"),
-                        ("MAL_SM", 23, "Maliwan SMG"),
-                        ("bor_sr", 25, "Bor Sniper"),
-                        ("JAK_SR", 26, "Jakobs Sniper"),
-                        ("VLA_SR", 27, "Vladof Sniper"),
-                        ("ORD_SR", 28, "Order Sniper"),
-                        ("MAL_SR", 29, "Maliwan Sniper"),
-                        // Heavy weapons (categories 240+)
-                        ("VLA_HW", 244, "Vladof Heavy Weapon"),
-                        ("TOR_HW", 245, "Torgue Heavy Weapon"),
-                        ("BOR_HW", 246, "Bor Heavy Weapon"),
-                        ("MAL_HW", 247, "Maliwan Heavy Weapon"),
-                        // Shields (categories 279+)
-                        ("energy_shield", 279, "Energy Shield"),
-                        ("bor_shield", 280, "Bor Shield"),
-                        ("dad_shield", 281, "Daedalus Shield"),
-                        ("jak_shield", 282, "Jakobs Shield"),
-                        ("Armor_Shield", 283, "Armor Shield"),
-                        ("mal_shield", 284, "Maliwan Shield"),
-                        ("ord_shield", 285, "Order Shield"),
-                        ("ted_shield", 286, "Tediore Shield"),
-                        ("tor_shield", 287, "Torgue Shield"),
-                        ("vla_shield", 288, "Vladof Shield"),
-                        // Gadgets and gear
-                        ("grenade_gadget", 300, "Grenade Gadget"),
-                        ("turret_gadget", 310, "Turret Gadget"),
-                        ("repair_kit", 320, "Repair Kit"),
-                        ("Terminal_Gadget", 330, "Terminal Gadget"),
-                        // Enhancements
-                        ("DAD_Enhancement", 400, "Daedalus Enhancement"),
-                        ("BOR_Enhancement", 401, "Bor Enhancement"),
-                        ("JAK_Enhancement", 402, "Jakobs Enhancement"),
-                        ("MAL_Enhancement", 403, "Maliwan Enhancement"),
-                        ("ORD_Enhancement", 404, "Order Enhancement"),
-                        ("TED_Enhancement", 405, "Tediore Enhancement"),
-                        ("TOR_Enhancement", 406, "Torgue Enhancement"),
-                        ("VLA_Enhancement", 407, "Vladof Enhancement"),
-                        ("COV_Enhancement", 408, "COV Enhancement"),
-                        ("ATL_Enhancement", 409, "Atlas Enhancement"),
-                        // Class Mods (categories 44, 55, 97, 140)
-                        // Only classmod_gravitar has parts in the dump
-                        ("classmod_gravitar", 97, "Gravitar Class Mod"),
-                    ];
+                    // Load part categories from JSON file
+                    let categories_json = std::fs::read_to_string(categories)
+                        .context("Failed to read part categories file")?;
+                    let categories_file: PartCategoriesFile = serde_json::from_str(&categories_json)
+                        .context("Failed to parse part categories JSON")?;
+
+                    // Convert to internal format (prefix, category_id, description)
+                    let known_groups: Vec<(String, i64, String)> = categories_file
+                        .categories
+                        .into_iter()
+                        .map(|cat| {
+                            let description = if let Some(wt) = &cat.weapon_type {
+                                if let Some(mfr) = &cat.manufacturer {
+                                    format!("{} {}", mfr, wt)
+                                } else {
+                                    wt.clone()
+                                }
+                            } else if let Some(gt) = &cat.gear_type {
+                                if let Some(mfr) = &cat.manufacturer {
+                                    format!("{} {}", mfr, gt)
+                                } else {
+                                    gt.clone()
+                                }
+                            } else {
+                                cat.prefix.clone()
+                            };
+                            (cat.prefix, cat.category, description)
+                        })
+                        .collect();
+
+                    println!("Loaded {} category mappings", known_groups.len());
 
                     let parts_json =
                         std::fs::read_to_string(input).context("Failed to read parts dump file")?;
@@ -991,20 +989,20 @@ fn main() -> Result<()> {
                     let mut db_entries: Vec<(i64, i16, String, String)> = Vec::new();
 
                     for (prefix, category, description) in &known_groups {
-                        if let Some(parts) = parts_by_prefix.get(*prefix) {
+                        if let Some(parts) = parts_by_prefix.get(prefix) {
                             for (idx, part_name) in parts.iter().enumerate() {
                                 db_entries.push((
                                     *category,
                                     idx as i16,
                                     part_name.clone(),
-                                    description.to_string(),
+                                    description.clone(),
                                 ));
                             }
                         }
                     }
 
                     let known_prefixes: std::collections::HashSet<&str> =
-                        known_groups.iter().map(|(p, _, _)| *p).collect();
+                        known_groups.iter().map(|(p, _, _)| p.as_str()).collect();
 
                     for (prefix, parts) in &parts_by_prefix {
                         if !known_prefixes.contains(prefix.as_str()) {
@@ -3089,6 +3087,214 @@ fn main() -> Result<()> {
             if found_enums.is_empty() && found_structs.is_empty() {
                 println!("No enums or structs found matching '{}'", pattern);
             }
+        }
+
+        Commands::ExtractPartPools { input, output } => {
+            use std::collections::BTreeMap;
+
+            // Read the parts database (memory-extracted names + verified category assignments)
+            let data = fs::read_to_string(&input)
+                .with_context(|| format!("Failed to read {}", input.display()))?;
+
+            // Parse parts array from JSON
+            // Structure: { "parts": [ { "category": N, "name": "...", ... }, ... ], "categories": {...} }
+            let parts_start = data.find("\"parts\"").context("Missing 'parts' key")?;
+            let array_start =
+                data[parts_start..].find('[').context("Missing parts array")? + parts_start;
+
+            // Find the matching closing bracket
+            let mut depth = 0;
+            let mut array_end = array_start;
+            for (i, c) in data[array_start..].char_indices() {
+                match c {
+                    '[' => depth += 1,
+                    ']' => {
+                        depth -= 1;
+                        if depth == 0 {
+                            array_end = array_start + i;
+                            break;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            let parts_json = &data[array_start..=array_end];
+
+            // Parse part entries - only need category and name
+            struct PartEntry {
+                category: i64,
+                name: String,
+            }
+
+            let mut parts: Vec<PartEntry> = Vec::new();
+            let mut in_object = false;
+            let mut current_category: i64 = -1;
+            let mut current_name = String::new();
+            let mut depth = 0;
+
+            for (i, c) in parts_json.char_indices() {
+                match c {
+                    '{' => {
+                        depth += 1;
+                        if depth == 1 {
+                            in_object = true;
+                            current_category = -1;
+                            current_name.clear();
+                        }
+                    }
+                    '}' => {
+                        depth -= 1;
+                        if depth == 0 && in_object {
+                            if current_category > 0 && !current_name.is_empty() {
+                                parts.push(PartEntry {
+                                    category: current_category,
+                                    name: std::mem::take(&mut current_name),
+                                });
+                            }
+                            in_object = false;
+                        }
+                    }
+                    '"' if in_object && depth == 1 => {
+                        let rest = &parts_json[i + 1..];
+                        if let Some(end) = rest.find('"') {
+                            let key = &rest[..end];
+                            let after_key = &rest[end + 1..];
+                            if let Some(colon) = after_key.find(':') {
+                                let value_start = after_key[colon + 1..].trim_start();
+                                match key {
+                                    "category" => {
+                                        let num_end = value_start
+                                            .find(|c: char| !c.is_ascii_digit() && c != '-')
+                                            .unwrap_or(value_start.len());
+                                        if let Ok(n) = value_start[..num_end].parse::<i64>() {
+                                            current_category = n;
+                                        }
+                                    }
+                                    "name" => {
+                                        if value_start.starts_with('"') {
+                                            let name_rest = &value_start[1..];
+                                            if let Some(name_end) = name_rest.find('"') {
+                                                current_name = name_rest[..name_end].to_string();
+                                            }
+                                        }
+                                    }
+                                    _ => {}
+                                }
+                            }
+                        }
+                    }
+                    _ => {}
+                }
+            }
+
+            // Group parts by category
+            let mut by_category: BTreeMap<i64, Vec<String>> = BTreeMap::new();
+            for part in parts {
+                by_category
+                    .entry(part.category)
+                    .or_default()
+                    .push(part.name);
+            }
+
+            // Sort parts within each category alphabetically (consistent ordering)
+            for parts_vec in by_category.values_mut() {
+                parts_vec.sort();
+            }
+
+            // Parse category names from the input
+            let mut category_names: BTreeMap<i64, String> = BTreeMap::new();
+            if let Some(cats_start) = data.find("\"categories\"") {
+                if let Some(obj_start) = data[cats_start..].find('{') {
+                    let cats_section = &data[cats_start + obj_start..];
+                    // Simple parsing for "N": {"name": "..."}
+                    let mut pos = 0;
+                    while let Some(quote_pos) = cats_section[pos..].find('"') {
+                        let key_start = pos + quote_pos + 1;
+                        if let Some(key_end) = cats_section[key_start..].find('"') {
+                            let key = &cats_section[key_start..key_start + key_end];
+                            if let Ok(cat_id) = key.parse::<i64>() {
+                                // Look for "name": "..." after this
+                                let after = &cats_section[key_start + key_end..];
+                                if let Some(name_pos) = after.find("\"name\"") {
+                                    let name_section = &after[name_pos + 7..];
+                                    if let Some(val_start) = name_section.find('"') {
+                                        let name_rest = &name_section[val_start + 1..];
+                                        if let Some(val_end) = name_rest.find('"') {
+                                            category_names
+                                                .insert(cat_id, name_rest[..val_end].to_string());
+                                        }
+                                    }
+                                }
+                            }
+                            pos = key_start + key_end + 1;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Build output JSON with clear metadata
+            let mut json = String::from("{\n");
+            json.push_str("  \"version\": \"1.0\",\n");
+            json.push_str("  \"source\": \"parts_database.json (memory-extracted part names)\",\n");
+            json.push_str("  \"notes\": {\n");
+            json.push_str("    \"part_names\": \"Extracted from game memory via string pattern matching - AUTHORITATIVE\",\n");
+            json.push_str("    \"category_assignments\": \"Based on name prefix matching, verified by serial decode - VERIFIED\",\n");
+            json.push_str("    \"part_order\": \"Alphabetical within category - NOT authoritative, use memory extraction for true indices\"\n");
+            json.push_str("  },\n");
+            json.push_str("  \"pools\": {\n");
+
+            let pool_count = by_category.len();
+            for (i, (category, cat_parts)) in by_category.iter().enumerate() {
+                let cat_name = category_names
+                    .get(category)
+                    .cloned()
+                    .unwrap_or_else(|| format!("Category {}", category));
+
+                json.push_str(&format!("    \"{}\": {{\n", category));
+                json.push_str(&format!(
+                    "      \"name\": \"{}\",\n",
+                    cat_name.replace('"', "\\\"")
+                ));
+                json.push_str(&format!("      \"part_count\": {},\n", cat_parts.len()));
+                json.push_str("      \"parts\": [\n");
+
+                for (j, part) in cat_parts.iter().enumerate() {
+                    let escaped = part.replace('\\', "\\\\").replace('"', "\\\"");
+                    json.push_str(&format!("        \"{}\"", escaped));
+                    if j < cat_parts.len() - 1 {
+                        json.push(',');
+                    }
+                    json.push('\n');
+                }
+
+                json.push_str("      ]\n");
+                json.push_str("    }");
+                if i < pool_count - 1 {
+                    json.push(',');
+                }
+                json.push('\n');
+            }
+
+            json.push_str("  },\n");
+
+            // Summary
+            json.push_str("  \"summary\": {\n");
+            json.push_str(&format!("    \"total_pools\": {},\n", pool_count));
+            let total_parts: usize = by_category.values().map(|v| v.len()).sum();
+            json.push_str(&format!("    \"total_parts\": {}\n", total_parts));
+            json.push_str("  }\n");
+            json.push_str("}\n");
+
+            fs::write(&output, &json)?;
+
+            println!("Extracted {} part pools with {} total parts", pool_count, total_parts);
+            println!("\nData sources:");
+            println!("  Part names: Memory extraction (authoritative)");
+            println!("  Categories: Prefix matching (verified by decode)");
+            println!("  Part order: Alphabetical (not authoritative)");
+            println!("\nWritten to: {}", output.display());
         }
     }
 

@@ -2401,15 +2401,23 @@ impl FNamePool {
 
         // Search for FNamePool header in data sections
         // Look for structures where Block0 points to a valid FNameEntry
-        for region in source.regions() {
-            if !region.is_readable() {
-                continue;
+        // Sort regions: PE data sections first, then heap regions
+        let mut regions_to_search: Vec<_> = source
+            .regions()
+            .iter()
+            .filter(|r| r.is_readable())
+            .collect();
+        regions_to_search.sort_by_key(|r| {
+            if r.start >= 0x140000000 && r.start < 0x160000000 {
+                0 // PE sections first
+            } else if r.start >= 0x1000000 && r.start < 0x140000000 {
+                1 // Low heap regions second
+            } else {
+                2 // Everything else
             }
-            // Focus on PE data sections
-            if region.start < 0x150000000 || region.start > 0x160000000 {
-                continue;
-            }
+        });
 
+        for region in regions_to_search {
             let data = match source.read_bytes(region.start, region.size().min(16 * 1024 * 1024)) {
                 Ok(d) => d,
                 Err(_) => continue,
@@ -2431,7 +2439,8 @@ impl FNamePool {
                 if current_cursor == 0 || current_cursor > 0x100000 {
                     continue;
                 }
-                if block0 < 0x1000000 || block0 > 0x800000000000 || block0 % 8 != 0 {
+                // Allow lower block0 addresses - GNames can be in low heap
+                if block0 < 0x100000 || block0 > 0x800000000000 || block0 % 8 != 0 {
                     continue;
                 }
 
@@ -2523,13 +2532,25 @@ impl FNamePool {
             gnames_addr
         );
 
-        // Search in PE data sections for a header pointing to gnames_addr
-        for region in source.regions() {
-            if !region.is_readable() {
-                continue;
+        // Search all readable regions for a header pointing to gnames_addr
+        // First try PE data sections, then expand to all regions
+        let mut regions_to_search: Vec<_> = source
+            .regions()
+            .iter()
+            .filter(|r| r.is_readable())
+            .collect();
+
+        // Sort by likelihood: PE sections first (0x140000000-0x160000000), then others
+        regions_to_search.sort_by_key(|r| {
+            if r.start >= 0x140000000 && r.start < 0x160000000 {
+                0
+            } else {
+                1
             }
-            // Focus on PE data sections
-            if region.start < 0x140000000 || region.start > 0x160000000 {
+        });
+
+        for region in regions_to_search {
+            if !region.is_readable() {
                 continue;
             }
 

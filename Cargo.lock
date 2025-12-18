@@ -222,6 +222,7 @@ dependencies = [
  "memmap2",
  "process-memory",
  "serde",
+ "serde_json",
  "serde_yaml",
  "sysinfo",
  "toml",

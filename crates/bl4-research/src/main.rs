@@ -141,10 +141,14 @@ enum Commands {
         pattern: Option<String>,
     },
 
-    /// Generate consolidated reference manifest (no extraction needed)
+    /// Generate HARDCODED reference manifest (NOT extracted from game)
+    ///
+    /// WARNING: This outputs reference data that is hardcoded in the source.
+    /// It is NOT authoritative game data and should NOT be used in implementation.
+    /// Use only as a guide for understanding data structures.
     Reference {
-        /// Output directory for manifest files
-        #[arg(short, long, default_value = "share/manifest")]
+        /// Output directory for reference files (should be share/manifest/reference/)
+        #[arg(short, long, default_value = "share/manifest/reference")]
         output: PathBuf,
     },
 
@@ -156,6 +160,85 @@ enum Commands {
 
         /// Output directory for manifest files
         #[arg(short, long, default_value = "share/manifest")]
+        output: PathBuf,
+    },
+
+    /// Extract manufacturer data from pak_manifest.json (AUTHORITATIVE)
+    ///
+    /// Discovers manufacturer code→name mappings from actual game data
+    /// without using hardcoded lookups.
+    ExtractManufacturers {
+        /// Path to pak_manifest.json
+        #[arg(short, long, default_value = "share/manifest/pak_manifest.json")]
+        pak_manifest: PathBuf,
+
+        /// Output file for extracted manufacturers
+        #[arg(short, long, default_value = "share/manifest/manufacturers_extracted.json")]
+        output: PathBuf,
+    },
+
+    /// Extract weapon type data from pak_manifest.json (AUTHORITATIVE)
+    ///
+    /// Discovers weapon types and their manufacturers from game paths.
+    ExtractWeaponTypes {
+        /// Path to pak_manifest.json
+        #[arg(short, long, default_value = "share/manifest/pak_manifest.json")]
+        pak_manifest: PathBuf,
+
+        /// Output file for extracted weapon types
+        #[arg(short, long, default_value = "share/manifest/weapon_types_extracted.json")]
+        output: PathBuf,
+    },
+
+    /// Extract gear type data from pak_manifest.json (AUTHORITATIVE)
+    ///
+    /// Discovers gear types (shields, grenades, etc.) and their manufacturers.
+    ExtractGearTypes {
+        /// Path to pak_manifest.json
+        #[arg(short, long, default_value = "share/manifest/pak_manifest.json")]
+        pak_manifest: PathBuf,
+
+        /// Output file for extracted gear types
+        #[arg(short, long, default_value = "share/manifest/gear_types_extracted.json")]
+        output: PathBuf,
+    },
+
+    /// Extract element types from pak_manifest.json (AUTHORITATIVE)
+    ///
+    /// Discovers element types from effect/texture paths.
+    ExtractElements {
+        /// Path to pak_manifest.json
+        #[arg(short, long, default_value = "share/manifest/pak_manifest.json")]
+        pak_manifest: PathBuf,
+
+        /// Output file for extracted elements
+        #[arg(short, long, default_value = "share/manifest/elements_extracted.json")]
+        output: PathBuf,
+    },
+
+    /// Extract rarity tiers from pak_manifest.json (AUTHORITATIVE)
+    ///
+    /// Discovers rarity tiers from UI assets and part names.
+    ExtractRarities {
+        /// Path to pak_manifest.json
+        #[arg(short, long, default_value = "share/manifest/pak_manifest.json")]
+        pak_manifest: PathBuf,
+
+        /// Output file for extracted rarities
+        #[arg(short, long, default_value = "share/manifest/rarities_extracted.json")]
+        output: PathBuf,
+    },
+
+    /// Extract stat types from pak_manifest.json (AUTHORITATIVE)
+    ///
+    /// Discovers stat types from property names in game assets.
+    ExtractStats {
+        /// Path to pak_manifest.json
+        #[arg(short, long, default_value = "share/manifest/pak_manifest.json")]
+        pak_manifest: PathBuf,
+
+        /// Output file for extracted stats
+        #[arg(short, long, default_value = "share/manifest/stats_extracted.json")]
         output: PathBuf,
     },
 
@@ -355,6 +438,113 @@ fn main() -> Result<()> {
 
         Commands::Reference { output } => {
             manifest::generate_reference_manifest(&output)?;
+        }
+
+        Commands::ExtractManufacturers { pak_manifest, output } => {
+            println!("Extracting manufacturer data from {:?}...", pak_manifest);
+            let manufacturers = manifest::extract_manufacturer_names_from_pak(&pak_manifest)?;
+
+            println!("\nDiscovered {} manufacturers:", manufacturers.len());
+            for (code, mfr) in &manufacturers {
+                println!("  {} = {} (source: {})", code, mfr.name, mfr.name_source);
+            }
+
+            // Write to output file
+            let json = serde_json::to_string_pretty(&manufacturers)?;
+            std::fs::write(&output, json)?;
+            println!("\nSaved to {:?}", output);
+        }
+
+        Commands::ExtractWeaponTypes { pak_manifest, output } => {
+            println!("Extracting weapon type data from {:?}...", pak_manifest);
+            let weapon_types = manifest::extract_weapon_types_from_pak(&pak_manifest)?;
+
+            println!("\nDiscovered {} weapon types:", weapon_types.len());
+            for (name, wt) in &weapon_types {
+                println!("  {} ({}) - {} manufacturers: {:?}",
+                    name, wt.code, wt.manufacturers.len(), wt.manufacturers);
+            }
+
+            // Write to output file
+            let json = serde_json::to_string_pretty(&weapon_types)?;
+            std::fs::write(&output, json)?;
+            println!("\nSaved to {:?}", output);
+        }
+
+        Commands::ExtractGearTypes { pak_manifest, output } => {
+            println!("Extracting gear type data from {:?}...", pak_manifest);
+            let gear_types = manifest::extract_gear_types_from_pak(&pak_manifest)?;
+
+            println!("\nDiscovered {} gear types:", gear_types.len());
+            for (name, gt) in &gear_types {
+                if gt.manufacturers.is_empty() {
+                    println!("  {} (no manufacturers)", name);
+                } else {
+                    println!("  {} - {} manufacturers: {:?}",
+                        name, gt.manufacturers.len(), gt.manufacturers);
+                }
+                if !gt.subcategories.is_empty() {
+                    println!("    subcategories: {:?}", gt.subcategories);
+                }
+            }
+
+            // Write to output file
+            let json = serde_json::to_string_pretty(&gear_types)?;
+            std::fs::write(&output, json)?;
+            println!("\nSaved to {:?}", output);
+        }
+
+        Commands::ExtractElements { pak_manifest, output } => {
+            println!("Extracting element types from {:?}...", pak_manifest);
+            let elements = manifest::extract_elements_from_pak(&pak_manifest)?;
+
+            println!("\nDiscovered {} element types:", elements.len());
+            for (name, _elem) in &elements {
+                println!("  {}", name);
+            }
+
+            // Write to output file
+            let json = serde_json::to_string_pretty(&elements)?;
+            std::fs::write(&output, json)?;
+            println!("\nSaved to {:?}", output);
+        }
+
+        Commands::ExtractRarities { pak_manifest, output } => {
+            println!("Extracting rarity tiers from {:?}...", pak_manifest);
+            let rarities = manifest::extract_rarities_from_pak(&pak_manifest)?;
+
+            println!("\nDiscovered {} rarity tiers:", rarities.len());
+            for rarity in &rarities {
+                println!("  {} ({}) = {}", rarity.tier, rarity.code, rarity.name);
+            }
+
+            // Write to output file
+            let json = serde_json::to_string_pretty(&rarities)?;
+            std::fs::write(&output, json)?;
+            println!("\nSaved to {:?}", output);
+        }
+
+        Commands::ExtractStats { pak_manifest, output } => {
+            println!("Extracting stat types from {:?}...", pak_manifest);
+            let stats = manifest::extract_stats_from_pak(&pak_manifest)?;
+
+            println!("\nDiscovered {} stat types (top 20 by occurrence):", stats.len());
+            for stat in stats.iter().take(20) {
+                if stat.modifier_types.is_empty() {
+                    println!("  {} ({} occurrences)", stat.name, stat.occurrences);
+                } else {
+                    println!("  {} [{:?}] ({} occurrences)",
+                        stat.name, stat.modifier_types, stat.occurrences);
+                }
+            }
+            if stats.len() > 20 {
+                println!("  ... and {} more", stats.len() - 20);
+            }
+
+            // Write to output file
+            let json = serde_json::to_string_pretty(&stats)?;
+            std::fs::write(&output, json)?;
+            println!("\nSaved to {:?}", output);
         }
 
         Commands::PakManifest {
