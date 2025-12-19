@@ -1,0 +1,48 @@
+project:
+  type: book
+  output-dir: ../rendered/quarto
+
+book:
+  title: "Borderlands 4 Reverse Engineering Guide"
+  author: "monokrome"
+  date: today
+  downloads:
+    - pdf
+    - epub
+  chapters:
+    - index.md
+    - part: "Core Concepts"
+      chapters:
+        - 01-binary-basics.md
+        - 02-unreal-architecture.md
+        - 03-memory-analysis.md
+    - part: "Practical Application"
+      chapters:
+        - 04-save-files.md
+        - 05-item-serials.md
+        - 06-data-extraction.md
+    - part: "Reference"
+      chapters:
+        - 07-bl4-tools.md
+    - part: "Appendices"
+      chapters:
+        - appendix-a-sdk-layouts.md
+        - appendix-b-weapon-parts.md
+        - appendix-c-loot-system.md
+        - appendix-d-game-files.md
+        - glossary.md
+
+format:
+  html:
+    theme: darkly
+    toc: true
+  pdf:
+    documentclass: scrbook
+    toc: true
+    number-sections: true
+    colorlinks: true
+    mainfont: "DejaVu Serif"
+    sansfont: "DejaVu Sans"  
+    monofont: "DejaVu Sans Mono"
+  epub:
+    toc: true

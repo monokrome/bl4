@@ -449,168 +449,114 @@ When working with item serials:
 
 ---
 
-## Part Compatibility Rules (Verified)
+## Part Selection System
 
-This section documents **verified** part compatibility rules derived from analyzing actual weapon drops and reference data. These rules are encoded in the part naming conventions and enforced by the game engine.
+### How Parts Are Chosen for Drops
 
-### Rule 1: Prefix Determines Weapon Type
+When the game generates a weapon drop, it uses a multi-layered selection system:
 
-Parts are only valid for weapons matching their prefix:
+#### 1. Weapon Type Definition
 
-| Prefix | Manufacturer | Weapon Type |
-|--------|--------------|-------------|
-| `DAD_PS.*` | Daedalus | Pistol |
-| `DAD_AR.*` | Daedalus | Assault Rifle |
-| `JAK_SG.*` | Jakobs | Shotgun |
-| `VLA_SM.*` | Vladof | SMG |
+Each weapon type (`InventoryTypeDef`) defines:
 
-A `DAD_PS.part_barrel_01` **cannot** appear on a `DAD_AR` weapon.
+| Property | Purpose |
+|----------|---------|
+| `PartTypes` | Array of valid part type IDs for this weapon |
+| `PrefixPartList` | Parts that can generate prefix names |
+| `TitlePartList` | Parts that generate title names |
+| `SuffixPartList` | Parts that generate suffix names |
+| `Rarity` | Reference to rarity definition |
+| `Manufacturer` | Reference to manufacturer definition |
 
-### Rule 2: Barrel Accessories Require Matching Barrel
+#### 2. Part Type Selection Rules
 
-Barrel accessories are **barrel-specific**. The naming convention encodes the dependency:
-
-```
-part_barrel_XX_Y  →  only valid with part_barrel_XX
-```
-
-| Accessory Part | Valid With | Invalid With |
-|----------------|------------|--------------|
-| `DAD_PS.part_barrel_01_a` | `DAD_PS.part_barrel_01` | `DAD_PS.part_barrel_02` |
-| `DAD_PS.part_barrel_01_b` | `DAD_PS.part_barrel_01` | `DAD_PS.part_barrel_02` |
-| `DAD_PS.part_barrel_02_a` | `DAD_PS.part_barrel_02` | `DAD_PS.part_barrel_01` |
-| `DAD_PS.part_barrel_02_c` | `DAD_PS.part_barrel_02` | `DAD_PS.part_barrel_01` |
-
-**Pattern**: Extract the barrel number from accessory name (`barrel_XX_*`) and match to base barrel (`barrel_XX`).
-
-### Rule 3: Scope Accessories Require Matching Scope AND Lens
-
-Scope accessories have a **two-dimensional dependency** on both scope type and lens type:
+Parts are grouped by type and selected using `PartTypeSelectionRules`:
 
 ```
-part_scope_acc_sXX_lYY_Z  →  only valid with part_scope_XX_lens_YY
+PartTypeSelectionRules:
+  PartCount       ← Number of parts to select from this type
+  AdditionalPartChance  ← Probability of bonus parts
+  parts[]         ← Array of PartTypeSelectionPartRule
 ```
 
-| Accessory Part | Valid With | Invalid With |
-|----------------|------------|--------------|
-| `DAD_PS.part_scope_acc_s01_l01_a` | `part_scope_01_lens_01` | `part_scope_01_lens_02`, `part_scope_02_*` |
-| `DAD_PS.part_scope_acc_s01_l02_b` | `part_scope_01_lens_02` | `part_scope_01_lens_01`, `part_scope_02_*` |
-| `DAD_PS.part_scope_acc_s02_l01_a` | `part_scope_02_lens_01` | `part_scope_01_*`, `part_scope_02_lens_02` |
-| `DAD_PS.part_scope_acc_s02_l02_b` | `part_scope_02_lens_02` | `part_scope_01_*`, `part_scope_02_lens_01` |
+Each rule entry (`PartTypeSelectionPartRule`) specifies:
+- `part` — Reference to the part definition
+- `bIgnoreMinGameStage` — Whether to bypass level requirements
 
-**Pattern**: Parse `sXX` and `lYY` from accessory name, match to `scope_XX_lens_YY`.
+#### 3. Game Stage (Level) Requirements
 
-### Rule 4: Some Magazine Modifiers Are Barrel-Specific
-
-Certain magazine stat modifiers are tied to specific barrels:
+Parts can have minimum level requirements via `PartTagGameStageSelectionData`:
 
 ```
-part_mag_*_barrel_XX  →  only valid with part_barrel_XX
+mingamestage    ← Minimum player/area level
+MAX             ← Maximum count at this stage
 ```
 
-| Modifier Part | Valid With |
-|---------------|------------|
-| `DAD_PS.part_mag_05_borg_barrel_01` | `part_barrel_01` + Ripper Mag |
-| `DAD_PS.part_mag_05_borg_barrel_02` | `part_barrel_02` + Ripper Mag |
+Higher-level parts may only appear on drops from higher-level enemies or areas.
 
-### Rule 5: Maximum Accessory Counts
+#### 4. Tag-Based Selection
 
-Weapons have limits on how many accessories can appear:
+Parts can be filtered by gameplay tags using `PartTagSelectionRules`:
 
-| Constraint | Limit |
-|------------|-------|
-| Total accessories per weapon | Max 3 |
-| Body accessories | Choose 1-2 |
-| Barrel accessories | Choose 2-3 |
-| Scope accessories | Not all scopes support 2 |
-
-### Rule 6: Legendary Barrel Restrictions
-
-Some legendary barrels **cannot** roll with barrel accessories:
-
-| Barrel | Accessory Restriction |
-|--------|----------------------|
-| `JAK_SG.part_barrel_hot_slugger` | Never rolls with barrel accessories |
-| `JAK_SG.part_barrel_hellwalker` | Doesn't roll with barrel accessories |
-| Unique barrels (general) | Often have restricted accessory pools |
-
-### Rule 7: Barrel-Type Constraints for Magazines
-
-Some magazines are only valid for specific barrel configurations:
-
-| Magazine | Valid Barrel Type |
-|----------|-------------------|
-| `JAK_SG` 6x mag (single barrel) | Single-barrel weapons |
-| `JAK_SG` 6x mag (double barrel) | Double-barrel weapons |
-
-### Validation Algorithm
-
-To validate a weapon's part combination:
-
-```python
-def is_valid_combination(parts):
-    barrel = find_barrel(parts)
-    scope = find_scope(parts)
-
-    for part in parts:
-        # Rule 1: Prefix match
-        if not same_prefix(part, barrel):
-            return False
-
-        # Rule 2: Barrel accessory match
-        if is_barrel_accessory(part):
-            if not matches_barrel(part, barrel):
-                return False
-
-        # Rule 3: Scope accessory match
-        if is_scope_accessory(part):
-            if not matches_scope_and_lens(part, scope):
-                return False
-
-        # Rule 4: Barrel-specific mag modifier
-        if is_barrel_mag_modifier(part):
-            if not matches_barrel(part, barrel):
-                return False
-
-    # Rule 5: Accessory count limits
-    if count_accessories(parts) > 3:
-        return False
-
-    return True
+```
+tags            ← Required gameplay tags
+MAX             ← Maximum parts matching these tags
+GameStageRules  ← Level-based rules for tagged parts
 ```
 
-### Implications for Save Editing
+#### 5. Rarity-Based Priority
 
-When generating weapon serials for testing:
+Parts have a `SelectionPriority` (via `InventoryAspect`):
 
-1. **Don't mix accessories** — A `barrel_01` weapon cannot have `barrel_02_a` accessory
-2. **Match scope accessories** — Check both scope type AND lens type
-3. **Respect legendary restrictions** — Some unique barrels have no accessories
-4. **Count accessories** — Stay within the 3-accessory limit
+| Priority | Typical Usage |
+|----------|---------------|
+| Default | Common parts |
+| Low | Slightly better parts |
+| Medium | Uncommon parts |
+| High | Rare parts |
+| Ultra | Very rare parts |
+| Legendary | Legendary-only parts |
 
----
+Higher rarity drops can access higher-priority parts.
 
-## Part Selection System (Theoretical)
+#### 6. Random/Weighted Selection
 
-!!! note "Speculative"
-    This section describes classes found in game metadata. Actual implementation may differ.
-    The "Part Compatibility Rules" section above contains verified behavior.
+For part variants, `GbxActorPartDef_Random` provides weighted selection:
 
-### Class-Based Selection (from usmap)
+```
+RandomParts[]   ← Parts with associated weights
+bCanChooseNone  ← Whether "no part" is valid
+WeightForNone   ← Weight for selecting nothing
+```
 
-The following classes exist in the game's type system, suggesting a structured selection mechanism:
+### Item Pool Preferences
 
-| Class | Likely Purpose |
-|-------|----------------|
-| `PartTypeSelectionRules` | Rules for selecting parts by type |
-| `PartTagSelectionRules` | Tag-based part filtering |
-| `PartTagGameStageSelectionData` | Level requirements for parts |
-| `InventorySelectionCriteria` | General selection criteria |
+Item pools (`ItemPoolDef`) can bias part selection via `ItemPoolPreferredPartsDef`:
 
-However, **no assets implementing these classes were found in pak files**. The selection logic may be:
-- Hardcoded in C++ binary
-- Convention-based (parsed from naming)
-- Or a combination of both
+```
+PreferredPartsList[]  ← Parts that should be prioritized
+```
+
+This allows specific drop sources (bosses, quests, etc.) to favor certain parts.
+
+### Practical Example: Weapon Generation Flow
+
+```
+1. Determine weapon type (Pistol, SMG, etc.)
+      ↓
+2. Load InventoryTypeDef for that type + manufacturer
+      ↓
+3. For each PartType in PartTypes[]:
+   a. Get PartTypeSelectionRules
+   b. Filter by mingamestage (player level)
+   c. Filter by tags if applicable
+   d. Apply rarity-based priority filtering
+   e. Select parts using weights
+      ↓
+4. Apply ItemPool preferences if applicable
+      ↓
+5. Assemble final part list → Encode to serial
+```
 
 ---
 

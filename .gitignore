@@ -7,7 +7,6 @@ target/
 # Rendered documentation
 /rendered/
 /docs/rendered/
-/docs/quarto/
 /site/
 
 *.lock
