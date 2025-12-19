@@ -72,6 +72,12 @@ pub fn extract_manufacturer_names_from_pak(
     // Pattern to find _Manufacturer/<CODE>/ paths
     let manufacturer_dir_pattern = Regex::new(r"_Manufacturer/([A-Z]{3})/").unwrap();
 
+    // Pattern for UI logo paths
+    let ui_logo_pattern = Regex::new(
+        r"ui_art_manu_(?:logomark|logotype|itemcard_logomark|itemcard_logotype)_([a-z]+)",
+    )
+    .unwrap();
+
     // Known 3-letter codes that appear in manufacturer paths
     let potential_codes: std::collections::HashSet<&str> = [
         "BOR", "DAD", "DPL", "JAK", "MAL", "ORD", "RIP", "TED", "TOR", "VLA", "COV", "GRV",
@@ -156,10 +162,6 @@ pub fn extract_manufacturer_names_from_pak(
 
         // MEDIUM PRIORITY: UI logo paths (reliable but only for names, not code mapping)
         if path_lower.contains("ui_art_manu") {
-            let ui_logo_pattern = Regex::new(
-                r"ui_art_manu_(?:logomark|logotype|itemcard_logomark|itemcard_logotype)_([a-z]+)",
-            )
-            .unwrap();
             if let Some(cap) = ui_logo_pattern.captures(&path_lower) {
                 let name = cap[1].to_string();
                 let name_title = name

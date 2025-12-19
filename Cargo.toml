@@ -4,7 +4,6 @@ members = [
     "crates/bl4",
     "crates/bl4-cli",
     "crates/bl4-research",
-    "tools/bl4-preload",
     "tools/uextract",
 ]
 
