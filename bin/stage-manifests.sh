@@ -18,6 +18,19 @@ if [[ ! "$VERSION" =~ ^v ]]; then
     VERSION="v$VERSION"
 fi
 
+# Get version from workspace Cargo.toml
+CRATE_VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
+EXPECTED_TAG="v$CRATE_VERSION"
+
+if [[ "$VERSION" != "$EXPECTED_TAG" ]]; then
+    echo "Error: Version mismatch"
+    echo "  Requested: $VERSION"
+    echo "  bl4 crate: $EXPECTED_TAG"
+    echo ""
+    echo "Update the version in crates/bl4/Cargo.toml first, or use: $0 $EXPECTED_TAG"
+    exit 1
+fi
+
 MANIFEST_DIR="share/manifest"
 MANIFEST_FILES=(
     "$MANIFEST_DIR/parts_database.json"
