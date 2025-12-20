@@ -40,6 +40,77 @@ struct BitReader {
     bit_offset: usize,
 }
 
+/// Bitstream writer for encoding variable-length tokens
+struct BitWriter {
+    bytes: Vec<u8>,
+    bit_offset: usize,
+}
+
+impl BitWriter {
+    fn new() -> Self {
+        Self {
+            bytes: Vec::new(),
+            bit_offset: 0,
+        }
+    }
+
+    /// Write N bits from a u64 value (MSB-first)
+    fn write_bits(&mut self, value: u64, count: usize) {
+        for i in (0..count).rev() {
+            let bit = ((value >> i) & 1) as u8;
+            let byte_idx = self.bit_offset / 8;
+            let bit_idx = 7 - (self.bit_offset % 8); // Write from MSB (bit 7) down to LSB (bit 0)
+
+            // Extend bytes vector if needed
+            while byte_idx >= self.bytes.len() {
+                self.bytes.push(0);
+            }
+
+            if bit == 1 {
+                self.bytes[byte_idx] |= 1 << bit_idx;
+            }
+            self.bit_offset += 1;
+        }
+    }
+
+    /// Write a VARINT (4-bit nibbles with continuation bits)
+    fn write_varint(&mut self, value: u64) {
+        let mut remaining = value;
+
+        loop {
+            let nibble = remaining & 0xF;
+            remaining >>= 4;
+
+            self.write_bits(nibble, 4);
+
+            if remaining == 0 {
+                self.write_bits(0, 1); // Continuation = 0 (stop)
+                break;
+            } else {
+                self.write_bits(1, 1); // Continuation = 1 (more)
+            }
+        }
+    }
+
+    /// Write a VARBIT (5-bit length prefix + variable data)
+    fn write_varbit(&mut self, value: u64) {
+        if value == 0 {
+            self.write_bits(0, 5); // Length 0 means value 0
+            return;
+        }
+
+        // Calculate number of bits needed
+        let bits_needed = 64 - value.leading_zeros() as usize;
+        self.write_bits(bits_needed as u64, 5);
+        self.write_bits(value, bits_needed);
+    }
+
+    /// Get the final bytes (padded to byte boundary)
+    fn finish(self) -> Vec<u8> {
+        self.bytes
+    }
+}
+
 impl BitReader {
     fn new(bytes: Vec<u8>) -> Self {
         Self {
@@ -48,8 +119,8 @@ impl BitReader {
         }
     }
 
-    /// Read N bits as a u64 value
-    /// Bits are read MSB-first from left to right
+    /// Read N bits as a u64 value (MSB-first)
+    /// Bits are read from the stream and assembled with first bit = MSB
     fn read_bits(&mut self, count: usize) -> Option<u64> {
         if count > 64 {
             return None;
@@ -184,6 +255,101 @@ fn decode_base85(input: &str) -> Result<Vec<u8>, SerialError> {
 #[inline]
 fn mirror_byte(byte: u8) -> u8 {
     byte.reverse_bits()
+}
+
+/// Encode bytes to Base85 with custom BL4 alphabet
+fn encode_base85(bytes: &[u8]) -> String {
+    let mut result = String::new();
+
+    // Process in chunks of 4 bytes -> 5 characters
+    for chunk in bytes.chunks(4) {
+        // Build value from bytes (big-endian)
+        let mut value: u64 = 0;
+        for &byte in chunk {
+            value = (value << 8) | (byte as u64);
+        }
+
+        // Pad if chunk is smaller than 4 bytes
+        if chunk.len() < 4 {
+            value <<= (4 - chunk.len()) * 8;
+        }
+
+        // Convert to base85 (5 characters for 4 bytes, less for smaller chunks)
+        let num_chars = if chunk.len() == 4 { 5 } else { chunk.len() + 1 };
+        let mut chars = vec![0u8; num_chars];
+
+        for i in (0..num_chars).rev() {
+            chars[i] = BL4_BASE85_ALPHABET[(value % 85) as usize];
+            value /= 85;
+        }
+
+        for &ch in &chars {
+            result.push(ch as char);
+        }
+    }
+
+    result
+}
+
+/// Encode tokens back to bitstream bytes
+fn encode_tokens(tokens: &[Token]) -> Vec<u8> {
+    let mut writer = BitWriter::new();
+
+    // Write magic header (7 bits = 0010000)
+    writer.write_bits(0b0010000, 7);
+
+    for token in tokens {
+        match token {
+            Token::Separator => {
+                writer.write_bits(0b00, 2);
+            }
+            Token::SoftSeparator => {
+                writer.write_bits(0b01, 2);
+            }
+            Token::VarInt(v) => {
+                writer.write_bits(0b100, 3);
+                writer.write_varint(*v);
+            }
+            Token::VarBit(v) => {
+                writer.write_bits(0b110, 3);
+                writer.write_varbit(*v);
+            }
+            Token::Part { index, values } => {
+                writer.write_bits(0b101, 3);
+                writer.write_varint(*index);
+
+                if values.is_empty() {
+                    // SUBTYPE_NONE: type=0, subtype=10
+                    writer.write_bits(0, 1);
+                    writer.write_bits(0b10, 2);
+                } else if values.len() == 1 {
+                    // SUBTYPE_INT: type=1, value, 000 terminator
+                    writer.write_bits(1, 1);
+                    writer.write_varint(values[0]);
+                    writer.write_bits(0b000, 3);
+                } else {
+                    // SUBTYPE_LIST: type=0, subtype=01, values, 00 terminator
+                    writer.write_bits(0, 1);
+                    writer.write_bits(0b01, 2);
+                    for v in values {
+                        // For simplicity, encode as VarInt
+                        writer.write_bits(0b100, 3);
+                        writer.write_varint(*v);
+                    }
+                    writer.write_bits(0b00, 2); // Separator to terminate
+                }
+            }
+            Token::String(s) => {
+                writer.write_bits(0b111, 3);
+                writer.write_varint(s.len() as u64);
+                for ch in s.bytes() {
+                    writer.write_bits(ch as u64, 7);
+                }
+            }
+        }
+    }
+
+    writer.finish()
 }
 
 /// Parse tokens from bitstream
@@ -535,6 +701,51 @@ impl ItemSerial {
             level,
             seed,
         })
+    }
+
+    /// Encode this item serial back to a Base85 string
+    ///
+    /// This encodes the current tokens back to a serial string.
+    /// Useful for modifying an item and getting the new serial.
+    pub fn encode(&self) -> String {
+        // For now, we can't perfectly re-encode because we don't preserve
+        // the original bytes that encode the item type. Instead, re-encode
+        // from the original raw_bytes which preserves all information.
+        //
+        // TODO: Implement proper token-to-bytes encoding that includes item type
+        let mirrored: Vec<u8> = self.raw_bytes.iter().map(|&b| mirror_byte(b)).collect();
+        let encoded = encode_base85(&mirrored);
+        format!("@U{}", encoded)
+    }
+
+    /// Encode with modified tokens (experimental)
+    /// This attempts to encode tokens back to bytes, but may not preserve
+    /// all original data like item type encoding.
+    pub fn encode_from_tokens(&self) -> String {
+        // Encode tokens to bytes
+        let bytes = encode_tokens(&self.tokens);
+
+        // Mirror all bits (reverse of decode)
+        let mirrored: Vec<u8> = bytes.iter().map(|&b| mirror_byte(b)).collect();
+
+        // Encode to Base85
+        let encoded = encode_base85(&mirrored);
+
+        // Build final serial with prefix (just @U since g and item_type are in the bytes)
+        format!("@U{}", encoded)
+    }
+
+    /// Create a new ItemSerial with modified tokens
+    pub fn with_tokens(&self, tokens: Vec<Token>) -> Self {
+        ItemSerial {
+            original: self.original.clone(),
+            raw_bytes: self.raw_bytes.clone(), // Will be stale but that's OK
+            item_type: self.item_type,
+            tokens,
+            manufacturer: self.manufacturer,
+            level: self.level,
+            seed: self.seed,
+        }
     }
 
     /// Display hex dump of raw bytes

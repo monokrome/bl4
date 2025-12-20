@@ -5,41 +5,45 @@
 
 /// First VarInt to (Manufacturer, Weapon Type) mapping
 /// For VarInt-first serial format (types a-g, u-z)
-/// Derived from verified in-game testing of CSV weapon data
+///
+/// Verification status:
+///   [V] = Verified in-game with screenshots
+///   [I] = Inferred from category/parts data
+///   [?] = Needs verification
 pub fn weapon_info_from_first_varint(id: u64) -> Option<(&'static str, &'static str)> {
     match id {
         // Shotguns (low IDs)
-        1 => Some(("Daedalus", "Shotgun")),
-        3 => Some(("Torgue", "Shotgun")),
-        5 => Some(("Maliwan", "Shotgun")),
-        9 => Some(("Jakobs", "Shotgun")),
-        13 => Some(("Tediore", "Shotgun")),
-        14 => Some(("Ripper", "Shotgun")),
+        1 => Some(("Daedalus", "Shotgun")),   // [I] DAD_SG - category 8
+        3 => Some(("Torgue", "Shotgun")),     // [I] TOR_SG - category 11
+        5 => Some(("Maliwan", "Shotgun")),    // [I] MAL_SG - category 19
+        9 => Some(("Jakobs", "Shotgun")),     // [V] JAK_SG - Rainbow Vomit screenshot
+        13 => Some(("Tediore", "Shotgun")),   // [I] TED_SG - category 10
+        14 => Some(("Ripper", "Shotgun")),    // [V] RIP_SG - Hungry Flensing Hellhound screenshot
         // Pistols (low IDs)
-        2 => Some(("Order", "Pistol")),
-        4 => Some(("Daedalus", "Pistol")),
-        6 => Some(("Torgue", "Pistol")),
-        10 => Some(("Tediore", "Pistol")),
-        12 => Some(("Jakobs", "Pistol")),
+        2 => Some(("Jakobs", "Pistol")),      // [V] JAK_PS - Seventh Sense screenshot
+        4 => Some(("Daedalus", "Pistol")),    // [I] DAD_PS - category 2
+        6 => Some(("Torgue", "Pistol")),      // [I] TOR_PS - category 5
+        10 => Some(("Tediore", "Pistol")),    // [I] TED_PS - category 4
+        12 => Some(("Jakobs", "Pistol")),     // [V] JAK_PS - bank Seventh Senses
         // Assault Rifles (low IDs)
-        7 => Some(("Tediore", "AR")),
-        11 => Some(("Daedalus", "AR")),
-        15 => Some(("Order", "AR")),
+        7 => Some(("Tediore", "AR")),         // [I] TED_AR - category 15
+        11 => Some(("Daedalus", "AR")),       // [I] DAD_AR - category 13
+        15 => Some(("Order", "AR")),          // [I] ORD_AR - category 18
         // Snipers (high IDs, bit 7 set)
-        128 => Some(("Vladof", "Sniper")),
-        129 => Some(("Jakobs", "Sniper")),
-        133 => Some(("Order", "Sniper")),
-        137 => Some(("Maliwan", "Sniper")),
-        142 => Some(("Ripper", "Sniper")),
+        128 => Some(("Vladof", "Sniper")),    // [V] VLA_SR - Rebellious Vyudazy screenshot
+        129 => Some(("Jakobs", "Sniper")),    // [I] JAK_SR - category 26
+        133 => Some(("Order", "Sniper")),     // [I] ORD_SR - category 28
+        137 => Some(("Maliwan", "Sniper")),   // [I] MAL_SR - category 29
+        142 => Some(("Bor", "Sniper")),       // [?] BOR_SR - category 25, needs verification
         // SMGs (high IDs, bit 7 set)
-        130 => Some(("Daedalus", "SMG")),
-        134 => Some(("Vladof", "SMG")),
-        138 => Some(("Maliwan", "SMG")),
-        140 => Some(("Ripper", "SMG")),
+        130 => Some(("Daedalus", "SMG")),     // [I] DAD_SM - category 20
+        134 => Some(("Bor", "SMG")),          // [?] BOR_SM - category 21, needs verification
+        138 => Some(("Maliwan", "SMG")),      // [I] MAL_SM - category 23
+        140 => Some(("Vladof", "SMG")),       // [I] VLA_SM - category 22
         // Assault Rifles (high IDs, bit 7 set)
-        132 => Some(("Vladof", "AR")),
-        136 => Some(("Torgue", "AR")),
-        141 => Some(("Jakobs", "AR")),
+        132 => Some(("Vladof", "AR")),        // [I] VLA_AR - category 17
+        136 => Some(("Torgue", "AR")),        // [I] TOR_AR - category 16
+        141 => Some(("Jakobs", "AR")),        // [I] JAK_AR - category 14
         _ => None,
     }
 }
@@ -56,19 +60,20 @@ pub fn weapon_type_from_first_varint(id: u64) -> Option<&'static str> {
 
 /// Decode level from fourth token (level code)
 ///
-/// For tokens < 128: level = token directly
-/// For tokens >= 128: level = 16 + bits[6:1] + 8*bit0
-///   - bit 7 is always set (indicates high-level encoding)
-///   - bits 1-6 provide base offset from 16
-///   - bit 0 adds 8 if set
+/// For tokens < 128: level = token directly (levels 1-50)
+/// For tokens >= 128: level = 2 * (code - 120)
+///   - This gives level 16 at code 128, level 30 at code 135, etc.
 ///
 /// Verified in-game Dec 2025.
 pub fn level_from_code(code: u64) -> Option<u8> {
     if code >= 128 {
-        // High-level encoding: 16 + bits[6:1] + 8*bit0
-        let bits_1_6 = ((code >> 1) & 0x3F) as u8;
-        let bit0 = (code & 1) as u8;
-        Some(16 + bits_1_6 + 8 * bit0)
+        // High-level encoding: level = 2 * (code - 120)
+        let level = 2 * (code as i32 - 120);
+        if level > 0 && level <= 255 {
+            Some(level as u8)
+        } else {
+            None
+        }
     } else if code <= 50 {
         // Direct encoding for levels 1-50
         Some(code as u8)
@@ -160,21 +165,65 @@ pub fn category_name(category: i64) -> Option<&'static str> {
 }
 
 /// Item type character to description mapping
-/// Note: Type characters don't map 1:1 to weapon categories - they appear to
-/// encode structural information about the serial format itself.
+///
+/// Format types determined through analysis Dec 2025:
+/// - Weapons: a-d, f-g, r, u-z (VarInt-first format, first VarInt = mfg+type)
+/// - Equipment: e (VarBit-first, divisor 384 for category - shields, grenades, class mods, firmware)
+/// - Class Mods: !, # (special format with fixed manufacturer IDs 247, 255)
 pub fn item_type_name(type_char: char) -> &'static str {
-    // Based on analysis, these type chars appear across multiple weapon types.
-    // The character likely indicates serial format version or encoding variant
-    // rather than item category.
     match type_char {
-        'a'..='d' => "Weapon (variant a-d)",
-        'e' => "Item (multi-type)",
-        'f' | 'g' => "Weapon (variant f-g)",
-        'r' => "Item (variant r)",
-        'u' => "Sniper (variant u)",
-        'v' | 'w' | 'x' | 'y' | 'z' => "Weapon (variant v-z)",
-        '!' | '#' => "Class Mod/Special",
+        'a'..='d' => "Weapon",
+        'e' => "Equipment",
+        'f' | 'g' => "Weapon",
+        'r' => "Weapon",
+        'u' => "Weapon",
+        'v'..='z' => "Weapon",
+        '!' => "Class Mod",
+        '#' => "Class Mod",
         _ => "Unknown",
+    }
+}
+
+/// Get equipment category name for 'e' type items
+/// Category is derived from first VarBit / 384
+pub fn equipment_category_name(category: i64) -> Option<&'static str> {
+    match category {
+        // Class Mods (derived from serial analysis)
+        44 => Some("Dark Siren Class Mod"),
+        55 => Some("Paladin Class Mod"),
+        97 => Some("Gravitar Class Mod"),
+        140 => Some("Exo Soldier Class Mod"),
+        // Firmware
+        151 => Some("Firmware"),
+        // Shields
+        279 => Some("Energy Shield"),
+        280 => Some("Bor Shield"),
+        281 => Some("Daedalus Shield"),
+        282 => Some("Jakobs Shield"),
+        283 => Some("Armor Shield"),
+        284 => Some("Maliwan Shield"),
+        285 => Some("Order Shield"),
+        286 => Some("Tediore Shield"),
+        287 => Some("Torgue Shield"),
+        288 => Some("Vladof Shield"),
+        289 => Some("Shield Variant"),
+        // Gadgets
+        300 => Some("Grenade Gadget"),
+        310 => Some("Turret Gadget"),
+        320 => Some("Repair Kit"),
+        330 => Some("Terminal Gadget"),
+        // Enhancements
+        400 => Some("Daedalus Enhancement"),
+        401 => Some("Bor Enhancement"),
+        402 => Some("Jakobs Enhancement"),
+        403 => Some("Maliwan Enhancement"),
+        404 => Some("Order Enhancement"),
+        405 => Some("Tediore Enhancement"),
+        406 => Some("Torgue Enhancement"),
+        407 => Some("Vladof Enhancement"),
+        408 => Some("COV Enhancement"),
+        409 => Some("Atlas Enhancement"),
+        _ => None,
     }
 }
 
@@ -189,7 +238,7 @@ mod tests {
             weapon_info_from_first_varint(12),
             Some(("Jakobs", "Pistol"))
         );
-        // Verified in-game: slot 1 Vladof Sniper = first VarInt 128
+        // Verified in-game: Vladof Sniper (Vamoose) = first VarInt 128
         assert_eq!(
             weapon_info_from_first_varint(128),
             Some(("Vladof", "Sniper"))
@@ -212,9 +261,20 @@ mod tests {
 
     #[test]
     fn test_item_type_lookup() {
-        assert_eq!(item_type_name('r'), "Item (variant r)");
-        assert_eq!(item_type_name('v'), "Weapon (variant v-z)");
+        assert_eq!(item_type_name('r'), "Weapon");
+        assert_eq!(item_type_name('v'), "Weapon");
+        assert_eq!(item_type_name('e'), "Equipment");
+        assert_eq!(item_type_name('!'), "Class Mod");
+        assert_eq!(item_type_name('#'), "Class Mod");
         assert_eq!(item_type_name('?'), "Unknown");
+    }
+
+    #[test]
+    fn test_equipment_category_name() {
+        assert_eq!(equipment_category_name(279), Some("Energy Shield"));
+        assert_eq!(equipment_category_name(300), Some("Grenade Gadget"));
+        assert_eq!(equipment_category_name(44), Some("Dark Siren Class Mod"));
+        assert_eq!(equipment_category_name(999), None);
     }
 
     #[test]
@@ -230,10 +290,11 @@ mod tests {
         // Direct encoding
         assert_eq!(level_from_code(1), Some(1));
         assert_eq!(level_from_code(50), Some(50));
-        // High-level encoding (bit 7 set)
-        assert_eq!(level_from_code(196), Some(50)); // 16 + 34 + 0 = 50
-        assert_eq!(level_from_code(128), Some(16)); // 16 + 0 + 0 = 16
-                                                    // Invalid
+        // High-level encoding: level = 2*(code-120)
+        assert_eq!(level_from_code(128), Some(16)); // 2*(128-120) = 16
+        assert_eq!(level_from_code(135), Some(30)); // 2*(135-120) = 30 (verified in-game)
+        assert_eq!(level_from_code(145), Some(50)); // 2*(145-120) = 50
+        // Invalid
         assert_eq!(level_from_code(51), None);
     }
 }

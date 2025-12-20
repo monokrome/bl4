@@ -48,6 +48,8 @@ pub mod wasm;
 // Re-export commonly used items
 pub use backup::{smart_backup, update_after_edit, BackupError};
 pub use crypto::{decrypt_sav, derive_key, encrypt_sav, CryptoError};
-pub use parts::{category_name, item_type_name, level_from_code, manufacturer_name};
+pub use parts::{
+    category_name, equipment_category_name, item_type_name, level_from_code, manufacturer_name,
+};
 pub use save::{ChangeSet, SaveError, SaveFile};
 pub use serial::{ItemSerial, SerialError};

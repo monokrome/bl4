@@ -187,6 +187,36 @@ enum Commands {
         parts_db: PathBuf,
     },
 
+    /// Re-encode a serial (for testing round-trip encoding)
+    Encode {
+        /// Item serial to decode and re-encode
+        serial: String,
+    },
+
+    /// Compare two item serials side by side
+    Compare {
+        /// First serial
+        serial1: String,
+
+        /// Second serial
+        serial2: String,
+    },
+
+    /// Modify a serial by swapping parts from another serial
+    ModifySerial {
+        /// Base serial to modify
+        #[arg(short, long)]
+        base: String,
+
+        /// Source serial to take parts from
+        #[arg(short, long)]
+        source: String,
+
+        /// Part indices to copy from source (e.g. "4,12" for body and barrel)
+        #[arg(short, long)]
+        parts: String,
+    },
+
     /// Query parts database - find parts for a weapon type
     Parts {
         /// Weapon name (e.g. "Jakobs Pistol", "Vladof SMG")
@@ -456,6 +486,10 @@ enum MemoryAction {
         /// Output file for extracted parts with categories
         #[arg(short, long, default_value = "parts_with_categories.json")]
         output: PathBuf,
+
+        /// Just list all FNames containing .part_ without extracting (for debugging)
+        #[arg(long)]
+        list_fnames: bool,
     },
 
     /// Find objects matching a name pattern to discover their class
@@ -793,7 +827,13 @@ fn main() -> Result<()> {
                 println!("Weapon: {} {}", mfr, weapon_type);
             } else if let Some(group_id) = item.part_group_id() {
                 // VarBit-first format: use Part Group ID
-                let category_name = bl4::category_name(group_id).unwrap_or("Unknown");
+                // For 'e' type (equipment), only use equipment categories
+                // For weapon types, use weapon categories
+                let category_name = if item.item_type == 'e' {
+                    bl4::equipment_category_name(group_id).unwrap_or("Unknown")
+                } else {
+                    bl4::category_name(group_id).unwrap_or("Unknown")
+                };
                 println!("Category: {} ({})", category_name, group_id);
             }
 
@@ -870,16 +910,28 @@ fn main() -> Result<()> {
 
                         println!("\nResolved parts:");
                         for (part_index, values) in &parts {
-                            let idx_i64 = *part_index as i64;
+                            // Part index encoding: bit 7 = flag, bits 0-6 = actual index
+                            let has_flag = *part_index >= 128;
+                            let actual_index = if has_flag {
+                                (*part_index & 0x7F) as i64 // Mask off bit 7
+                            } else {
+                                *part_index as i64
+                            };
+                            let flag_str = if has_flag { " [+]" } else { "" };
                             let extra = if values.is_empty() {
                                 String::new()
                             } else {
                                 format!(" (values: {:?})", values)
                             };
-                            if let Some(name) = lookup.get(&(category, idx_i64)) {
-                                println!("  {}{}", name, extra);
+                            if let Some(name) = lookup.get(&(category, actual_index)) {
+                                println!("  {}{}{}", name, flag_str, extra);
                             } else {
-                                println!("  [unknown part index {}]{}", part_index, extra);
+                                let idx_display = if has_flag {
+                                    format!("{} (0x{:02x} = flag + {})", part_index, part_index, actual_index)
+                                } else {
+                                    format!("{}", part_index)
+                                };
+                                println!("  [unknown part index {}]{}", idx_display, extra);
                             }
                         }
                     }
@@ -971,6 +1023,189 @@ fn main() -> Result<()> {
                     }
                 }
             }
+        }
+
+        Commands::Encode { serial } => {
+            let item = bl4::ItemSerial::decode(&serial).context("Failed to decode serial")?;
+            let re_encoded = item.encode();
+
+            println!("Original:   {}", serial);
+            println!("Re-encoded: {}", re_encoded);
+
+            if serial == re_encoded {
+                println!("\n✓ Round-trip encoding successful!");
+            } else {
+                println!("\n✗ Round-trip encoding differs");
+                println!("  Original length:   {}", serial.len());
+                println!("  Re-encoded length: {}", re_encoded.len());
+
+                // Decode both to compare tokens
+                let re_item = bl4::ItemSerial::decode(&re_encoded)?;
+                println!("\nOriginal tokens:   {}", item.format_tokens());
+                println!("Re-encoded tokens: {}", re_item.format_tokens());
+            }
+        }
+
+        Commands::Compare { serial1, serial2 } => {
+            let item1 = bl4::ItemSerial::decode(&serial1).context("Failed to decode serial 1")?;
+            let item2 = bl4::ItemSerial::decode(&serial2).context("Failed to decode serial 2")?;
+
+            // Header comparison
+            println!("=== SERIAL 1 ===");
+            println!("Serial: {}", item1.original);
+            println!(
+                "Type: {} ({})",
+                item1.item_type,
+                item1.item_type_description()
+            );
+            if let Some((mfr, wtype)) = item1.weapon_info() {
+                println!("Weapon: {} {}", mfr, wtype);
+            }
+            if let Some(level) = item1.level {
+                println!("Level: {}", level);
+            }
+            if let Some(seed) = item1.seed {
+                println!("Seed: {}", seed);
+            }
+            println!("Tokens: {}", item1.format_tokens());
+
+            println!();
+            println!("=== SERIAL 2 ===");
+            println!("Serial: {}", item2.original);
+            println!(
+                "Type: {} ({})",
+                item2.item_type,
+                item2.item_type_description()
+            );
+            if let Some((mfr, wtype)) = item2.weapon_info() {
+                println!("Weapon: {} {}", mfr, wtype);
+            }
+            if let Some(level) = item2.level {
+                println!("Level: {}", level);
+            }
+            if let Some(seed) = item2.seed {
+                println!("Seed: {}", seed);
+            }
+            println!("Tokens: {}", item2.format_tokens());
+
+            // Byte comparison
+            println!();
+            println!("=== BYTE COMPARISON ===");
+            println!(
+                "Lengths: {} vs {} bytes",
+                item1.raw_bytes.len(),
+                item2.raw_bytes.len()
+            );
+
+            let max_len = std::cmp::max(item1.raw_bytes.len(), item2.raw_bytes.len());
+            let mut first_diff = None;
+            let mut diff_count = 0;
+
+            for i in 0..max_len {
+                let b1 = item1.raw_bytes.get(i);
+                let b2 = item2.raw_bytes.get(i);
+                if b1 != b2 {
+                    diff_count += 1;
+                    if first_diff.is_none() {
+                        first_diff = Some(i);
+                    }
+                }
+            }
+
+            if diff_count == 0 {
+                println!("Bytes: IDENTICAL");
+            } else {
+                println!("Bytes: {} differences", diff_count);
+                if let Some(first) = first_diff {
+                    println!("First diff at byte {}", first);
+                    println!();
+                    println!("Byte-by-byte (first 20 bytes or until divergence + 5):");
+                    println!("{:>4}  {:>12}  {:>12}  {}", "Idx", "Serial 1", "Serial 2", "");
+                    let show_until = std::cmp::min(max_len, first + 10);
+                    for i in 0..show_until {
+                        let b1 = item1.raw_bytes.get(i).copied();
+                        let b2 = item2.raw_bytes.get(i).copied();
+                        let marker = if b1 != b2 { " <--" } else { "" };
+                        let s1 = b1
+                            .map(|b| format!("{:3} {:08b}", b, b))
+                            .unwrap_or_else(|| "-".to_string());
+                        let s2 = b2
+                            .map(|b| format!("{:3} {:08b}", b, b))
+                            .unwrap_or_else(|| "-".to_string());
+                        println!("{:4}  {}  {}{}", i, s1, s2, marker);
+                    }
+                }
+            }
+        }
+
+        Commands::ModifySerial {
+            base,
+            source,
+            parts,
+        } => {
+            use bl4::serial::Token;
+
+            // Parse part indices
+            let part_indices: Vec<u64> = parts
+                .split(',')
+                .filter_map(|s| s.trim().parse().ok())
+                .collect();
+
+            if part_indices.is_empty() {
+                bail!("No valid part indices provided");
+            }
+
+            let base_item = bl4::ItemSerial::decode(&base).context("Failed to decode base serial")?;
+            let source_item =
+                bl4::ItemSerial::decode(&source).context("Failed to decode source serial")?;
+
+            println!("Base serial:   {}", base);
+            println!("Source serial: {}", source);
+            println!("Copying part indices: {:?}", part_indices);
+            println!();
+
+            // Build a map of source parts by index
+            let source_parts: std::collections::HashMap<u64, Vec<u64>> = source_item
+                .tokens
+                .iter()
+                .filter_map(|t| {
+                    if let Token::Part { index, values } = t {
+                        Some((*index, values.clone()))
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            // Modify base tokens - replace parts at specified indices
+            let new_tokens: Vec<Token> = base_item
+                .tokens
+                .iter()
+                .map(|t| {
+                    if let Token::Part { index, values } = t {
+                        if part_indices.contains(index) {
+                            if let Some(source_values) = source_parts.get(index) {
+                                println!(
+                                    "  Swapping part {}: {:?} -> {:?}",
+                                    index, values, source_values
+                                );
+                                return Token::Part {
+                                    index: *index,
+                                    values: source_values.clone(),
+                                };
+                            }
+                        }
+                    }
+                    t.clone()
+                })
+                .collect();
+
+            // Encode the new serial
+            let modified = base_item.with_tokens(new_tokens);
+            let new_serial = modified.encode();
+
+            println!();
+            println!("New serial: {}", new_serial);
         }
 
         Commands::Parts {
@@ -1281,7 +1516,10 @@ fn main() -> Result<()> {
                     println!("Written to: {}", output.display());
                     return Ok(());
                 }
-                MemoryAction::ExtractParts { ref output } => {
+                MemoryAction::ExtractParts {
+                    ref output,
+                    list_fnames,
+                } => {
                     // This command works with both dump files and live memory
                     let source: Box<dyn memory::MemorySource> = match dump {
                         Some(ref p) => {
@@ -1295,6 +1533,17 @@ fn main() -> Result<()> {
                             Box::new(proc)
                         }
                     };
+
+                    // If --list-fnames, just dump all FNames containing .part_ and exit
+                    if list_fnames {
+                        println!("Listing all FNames containing '.part_'...");
+                        let fnames = memory::list_all_part_fnames(source.as_ref())?;
+                        for name in &fnames {
+                            println!("{}", name);
+                        }
+                        println!("\nTotal: {} FNames", fnames.len());
+                        return Ok(());
+                    }
 
                     // Use the new FName array pattern extraction
                     // This method scans for 0xFFFFFFFF markers in part registration arrays,
