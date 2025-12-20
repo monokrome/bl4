@@ -305,6 +305,17 @@ Quick reference for terms used throughout this guide. Page references indicate t
 
 ---
 
+## Quick Reference: Playable Characters
+
+| Character Name | Internal Class Name | Class Mod Label |
+|----------------|---------------------|-----------------|
+| Amon | Char_Forgeknight | Forgeknight Class Mod |
+| Rafa | Char_ExoSoldier | Exo-Soldier Class Mod |
+| Harlowe | Char_Gravitar | Gravitar Class Mod |
+| Vex | Char_Siren | Siren Class Mod |
+
+---
+
 ## Quick Reference: Key Offsets
 
 | Symbol | Offset | Description |

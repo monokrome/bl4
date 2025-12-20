@@ -9,7 +9,8 @@
 //! 4. Data is a variable-length bitstream with tokens
 
 use crate::parts::{
-    item_type_name, level_from_code, manufacturer_name, weapon_info_from_first_varint,
+    item_type_name, level_from_code, manufacturer_name, serial_format,
+    weapon_info_from_first_varint,
 };
 
 /// Custom Base85 alphabet used by Borderlands 4
@@ -645,49 +646,59 @@ impl ItemSerial {
         let mut level = None;
         let mut seed = None;
 
-        // Collect VarInts before first separator for header analysis
-        let mut header_varints: Vec<u64> = Vec::new();
-        let mut after_first_sep: Vec<u64> = Vec::new();
-        let mut seen_separator = false;
+        // Determine format from first token (more reliable than type character)
+        let is_varbit_first = matches!(tokens.first(), Some(Token::VarBit(_)));
 
-        for token in &tokens {
-            match token {
-                Token::VarInt(v) => {
-                    if seen_separator {
-                        after_first_sep.push(*v);
-                    } else {
-                        header_varints.push(*v);
+        if is_varbit_first {
+            // Equipment format: VBIT(category) SEP VBIT(level) ...
+            // Level is the VarBit after the first separator
+            let mut seen_first_sep = false;
+            for token in &tokens {
+                match token {
+                    Token::Separator if !seen_first_sep => {
+                        seen_first_sep = true;
                     }
+                    Token::VarBit(v) if seen_first_sep && level.is_none() => {
+                        level = level_from_code(*v).map(|l| l as u64);
+                        break;
+                    }
+                    _ => {}
                 }
-                Token::Separator => {
-                    seen_separator = true;
-                }
-                _ => {}
             }
-        }
+        } else {
+            // Weapon format: VINT(mfg) SOFT VINT(0) SOFT VINT(8) SOFT VINT(level) SEP ...
+            // Collect VarInts before first separator for header analysis
+            let mut header_varints: Vec<u64> = Vec::new();
+            let mut after_first_sep: Vec<u64> = Vec::new();
+            let mut seen_separator = false;
 
-        // VarInt-first format (types a-d, f-g, u-z): <mfg_id>, 0, 8, <level_code> | 4, <seed> | ...
-        // Fourth token is an encoded level (lookup table, not direct value)
-        // VarBit-first format (type r): Different layout
-        match item_type {
-            'a'..='d' | 'f' | 'g' | 'u'..='z' => {
-                // VarInt-first weapon format
-                if !header_varints.is_empty() {
+            for token in &tokens {
+                match token {
+                    Token::VarInt(v) => {
+                        if seen_separator {
+                            after_first_sep.push(*v);
+                        } else {
+                            header_varints.push(*v);
+                        }
+                    }
+                    Token::Separator => {
+                        seen_separator = true;
+                    }
+                    _ => {}
+                }
+            }
+
+            // Extract fields based on serial format
+            if let Some(fmt) = serial_format(item_type) {
+                // Only extract manufacturer ID for VarInt-first weapon formats
+                if fmt.has_weapon_info && !header_varints.is_empty() {
                     manufacturer = Some(header_varints[0]);
                 }
-                // Fourth token (index 3) is encoded level
-                if header_varints.len() >= 4 {
+                if fmt.extract_level && header_varints.len() >= 4 {
                     level = level_from_code(header_varints[3]).map(|l| l as u64);
                 }
-                // After separator: 4, <seed>
-                if after_first_sep.len() >= 2 {
+                if fmt.has_weapon_info && after_first_sep.len() >= 2 {
                     seed = Some(after_first_sep[1]);
-                }
-            }
-            _ => {
-                // VarBit-first or equipment - use first VarInt as manufacturer if present
-                if !header_varints.is_empty() {
-                    manufacturer = Some(header_varints[0]);
                 }
             }
         }
@@ -800,25 +811,22 @@ impl ItemSerial {
 
     /// Get weapon info (manufacturer, weapon type) for VarInt-first format serials
     ///
-    /// For weapon types a-d, f-g, u-z, the first VarInt encodes both manufacturer AND weapon type.
-    /// Returns None for VarBit-first format (type r), equipment (type e), or if the ID is unknown.
+    /// Returns None for VarBit-first formats or if the ID is unknown.
     pub fn weapon_info(&self) -> Option<(&'static str, &'static str)> {
-        // Only applies to VarInt-first weapon format (not equipment)
-        match self.item_type {
-            'a'..='d' | 'f' | 'g' | 'u'..='z' => {
-                self.manufacturer.and_then(weapon_info_from_first_varint)
-            }
-            _ => None, // 'e' is equipment, 'r' is VarBit-first
+        let fmt = serial_format(self.item_type)?;
+        if fmt.has_weapon_info {
+            self.manufacturer.and_then(weapon_info_from_first_varint)
+        } else {
+            None
         }
     }
 
-    /// Extract Part Group ID from the serial
+    /// Extract Part Group ID (category) from the serial
     ///
-    /// For weapon serials (r, a-d, f-g, v-z): group_id = first_varbit / 8192
-    /// For equipment (e): group_id = first_varbit / 384
-    /// Returns None if the serial format doesn't use Part Group IDs
+    /// Uses the format's category_divisor to extract category from first VarBit.
+    /// Returns None if this format doesn't use VarBit categories.
     pub fn part_group_id(&self) -> Option<i64> {
-        // Find the first VarBit token
+        let fmt = serial_format(self.item_type)?;
         let first_varbit = self.tokens.iter().find_map(|t| {
             if let Token::VarBit(v) = t {
                 Some(*v)
@@ -826,18 +834,7 @@ impl ItemSerial {
                 None
             }
         })?;
-
-        match self.item_type {
-            'r' | 'a'..='d' | 'f' | 'g' | 'v'..='z' => {
-                // Weapons: group_id = first_token / 8192
-                Some((first_varbit / 8192) as i64)
-            }
-            'e' => {
-                // Equipment: group_id = first_token / 384
-                Some((first_varbit / 384) as i64)
-            }
-            _ => None, // Unknown format
-        }
+        fmt.extract_category(first_varbit)
     }
 
     /// Get all Part tokens from this serial
@@ -986,5 +983,28 @@ mod tests {
         let (index, values) = &parts[0];
         assert_eq!(*index, 0u64);
         assert!(!values.is_empty());
+    }
+
+    #[test]
+    fn test_equipment_level_extraction() {
+        // Shield type-e at level 49
+        let item = ItemSerial::decode("@Uge98>m/)}}!c5JeNWCvCXc7").unwrap();
+        assert_eq!(item.level, Some(49));
+
+        // Grenade at level 49
+        let item = ItemSerial::decode("@Uge8Xtm/)}}!elF;NmXinbwH6?9}OPi1ON").unwrap();
+        assert_eq!(item.level, Some(49));
+
+        // Class mod at level 50
+        let item = ItemSerial::decode("@Uge8;)m/)@{!X>!SqTZJibf`hSk4B2r6#)").unwrap();
+        assert_eq!(item.level, Some(50));
+
+        // Shield type-r at level 49
+        let item = ItemSerial::decode("@Ugr$)Nm/%P$!bIqxL{(~iG&p36L=sIx00").unwrap();
+        assert_eq!(item.level, Some(49));
+
+        // Weapon still works - level 30
+        let item = ItemSerial::decode("@Ugb)KvFg_4rJ}%H-RG}IbsZG^E#X_Y-00").unwrap();
+        assert_eq!(item.level, Some(30));
     }
 }

@@ -8,18 +8,27 @@ This chapter peels back those layers. We'll decrypt the encryption, decompress t
 
 ## Finding Your Saves
 
-Save files live in predictable locations. On Linux with Proton, look in your Steam userdata folder:
+Save files live in predictable locations. On Linux with Proton, they're in your Steam compatdata folder (not the userdata folder):
 
 ```
-~/.steam/steam/userdata/<steam_id>/2144700/remote/
-├── profile.sav          # Your main profile
-├── <character_id>.sav   # Individual character saves
+~/.local/share/Steam/steamapps/compatdata/1285190/pfx/drive_c/users/steamuser/
+  Documents/My Games/Borderlands 4/Saved/SaveGames/<steam_id>/Profiles/
+├── profile.sav          # Your main profile (bank, golden keys, unlocks)
+├── client/
+│   ├── 1.sav            # Character slot 1
+│   ├── 2.sav            # Character slot 2
+│   ├── 3.sav            # Character slot 3
+│   ├── 4.sav            # Character slot 4
+│   └── 5.sav            # Character slot 5
 └── ...
 ```
 
-On Windows, they're in your local app data or Steam's userdata depending on how you installed the game.
+On Windows, they're typically in:
+```
+%USERPROFILE%\Documents\My Games\Borderlands 4\Saved\SaveGames\<steam_id>\
+```
 
-The game syncs these to Steam Cloud. When editing saves, temporarily disable cloud sync to prevent the game from overwriting your modifications or vice versa.
+Your Steam ID is a 17-digit number starting with 7656119. The game syncs these to Steam Cloud. When editing saves, temporarily disable cloud sync to prevent the game from overwriting your modifications or vice versa.
 
 ---
 
@@ -106,39 +115,141 @@ The compression is effective. A 500KB save might decompress to several megabytes
 
 Underneath everything, BL4 saves are YAML documents. Human-readable, text-based, editable with any text editor. This is where the interesting data lives.
 
-The top-level structure:
+### Character Save Structure
+
+Character saves (1.sav through 5.sav) contain all character-specific data:
 
 ```yaml
-version: 1
-profile:
-  steam_id: "76561198012345678"
-  created: "2025-01-15T10:30:00Z"
-
-characters:
-  - id: "char_001"
-    class: "DarkSiren"
-    level: 50
-    experience: 4500000
-
 state:
+  char_guid: EAFFA60B46492388B1ED39807437595D
+  class: Char_Paladin              # Char_Paladin, Char_DarkSiren, etc.
+  char_name: Amon
+  player_difficulty: Easy
+  experience:
+    - type: Character
+      level: 50
+      points: 3430207
+    - type: Specialization
+      level: 3
+      points: 3084
+
   inventory:
     items:
-      - serial: "@Ugr$ZCm/&tH!t{KgK/Shxu>k"
-        flags: 0
-      - serial: "@Uge8jxm/)@{!gQaYMipv(G&-b*Z~_"
-        flags: 1
-  currency:
-    cash: 15000000
-    eridium: 500
-  skills:
-    # Skill point allocations
-  missions:
-    # Completed and active missions
+      backpack:
+        slot_0:
+          serial: '@Uge8Cmm/%Dy!gy?;m8e7QLd...'
+          flags: 1
+          state_flags: 513
+        slot_1:
+          serial: '@Ugr$)Nm/)}}!eIEIM^$QlZ...'
+          flags: 1
+          state_flags: 1
+        # ... up to slot_21 or more depending on backpack SDUs
+
+    equipped_inventory:
+      equipped:
+        slot_0:                    # Primary weapon 1
+          - serial: '@Ugd77*Fg_4r=3dZfRG}KRs6...'
+            flags: 1
+            state_flags: 517
+        slot_1:                    # Primary weapon 2
+          - serial: '@UgxFw!3C0H^%<l*)jVe^47S...'
+            flags: 1
+            state_flags: 517
+        slot_2:                    # Primary weapon 3
+          - serial: '@Ugct)%Fg_4rU>wkBRG/`es7...'
+            flags: 1
+            state_flags: 517
+        slot_3:                    # Primary weapon 4
+          - serial: '@Ugydj=3C0H^Ow0rtjVjck61...'
+            flags: 1
+            state_flags: 517
+        slot_4:                    # SHIELD SLOT
+          - serial: '@Uge9B?m/)}}!tjfrM>VQ_Z$...'
+            flags: 1
+            state_flags: 1
+        slot_5:                    # Additional weapon/item
+          - serial: '@Ugr$fEm/%P$!f1b>P^eCgL6...'
+            flags: 1
+            state_flags: 517
+        slot_6:                    # Gear slot (varies)
+          - serial: '@Ugr$xKm/)}}!pQufM-}RPG}...'
+            flags: 1
+            state_flags: 3
+        slot_7:                    # Gear slot (varies)
+          - serial: '@Uge8Usm/)}}!sNQ3NWCv7s8...'
+            flags: 1
+            state_flags: 1
+        slot_8:                    # Class mod slot
+          - serial: '@Ug!pHG2}TYgOpFIQhx*jtRN...'
+            flags: 1
+            state_flags: 3
+
+    equip_slots_unlocked:
+      - 2
+      - 3
+      - 6
+      - 7
+      - 8
+    active_slot: 2                 # Currently selected weapon slot
+
+  currencies:
+    cash: 44971
+    eridium: 210
+    golden_key: shift
+
+  ammo:
+    assaultrifle: 0
+    pistol: 148
+    shotgun: 40
+    smg: 0
+    sniper: 47
+    repairkit: 10
+
+  checkpoint_name: World_P.RS_Grasslands_ClaptrapBeach
+  total_playtime: 4050.224121
+
+globals:
+  time_of_day: Day
+  prologue_completed: TRUE
+  mainmissioncomplete: TRUE
+  # ... mission flags, unlocks, etc.
+
+stats:
+  achievements:
+    00_level_10: 1
+    01_level_30: 1
+    # ... achievement tracking
 ```
 
-The `version` field indicates the save format version. The `profile` section contains account-level data. `characters` lists your characters with their stats. And `state` contains the actual game state—inventory, equipped items, progress, discoveries.
+### Equipped Slot Mapping
 
-Items in inventory appear as serials—those Base85-encoded strings we'll decode in Chapter 5. Each item also has flags (equipped, favorited, etc.) and metadata.
+The `equipped_inventory.equipped` section uses numbered slots:
+
+| Slot | Purpose |
+|------|---------|
+| slot_0 | Primary weapon 1 |
+| slot_1 | Primary weapon 2 |
+| slot_2 | Primary weapon 3 |
+| slot_3 | Primary weapon 4 |
+| slot_4 | **Shield** |
+| slot_5 | Additional weapon slot |
+| slot_6 | Gear slot |
+| slot_7 | Gear slot |
+| slot_8 | Class mod |
+
+### State Flags
+
+The `state_flags` field indicates the item's status:
+
+| Value | Meaning |
+|-------|---------|
+| 1 | Basic equipped state |
+| 3 | Equipped gear (shields, class mods) |
+| 513 | In backpack (not equipped) |
+| 517 | Equipped weapon |
+
+Items in inventory appear as serials—those Base85-encoded strings we'll decode in Chapter 5. Each item also has `flags` (various item properties) and `state_flags` (equipped/backpack status).
 
 ---
 
@@ -148,20 +259,92 @@ The bl4 tools make save editing straightforward.
 
 **Decrypt a save to YAML:**
 ```bash
-bl4 decrypt profile.sav --steam-id 76561198012345678
+bl4 decrypt -i 1.sav -o character.yaml
+# or use stdin/stdout
+bl4 decrypt -i 1.sav > character.yaml
 ```
 
 **Edit the YAML** with any text editor. Add items, change currency, modify stats.
 
 **Re-encrypt:**
 ```bash
-bl4 encrypt profile.yaml --steam-id 76561198012345678 -o profile.sav
+bl4 encrypt -i character.yaml -o 1.sav
 ```
 
-**Query specific data** without full decryption:
-```bash
-bl4 query profile.sav "state.inventory.items[*].serial" --steam-id 76561198012345678
+The Steam ID is configured once and stored, so you don't need to specify it each time.
+
+---
+
+## Item Injection
+
+To add items to a save, you need to:
+
+1. **Decrypt the save**
+2. **Add the item serial to the appropriate location**
+3. **Re-encrypt the save**
+
+### Adding to Backpack
+
+Add a new slot entry under `state.inventory.items.backpack`:
+
+```yaml
+backpack:
+  slot_0:
+    serial: '@Uge8Cmm/...'
+    flags: 1
+    state_flags: 513
+  # Add new item as the next slot number
+  slot_22:
+    serial: '@Uge92<m/)}}!gNodNkyuCbwInLxgj=C`_2FW'
+    state_flags: 513
 ```
+
+### Equipping an Item
+
+**Important**: The equipped_inventory is a *reference* to a backpack item. To equip an item:
+
+1. First, add the item to the backpack
+2. Then, add a reference to the same item in equipped_inventory
+
+```yaml
+# Step 1: Add to backpack
+state:
+  inventory:
+    items:
+      backpack:
+        slot_22:
+          serial: '@Uge8jxm/)@{!bAp5s!;381FF>eS^@w'
+          flags: 1
+          state_flags: 513    # Backpack item
+
+# Step 2: Add to equipped_inventory (reference the same serial)
+    equipped_inventory:
+      equipped:
+        slot_4:               # Shield slot
+          - serial: '@Uge8jxm/)@{!bAp5s!;381FF>eS^@w'
+            flags: 1
+            state_flags: 1    # Equipped state
+```
+
+The same serial appears in both places—the backpack holds the actual item data, and equipped_inventory references it.
+
+**Critical**: Only ONE item per slot type can have `state_flags: 1`. If you have multiple shields all marked as equipped (state_flags: 1), the game will refuse to equip any of them. Make sure all other shields in your backpack have `state_flags: 513`.
+
+### Live Editing Limitations
+
+The game **caches character data in memory** once loaded. This means:
+
+- Editing a save file on disk has **no effect** until the game restarts
+- Switching characters doesn't reload from disk—the cache persists
+- You must **fully quit and restart** the game to see save edits
+
+**Workflow for save editing:**
+1. Quit the game completely
+2. Edit the save file
+3. Restart the game
+4. Load the character
+
+**Warning**: Never edit a save for a character you've already loaded this session—your edits will be ignored and potentially overwritten when the game saves.
 
 ---
 
@@ -170,29 +353,59 @@ bl4 query profile.sav "state.inventory.items[*].serial" --steam-id 7656119801234
 **Adding currency:**
 ```yaml
 state:
-  currency:
+  currencies:
     cash: 999999999
     eridium: 9999
 ```
 
-**Changing character level:**
+**Changing character name:**
 ```yaml
-characters:
-  - id: "char_001"
-    level: 72
-    experience: 999999999
+state:
+  char_name: NewName
 ```
 
-**Adding items** requires valid serials. You can copy serials from other saves, community databases, or generate them (once you understand the format from Chapter 5):
+**Changing character level** requires updating experience points to match:
+```yaml
+state:
+  experience:
+    - type: Character
+      level: 50
+      points: 3430207
+```
+
+Known character XP thresholds:
+
+| Level | XP Required |
+|-------|-------------|
+| 1 | 0 |
+| 2 | 1,100 |
+| 30 | 821,362 |
+| 50 | 3,430,207 |
+
+The curve follows approximately `XP ≈ 202 × level^2.44`.
+
+**Specialization levels** use separate XP tracked independently:
+
+| Level | XP Required |
+|-------|-------------|
+| 2 | ~1,265 |
+| 3 | ~2,599 |
+| 4 | ~4,690 |
+| 5 | ~7,948 |
+| 6 | ~12,718 |
+
+**Adding items** requires valid serials. You can copy serials from other saves, the items database, or generate them (once you understand the format from Chapter 5):
 ```yaml
 state:
   inventory:
     items:
-      - serial: "@UgYOUR_ITEM_SERIAL_HERE"
-        flags: 0
+      backpack:
+        slot_22:
+          serial: '@UgYOUR_ITEM_SERIAL_HERE'
+          state_flags: 513
 ```
 
-Invalid serials cause problems—items may not appear, or worse, the game might crash. Always test with a backup.
+Invalid serials cause problems—items may not appear, or the game might crash. Always test with a backup save.
 
 ---
 

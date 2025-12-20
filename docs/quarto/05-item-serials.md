@@ -105,21 +105,93 @@ After the magic header, the stream contains tokens identified by prefix bits:
 
 ---
 
+## Item Type: Determined by First Token, Not Character
+
+**Important discovery**: The third character in a serial (like `b`, `e`, `r`) is NOT an explicit type encoding. It's simply a byproduct of Base85-encoding the first token's bits. The **actual item type** is determined by parsing the first token after the magic header:
+
+| First Token | Item Type | What It Contains |
+|-------------|-----------|------------------|
+| VarInt (prefix `100`) | Weapon | Pistols, shotguns, rifles, SMGs, snipers |
+| VarBit (prefix `110`) | Equipment | Shields, grenades, class mods, gadgets |
+
+This means two serials with different "type characters" might represent the same category of item, and vice versa. Always determine type from the bitstream, not the character.
+
 ## Two Serial Formats
 
-BL4 uses two distinct formats, distinguished by the first token after the header:
+BL4 uses two distinct token structures, distinguished by the first token after the 7-bit magic header:
 
-**VarBit-first format** (type `r`, some equipment): The first token is a VarBit encoding the Part Group ID times a multiplier. Compact, used for most weapons.
+### Weapon Format (VarInt-first)
 
-**VarInt-first format** (types `a-d`, `f-g`, `u-z`): The first token is a VarInt encoding manufacturer plus weapon type. Extended format with more metadata.
+Weapons start with a VarInt encoding a combined manufacturer/weapon-type ID:
 
-For VarBit-first serials:
 ```
-Part Group ID = first_varbit / 8192  (weapons)
-Part Group ID = first_varbit / 384   (equipment)
+[0] VarInt: manufacturer_weapon_id   (e.g., 2 = Jakobs Pistol, 14 = Ripper Shotgun)
+[1] SoftSeparator
+[2] VarInt: 0
+[3] SoftSeparator
+[4] VarInt: 8
+[5] SoftSeparator
+[6] VarInt: level_code               <- LEVEL ENCODED HERE
+[7] Separator
+[8] VarInt: 4
+[9] SoftSeparator
+[10] VarInt: seed                    <- Random seed for stats
+[11] Separator
+[12] Separator
+[13+] Part tokens...
 ```
 
-For VarInt-first serials, the first VarInt directly encodes a combined manufacturer/weapon-type ID.
+### Equipment Format (VarBit-first)
+
+Equipment (shields, grenades, class mods) starts with a VarBit encoding the category:
+
+```
+[0] VarBit: category_identifier      <- Category * divisor
+[1] Separator
+[2] VarBit: level_code               <- LEVEL ENCODED HERE
+[3] Separator
+[4] String: (often empty)
+[5] VarInt: (varies)
+[6+] More data and parts...
+```
+
+For VarBit-first serials, the category is extracted using a divisor:
+```
+Category ≈ first_varbit / 385   (most equipment)
+Category ≈ first_varbit / 8192  (some shields)
+```
+
+The divisor isn't exact—categories are approximate matches. The bl4 tools handle this automatically.
+
+## Type-Aware Category Lookups
+
+**Critical**: Category numbers overlap between item types. The same category number means different things for different item types.
+
+For example, category 20:
+- For weapons: Daedalus SMG
+- For r-type shields: Energy Shield
+
+This means you must know the item type before interpreting the category. The bl4 tools use type-aware lookup:
+
+```rust
+pub fn category_name_for_type(item_type: char, category: i64) -> Option<&'static str> {
+    match item_type {
+        'r' => SHIELD_CATEGORY_NAMES.get(&category)
+            .or_else(|| CATEGORY_NAMES.get(&category)),
+        _ => CATEGORY_NAMES.get(&category),
+    }
+}
+```
+
+Known shield categories (r-type items):
+| Category | Type |
+|----------|------|
+| 16 | Energy Shield |
+| 20 | Energy Shield |
+| 21 | Energy Shield |
+| 24 | Energy Shield |
+| 28 | Armor Shield |
+| 31 | Armor Shield |
 
 ---
 
@@ -239,12 +311,28 @@ The Part Group ID determines which part pool to use for decoding. Each ID corres
 | 280 | Bor Shield | bor_shield |
 | 281-288 | Manufacturer variants | dad/jak/mal/ord/ted/tor/vla_shield |
 
-**Equipment (300-409):**
-- 300: Grenade Gadget
-- 310: Turret Gadget
-- 320: Repair Kit
-- 330: Terminal Gadget
-- 400-409: Enhancements by manufacturer
+**Equipment/Gadgets (300-409):**
+
+Gadget categories use a type/subtype pattern. The base type is `category / 10 * 10`, and the subtype is `category % 10`:
+
+| Category | Type | Code |
+|----------|------|------|
+| 300-309 | Grenade Gadget | grenade_gadget |
+| 310-319 | Turret Gadget | turret_gadget |
+| 320-329 | Repair Kit | repkit |
+| 330-339 | Terminal Gadget | terminal_gadget |
+| 400-409 | Enhancement | enhancement |
+
+For example, category 321 = Repair Kit (type 32), subtype 1.
+
+The bl4 tools handle this automatically:
+```rust
+// For gadget range (300-399), try base type
+if (300..400).contains(&category) {
+    let base = category / 10 * 10;
+    return CATEGORY_NAMES.get(&base);
+}
+```
 
 ---
 
@@ -271,22 +359,36 @@ The full parts database (`share/manifest/parts_database.json`) contains 2,615 pa
 
 ## Level Encoding
 
-For VarInt-first format serials, the fourth token encodes item level with a bit-packed formula:
+Both weapon and equipment serials encode level using the same formula, but in different positions and token types:
 
-Levels 1-15 encode directly as the token value.
+- **Weapons**: Level is the 4th VarInt (position 6 in token list)
+- **Equipment**: Level is the VarBit immediately after the first separator (position 2)
 
-Levels 16+ use: `level = 16 + bits[6:1] + 8 * bit0`
+The encoding formula:
 
-Where `bit0` is the lowest bit and `bits[6:1]` is the middle 6 bits.
+```rust
+fn level_from_code(code: u64) -> Option<u8> {
+    if code >= 128 {
+        // High-level encoding: level = 2 * (code - 120)
+        Some((2 * (code - 120)) as u8)
+    } else if code <= 50 {
+        // Direct encoding for levels 1-50
+        Some(code as u8)
+    } else {
+        None  // Invalid range 51-127
+    }
+}
+```
 
-| Token | Level |
-|-------|-------|
-| 9 | 9 |
-| 128 | 16 |
-| 129 | 24 |
-| 132 | 18 |
-| 138 | 21 |
-| 142 | 23 |
+| Code | Level | Formula |
+|------|-------|---------|
+| 1-50 | 1-50 | Direct (code = level) |
+| 128 | 16 | 2 × (128-120) = 16 |
+| 135 | 30 | 2 × (135-120) = 30 |
+| 145 | 50 | 2 × (145-120) = 50 |
+| 200 | 160 | 2 × (200-120) = 160 |
+
+**Equipment uses VarBit for level**, not VarInt. This was a key discovery—equipment items encode level as a VarBit token, while weapons use VarInt. The bl4 tools detect the format automatically by checking if the first token is VarInt or VarBit.
 
 ---
 
@@ -326,13 +428,39 @@ Decode both, align the tokens, find where they diverge. The difference reveals w
 The bl4 tool decodes serials instantly:
 
 ```bash
-bl4 decode '@Ugr$ZCm/&tH!t{KgK/Shxu>k'
+# Weapon
+bl4 decode '@Ugb)KvFg_4rJ}%H-RG}IbsZG^E#X_Y-00'
 
 # Output:
-Serial: @Ugr$ZCm/&tH!t{KgK/Shxu>k
-Item type: r (Weapon)
-Part Group: 22 (VLA_SM)
-Tokens: 180928 | 50 | {0:1} 21 {4} , 2 , , 105 102 41
+Serial: @Ugb)KvFg_4rJ}%H-RG}IbsZG^E#X_Y-00
+Item type: b (Weapon)
+Weapon: Jakobs Pistol
+Level: 30
+Seed: 2591
+Tokens: 2 ,  0 ,  8 ,  135 | 4 ,  2591 | | {175} {4} {6} ...
+```
+
+Equipment items now show levels too:
+
+```bash
+# Shield
+bl4 decode '@Uge98>m/)}}!c5JeNWCvCXc7'
+
+# Output:
+Serial: @Uge98>m/)}}!c5JeNWCvCXc7
+Item type: e (Item)
+Category: Shield Variant (289)
+Level: 49
+Tokens: 111296 | 49 | "" 4 | ,  | 171 | ...
+
+# Class Mod
+bl4 decode '@Uge8;)m/)@{!X>!SqTZJibf`hSk4B2r6#)'
+
+# Output:
+Serial: @Uge8;)m/)@{!X>!SqTZJibf`hSk4B2r6#)
+Item type: e (Item)
+Category: Paladin Class Mod (55)
+Level: 50
 ```
 
 For more detail:
@@ -378,4 +506,3 @@ Serials encode items completely—but where do the part definitions come from? T
 Next, we'll explore how to extract data from BL4's game files, including the investigation into whether authoritative category mappings exist anywhere we can reach them.
 
 **Next: [Chapter 6: Data Extraction](06-data-extraction.md)**
-

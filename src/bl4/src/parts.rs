@@ -3,6 +3,8 @@
 //! Maps manufacturer IDs, weapon types, and categories to human-readable names.
 //! Part index data is stored in share/manifest/ for reference only.
 
+use phf::phf_map;
+
 /// First VarInt to (Manufacturer, Weapon Type) mapping
 /// For VarInt-first serial format (types a-g, u-z)
 ///
@@ -10,52 +12,289 @@
 ///   [V] = Verified in-game with screenshots
 ///   [I] = Inferred from category/parts data
 ///   [?] = Needs verification
-pub fn weapon_info_from_first_varint(id: u64) -> Option<(&'static str, &'static str)> {
-    match id {
-        // Shotguns (low IDs)
-        1 => Some(("Daedalus", "Shotgun")),   // [I] DAD_SG - category 8
-        3 => Some(("Torgue", "Shotgun")),     // [I] TOR_SG - category 11
-        5 => Some(("Maliwan", "Shotgun")),    // [I] MAL_SG - category 19
-        9 => Some(("Jakobs", "Shotgun")),     // [V] JAK_SG - Rainbow Vomit screenshot
-        13 => Some(("Tediore", "Shotgun")),   // [I] TED_SG - category 10
-        14 => Some(("Ripper", "Shotgun")),    // [V] RIP_SG - Hungry Flensing Hellhound screenshot
-        // Pistols (low IDs)
-        2 => Some(("Jakobs", "Pistol")),      // [V] JAK_PS - Seventh Sense screenshot
-        4 => Some(("Daedalus", "Pistol")),    // [I] DAD_PS - category 2
-        6 => Some(("Torgue", "Pistol")),      // [I] TOR_PS - category 5
-        10 => Some(("Tediore", "Pistol")),    // [I] TED_PS - category 4
-        12 => Some(("Jakobs", "Pistol")),     // [V] JAK_PS - bank Seventh Senses
-        // Assault Rifles (low IDs)
-        7 => Some(("Tediore", "AR")),         // [I] TED_AR - category 15
-        11 => Some(("Daedalus", "AR")),       // [I] DAD_AR - category 13
-        15 => Some(("Order", "AR")),          // [I] ORD_AR - category 18
-        // Snipers (high IDs, bit 7 set)
-        128 => Some(("Vladof", "Sniper")),    // [V] VLA_SR - Rebellious Vyudazy screenshot
-        129 => Some(("Jakobs", "Sniper")),    // [I] JAK_SR - category 26
-        133 => Some(("Order", "Sniper")),     // [I] ORD_SR - category 28
-        137 => Some(("Maliwan", "Sniper")),   // [I] MAL_SR - category 29
-        142 => Some(("Bor", "Sniper")),       // [?] BOR_SR - category 25, needs verification
-        // SMGs (high IDs, bit 7 set)
-        130 => Some(("Daedalus", "SMG")),     // [I] DAD_SM - category 20
-        134 => Some(("Bor", "SMG")),          // [?] BOR_SM - category 21, needs verification
-        138 => Some(("Maliwan", "SMG")),      // [I] MAL_SM - category 23
-        140 => Some(("Vladof", "SMG")),       // [I] VLA_SM - category 22
-        // Assault Rifles (high IDs, bit 7 set)
-        132 => Some(("Vladof", "AR")),        // [I] VLA_AR - category 17
-        136 => Some(("Torgue", "AR")),        // [I] TOR_AR - category 16
-        141 => Some(("Jakobs", "AR")),        // [I] JAK_AR - category 14
-        _ => None,
+static WEAPON_INFO: phf::Map<u64, (&'static str, &'static str)> = phf_map! {
+    // Shotguns (low IDs)
+    1u64 => ("Daedalus", "Shotgun"),   // [I] DAD_SG - category 8
+    3u64 => ("Torgue", "Shotgun"),     // [I] TOR_SG - category 11
+    5u64 => ("Maliwan", "Shotgun"),    // [I] MAL_SG - category 19
+    9u64 => ("Jakobs", "Shotgun"),     // [V] JAK_SG - Rainbow Vomit screenshot
+    13u64 => ("Tediore", "Shotgun"),   // [I] TED_SG - category 10
+    14u64 => ("Ripper", "Shotgun"),    // [V] RIP_SG - Hungry Flensing Hellhound screenshot
+
+    // Pistols (low IDs)
+    2u64 => ("Jakobs", "Pistol"),      // [V] JAK_PS - Seventh Sense screenshot
+    4u64 => ("Daedalus", "Pistol"),    // [I] DAD_PS - category 2
+    6u64 => ("Torgue", "Pistol"),      // [I] TOR_PS - category 5
+    10u64 => ("Tediore", "Pistol"),    // [I] TED_PS - category 4
+    12u64 => ("Jakobs", "Pistol"),     // [V] JAK_PS - bank Seventh Senses
+
+    // Assault Rifles (low IDs)
+    7u64 => ("Tediore", "AR"),         // [I] TED_AR - category 15
+    11u64 => ("Daedalus", "AR"),       // [I] DAD_AR - category 13
+    15u64 => ("Order", "AR"),          // [I] ORD_AR - category 18
+
+    // Snipers (high IDs, bit 7 set)
+    128u64 => ("Vladof", "Sniper"),    // [V] VLA_SR - Rebellious Vyudazy screenshot
+    129u64 => ("Jakobs", "Sniper"),    // [I] JAK_SR - category 26
+    133u64 => ("Order", "Sniper"),     // [I] ORD_SR - category 28
+    137u64 => ("Maliwan", "Sniper"),   // [I] MAL_SR - category 29
+    142u64 => ("Bor", "Sniper"),       // [?] BOR_SR - category 25, needs verification
+
+    // SMGs (high IDs, bit 7 set)
+    130u64 => ("Daedalus", "SMG"),     // [I] DAD_SM - category 20
+    134u64 => ("Bor", "SMG"),          // [?] BOR_SM - category 21, needs verification
+    138u64 => ("Maliwan", "SMG"),      // [I] MAL_SM - category 23
+    140u64 => ("Vladof", "SMG"),       // [I] VLA_SM - category 22
+
+    // Assault Rifles (high IDs, bit 7 set)
+    132u64 => ("Vladof", "AR"),        // [I] VLA_AR - category 17
+    136u64 => ("Torgue", "AR"),        // [I] TOR_AR - category 16
+    141u64 => ("Jakobs", "AR"),        // [I] JAK_AR - category 14
+
+    // Shields (type 'r' format - verified from tagged bank items 2025-12-20)
+    133824u64 => ("", "Armor Shield"),     // [V] Tagged bank items
+    221888u64 => ("", "Armor Shield"),     // [V] Tagged bank items
+    254656u64 => ("", "Armor Shield"),     // [V] Tagged bank items
+    53952u64 => ("", "Energy Shield"),     // [V] Tagged bank items
+    168640u64 => ("", "Energy Shield"),    // [V] Tagged bank items
+    238272u64 => ("", "Energy Shield"),    // [V] Tagged bank items
+};
+
+/// Part Group ID (Category) to name mapping
+/// Derived from memory dump analysis and serial decoding
+static CATEGORY_NAMES: phf::Map<i64, &'static str> = phf_map! {
+    // Shields (verified from tagged bank items 2025-12-20)
+    31i64 => "Armor Shield",
+    76i64 => "Energy Shield",  // [V] Type 'e' format
+    204i64 => "Armor Shield",
+
+    // Pistols
+    2i64 => "Daedalus Pistol",
+    3i64 => "Jakobs Pistol",
+    4i64 => "Tediore Pistol",
+    5i64 => "Torgue Pistol",
+    6i64 => "Order Pistol",
+    7i64 => "Vladof Pistol",
+
+    // Shotguns
+    8i64 => "Daedalus Shotgun",
+    9i64 => "Jakobs Shotgun",
+    10i64 => "Tediore Shotgun",
+    11i64 => "Torgue Shotgun",
+    12i64 => "Bor Shotgun",
+
+    // Assault Rifles
+    13i64 => "Daedalus Assault Rifle",
+    14i64 => "Jakobs Assault Rifle",
+    15i64 => "Tediore Assault Rifle",
+    16i64 => "Torgue Assault Rifle",
+    17i64 => "Vladof Assault Rifle",
+    18i64 => "Order Assault Rifle",
+
+    // Maliwan Shotgun (gap filler)
+    19i64 => "Maliwan Shotgun",
+
+    // SMGs
+    20i64 => "Daedalus SMG",
+    21i64 => "Bor SMG",
+    22i64 => "Vladof SMG",
+    23i64 => "Maliwan SMG",
+    24i64 => "Tediore SMG",  // [I] Inferred from category pattern
+
+    // Snipers
+    25i64 => "Bor Sniper",
+    26i64 => "Jakobs Sniper",
+    27i64 => "Vladof Sniper",
+    28i64 => "Order Sniper",
+    29i64 => "Maliwan Sniper",
+    30i64 => "Tediore Sniper",  // [I] Inferred from category pattern
+
+    // Class Mods (derived from serial analysis - categories 44, 55, 97, 140)
+    44i64 => "Dark Siren Class Mod",
+    55i64 => "Paladin Class Mod",
+    97i64 => "Gravitar Class Mod",
+    140i64 => "Exo Soldier Class Mod",
+
+    // Firmware (category 151)
+    151i64 => "Firmware",
+
+    // Heavy Weapons
+    244i64 => "Vladof Heavy",
+    245i64 => "Torgue Heavy",
+    246i64 => "Bor Heavy",
+    247i64 => "Maliwan Heavy",
+
+    // Shields (r-type serial categories - verified from tagged bank items)
+    279i64 => "Energy Shield",
+    280i64 => "Bor Shield",
+    281i64 => "Daedalus Shield",
+    282i64 => "Jakobs Shield",
+    283i64 => "Armor Shield",
+    284i64 => "Maliwan Shield",
+    285i64 => "Order Shield",
+    286i64 => "Tediore Shield",
+    287i64 => "Torgue Shield",
+    288i64 => "Vladof Shield",
+    289i64 => "Shield Variant",
+
+    // Gadgets and Gear
+    300i64 => "Grenade Gadget",
+    310i64 => "Turret Gadget",
+    320i64 => "Repair Kit",
+    330i64 => "Terminal Gadget",
+
+    // Enhancements
+    400i64 => "Daedalus Enhancement",
+    401i64 => "Bor Enhancement",
+    402i64 => "Jakobs Enhancement",
+    403i64 => "Maliwan Enhancement",
+    404i64 => "Order Enhancement",
+    405i64 => "Tediore Enhancement",
+    406i64 => "Torgue Enhancement",
+    407i64 => "Vladof Enhancement",
+    408i64 => "COV Enhancement",
+    409i64 => "Atlas Enhancement",
+};
+
+/// Serial format configuration
+///
+/// Defines how to parse a serial based on its type character.
+#[derive(Debug, Clone, Copy)]
+pub struct SerialFormat {
+    /// Divisor to extract category from first VarBit (0 = use VarInt weapon info instead)
+    pub category_divisor: u64,
+    /// Whether first VarInt contains manufacturer+weapon type ID
+    pub has_weapon_info: bool,
+    /// Whether to extract level from 4th header VarInt
+    pub extract_level: bool,
+}
+
+impl SerialFormat {
+    const fn varint_weapon(extract_level: bool) -> Self {
+        Self {
+            category_divisor: 0,
+            has_weapon_info: true,
+            extract_level,
+        }
+    }
+
+    const fn varbit(divisor: u64) -> Self {
+        Self {
+            category_divisor: divisor,
+            has_weapon_info: false,
+            extract_level: false,
+        }
+    }
+
+    const fn class_mod() -> Self {
+        Self {
+            category_divisor: 0,
+            has_weapon_info: false,
+            extract_level: false,
+        }
+    }
+
+    /// Extract category from VarBit value (returns None if this format doesn't use VarBit categories)
+    pub fn extract_category(&self, varbit: u64) -> Option<i64> {
+        if self.category_divisor > 0 {
+            Some((varbit / self.category_divisor) as i64)
+        } else {
+            None
+        }
     }
 }
 
-/// Extract just the manufacturer name from first VarInt
+/// Serial format lookup by type character
+static SERIAL_FORMATS: phf::Map<char, SerialFormat> = phf_map! {
+    // VarInt-first weapons (first VarInt = manufacturer+type, 4th = level)
+    'a' => SerialFormat::varint_weapon(true),
+    'b' => SerialFormat::varint_weapon(true),
+    'c' => SerialFormat::varint_weapon(true),
+    'd' => SerialFormat::varint_weapon(true),
+    'f' => SerialFormat::varint_weapon(true),
+    'g' => SerialFormat::varint_weapon(true),
+    'u' => SerialFormat::varint_weapon(true),
+    'v' => SerialFormat::varint_weapon(true),
+    'w' => SerialFormat::varint_weapon(true),
+    'x' => SerialFormat::varint_weapon(true),
+    'y' => SerialFormat::varint_weapon(true),
+    'z' => SerialFormat::varint_weapon(true),
+    // VarBit-first items (category = first VarBit / divisor)
+    'e' => SerialFormat::varbit(384),
+    // Shields (VarBit-first, category = VarBit / 8192)
+    'r' => SerialFormat::varbit(8192),
+    // Class mods
+    '!' => SerialFormat::class_mod(),
+    '#' => SerialFormat::class_mod(),
+};
+
+/// Get the serial format for a type character
+pub fn serial_format(type_char: char) -> Option<&'static SerialFormat> {
+    SERIAL_FORMATS.get(&type_char)
+}
+
+// Public API functions that wrap the static maps
+
+pub fn weapon_info_from_first_varint(id: u64) -> Option<(&'static str, &'static str)> {
+    WEAPON_INFO.get(&id).copied()
+}
+
 pub fn manufacturer_name(id: u64) -> Option<&'static str> {
     weapon_info_from_first_varint(id).map(|(mfg, _)| mfg)
 }
 
-/// Extract just the weapon type from first VarInt
 pub fn weapon_type_from_first_varint(id: u64) -> Option<&'static str> {
     weapon_info_from_first_varint(id).map(|(_, wtype)| wtype)
+}
+
+pub fn category_name(category: i64) -> Option<&'static str> {
+    // Try exact match first
+    if let Some(name) = CATEGORY_NAMES.get(&category).copied() {
+        return Some(name);
+    }
+
+    // For gadget range (300-399), try base type (category / 10 * 10)
+    // e.g., 321 -> 320 (Repair Kit), 301 -> 300 (Grenade Gadget)
+    if (300..400).contains(&category) {
+        let base = category / 10 * 10;
+        return CATEGORY_NAMES.get(&base).copied();
+    }
+
+    None
+}
+
+/// Shield category names for r-type items
+/// These overlap with weapon categories but have different meanings
+/// Based on verified tagged bank items
+static SHIELD_CATEGORY_NAMES: phf::Map<i64, &'static str> = phf_map! {
+    16i64 => "Energy Shield",   // [I] r-type category 16
+    20i64 => "Energy Shield",   // [I] r-type category 20
+    21i64 => "Energy Shield",   // [I] r-type category 21
+    24i64 => "Energy Shield",   // [I] r-type category 24
+    28i64 => "Armor Shield",    // [I] r-type category 28
+    31i64 => "Armor Shield",    // [V] r-type category 31 - verified from tagged bank
+};
+
+/// Get category name with item type awareness
+/// For r-type (shields), uses shield-specific category map to avoid conflicts with weapons
+pub fn category_name_for_type(item_type: char, category: i64) -> Option<&'static str> {
+    match item_type {
+        'r' => SHIELD_CATEGORY_NAMES.get(&category).copied()
+            .or_else(|| CATEGORY_NAMES.get(&category).copied()),
+        _ => CATEGORY_NAMES.get(&category).copied(),
+    }
+}
+
+/// Get a human-readable description for a type character
+///
+/// Returns a description based on the serial format.
+pub fn item_type_name(type_char: char) -> &'static str {
+    match serial_format(type_char) {
+        Some(fmt) if fmt.has_weapon_info => "Weapon",
+        Some(fmt) if fmt.category_divisor > 0 => "Item",
+        Some(_) => "Class Mod",
+        None => "Unknown",
+    }
 }
 
 /// Decode level from fourth token (level code)
@@ -82,151 +321,6 @@ pub fn level_from_code(code: u64) -> Option<u8> {
     }
 }
 
-/// Part Group ID (Category) to name mapping
-/// Derived from memory dump analysis and serial decoding
-pub fn category_name(category: i64) -> Option<&'static str> {
-    match category {
-        // Pistols
-        2 => Some("Daedalus Pistol"),
-        3 => Some("Jakobs Pistol"),
-        4 => Some("Tediore Pistol"),
-        5 => Some("Torgue Pistol"),
-        6 => Some("Order Pistol"),
-        7 => Some("Vladof Pistol"),
-        // Shotguns
-        8 => Some("Daedalus Shotgun"),
-        9 => Some("Jakobs Shotgun"),
-        10 => Some("Tediore Shotgun"),
-        11 => Some("Torgue Shotgun"),
-        12 => Some("Bor Shotgun"),
-        // Assault Rifles
-        13 => Some("Daedalus Assault Rifle"),
-        14 => Some("Jakobs Assault Rifle"),
-        15 => Some("Tediore Assault Rifle"),
-        16 => Some("Torgue Assault Rifle"),
-        17 => Some("Vladof Assault Rifle"),
-        18 => Some("Order Assault Rifle"),
-        // Maliwan Shotgun (gap filler)
-        19 => Some("Maliwan Shotgun"),
-        // SMGs
-        20 => Some("Daedalus SMG"),
-        21 => Some("Bor SMG"),
-        22 => Some("Vladof SMG"),
-        23 => Some("Maliwan SMG"),
-        // Bor Sniper (gap filler)
-        25 => Some("Bor Sniper"),
-        // Snipers
-        26 => Some("Jakobs Sniper"),
-        27 => Some("Vladof Sniper"),
-        28 => Some("Order Sniper"),
-        29 => Some("Maliwan Sniper"),
-        // Class Mods (derived from serial analysis - categories 44, 55, 97, 140)
-        44 => Some("Dark Siren Class Mod"),
-        55 => Some("Paladin Class Mod"),
-        97 => Some("Gravitar Class Mod"),
-        140 => Some("Exo Soldier Class Mod"),
-        // Firmware (category 151)
-        151 => Some("Firmware"),
-        // Heavy Weapons
-        244 => Some("Vladof Heavy"),
-        245 => Some("Torgue Heavy"),
-        246 => Some("Bor Heavy"),
-        247 => Some("Maliwan Heavy"),
-        // Shields
-        279 => Some("Energy Shield"),
-        280 => Some("Bor Shield"),
-        281 => Some("Daedalus Shield"),
-        282 => Some("Jakobs Shield"),
-        283 => Some("Armor Shield"),
-        284 => Some("Maliwan Shield"),
-        285 => Some("Order Shield"),
-        286 => Some("Tediore Shield"),
-        287 => Some("Torgue Shield"),
-        288 => Some("Vladof Shield"),
-        289 => Some("Shield Variant"),
-        // Gadgets and Gear
-        300 => Some("Grenade Gadget"),
-        310 => Some("Turret Gadget"),
-        320 => Some("Repair Kit"),
-        330 => Some("Terminal Gadget"),
-        // Enhancements
-        400 => Some("Daedalus Enhancement"),
-        401 => Some("Bor Enhancement"),
-        402 => Some("Jakobs Enhancement"),
-        403 => Some("Maliwan Enhancement"),
-        404 => Some("Order Enhancement"),
-        405 => Some("Tediore Enhancement"),
-        406 => Some("Torgue Enhancement"),
-        407 => Some("Vladof Enhancement"),
-        408 => Some("COV Enhancement"),
-        409 => Some("Atlas Enhancement"),
-        _ => None,
-    }
-}
-
-/// Item type character to description mapping
-///
-/// Format types determined through analysis Dec 2025:
-/// - Weapons: a-d, f-g, r, u-z (VarInt-first format, first VarInt = mfg+type)
-/// - Equipment: e (VarBit-first, divisor 384 for category - shields, grenades, class mods, firmware)
-/// - Class Mods: !, # (special format with fixed manufacturer IDs 247, 255)
-pub fn item_type_name(type_char: char) -> &'static str {
-    match type_char {
-        'a'..='d' => "Weapon",
-        'e' => "Equipment",
-        'f' | 'g' => "Weapon",
-        'r' => "Weapon",
-        'u' => "Weapon",
-        'v'..='z' => "Weapon",
-        '!' => "Class Mod",
-        '#' => "Class Mod",
-        _ => "Unknown",
-    }
-}
-
-/// Get equipment category name for 'e' type items
-/// Category is derived from first VarBit / 384
-pub fn equipment_category_name(category: i64) -> Option<&'static str> {
-    match category {
-        // Class Mods (derived from serial analysis)
-        44 => Some("Dark Siren Class Mod"),
-        55 => Some("Paladin Class Mod"),
-        97 => Some("Gravitar Class Mod"),
-        140 => Some("Exo Soldier Class Mod"),
-        // Firmware
-        151 => Some("Firmware"),
-        // Shields
-        279 => Some("Energy Shield"),
-        280 => Some("Bor Shield"),
-        281 => Some("Daedalus Shield"),
-        282 => Some("Jakobs Shield"),
-        283 => Some("Armor Shield"),
-        284 => Some("Maliwan Shield"),
-        285 => Some("Order Shield"),
-        286 => Some("Tediore Shield"),
-        287 => Some("Torgue Shield"),
-        288 => Some("Vladof Shield"),
-        289 => Some("Shield Variant"),
-        // Gadgets
-        300 => Some("Grenade Gadget"),
-        310 => Some("Turret Gadget"),
-        320 => Some("Repair Kit"),
-        330 => Some("Terminal Gadget"),
-        // Enhancements
-        400 => Some("Daedalus Enhancement"),
-        401 => Some("Bor Enhancement"),
-        402 => Some("Jakobs Enhancement"),
-        403 => Some("Maliwan Enhancement"),
-        404 => Some("Order Enhancement"),
-        405 => Some("Tediore Enhancement"),
-        406 => Some("Torgue Enhancement"),
-        407 => Some("Vladof Enhancement"),
-        408 => Some("COV Enhancement"),
-        409 => Some("Atlas Enhancement"),
-        _ => None,
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -247,6 +341,15 @@ mod tests {
         assert_eq!(weapon_info_from_first_varint(136), Some(("Torgue", "AR")));
         // Verified in-game: slot 4 Maliwan SMG = first VarInt 138
         assert_eq!(weapon_info_from_first_varint(138), Some(("Maliwan", "SMG")));
+        // Verified shields from tagged bank items (type 'r' format)
+        assert_eq!(
+            weapon_info_from_first_varint(133824),
+            Some(("", "Armor Shield"))
+        );
+        assert_eq!(
+            weapon_info_from_first_varint(238272),
+            Some(("", "Energy Shield"))
+        );
         // Unknown ID returns None
         assert_eq!(weapon_info_from_first_varint(999), None);
     }
@@ -261,20 +364,37 @@ mod tests {
 
     #[test]
     fn test_item_type_lookup() {
-        assert_eq!(item_type_name('r'), "Weapon");
-        assert_eq!(item_type_name('v'), "Weapon");
-        assert_eq!(item_type_name('e'), "Equipment");
+        assert_eq!(item_type_name('a'), "Weapon");
+        assert_eq!(item_type_name('r'), "Item");
+        assert_eq!(item_type_name('e'), "Item");
         assert_eq!(item_type_name('!'), "Class Mod");
-        assert_eq!(item_type_name('#'), "Class Mod");
         assert_eq!(item_type_name('?'), "Unknown");
     }
 
     #[test]
-    fn test_equipment_category_name() {
-        assert_eq!(equipment_category_name(279), Some("Energy Shield"));
-        assert_eq!(equipment_category_name(300), Some("Grenade Gadget"));
-        assert_eq!(equipment_category_name(44), Some("Dark Siren Class Mod"));
-        assert_eq!(equipment_category_name(999), None);
+    fn test_serial_format() {
+        // VarInt-first weapons
+        let fmt = serial_format('a').unwrap();
+        assert!(fmt.has_weapon_info);
+        assert!(fmt.extract_level);
+        assert_eq!(fmt.category_divisor, 0);
+
+        // VarBit-first items
+        let fmt = serial_format('e').unwrap();
+        assert!(!fmt.has_weapon_info);
+        assert_eq!(fmt.category_divisor, 384);
+        assert_eq!(fmt.extract_category(384 * 23), Some(23)); // Maliwan SMG
+
+        let fmt = serial_format('r').unwrap();
+        assert_eq!(fmt.category_divisor, 8192);
+
+        // Class mods
+        let fmt = serial_format('!').unwrap();
+        assert!(!fmt.has_weapon_info);
+        assert_eq!(fmt.category_divisor, 0);
+
+        // Unknown
+        assert!(serial_format('?').is_none());
     }
 
     #[test]
@@ -294,7 +414,7 @@ mod tests {
         assert_eq!(level_from_code(128), Some(16)); // 2*(128-120) = 16
         assert_eq!(level_from_code(135), Some(30)); // 2*(135-120) = 30 (verified in-game)
         assert_eq!(level_from_code(145), Some(50)); // 2*(145-120) = 50
-        // Invalid
+                                                    // Invalid
         assert_eq!(level_from_code(51), None);
     }
 }

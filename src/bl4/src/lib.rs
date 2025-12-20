@@ -49,7 +49,8 @@ pub mod wasm;
 pub use backup::{smart_backup, update_after_edit, BackupError};
 pub use crypto::{decrypt_sav, derive_key, encrypt_sav, CryptoError};
 pub use parts::{
-    category_name, equipment_category_name, item_type_name, level_from_code, manufacturer_name,
+    category_name, category_name_for_type, item_type_name, level_from_code, manufacturer_name,
+    serial_format, SerialFormat,
 };
 pub use save::{ChangeSet, SaveError, SaveFile};
 pub use serial::{ItemSerial, SerialError};

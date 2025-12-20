@@ -45,16 +45,15 @@ impl std::str::FromStr for VerificationStatus {
     }
 }
 
-/// Item entry in the database
+/// Item entry in the database (serial is the primary key)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Item {
-    pub id: i64,
     pub serial: String,
     pub name: Option<String>,
     pub prefix: Option<String>,
     pub manufacturer: Option<String>,
     pub weapon_type: Option<String>,
-    pub item_type: Option<String>,      // Serial type char: 'r', 'e', '!', 'd', etc.
+    pub item_type: Option<String>, // Serial type char: 'r', 'e', '!', 'd', etc.
     pub rarity: Option<String>,
     pub level: Option<i32>,
     pub element: Option<String>,
@@ -70,8 +69,8 @@ pub struct Item {
     pub verification_status: VerificationStatus,
     pub verification_notes: Option<String>,
     pub verified_at: Option<String>,
-    pub legal: bool,                     // Whether item is verified legal (not modded)
-    pub source: Option<String>,          // Import source: monokrome, ryechews, community, etc.
+    pub legal: bool,            // Whether item is verified legal (not modded)
+    pub source: Option<String>, // Import source: monokrome, ryechews, community, etc.
     pub created_at: String,
 }
 
@@ -79,7 +78,7 @@ pub struct Item {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ItemPart {
     pub id: i64,
-    pub item_id: i64,
+    pub item_serial: String,
     pub slot: String,
     pub part_index: Option<i32>,
     pub part_name: Option<String>,
@@ -95,11 +94,9 @@ pub struct ItemPart {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Attachment {
     pub id: i64,
-    pub item_id: i64,
+    pub item_serial: String,
     pub name: String,
     pub mime_type: String,
-    #[serde(skip)]
-    pub data: Vec<u8>,
 }
 
 /// Items database manager
@@ -117,11 +114,24 @@ impl ItemsDb {
 
     /// Initialize the database schema
     pub fn init(&self) -> Result<()> {
+        // Check if we need to migrate from old schema (id-based) to new (serial-based)
+        let needs_migration = self.conn
+            .query_row(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='weapons'
+                 AND sql LIKE '%id INTEGER PRIMARY KEY%'",
+                [],
+                |_| Ok(true),
+            )
+            .unwrap_or(false);
+
+        if needs_migration {
+            self.migrate_to_serial_pk()?;
+        }
+
         self.conn.execute_batch(
             r#"
             CREATE TABLE IF NOT EXISTS weapons (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                serial TEXT UNIQUE NOT NULL,
+                serial TEXT PRIMARY KEY NOT NULL,
                 name TEXT,
                 prefix TEXT,
                 manufacturer TEXT,
@@ -144,25 +154,13 @@ impl ItemsDb {
                 verification_notes TEXT,
                 verified_at TIMESTAMP,
                 legal BOOLEAN DEFAULT FALSE,     -- Whether item is verified legal (not modded)
+                source TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
 
-            -- Migration: Add columns if they don't exist (for existing databases)
-            -- SQLite doesn't have IF NOT EXISTS for columns, so we ignore errors
-            "#,
-        )?;
-
-        // Add new columns to existing databases (ignore errors if already exists)
-        let _ = self.conn.execute("ALTER TABLE weapons ADD COLUMN item_type TEXT", []);
-        let _ = self.conn.execute("ALTER TABLE weapons ADD COLUMN legal BOOLEAN DEFAULT FALSE", []);
-        let _ = self.conn.execute("ALTER TABLE weapons ADD COLUMN source TEXT", []);
-
-        self.conn.execute_batch(
-            r#"
-
             CREATE TABLE IF NOT EXISTS weapon_parts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                weapon_id INTEGER NOT NULL REFERENCES weapons(id) ON DELETE CASCADE,
+                item_serial TEXT NOT NULL REFERENCES weapons(serial) ON DELETE CASCADE,
                 slot TEXT NOT NULL,              -- grip, barrel, body, scope, accessory, element, etc.
                 part_index INTEGER,              -- decoded index from serial
                 part_name TEXT,                  -- resolved part name (e.g., "JAK_PS.part_grip_04")
@@ -177,36 +175,133 @@ impl ItemsDb {
 
             CREATE TABLE IF NOT EXISTS attachments (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                weapon_id INTEGER NOT NULL REFERENCES weapons(id) ON DELETE CASCADE,
+                item_serial TEXT NOT NULL REFERENCES weapons(serial) ON DELETE CASCADE,
                 name TEXT NOT NULL,
                 mime_type TEXT NOT NULL,
                 data BLOB NOT NULL
             );
 
-            CREATE INDEX IF NOT EXISTS idx_weapons_serial ON weapons(serial);
             CREATE INDEX IF NOT EXISTS idx_weapons_name ON weapons(name);
             CREATE INDEX IF NOT EXISTS idx_weapons_manufacturer ON weapons(manufacturer);
-            CREATE INDEX IF NOT EXISTS idx_weapon_parts_weapon_id ON weapon_parts(weapon_id);
-            CREATE INDEX IF NOT EXISTS idx_attachments_weapon_id ON attachments(weapon_id);
+            CREATE INDEX IF NOT EXISTS idx_weapon_parts_item_serial ON weapon_parts(item_serial);
+            CREATE INDEX IF NOT EXISTS idx_attachments_item_serial ON attachments(item_serial);
             "#,
         )?;
         Ok(())
     }
 
-    /// Add a new item to the database
-    pub fn add_item(&self, serial: &str) -> Result<i64> {
-        self.conn.execute(
-            "INSERT INTO weapons (serial) VALUES (?1)",
-            params![serial],
+    /// Migrate old id-based schema to serial-based schema
+    fn migrate_to_serial_pk(&self) -> Result<()> {
+        println!("Migrating database to use serial as primary key...");
+
+        self.conn.execute_batch(
+            r#"
+            -- Rename old tables
+            ALTER TABLE weapons RENAME TO weapons_old;
+            ALTER TABLE weapon_parts RENAME TO weapon_parts_old;
+            ALTER TABLE attachments RENAME TO attachments_old;
+
+            -- Create new tables with serial as PK
+            CREATE TABLE weapons (
+                serial TEXT PRIMARY KEY NOT NULL,
+                name TEXT,
+                prefix TEXT,
+                manufacturer TEXT,
+                weapon_type TEXT,
+                item_type TEXT,
+                rarity TEXT,
+                level INTEGER,
+                element TEXT,
+                dps INTEGER,
+                damage INTEGER,
+                accuracy INTEGER,
+                fire_rate REAL,
+                reload_time REAL,
+                mag_size INTEGER,
+                value INTEGER,
+                red_text TEXT,
+                notes TEXT,
+                verification_status TEXT DEFAULT 'unverified',
+                verification_notes TEXT,
+                verified_at TIMESTAMP,
+                legal BOOLEAN DEFAULT FALSE,
+                source TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE weapon_parts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                item_serial TEXT NOT NULL REFERENCES weapons(serial) ON DELETE CASCADE,
+                slot TEXT NOT NULL,
+                part_index INTEGER,
+                part_name TEXT,
+                manufacturer TEXT,
+                effect TEXT,
+                verified BOOLEAN DEFAULT FALSE,
+                verification_method TEXT,
+                verification_notes TEXT,
+                verified_at TIMESTAMP
+            );
+
+            CREATE TABLE attachments (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                item_serial TEXT NOT NULL REFERENCES weapons(serial) ON DELETE CASCADE,
+                name TEXT NOT NULL,
+                mime_type TEXT NOT NULL,
+                data BLOB NOT NULL
+            );
+
+            -- Copy data from old tables
+            INSERT INTO weapons (serial, name, prefix, manufacturer, weapon_type, item_type, rarity,
+                level, element, dps, damage, accuracy, fire_rate, reload_time, mag_size, value,
+                red_text, notes, verification_status, verification_notes, verified_at, legal,
+                source, created_at)
+            SELECT serial, name, prefix, manufacturer, weapon_type, item_type, rarity,
+                level, element, dps, damage, accuracy, fire_rate, reload_time, mag_size, value,
+                red_text, notes, verification_status, verification_notes, verified_at, legal,
+                source, created_at
+            FROM weapons_old;
+
+            INSERT INTO weapon_parts (item_serial, slot, part_index, part_name, manufacturer,
+                effect, verified, verification_method, verification_notes, verified_at)
+            SELECT w.serial, wp.slot, wp.part_index, wp.part_name, wp.manufacturer,
+                wp.effect, wp.verified, wp.verification_method, wp.verification_notes, wp.verified_at
+            FROM weapon_parts_old wp
+            JOIN weapons_old w ON wp.weapon_id = w.id;
+
+            INSERT INTO attachments (item_serial, name, mime_type, data)
+            SELECT w.serial, a.name, a.mime_type, a.data
+            FROM attachments_old a
+            JOIN weapons_old w ON a.weapon_id = w.id;
+
+            -- Drop old tables
+            DROP TABLE attachments_old;
+            DROP TABLE weapon_parts_old;
+            DROP TABLE weapons_old;
+
+            -- Drop old indexes (they reference old tables)
+            DROP INDEX IF EXISTS idx_weapons_serial;
+            DROP INDEX IF EXISTS idx_weapon_parts_weapon_id;
+            DROP INDEX IF EXISTS idx_attachments_weapon_id;
+            "#,
         )?;
-        Ok(self.conn.last_insert_rowid())
+
+        println!("Migration complete.");
+        Ok(())
+    }
+
+    /// Add a new item to the database
+    pub fn add_item(&self, serial: &str) -> Result<()> {
+        self.conn
+            .execute("INSERT INTO weapons (serial) VALUES (?1)", params![serial])?;
+        Ok(())
     }
 
     /// Update item metadata
     #[allow(clippy::too_many_arguments)]
     pub fn update_item(
         &self,
-        id: i64,
+        serial: &str,
         name: Option<&str>,
         prefix: Option<&str>,
         manufacturer: Option<&str>,
@@ -242,64 +337,34 @@ impl ItemsDb {
                 value = COALESCE(?15, value),
                 red_text = COALESCE(?16, red_text),
                 notes = COALESCE(?17, notes)
-            WHERE id = ?1"#,
+            WHERE serial = ?1"#,
             params![
-                id, name, prefix, manufacturer, weapon_type, rarity, level, element, dps, damage,
-                accuracy, fire_rate, reload_time, mag_size, value, red_text, notes
+                serial,
+                name,
+                prefix,
+                manufacturer,
+                weapon_type,
+                rarity,
+                level,
+                element,
+                dps,
+                damage,
+                accuracy,
+                fire_rate,
+                reload_time,
+                mag_size,
+                value,
+                red_text,
+                notes
             ],
         )?;
         Ok(())
     }
 
-    /// Get an item by ID
-    pub fn get_item(&self, id: i64) -> Result<Option<Item>> {
-        let mut stmt = self.conn.prepare(
-            "SELECT id, serial, name, prefix, manufacturer, weapon_type, item_type, rarity, level, element,
-                    dps, damage, accuracy, fire_rate, reload_time, mag_size, value, red_text,
-                    notes, verification_status, verification_notes, verified_at, legal, source, created_at
-             FROM weapons WHERE id = ?1",
-        )?;
-
-        let weapon = stmt
-            .query_row(params![id], |row| {
-                let status_str: String = row.get::<_, Option<String>>(19)?.unwrap_or_else(|| "unverified".to_string());
-                Ok(Item {
-                    id: row.get(0)?,
-                    serial: row.get(1)?,
-                    name: row.get(2)?,
-                    prefix: row.get(3)?,
-                    manufacturer: row.get(4)?,
-                    weapon_type: row.get(5)?,
-                    item_type: row.get(6)?,
-                    rarity: row.get(7)?,
-                    level: row.get(8)?,
-                    element: row.get(9)?,
-                    dps: row.get(10)?,
-                    damage: row.get(11)?,
-                    accuracy: row.get(12)?,
-                    fire_rate: row.get(13)?,
-                    reload_time: row.get(14)?,
-                    mag_size: row.get(15)?,
-                    value: row.get(16)?,
-                    red_text: row.get(17)?,
-                    notes: row.get(18)?,
-                    verification_status: status_str.parse().unwrap_or(VerificationStatus::Unverified),
-                    verification_notes: row.get(20)?,
-                    verified_at: row.get(21)?,
-                    legal: row.get::<_, Option<bool>>(22)?.unwrap_or(false),
-                    source: row.get(23)?,
-                    created_at: row.get(24)?,
-                })
-            })
-            .optional()?;
-
-        Ok(weapon)
-    }
-
     /// Get an item by serial
-    pub fn get_item_by_serial(&self, serial: &str) -> Result<Option<Item>> {
+    pub fn get_item(&self, serial: &str) -> Result<Option<Item>> {
         let mut stmt = self.conn.prepare(
-            "SELECT id, serial, name, prefix, manufacturer, weapon_type, item_type, rarity, level, element,
+            "SELECT serial, name, prefix, manufacturer, weapon_type, item_type, rarity, level, element,
                     dps, damage, accuracy, fire_rate, reload_time, mag_size, value, red_text,
                     notes, verification_status, verification_notes, verified_at, legal, source, created_at
              FROM weapons WHERE serial = ?1",
@@ -307,33 +372,36 @@ impl ItemsDb {
 
         let weapon = stmt
             .query_row(params![serial], |row| {
-                let status_str: String = row.get::<_, Option<String>>(19)?.unwrap_or_else(|| "unverified".to_string());
+                let status_str: String = row
+                    .get::<_, Option<String>>(18)?
+                    .unwrap_or_else(|| "unverified".to_string());
                 Ok(Item {
-                    id: row.get(0)?,
-                    serial: row.get(1)?,
-                    name: row.get(2)?,
-                    prefix: row.get(3)?,
-                    manufacturer: row.get(4)?,
-                    weapon_type: row.get(5)?,
-                    item_type: row.get(6)?,
-                    rarity: row.get(7)?,
-                    level: row.get(8)?,
-                    element: row.get(9)?,
-                    dps: row.get(10)?,
-                    damage: row.get(11)?,
-                    accuracy: row.get(12)?,
-                    fire_rate: row.get(13)?,
-                    reload_time: row.get(14)?,
-                    mag_size: row.get(15)?,
-                    value: row.get(16)?,
-                    red_text: row.get(17)?,
-                    notes: row.get(18)?,
-                    verification_status: status_str.parse().unwrap_or(VerificationStatus::Unverified),
-                    verification_notes: row.get(20)?,
-                    verified_at: row.get(21)?,
-                    legal: row.get::<_, Option<bool>>(22)?.unwrap_or(false),
-                    source: row.get(23)?,
-                    created_at: row.get(24)?,
+                    serial: row.get(0)?,
+                    name: row.get(1)?,
+                    prefix: row.get(2)?,
+                    manufacturer: row.get(3)?,
+                    weapon_type: row.get(4)?,
+                    item_type: row.get(5)?,
+                    rarity: row.get(6)?,
+                    level: row.get(7)?,
+                    element: row.get(8)?,
+                    dps: row.get(9)?,
+                    damage: row.get(10)?,
+                    accuracy: row.get(11)?,
+                    fire_rate: row.get(12)?,
+                    reload_time: row.get(13)?,
+                    mag_size: row.get(14)?,
+                    value: row.get(15)?,
+                    red_text: row.get(16)?,
+                    notes: row.get(17)?,
+                    verification_status: status_str
+                        .parse()
+                        .unwrap_or(VerificationStatus::Unverified),
+                    verification_notes: row.get(19)?,
+                    verified_at: row.get(20)?,
+                    legal: row.get::<_, Option<bool>>(21)?.unwrap_or(false),
+                    source: row.get(22)?,
+                    created_at: row.get(23)?,
                 })
             })
             .optional()?;
@@ -350,7 +418,7 @@ impl ItemsDb {
         rarity: Option<&str>,
     ) -> Result<Vec<Item>> {
         let mut sql = String::from(
-            "SELECT id, serial, name, prefix, manufacturer, weapon_type, item_type, rarity, level, element,
+            "SELECT serial, name, prefix, manufacturer, weapon_type, item_type, rarity, level, element,
                     dps, damage, accuracy, fire_rate, reload_time, mag_size, value, red_text,
                     notes, verification_status, verification_notes, verified_at, legal, source, created_at
              FROM weapons WHERE 1=1",
@@ -378,37 +446,41 @@ impl ItemsDb {
         sql.push_str(" ORDER BY created_at DESC");
 
         let mut stmt = self.conn.prepare(&sql)?;
-        let params_refs: Vec<&dyn rusqlite::ToSql> = params_vec.iter().map(|p| p.as_ref()).collect();
+        let params_refs: Vec<&dyn rusqlite::ToSql> =
+            params_vec.iter().map(|p| p.as_ref()).collect();
 
         let weapons = stmt
             .query_map(params_refs.as_slice(), |row| {
-                let status_str: String = row.get::<_, Option<String>>(19)?.unwrap_or_else(|| "unverified".to_string());
+                let status_str: String = row
+                    .get::<_, Option<String>>(18)?
+                    .unwrap_or_else(|| "unverified".to_string());
                 Ok(Item {
-                    id: row.get(0)?,
-                    serial: row.get(1)?,
-                    name: row.get(2)?,
-                    prefix: row.get(3)?,
-                    manufacturer: row.get(4)?,
-                    weapon_type: row.get(5)?,
-                    item_type: row.get(6)?,
-                    rarity: row.get(7)?,
-                    level: row.get(8)?,
-                    element: row.get(9)?,
-                    dps: row.get(10)?,
-                    damage: row.get(11)?,
-                    accuracy: row.get(12)?,
-                    fire_rate: row.get(13)?,
-                    reload_time: row.get(14)?,
-                    mag_size: row.get(15)?,
-                    value: row.get(16)?,
-                    red_text: row.get(17)?,
-                    notes: row.get(18)?,
-                    verification_status: status_str.parse().unwrap_or(VerificationStatus::Unverified),
-                    verification_notes: row.get(20)?,
-                    verified_at: row.get(21)?,
-                    legal: row.get::<_, Option<bool>>(22)?.unwrap_or(false),
-                    source: row.get(23)?,
-                    created_at: row.get(24)?,
+                    serial: row.get(0)?,
+                    name: row.get(1)?,
+                    prefix: row.get(2)?,
+                    manufacturer: row.get(3)?,
+                    weapon_type: row.get(4)?,
+                    item_type: row.get(5)?,
+                    rarity: row.get(6)?,
+                    level: row.get(7)?,
+                    element: row.get(8)?,
+                    dps: row.get(9)?,
+                    damage: row.get(10)?,
+                    accuracy: row.get(11)?,
+                    fire_rate: row.get(12)?,
+                    reload_time: row.get(13)?,
+                    mag_size: row.get(14)?,
+                    value: row.get(15)?,
+                    red_text: row.get(16)?,
+                    notes: row.get(17)?,
+                    verification_status: status_str
+                        .parse()
+                        .unwrap_or(VerificationStatus::Unverified),
+                    verification_notes: row.get(19)?,
+                    verified_at: row.get(20)?,
+                    legal: row.get::<_, Option<bool>>(21)?.unwrap_or(false),
+                    source: row.get(22)?,
+                    created_at: row.get(23)?,
                 })
             })?
             .collect::<Result<Vec<_>, _>>()?;
@@ -419,7 +491,7 @@ impl ItemsDb {
     /// Update item verification status
     pub fn set_verification_status(
         &self,
-        id: i64,
+        serial: &str,
         status: VerificationStatus,
         notes: Option<&str>,
     ) -> Result<()> {
@@ -428,44 +500,43 @@ impl ItemsDb {
                 verification_status = ?2,
                 verification_notes = COALESCE(?3, verification_notes),
                 verified_at = CASE WHEN ?2 != 'unverified' THEN CURRENT_TIMESTAMP ELSE verified_at END
-            WHERE id = ?1"#,
-            params![id, status.to_string(), notes],
+            WHERE serial = ?1"#,
+            params![serial, status.to_string(), notes],
         )?;
         Ok(())
     }
 
     /// Set legal status for an item
-    pub fn set_legal(&self, id: i64, legal: bool) -> Result<()> {
+    pub fn set_legal(&self, serial: &str, legal: bool) -> Result<()> {
         self.conn.execute(
-            "UPDATE weapons SET legal = ?2 WHERE id = ?1",
-            params![id, legal],
+            "UPDATE weapons SET legal = ?2 WHERE serial = ?1",
+            params![serial, legal],
         )?;
         Ok(())
     }
 
     /// Set legal status for all items
     pub fn set_all_legal(&self, legal: bool) -> Result<usize> {
-        let rows = self.conn.execute(
-            "UPDATE weapons SET legal = ?1",
-            params![legal],
-        )?;
+        let rows = self
+            .conn
+            .execute("UPDATE weapons SET legal = ?1", params![legal])?;
         Ok(rows)
     }
 
     /// Set item type for an item
-    pub fn set_item_type(&self, id: i64, item_type: &str) -> Result<()> {
+    pub fn set_item_type(&self, serial: &str, item_type: &str) -> Result<()> {
         self.conn.execute(
-            "UPDATE weapons SET item_type = ?2 WHERE id = ?1",
-            params![id, item_type],
+            "UPDATE weapons SET item_type = ?2 WHERE serial = ?1",
+            params![serial, item_type],
         )?;
         Ok(())
     }
 
     /// Set source for an item
-    pub fn set_source(&self, id: i64, source: &str) -> Result<()> {
+    pub fn set_source(&self, serial: &str, source: &str) -> Result<()> {
         self.conn.execute(
-            "UPDATE weapons SET source = ?2 WHERE id = ?1",
-            params![id, source],
+            "UPDATE weapons SET source = ?2 WHERE serial = ?1",
+            params![serial, source],
         )?;
         Ok(())
     }
@@ -486,40 +557,19 @@ impl ItemsDb {
         Ok(rows)
     }
 
-    /// Delete an item by ID
-    pub fn delete_item(&self, id: i64) -> Result<bool> {
-        let rows = self.conn.execute("DELETE FROM weapons WHERE id = ?1", params![id])?;
-        Ok(rows > 0)
-    }
-
-    /// Add a part to an item
-    pub fn add_part(
-        &self,
-        item_id: i64,
-        slot: &str,
-        manufacturer: Option<&str>,
-        effect: Option<&str>,
-    ) -> Result<i64> {
-        self.conn.execute(
-            "INSERT INTO weapon_parts (weapon_id, slot, manufacturer, effect) VALUES (?1, ?2, ?3, ?4)",
-            params![item_id, slot, manufacturer, effect],
-        )?;
-        Ok(self.conn.last_insert_rowid())
-    }
-
     /// Get parts for an item
-    pub fn get_parts(&self, item_id: i64) -> Result<Vec<ItemPart>> {
+    pub fn get_parts(&self, item_serial: &str) -> Result<Vec<ItemPart>> {
         let mut stmt = self.conn.prepare(
-            "SELECT id, weapon_id, slot, part_index, part_name, manufacturer, effect,
+            "SELECT id, item_serial, slot, part_index, part_name, manufacturer, effect,
                     verified, verification_method, verification_notes, verified_at
-             FROM weapon_parts WHERE weapon_id = ?1",
+             FROM weapon_parts WHERE item_serial = ?1",
         )?;
 
         let parts = stmt
-            .query_map(params![item_id], |row| {
+            .query_map(params![item_serial], |row| {
                 Ok(ItemPart {
                     id: row.get(0)?,
-                    item_id: row.get(1)?,
+                    item_serial: row.get(1)?,
                     slot: row.get(2)?,
                     part_index: row.get(3)?,
                     part_name: row.get(4)?,
@@ -539,32 +589,31 @@ impl ItemsDb {
     /// Add an image attachment
     pub fn add_attachment(
         &self,
-        item_id: i64,
+        item_serial: &str,
         name: &str,
         mime_type: &str,
         data: &[u8],
     ) -> Result<i64> {
         self.conn.execute(
-            "INSERT INTO attachments (weapon_id, name, mime_type, data) VALUES (?1, ?2, ?3, ?4)",
-            params![item_id, name, mime_type, data],
+            "INSERT INTO attachments (item_serial, name, mime_type, data) VALUES (?1, ?2, ?3, ?4)",
+            params![item_serial, name, mime_type, data],
         )?;
         Ok(self.conn.last_insert_rowid())
     }
 
     /// Get attachments for an item (without data)
-    pub fn get_attachments(&self, item_id: i64) -> Result<Vec<Attachment>> {
+    pub fn get_attachments(&self, item_serial: &str) -> Result<Vec<Attachment>> {
         let mut stmt = self.conn.prepare(
-            "SELECT id, weapon_id, name, mime_type FROM attachments WHERE weapon_id = ?1",
+            "SELECT id, item_serial, name, mime_type FROM attachments WHERE item_serial = ?1",
         )?;
 
         let attachments = stmt
-            .query_map(params![item_id], |row| {
+            .query_map(params![item_serial], |row| {
                 Ok(Attachment {
                     id: row.get(0)?,
-                    item_id: row.get(1)?,
+                    item_serial: row.get(1)?,
                     name: row.get(2)?,
                     mime_type: row.get(3)?,
-                    data: Vec::new(),
                 })
             })?
             .collect::<Result<Vec<_>, _>>()?;
@@ -574,13 +623,15 @@ impl ItemsDb {
 
     /// Get attachment data
     pub fn get_attachment_data(&self, id: i64) -> Result<Option<Vec<u8>>> {
-        let mut stmt = self.conn.prepare("SELECT data FROM attachments WHERE id = ?1")?;
+        let mut stmt = self
+            .conn
+            .prepare("SELECT data FROM attachments WHERE id = ?1")?;
         let data = stmt.query_row(params![id], |row| row.get(0)).optional()?;
         Ok(data)
     }
 
     /// Import an item from a directory (share/items format)
-    pub fn import_from_dir<P: AsRef<Path>>(&self, dir: P) -> Result<i64> {
+    pub fn import_from_dir<P: AsRef<Path>>(&self, dir: P) -> Result<String> {
         let dir = dir.as_ref();
 
         // Read serial
@@ -591,13 +642,13 @@ impl ItemsDb {
             .to_string();
 
         // Check if already exists
-        if let Some(existing) = self.get_item_by_serial(&serial)? {
-            println!("Weapon already exists with ID {}", existing.id);
-            return Ok(existing.id);
+        if let Some(existing) = self.get_item(&serial)? {
+            println!("Item already exists: {}", existing.serial);
+            return Ok(existing.serial);
         }
 
-        // Add weapon
-        let item_id = self.add_item(&serial)?;
+        // Add item
+        self.add_item(&serial)?;
 
         // Parse directory name for metadata hints
         let dir_name = dir.file_name().and_then(|n| n.to_str()).unwrap_or("");
@@ -614,7 +665,7 @@ impl ItemsDb {
             };
 
             self.update_item(
-                item_id,
+                &serial,
                 name.as_deref(),
                 None,
                 manufacturer,
@@ -645,21 +696,21 @@ impl ItemsDb {
                     .and_then(|n| n.to_str())
                     .unwrap_or("unknown");
                 let data = std::fs::read(&path)?;
-                self.add_attachment(item_id, name, "image/png", &data)?;
+                self.add_attachment(&serial, name, "image/png", &data)?;
             }
         }
 
-        Ok(item_id)
+        Ok(serial)
     }
 
     /// Export an item to a directory
-    pub fn export_to_dir<P: AsRef<Path>>(&self, item_id: i64, dir: P) -> Result<()> {
+    pub fn export_to_dir<P: AsRef<Path>>(&self, serial: &str, dir: P) -> Result<()> {
         let dir = dir.as_ref();
         std::fs::create_dir_all(dir)?;
 
         let item = self
-            .get_item(item_id)?
-            .with_context(|| format!("Item {} not found", item_id))?;
+            .get_item(serial)?
+            .with_context(|| format!("Item {} not found", serial))?;
 
         // Write serial
         std::fs::write(dir.join("serial.txt"), &item.serial)?;
@@ -669,7 +720,7 @@ impl ItemsDb {
         std::fs::write(dir.join("metadata.json"), metadata)?;
 
         // Export attachments
-        let attachments = self.get_attachments(item_id)?;
+        let attachments = self.get_attachments(serial)?;
         for attachment in attachments {
             if let Some(data) = self.get_attachment_data(attachment.id)? {
                 let ext = match attachment.mime_type.as_str() {
@@ -690,12 +741,12 @@ impl ItemsDb {
         let item_count: i64 = self
             .conn
             .query_row("SELECT COUNT(*) FROM weapons", [], |row| row.get(0))?;
-        let part_count: i64 = self
-            .conn
-            .query_row("SELECT COUNT(*) FROM weapon_parts", [], |row| row.get(0))?;
-        let attachment_count: i64 = self
-            .conn
-            .query_row("SELECT COUNT(*) FROM attachments", [], |row| row.get(0))?;
+        let part_count: i64 =
+            self.conn
+                .query_row("SELECT COUNT(*) FROM weapon_parts", [], |row| row.get(0))?;
+        let attachment_count: i64 =
+            self.conn
+                .query_row("SELECT COUNT(*) FROM attachments", [], |row| row.get(0))?;
 
         Ok(DbStats {
             item_count,

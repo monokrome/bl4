@@ -826,14 +826,10 @@ fn main() -> Result<()> {
                 // VarInt-first format: first VarInt encodes manufacturer + weapon type
                 println!("Weapon: {} {}", mfr, weapon_type);
             } else if let Some(group_id) = item.part_group_id() {
-                // VarBit-first format: use Part Group ID
-                // For 'e' type (equipment), only use equipment categories
-                // For weapon types, use weapon categories
-                let category_name = if item.item_type == 'e' {
-                    bl4::equipment_category_name(group_id).unwrap_or("Unknown")
-                } else {
-                    bl4::category_name(group_id).unwrap_or("Unknown")
-                };
+                // VarBit-first format: use Part Group ID for category lookup
+                // Use type-aware lookup to handle overlapping category numbers
+                let category_name =
+                    bl4::category_name_for_type(item.item_type, group_id).unwrap_or("Unknown");
                 println!("Category: {} ({})", category_name, group_id);
             }
 
@@ -927,7 +923,10 @@ fn main() -> Result<()> {
                                 println!("  {}{}{}", name, flag_str, extra);
                             } else {
                                 let idx_display = if has_flag {
-                                    format!("{} (0x{:02x} = flag + {})", part_index, part_index, actual_index)
+                                    format!(
+                                        "{} (0x{:02x} = flag + {})",
+                                        part_index, part_index, actual_index
+                                    )
                                 } else {
                                     format!("{}", part_index)
                                 };
@@ -1120,7 +1119,7 @@ fn main() -> Result<()> {
                     println!("First diff at byte {}", first);
                     println!();
                     println!("Byte-by-byte (first 20 bytes or until divergence + 5):");
-                    println!("{:>4}  {:>12}  {:>12}  {}", "Idx", "Serial 1", "Serial 2", "");
+                    println!("{:>4}  {:>12}  {:>12}", "Idx", "Serial 1", "Serial 2");
                     let show_until = std::cmp::min(max_len, first + 10);
                     for i in 0..show_until {
                         let b1 = item1.raw_bytes.get(i).copied();
@@ -1155,7 +1154,8 @@ fn main() -> Result<()> {
                 bail!("No valid part indices provided");
             }
 
-            let base_item = bl4::ItemSerial::decode(&base).context("Failed to decode base serial")?;
+            let base_item =
+                bl4::ItemSerial::decode(&base).context("Failed to decode base serial")?;
             let source_item =
                 bl4::ItemSerial::decode(&source).context("Failed to decode source serial")?;
 
