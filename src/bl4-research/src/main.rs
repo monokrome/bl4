@@ -1216,11 +1216,11 @@ fn handle_items_db_command(cmd: ItemsDbCommand, db: &PathBuf) -> Result<()> {
                             (None, None)
                         };
 
-                        // Get level from level code
+                        // Get level from level code (use capped value)
                         let level = decoded_item
                             .level
                             .and_then(bl4::parts::level_from_code)
-                            .map(|l| l as i32);
+                            .map(|(capped, _raw)| capped as i32);
 
                         // Update the item in database
                         wdb.update_item(
@@ -1346,7 +1346,7 @@ fn handle_items_db_command(cmd: ItemsDbCommand, db: &PathBuf) -> Result<()> {
                         let level = decoded_item
                             .level
                             .and_then(bl4::parts::level_from_code)
-                            .map(|l| l as i32);
+                            .map(|(capped, _raw)| capped as i32);
 
                         let _ = wdb.update_item(
                             &item.serial,

@@ -348,26 +348,39 @@ pub fn item_type_name(type_char: char) -> &'static str {
     }
 }
 
-/// Decode level from fourth token (level code)
+/// Decode level from token (level code)
 ///
-/// For tokens < 128: level = token directly (levels 1-50)
-/// For tokens >= 128: level = 2 * (code - 120)
-///   - This gives level 16 at code 128, level 30 at code 135, etc.
+/// BL4 max level is 50. Encoding varies by context:
+/// - For tokens 1-50: level = token directly
+/// - For tokens >= 128: level = 2 * (code - 120), capped at 50
+///   - Code 128 → 16, Code 135 → 30, Code 145 → 50
+///   - Codes > 145 are capped at 50 (e.g., 196 → 50)
+/// - Tokens 51-127: invalid (return None)
 ///
-/// Verified in-game Dec 2025.
-pub fn level_from_code(code: u64) -> Option<u8> {
+/// Note: This applies to VarBit-first equipment (level = 2nd VarBit)
+/// and VarInt-first weapons (level = 4th VarInt). The encoding may
+/// differ slightly between item types - needs more in-game verification.
+/// Decode a level from a raw code value.
+/// Returns (decoded_level, raw_decoded_value) tuple.
+/// If raw_decoded_value > 50, our decoding may be wrong.
+pub fn level_from_code(code: u64) -> Option<(u8, u8)> {
+    const MAX_LEVEL: u8 = 50;
+
     if code >= 128 {
         // High-level encoding: level = 2 * (code - 120)
         let level = 2 * (code as i32 - 120);
-        if level > 0 && level <= 255 {
-            Some(level as u8)
+        if level > 0 {
+            let raw = level as u8;
+            let capped = raw.min(MAX_LEVEL);
+            Some((capped, raw))
         } else {
             None
         }
     } else if code <= 50 {
         // Direct encoding for levels 1-50
-        Some(code as u8)
+        Some((code as u8, code as u8))
     } else {
+        // Codes 51-127 are invalid
         None
     }
 }
@@ -458,14 +471,18 @@ mod tests {
 
     #[test]
     fn test_level_from_code() {
-        // Direct encoding
-        assert_eq!(level_from_code(1), Some(1));
-        assert_eq!(level_from_code(50), Some(50));
+        // Direct encoding - capped and raw are the same
+        assert_eq!(level_from_code(1), Some((1, 1)));
+        assert_eq!(level_from_code(50), Some((50, 50)));
         // High-level encoding: level = 2*(code-120)
-        assert_eq!(level_from_code(128), Some(16)); // 2*(128-120) = 16
-        assert_eq!(level_from_code(135), Some(30)); // 2*(135-120) = 30 (verified in-game)
-        assert_eq!(level_from_code(145), Some(50)); // 2*(145-120) = 50
-                                                    // Invalid
+        assert_eq!(level_from_code(128), Some((16, 16))); // 2*(128-120) = 16
+        assert_eq!(level_from_code(135), Some((30, 30))); // 2*(135-120) = 30 (verified in-game)
+        assert_eq!(level_from_code(145), Some((50, 50))); // 2*(145-120) = 50
+        // Capped at 50 for higher codes - raw shows true decoded value
+        assert_eq!(level_from_code(150), Some((50, 60))); // raw=60, capped to 50
+        assert_eq!(level_from_code(196), Some((50, 152))); // raw=152, capped to 50
+        // Invalid codes (51-127)
         assert_eq!(level_from_code(51), None);
+        assert_eq!(level_from_code(127), None);
     }
 }

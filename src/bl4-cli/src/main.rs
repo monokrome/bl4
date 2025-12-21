@@ -833,6 +833,11 @@ fn main() -> Result<()> {
                 println!("Category: {} ({})", category_name, group_id);
             }
 
+            // Show elements if detected
+            if let Some(elements) = item.element_names() {
+                println!("Element: {}", elements);
+            }
+
             // Show raw manufacturer ID if we couldn't resolve it
             if item.weapon_info().is_none() {
                 if let Some(mfr) = item.manufacturer_name() {
@@ -844,7 +849,18 @@ fn main() -> Result<()> {
 
             // Show level and seed for VarInt-first format
             if let Some(level) = item.level {
-                println!("Level: {}", level);
+                if let Some(raw) = item.raw_level {
+                    if raw > level {
+                        println!(
+                            "Level: {} (WARNING: decoded as {}, capped - decoding may be wrong)",
+                            level, raw
+                        );
+                    } else {
+                        println!("Level: {}", level);
+                    }
+                } else {
+                    println!("Level: {}", level);
+                }
             }
             if let Some(seed) = item.seed {
                 println!("Seed: {}", seed);

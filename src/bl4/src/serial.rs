@@ -17,6 +17,44 @@ use crate::parts::{
 const BL4_BASE85_ALPHABET: &[u8; 85] =
     b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{/}~";
 
+/// Element types for weapons
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Element {
+    Kinetic,    // ID 0
+    Corrosive,  // ID 5
+    Shock,      // ID 8
+    Radiation,  // ID 9
+    Cryo,       // ID 13
+    Fire,       // ID 14
+}
+
+impl Element {
+    /// Convert element ID to Element type
+    pub fn from_id(id: u64) -> Option<Self> {
+        match id {
+            0 => Some(Element::Kinetic),
+            5 => Some(Element::Corrosive),
+            8 => Some(Element::Shock),
+            9 => Some(Element::Radiation),
+            13 => Some(Element::Cryo),
+            14 => Some(Element::Fire),
+            _ => None,
+        }
+    }
+
+    /// Get element name
+    pub fn name(&self) -> &'static str {
+        match self {
+            Element::Kinetic => "Kinetic",
+            Element::Corrosive => "Corrosive",
+            Element::Shock => "Shock",
+            Element::Radiation => "Radiation",
+            Element::Cryo => "Cryo",
+            Element::Fire => "Fire",
+        }
+    }
+}
+
 /// Maximum reasonable part index. Part indices above this threshold indicate
 /// we're parsing garbage data (likely over-reading past the end of valid tokens).
 /// Based on analysis: most parts have indices < 100, max observed valid is ~300.
@@ -215,10 +253,14 @@ pub struct ItemSerial {
     /// Decoded fields (extracted from tokens)
     /// For VarInt-first format: Combined manufacturer + weapon type ID
     pub manufacturer: Option<u64>,
-    /// Item level (fourth VarInt for VarInt-first format)
+    /// Item level (fourth VarInt for VarInt-first format), capped at 50
     pub level: Option<u64>,
+    /// Raw decoded level before capping (if > 50, our decoding may be wrong)
+    pub raw_level: Option<u64>,
     /// Random seed for stat rolls (second VarInt after first separator)
     pub seed: Option<u64>,
+    /// Detected elements (from Part tokens with index 128-142)
+    pub elements: Vec<Element>,
 }
 
 /// Decode Base85 with custom BL4 alphabet
@@ -644,6 +686,7 @@ impl ItemSerial {
         // Extract common fields from tokens based on format
         let mut manufacturer = None;
         let mut level = None;
+        let mut raw_level = None;
         let mut seed = None;
 
         // Determine format from first token (more reliable than type character)
@@ -659,7 +702,10 @@ impl ItemSerial {
                         seen_first_sep = true;
                     }
                     Token::VarBit(v) if seen_first_sep && level.is_none() => {
-                        level = level_from_code(*v).map(|l| l as u64);
+                        if let Some((capped, raw)) = level_from_code(*v) {
+                            level = Some(capped as u64);
+                            raw_level = Some(raw as u64);
+                        }
                         break;
                     }
                     _ => {}
@@ -688,20 +734,44 @@ impl ItemSerial {
                 }
             }
 
-            // Extract fields based on serial format
-            if let Some(fmt) = serial_format(item_type) {
-                // Only extract manufacturer ID for VarInt-first weapon formats
-                if fmt.has_weapon_info && !header_varints.is_empty() {
-                    manufacturer = Some(header_varints[0]);
-                }
-                if fmt.extract_level && header_varints.len() >= 4 {
-                    level = level_from_code(header_varints[3]).map(|l| l as u64);
-                }
-                if fmt.has_weapon_info && after_first_sep.len() >= 2 {
-                    seed = Some(after_first_sep[1]);
+            // VarInt-first format detected from tokens - extract weapon info
+            // regardless of type character (some type 'e' items are weapons with Fme!K header)
+            if !header_varints.is_empty() {
+                manufacturer = Some(header_varints[0]);
+            }
+            if header_varints.len() >= 4 {
+                // Only extract level if it decodes to a valid value (1-50)
+                // If raw > 50, the 4th VarInt is not a level code (e.g., Fme!K format marker 55256)
+                if let Some((capped, raw)) = level_from_code(header_varints[3]) {
+                    if raw <= 50 {
+                        level = Some(capped as u64);
+                        raw_level = Some(raw as u64);
+                    }
+                    // If raw > 50, don't set level - it's not a valid level code
                 }
             }
+            if after_first_sep.len() >= 2 {
+                seed = Some(after_first_sep[1]);
+            }
         }
+
+        // Extract elements from Part tokens with index in element range (128-142)
+        let elements: Vec<Element> = tokens
+            .iter()
+            .filter_map(|token| {
+                if let Token::Part { index, .. } = token {
+                    // Element IDs are encoded as 128 + element_id
+                    if *index >= 128 && *index <= 142 {
+                        let element_id = index - 128;
+                        Element::from_id(element_id)
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            })
+            .collect();
 
         Ok(ItemSerial {
             original: serial.to_string(),
@@ -710,7 +780,9 @@ impl ItemSerial {
             tokens,
             manufacturer,
             level,
+            raw_level,
             seed,
+            elements,
         })
     }
 
@@ -748,6 +820,22 @@ impl ItemSerial {
 
     /// Create a new ItemSerial with modified tokens
     pub fn with_tokens(&self, tokens: Vec<Token>) -> Self {
+        // Re-extract elements from the new tokens
+        let elements: Vec<Element> = tokens
+            .iter()
+            .filter_map(|token| {
+                if let Token::Part { index, .. } = token {
+                    if *index >= 128 && *index <= 142 {
+                        Element::from_id(index - 128)
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            })
+            .collect();
+
         ItemSerial {
             original: self.original.clone(),
             raw_bytes: self.raw_bytes.clone(), // Will be stale but that's OK
@@ -755,7 +843,9 @@ impl ItemSerial {
             tokens,
             manufacturer: self.manufacturer,
             level: self.level,
+            raw_level: self.raw_level,
             seed: self.seed,
+            elements,
         }
     }
 
@@ -807,6 +897,17 @@ impl ItemSerial {
     /// Get manufacturer name if known
     pub fn manufacturer_name(&self) -> Option<&'static str> {
         self.manufacturer.and_then(manufacturer_name)
+    }
+
+    /// Get element names as a formatted string
+    /// Returns None if no elements detected, otherwise returns comma-separated list
+    pub fn element_names(&self) -> Option<String> {
+        if self.elements.is_empty() {
+            None
+        } else {
+            let names: Vec<&str> = self.elements.iter().map(|e| e.name()).collect();
+            Some(names.join(", "))
+        }
     }
 
     /// Get weapon info (manufacturer, weapon type) for VarInt-first format serials
