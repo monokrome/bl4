@@ -1,4 +1,4 @@
-FROM rust:1.83-bookworm as builder
+FROM rustlang/rust:nightly-bookworm as builder
 WORKDIR /app
 COPY . .
 RUN cargo build --release -p bl4-community
