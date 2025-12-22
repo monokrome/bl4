@@ -1087,7 +1087,8 @@ pub mod postgres {
                 sql.push_str(&format!(" OFFSET {}", offset));
             }
 
-            let mut query = sqlx::query(&sql);
+            let sql: &'static str = Box::leak(sql.into_boxed_str());
+            let mut query = sqlx::query(sql);
 
             if let Some(m) = &filter.manufacturer {
                 query = query.bind(m);
@@ -1141,7 +1142,8 @@ pub mod postgres {
                 sql.push_str(&format!(" AND rarity = ${}", param_idx));
             }
 
-            let mut query = sqlx::query(&sql);
+            let sql: &'static str = Box::leak(sql.into_boxed_str());
+            let mut query = sqlx::query(sql);
 
             if let Some(m) = &filter.manufacturer {
                 query = query.bind(m);
