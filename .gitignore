@@ -14,11 +14,8 @@ target/
 
 # BL4 data files (will be distributed via GitHub Releases)
 /share/*
-# But keep manifest files compiled into bl4 library
-!/share/manifest/category_names.json
-!/share/manifest/parts_database.json
-!/share/manifest/manufacturers.json
-!/share/manifest/weapon_types.json
+# But keep manifest files (small enough for git now)
+!/share/manifest/
 
 # Backup files
 *.bak
