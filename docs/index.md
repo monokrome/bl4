@@ -109,4 +109,4 @@ Each chapter includes:
 
 ---
 
-*For the latest version of this guide, visit [bl4.monokro.me](https://bl4.monokro.me)*
+*For the latest version of this guide, visit [bl4.dev](https://bl4.dev)*

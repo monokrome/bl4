@@ -69,8 +69,8 @@ struct WeaponType {
 
 /// Category ID -> Category Name
 static CATEGORY_NAMES: Lazy<HashMap<i64, String>> = Lazy::new(|| {
-    let file: CategoryNamesFile = serde_json::from_str(CATEGORY_NAMES_JSON)
-        .expect("Failed to parse category_names.json");
+    let file: CategoryNamesFile =
+        serde_json::from_str(CATEGORY_NAMES_JSON).expect("Failed to parse category_names.json");
 
     file.categories
         .into_iter()
@@ -80,8 +80,8 @@ static CATEGORY_NAMES: Lazy<HashMap<i64, String>> = Lazy::new(|| {
 
 /// (Category, Index) -> Part Name
 static PARTS_BY_ID: Lazy<HashMap<(i64, i64), String>> = Lazy::new(|| {
-    let db: PartsDatabase = serde_json::from_str(PARTS_DATABASE_JSON)
-        .expect("Failed to parse parts_database.json");
+    let db: PartsDatabase =
+        serde_json::from_str(PARTS_DATABASE_JSON).expect("Failed to parse parts_database.json");
 
     db.parts
         .into_iter()
@@ -91,20 +91,19 @@ static PARTS_BY_ID: Lazy<HashMap<(i64, i64), String>> = Lazy::new(|| {
 
 /// Manufacturer Code -> Full Name
 static MANUFACTURERS: Lazy<HashMap<String, String>> = Lazy::new(|| {
-    let mfrs: HashMap<String, Manufacturer> = serde_json::from_str(MANUFACTURERS_JSON)
-        .expect("Failed to parse manufacturers.json");
+    let mfrs: HashMap<String, Manufacturer> =
+        serde_json::from_str(MANUFACTURERS_JSON).expect("Failed to parse manufacturers.json");
 
-    mfrs.into_iter()
-        .map(|(code, m)| (code, m.name))
-        .collect()
+    mfrs.into_iter().map(|(code, m)| (code, m.name)).collect()
 });
 
 /// Weapon Type Name -> Manufacturer Codes
 static WEAPON_TYPES: Lazy<HashMap<String, Vec<String>>> = Lazy::new(|| {
-    let types: HashMap<String, WeaponType> = serde_json::from_str(WEAPON_TYPES_JSON)
-        .expect("Failed to parse weapon_types.json");
+    let types: HashMap<String, WeaponType> =
+        serde_json::from_str(WEAPON_TYPES_JSON).expect("Failed to parse weapon_types.json");
 
-    types.into_iter()
+    types
+        .into_iter()
         .map(|(name, wt)| {
             let codes: Vec<String> = wt.manufacturers.into_iter().map(|m| m.code).collect();
             (name, codes)
@@ -143,7 +142,9 @@ pub fn all_categories() -> impl Iterator<Item = (i64, &'static str)> {
 
 /// Get all manufacturer codes and names
 pub fn all_manufacturers() -> impl Iterator<Item = (&'static str, &'static str)> {
-    MANUFACTURERS.iter().map(|(code, name)| (code.as_str(), name.as_str()))
+    MANUFACTURERS
+        .iter()
+        .map(|(code, name)| (code.as_str(), name.as_str()))
 }
 
 /// Check if manifest data is loaded (forces initialization)

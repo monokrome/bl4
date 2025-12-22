@@ -907,7 +907,7 @@ enum ItemsDbCommand {
     /// Publish items to the community server
     Publish {
         /// Server URL
-        #[arg(long, short, default_value = "https://bl4.monokro.me")]
+        #[arg(long, short, default_value = "https://bl4.dev")]
         server: String,
 
         /// Only publish a specific item
@@ -926,7 +926,7 @@ enum ItemsDbCommand {
     /// Pull items from a community server and merge into local database
     Pull {
         /// Server URL
-        #[arg(long, short, default_value = "https://bl4.monokro.me")]
+        #[arg(long, short, default_value = "https://bl4.dev")]
         server: String,
 
         /// Prefer remote values over local values (overwrite existing)
@@ -4386,8 +4386,8 @@ fn main() -> Result<()> {
                     println!("=== Memory Dump Extraction ===\n");
 
                     // Find bl4 binary - use current exe
-                    let bl4_exe = std::env::current_exe()
-                        .context("Failed to get current executable path")?;
+                    let bl4_exe =
+                        std::env::current_exe().context("Failed to get current executable path")?;
 
                     // Step 1: Generate usmap from dump
                     if !usmap_provided {
@@ -4456,7 +4456,9 @@ fn main() -> Result<()> {
                             ) {
                                 // Extract prefix (everything before the first dot)
                                 if let Some(prefix) = name.split('.').next() {
-                                    prefix_categories.entry(prefix.to_string()).or_insert(category);
+                                    prefix_categories
+                                        .entry(prefix.to_string())
+                                        .or_insert(category);
                                 }
                             }
                         }
@@ -4474,8 +4476,15 @@ fn main() -> Result<()> {
                         .collect();
 
                     let categories_json = serde_json::json!({ "categories": categories });
-                    std::fs::write(&categories_path, serde_json::to_string_pretty(&categories_json)?)?;
-                    println!("  Wrote {} category mappings to: {}", categories.len(), categories_path.display());
+                    std::fs::write(
+                        &categories_path,
+                        serde_json::to_string_pretty(&categories_json)?,
+                    )?;
+                    println!(
+                        "  Wrote {} category mappings to: {}",
+                        categories.len(),
+                        categories_path.display()
+                    );
 
                     // Step 5: Build parts database
                     println!("\nStep 5: Building parts database...");
