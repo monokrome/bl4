@@ -45,6 +45,215 @@ impl std::str::FromStr for VerificationStatus {
     }
 }
 
+/// Source of a field value
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, PartialOrd, Ord)]
+#[serde(rename_all = "snake_case")]
+pub enum ValueSource {
+    /// Value shown in the game UI (highest priority)
+    InGame = 3,
+    /// Value extracted by our decoder
+    Decoder = 2,
+    /// Value from a community tool (with source_detail naming it)
+    CommunityTool = 1,
+}
+
+impl ValueSource {
+    /// Priority for sorting (higher = prefer)
+    pub fn priority(&self) -> u8 {
+        *self as u8
+    }
+}
+
+impl std::fmt::Display for ValueSource {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::InGame => write!(f, "ingame"),
+            Self::Decoder => write!(f, "decoder"),
+            Self::CommunityTool => write!(f, "community_tool"),
+        }
+    }
+}
+
+impl std::str::FromStr for ValueSource {
+    type Err = anyhow::Error;
+    fn from_str(s: &str) -> Result<Self> {
+        match s {
+            "ingame" | "in_game" => Ok(Self::InGame),
+            "decoder" => Ok(Self::Decoder),
+            "community_tool" | "community" => Ok(Self::CommunityTool),
+            _ => anyhow::bail!("Unknown value source: {}", s),
+        }
+    }
+}
+
+/// Confidence level for a value
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, PartialOrd, Ord)]
+#[serde(rename_all = "snake_case")]
+pub enum Confidence {
+    /// Value has been verified (e.g., screenshot match)
+    Verified = 3,
+    /// Value is inferred but likely correct
+    Inferred = 2,
+    /// Value is uncertain/experimental
+    Uncertain = 1,
+}
+
+impl Confidence {
+    /// Priority for sorting (higher = prefer)
+    pub fn priority(&self) -> u8 {
+        *self as u8
+    }
+}
+
+impl std::fmt::Display for Confidence {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Verified => write!(f, "verified"),
+            Self::Inferred => write!(f, "inferred"),
+            Self::Uncertain => write!(f, "uncertain"),
+        }
+    }
+}
+
+impl std::str::FromStr for Confidence {
+    type Err = anyhow::Error;
+    fn from_str(s: &str) -> Result<Self> {
+        match s {
+            "verified" => Ok(Self::Verified),
+            "inferred" => Ok(Self::Inferred),
+            "uncertain" => Ok(Self::Uncertain),
+            _ => anyhow::bail!("Unknown confidence level: {}", s),
+        }
+    }
+}
+
+/// Item fields that can have multi-source values
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ItemField {
+    Name,
+    Prefix,
+    Manufacturer,
+    WeaponType,
+    ItemType,
+    Rarity,
+    Level,
+    Element,
+    Dps,
+    Damage,
+    Accuracy,
+    FireRate,
+    ReloadTime,
+    MagSize,
+    Value,
+    RedText,
+}
+
+impl ItemField {
+    /// All field variants
+    pub const ALL: &'static [ItemField] = &[
+        ItemField::Name,
+        ItemField::Prefix,
+        ItemField::Manufacturer,
+        ItemField::WeaponType,
+        ItemField::ItemType,
+        ItemField::Rarity,
+        ItemField::Level,
+        ItemField::Element,
+        ItemField::Dps,
+        ItemField::Damage,
+        ItemField::Accuracy,
+        ItemField::FireRate,
+        ItemField::ReloadTime,
+        ItemField::MagSize,
+        ItemField::Value,
+        ItemField::RedText,
+    ];
+
+    /// Display width for table formatting
+    pub fn display_width(&self) -> usize {
+        match self {
+            Self::Name => 20,
+            Self::Prefix => 15,
+            Self::Manufacturer => 12,
+            Self::WeaponType => 8,
+            Self::ItemType => 6,
+            Self::Rarity => 10,
+            Self::Level => 5,
+            Self::Element => 10,
+            Self::Dps => 6,
+            Self::Damage => 6,
+            Self::Accuracy => 8,
+            Self::FireRate => 10,
+            Self::ReloadTime => 11,
+            Self::MagSize => 8,
+            Self::Value => 8,
+            Self::RedText => 30,
+        }
+    }
+}
+
+impl std::fmt::Display for ItemField {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Name => write!(f, "name"),
+            Self::Prefix => write!(f, "prefix"),
+            Self::Manufacturer => write!(f, "manufacturer"),
+            Self::WeaponType => write!(f, "weapon_type"),
+            Self::ItemType => write!(f, "item_type"),
+            Self::Rarity => write!(f, "rarity"),
+            Self::Level => write!(f, "level"),
+            Self::Element => write!(f, "element"),
+            Self::Dps => write!(f, "dps"),
+            Self::Damage => write!(f, "damage"),
+            Self::Accuracy => write!(f, "accuracy"),
+            Self::FireRate => write!(f, "fire_rate"),
+            Self::ReloadTime => write!(f, "reload_time"),
+            Self::MagSize => write!(f, "mag_size"),
+            Self::Value => write!(f, "value"),
+            Self::RedText => write!(f, "red_text"),
+        }
+    }
+}
+
+impl std::str::FromStr for ItemField {
+    type Err = anyhow::Error;
+    fn from_str(s: &str) -> Result<Self> {
+        match s {
+            "name" => Ok(Self::Name),
+            "prefix" => Ok(Self::Prefix),
+            "manufacturer" => Ok(Self::Manufacturer),
+            "weapon_type" => Ok(Self::WeaponType),
+            "item_type" => Ok(Self::ItemType),
+            "rarity" => Ok(Self::Rarity),
+            "level" => Ok(Self::Level),
+            "element" => Ok(Self::Element),
+            "dps" => Ok(Self::Dps),
+            "damage" => Ok(Self::Damage),
+            "accuracy" => Ok(Self::Accuracy),
+            "fire_rate" => Ok(Self::FireRate),
+            "reload_time" => Ok(Self::ReloadTime),
+            "mag_size" => Ok(Self::MagSize),
+            "value" => Ok(Self::Value),
+            "red_text" => Ok(Self::RedText),
+            _ => anyhow::bail!("Unknown item field: {}", s),
+        }
+    }
+}
+
+/// A field value with source attribution
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ItemValue {
+    pub id: i64,
+    pub item_serial: String,
+    pub field: String,
+    pub value: String,
+    pub source: ValueSource,
+    pub source_detail: Option<String>,
+    pub confidence: Confidence,
+    pub created_at: String,
+}
+
 /// Item entry in the database (serial is the primary key)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Item {
@@ -183,9 +392,23 @@ impl ItemsDb {
                 data BLOB NOT NULL
             );
 
+            CREATE TABLE IF NOT EXISTS item_values (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                item_serial TEXT NOT NULL REFERENCES weapons(serial) ON DELETE CASCADE,
+                field TEXT NOT NULL,              -- 'level', 'rarity', 'manufacturer', etc.
+                value TEXT NOT NULL,              -- stored as text, parse as needed
+                source TEXT NOT NULL,             -- 'ingame', 'decoder', 'community_tool'
+                source_detail TEXT,               -- tool name, screenshot ref, etc.
+                confidence TEXT NOT NULL DEFAULT 'inferred',  -- 'verified', 'inferred', 'uncertain'
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(item_serial, field, source)
+            );
+
             CREATE INDEX IF NOT EXISTS idx_weapons_name ON weapons(name);
             CREATE INDEX IF NOT EXISTS idx_weapons_manufacturer ON weapons(manufacturer);
             CREATE INDEX IF NOT EXISTS idx_weapon_parts_item_serial ON weapon_parts(item_serial);
+            CREATE INDEX IF NOT EXISTS idx_item_values_serial ON item_values(item_serial);
+            CREATE INDEX IF NOT EXISTS idx_item_values_field ON item_values(item_serial, field);
             CREATE INDEX IF NOT EXISTS idx_attachments_item_serial ON attachments(item_serial);
             "#,
         )?;
@@ -765,6 +988,192 @@ impl ItemsDb {
             attachment_count,
         })
     }
+
+    /// Set a field value with source attribution
+    ///
+    /// Uses INSERT OR REPLACE to update existing values from the same source.
+    pub fn set_value(
+        &self,
+        serial: &str,
+        field: &str,
+        value: &str,
+        source: ValueSource,
+        source_detail: Option<&str>,
+        confidence: Confidence,
+    ) -> Result<()> {
+        self.conn.execute(
+            r#"INSERT OR REPLACE INTO item_values
+               (item_serial, field, value, source, source_detail, confidence)
+               VALUES (?1, ?2, ?3, ?4, ?5, ?6)"#,
+            params![
+                serial,
+                field,
+                value,
+                source.to_string(),
+                source_detail,
+                confidence.to_string()
+            ],
+        )?;
+        Ok(())
+    }
+
+    /// Get all values for a field across all sources
+    pub fn get_values(&self, serial: &str, field: &str) -> Result<Vec<ItemValue>> {
+        let mut stmt = self.conn.prepare(
+            "SELECT id, item_serial, field, value, source, source_detail, confidence, created_at
+             FROM item_values
+             WHERE item_serial = ?1 AND field = ?2
+             ORDER BY source DESC, confidence DESC",
+        )?;
+
+        let values = stmt
+            .query_map(params![serial, field], |row| {
+                let source_str: String = row.get(4)?;
+                let confidence_str: String = row.get(6)?;
+                Ok(ItemValue {
+                    id: row.get(0)?,
+                    item_serial: row.get(1)?,
+                    field: row.get(2)?,
+                    value: row.get(3)?,
+                    source: source_str.parse().unwrap_or(ValueSource::CommunityTool),
+                    source_detail: row.get(5)?,
+                    confidence: confidence_str.parse().unwrap_or(Confidence::Uncertain),
+                    created_at: row.get(7)?,
+                })
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(values)
+    }
+
+    /// Get the best value for a field
+    ///
+    /// Priority: InGame > Decoder > CommunityTool
+    /// Within same source: Verified > Inferred > Uncertain
+    pub fn get_best_value(&self, serial: &str, field: &str) -> Result<Option<ItemValue>> {
+        let values = self.get_values(serial, field)?;
+
+        // Sort by source priority (desc) then confidence priority (desc)
+        // Values are already ordered by the query, but let's be explicit
+        let best = values.into_iter().max_by(|a, b| {
+            match a.source.priority().cmp(&b.source.priority()) {
+                std::cmp::Ordering::Equal => a.confidence.priority().cmp(&b.confidence.priority()),
+                other => other,
+            }
+        });
+
+        Ok(best)
+    }
+
+    /// Get all values for an item (all fields)
+    pub fn get_all_values(&self, serial: &str) -> Result<Vec<ItemValue>> {
+        let mut stmt = self.conn.prepare(
+            "SELECT id, item_serial, field, value, source, source_detail, confidence, created_at
+             FROM item_values
+             WHERE item_serial = ?1
+             ORDER BY field, source DESC, confidence DESC",
+        )?;
+
+        let values = stmt
+            .query_map(params![serial], |row| {
+                let source_str: String = row.get(4)?;
+                let confidence_str: String = row.get(6)?;
+                Ok(ItemValue {
+                    id: row.get(0)?,
+                    item_serial: row.get(1)?,
+                    field: row.get(2)?,
+                    value: row.get(3)?,
+                    source: source_str.parse().unwrap_or(ValueSource::CommunityTool),
+                    source_detail: row.get(5)?,
+                    confidence: confidence_str.parse().unwrap_or(Confidence::Uncertain),
+                    created_at: row.get(7)?,
+                })
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(values)
+    }
+
+    /// Get the best value for each field as a map
+    pub fn get_best_values(&self, serial: &str) -> Result<std::collections::HashMap<String, String>> {
+        let all_values = self.get_all_values(serial)?;
+        let mut best_by_field: std::collections::HashMap<String, ItemValue> = std::collections::HashMap::new();
+
+        for value in all_values {
+            let dominated = best_by_field.get(&value.field).map(|existing| {
+                // New value dominates if higher source priority, or same source with higher confidence
+                match value.source.priority().cmp(&existing.source.priority()) {
+                    std::cmp::Ordering::Greater => true,
+                    std::cmp::Ordering::Equal => value.confidence.priority() > existing.confidence.priority(),
+                    std::cmp::Ordering::Less => false,
+                }
+            }).unwrap_or(true);
+
+            if dominated {
+                best_by_field.insert(value.field.clone(), value);
+            }
+        }
+
+        Ok(best_by_field.into_iter().map(|(k, v)| (k, v.value)).collect())
+    }
+
+    /// Get best values for all items in a single query
+    ///
+    /// Returns a map of serial -> field -> value
+    pub fn get_all_items_best_values(&self) -> Result<std::collections::HashMap<String, std::collections::HashMap<String, String>>> {
+        use std::collections::HashMap;
+
+        let mut stmt = self.conn.prepare(
+            "SELECT item_serial, field, value, source, confidence
+             FROM item_values
+             ORDER BY item_serial, field, source DESC, confidence DESC",
+        )?;
+
+        // Collect all values
+        let values: Vec<(String, String, String, String, String)> = stmt
+            .query_map([], |row| {
+                Ok((
+                    row.get::<_, String>(0)?,  // serial
+                    row.get::<_, String>(1)?,  // field
+                    row.get::<_, String>(2)?,  // value
+                    row.get::<_, String>(3)?,  // source
+                    row.get::<_, String>(4)?,  // confidence
+                ))
+            })?
+            .filter_map(|r| r.ok())
+            .collect();
+
+        // Group by serial, then pick best for each field
+        let mut result: HashMap<String, HashMap<String, (String, u8, u8)>> = HashMap::new();
+
+        for (serial, field, value, source_str, confidence_str) in values {
+            let source: ValueSource = source_str.parse().unwrap_or(ValueSource::CommunityTool);
+            let confidence: Confidence = confidence_str.parse().unwrap_or(Confidence::Uncertain);
+
+            let entry = result.entry(serial).or_default();
+            let current = entry.get(&field);
+
+            let should_replace = current.map(|(_, src_prio, conf_prio)| {
+                match source.priority().cmp(src_prio) {
+                    std::cmp::Ordering::Greater => true,
+                    std::cmp::Ordering::Equal => confidence.priority() > *conf_prio,
+                    std::cmp::Ordering::Less => false,
+                }
+            }).unwrap_or(true);
+
+            if should_replace {
+                entry.insert(field, (value, source.priority(), confidence.priority()));
+            }
+        }
+
+        // Flatten to just serial -> field -> value
+        Ok(result
+            .into_iter()
+            .map(|(serial, fields)| {
+                (serial, fields.into_iter().map(|(f, (v, _, _))| (f, v)).collect())
+            })
+            .collect())
+    }
 }
 
 /// Database statistics
@@ -773,4 +1182,110 @@ pub struct DbStats {
     pub item_count: i64,
     pub part_count: i64,
     pub attachment_count: i64,
+}
+
+/// Migration statistics
+#[derive(Debug, Default)]
+pub struct MigrationStats {
+    pub items_processed: usize,
+    pub values_migrated: usize,
+    pub values_skipped: usize,
+}
+
+impl ItemsDb {
+    /// Migrate existing column values to item_values table
+    ///
+    /// This migrates values from the weapons table columns into the item_values
+    /// table with source=decoder and confidence=inferred. Values that already
+    /// exist in item_values are skipped.
+    pub fn migrate_column_values(&self, dry_run: bool) -> Result<MigrationStats> {
+        let mut stats = MigrationStats::default();
+
+        // Fields to migrate: column name -> ItemField name
+        let fields_to_migrate = [
+            ("name", "name"),
+            ("prefix", "prefix"),
+            ("manufacturer", "manufacturer"),
+            ("weapon_type", "weapon_type"),
+            ("item_type", "item_type"),
+            ("rarity", "rarity"),
+            ("level", "level"),
+            ("element", "element"),
+            ("dps", "dps"),
+            ("damage", "damage"),
+            ("accuracy", "accuracy"),
+            ("fire_rate", "fire_rate"),
+            ("reload_time", "reload_time"),
+            ("mag_size", "mag_size"),
+            ("value", "value"),
+            ("red_text", "red_text"),
+        ];
+
+        // Get all items
+        let mut stmt = self.conn.prepare(
+            "SELECT serial, name, prefix, manufacturer, weapon_type, item_type, rarity,
+                    level, element, dps, damage, accuracy, fire_rate, reload_time,
+                    mag_size, value, red_text
+             FROM weapons"
+        )?;
+
+        let items: Vec<(String, Vec<Option<String>>)> = stmt
+            .query_map([], |row| {
+                let serial: String = row.get(0)?;
+                let values: Vec<Option<String>> = (1..=16)
+                    .map(|i| {
+                        // Handle different column types
+                        row.get::<_, Option<String>>(i)
+                            .or_else(|_| row.get::<_, Option<i32>>(i).map(|v| v.map(|n| n.to_string())))
+                            .or_else(|_| row.get::<_, Option<f64>>(i).map(|v| v.map(|n| n.to_string())))
+                            .unwrap_or(None)
+                    })
+                    .collect();
+                Ok((serial, values))
+            })?
+            .filter_map(|r| r.ok())
+            .collect();
+
+        for (serial, values) in items {
+            stats.items_processed += 1;
+
+            for (i, (_, field_name)) in fields_to_migrate.iter().enumerate() {
+                if let Some(value) = &values[i] {
+                    if value.is_empty() {
+                        continue;
+                    }
+
+                    // Check if value already exists for this field from any source
+                    let existing: Option<i64> = self.conn
+                        .query_row(
+                            "SELECT 1 FROM item_values WHERE item_serial = ?1 AND field = ?2",
+                            params![&serial, field_name],
+                            |row| row.get(0),
+                        )
+                        .optional()?;
+
+                    if existing.is_some() {
+                        stats.values_skipped += 1;
+                        continue;
+                    }
+
+                    if dry_run {
+                        println!("Would migrate: {}.{} = {}", serial, field_name, value);
+                    } else {
+                        self.set_value(
+                            &serial,
+                            field_name,
+                            value,
+                            ValueSource::Decoder,
+                            None,
+                            Confidence::Inferred,
+                        )?;
+                    }
+                    stats.values_migrated += 1;
+                }
+            }
+        }
+
+        Ok(stats)
+    }
 }

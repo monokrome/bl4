@@ -22,7 +22,7 @@ static WEAPON_INFO: phf::Map<u64, (&'static str, &'static str)> = phf_map! {
     5u64 => ("Maliwan", "Shotgun"),    // [I] MAL_SG - category 19
     9u64 => ("Jakobs", "Shotgun"),     // [V] JAK_SG - Rainbow Vomit screenshot
     13u64 => ("Tediore", "Shotgun"),   // [I] TED_SG - category 10
-    14u64 => ("Ripper", "Shotgun"),    // [V] RIP_SG - Hungry Flensing Hellhound screenshot
+    14u64 => ("Bor", "Shotgun"),        // [?] BOR_SG - needs verification
 
     // Pistols (low IDs)
     2u64 => ("Jakobs", "Pistol"),      // [V] JAK_PS - Seventh Sense screenshot
@@ -41,11 +41,11 @@ static WEAPON_INFO: phf::Map<u64, (&'static str, &'static str)> = phf_map! {
     129u64 => ("Jakobs", "Sniper"),    // [I] JAK_SR - category 26
     133u64 => ("Order", "Sniper"),     // [I] ORD_SR - category 28
     137u64 => ("Maliwan", "Sniper"),   // [I] MAL_SR - category 29
-    142u64 => ("Bor", "Sniper"),       // [?] BOR_SR - category 25, needs verification
+    142u64 => ("Bor", "Sniper"),        // [?] BOR_SR - category 25, needs verification
 
     // SMGs (high IDs, bit 7 set)
     130u64 => ("Daedalus", "SMG"),     // [I] DAD_SM - category 20
-    134u64 => ("Bor", "SMG"),          // [?] BOR_SM - category 21, needs verification
+    134u64 => ("Bor", "SMG"),           // [?] BOR_SM - category 21, needs verification
     138u64 => ("Maliwan", "SMG"),      // [I] MAL_SM - category 23
     140u64 => ("Vladof", "SMG"),       // [I] VLA_SM - category 22
 
@@ -73,7 +73,7 @@ static SERIAL_TO_PARTS_CAT: phf::Map<u64, u64> = phf_map! {
     5u64 => 19,   // MAL_SG
     9u64 => 9,    // JAK_SG
     13u64 => 10,  // TED_SG
-    14u64 => 12,  // RIP_SG (Bor Shotgun)
+    14u64 => 12,  // BOR_SG
 
     // Pistols
     2u64 => 3,    // JAK_PS
@@ -108,7 +108,10 @@ static SERIAL_TO_PARTS_CAT: phf::Map<u64, u64> = phf_map! {
 
 /// Convert serial ID (first varint) to parts database category
 pub fn serial_id_to_parts_category(serial_id: u64) -> u64 {
-    SERIAL_TO_PARTS_CAT.get(&serial_id).copied().unwrap_or(serial_id)
+    SERIAL_TO_PARTS_CAT
+        .get(&serial_id)
+        .copied()
+        .unwrap_or(serial_id)
 }
 
 /// Part Group ID (Category) to name mapping
@@ -330,7 +333,9 @@ static SHIELD_CATEGORY_NAMES: phf::Map<i64, &'static str> = phf_map! {
 /// For r-type (shields), uses shield-specific category map to avoid conflicts with weapons
 pub fn category_name_for_type(item_type: char, category: i64) -> Option<&'static str> {
     match item_type {
-        'r' => SHIELD_CATEGORY_NAMES.get(&category).copied()
+        'r' => SHIELD_CATEGORY_NAMES
+            .get(&category)
+            .copied()
             .or_else(|| CATEGORY_NAMES.get(&category).copied()),
         _ => CATEGORY_NAMES.get(&category).copied(),
     }
@@ -478,10 +483,10 @@ mod tests {
         assert_eq!(level_from_code(128), Some((16, 16))); // 2*(128-120) = 16
         assert_eq!(level_from_code(135), Some((30, 30))); // 2*(135-120) = 30 (verified in-game)
         assert_eq!(level_from_code(145), Some((50, 50))); // 2*(145-120) = 50
-        // Capped at 50 for higher codes - raw shows true decoded value
+                                                          // Capped at 50 for higher codes - raw shows true decoded value
         assert_eq!(level_from_code(150), Some((50, 60))); // raw=60, capped to 50
         assert_eq!(level_from_code(196), Some((50, 152))); // raw=152, capped to 50
-        // Invalid codes (51-127)
+                                                           // Invalid codes (51-127)
         assert_eq!(level_from_code(51), None);
         assert_eq!(level_from_code(127), None);
     }

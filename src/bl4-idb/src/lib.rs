@@ -61,7 +61,10 @@ pub use repository::AttachmentsRepository;
 #[cfg(any(feature = "sqlx-sqlite", feature = "sqlx-postgres"))]
 pub use sqlx_impl::{AsyncItemsRepository, AsyncRepoResult};
 
-#[cfg(all(feature = "attachments", any(feature = "sqlx-sqlite", feature = "sqlx-postgres")))]
+#[cfg(all(
+    feature = "attachments",
+    any(feature = "sqlx-sqlite", feature = "sqlx-postgres")
+))]
 pub use sqlx_impl::AsyncAttachmentsRepository;
 
 #[cfg(any(feature = "sqlx-sqlite", feature = "sqlx-postgres"))]

@@ -7,6 +7,243 @@ use std::collections::HashMap;
 use std::fmt;
 use thiserror::Error;
 
+/// State flags bitmask helper for inventory items.
+///
+/// Items in Borderlands 4 saves have a `state_flags` field that encodes
+/// various properties using a bitmask. This struct provides a type-safe
+/// way to work with these flags without knowing the bit positions.
+///
+/// # Example
+/// ```
+/// use bl4::StateFlags;
+///
+/// // Create flags for a backpack item marked as favorite
+/// let flags = StateFlags::backpack().with_favorite();
+///
+/// // Create flags for an equipped item
+/// let equipped = StateFlags::equipped();
+///
+/// // Query flags
+/// assert!(flags.is_favorite());
+/// assert!(flags.is_in_backpack());
+/// ```
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct StateFlags(pub u32);
+
+impl StateFlags {
+    // Bit values matching Borderlands 4's state_flags field (verified in-game)
+    const VALID: u32 = 1; // bit 0 - item exists/valid
+    const FAVORITE: u32 = 2; // bit 1 - favorite
+    const JUNK: u32 = 4; // bit 2 - junk marker
+    const LABEL1: u32 = 16; // bit 4 - label 1
+    const LABEL2: u32 = 32; // bit 5 - label 2
+    const LABEL3: u32 = 64; // bit 6 - label 3
+    const LABEL4: u32 = 128; // bit 7 - label 4
+    const IN_BACKPACK: u32 = 512; // bit 9 - in backpack (not equipped)
+
+    // All label bits are mutually exclusive (only one can be set at a time)
+    const ALL_LABELS: u32 =
+        Self::FAVORITE | Self::JUNK | Self::LABEL1 | Self::LABEL2 | Self::LABEL3 | Self::LABEL4;
+
+    /// Create flags for a backpack item (valid + in_backpack).
+    pub fn backpack() -> Self {
+        Self(Self::VALID | Self::IN_BACKPACK)
+    }
+
+    /// Create flags for an equipped item (valid only, no backpack bit).
+    pub fn equipped() -> Self {
+        Self(Self::VALID)
+    }
+
+    /// Create flags for a bank item (valid only).
+    pub fn bank() -> Self {
+        Self(Self::VALID)
+    }
+
+    /// Create flags from a raw u32 value.
+    pub fn from_raw(bits: u32) -> Self {
+        Self(bits)
+    }
+
+    /// Get the raw u32 value.
+    pub fn to_raw(self) -> u32 {
+        self.0
+    }
+
+    // Builder methods (chainable)
+    // Note: Labels are mutually exclusive - setting one clears others
+
+    /// Set the favorite label (clears other labels).
+    pub fn with_favorite(mut self) -> Self {
+        self.0 = (self.0 & !Self::ALL_LABELS) | Self::FAVORITE;
+        self
+    }
+
+    /// Set the junk label (clears other labels).
+    pub fn with_junk(mut self) -> Self {
+        self.0 = (self.0 & !Self::ALL_LABELS) | Self::JUNK;
+        self
+    }
+
+    /// Set label 1 (clears other labels).
+    pub fn with_label1(mut self) -> Self {
+        self.0 = (self.0 & !Self::ALL_LABELS) | Self::LABEL1;
+        self
+    }
+
+    /// Set label 2 (clears other labels).
+    pub fn with_label2(mut self) -> Self {
+        self.0 = (self.0 & !Self::ALL_LABELS) | Self::LABEL2;
+        self
+    }
+
+    /// Set label 3 (clears other labels).
+    pub fn with_label3(mut self) -> Self {
+        self.0 = (self.0 & !Self::ALL_LABELS) | Self::LABEL3;
+        self
+    }
+
+    /// Set label 4 (clears other labels).
+    pub fn with_label4(mut self) -> Self {
+        self.0 = (self.0 & !Self::ALL_LABELS) | Self::LABEL4;
+        self
+    }
+
+    /// Clear all labels (favorite, junk, 1-4).
+    pub fn with_no_label(mut self) -> Self {
+        self.0 &= !Self::ALL_LABELS;
+        self
+    }
+
+    // Query methods
+
+    /// Check if the favorite flag is set.
+    pub fn is_favorite(&self) -> bool {
+        self.0 & Self::FAVORITE != 0
+    }
+
+    /// Check if the junk flag is set.
+    pub fn is_junk(&self) -> bool {
+        self.0 & Self::JUNK != 0
+    }
+
+    /// Check if label 1 is set.
+    pub fn has_label1(&self) -> bool {
+        self.0 & Self::LABEL1 != 0
+    }
+
+    /// Check if label 2 is set.
+    pub fn has_label2(&self) -> bool {
+        self.0 & Self::LABEL2 != 0
+    }
+
+    /// Check if label 3 is set.
+    pub fn has_label3(&self) -> bool {
+        self.0 & Self::LABEL3 != 0
+    }
+
+    /// Check if label 4 is set.
+    pub fn has_label4(&self) -> bool {
+        self.0 & Self::LABEL4 != 0
+    }
+
+    /// Check if the item is in backpack (not equipped).
+    pub fn is_in_backpack(&self) -> bool {
+        self.0 & Self::IN_BACKPACK != 0
+    }
+
+    /// Check if the item is equipped (not in backpack only).
+    pub fn is_equipped(&self) -> bool {
+        !self.is_in_backpack()
+    }
+
+    // Mutation methods
+    // Note: Labels are mutually exclusive - setting one clears others
+
+    /// Set favorite label (clears other labels) or clear it.
+    pub fn set_favorite(&mut self, value: bool) {
+        if value {
+            self.0 = (self.0 & !Self::ALL_LABELS) | Self::FAVORITE;
+        } else {
+            self.0 &= !Self::FAVORITE;
+        }
+    }
+
+    /// Set junk label (clears other labels) or clear it.
+    pub fn set_junk(&mut self, value: bool) {
+        if value {
+            self.0 = (self.0 & !Self::ALL_LABELS) | Self::JUNK;
+        } else {
+            self.0 &= !Self::JUNK;
+        }
+    }
+
+    /// Set label 1 (clears other labels) or clear it.
+    pub fn set_label1(&mut self, value: bool) {
+        if value {
+            self.0 = (self.0 & !Self::ALL_LABELS) | Self::LABEL1;
+        } else {
+            self.0 &= !Self::LABEL1;
+        }
+    }
+
+    /// Set label 2 (clears other labels) or clear it.
+    pub fn set_label2(&mut self, value: bool) {
+        if value {
+            self.0 = (self.0 & !Self::ALL_LABELS) | Self::LABEL2;
+        } else {
+            self.0 &= !Self::LABEL2;
+        }
+    }
+
+    /// Set label 3 (clears other labels) or clear it.
+    pub fn set_label3(&mut self, value: bool) {
+        if value {
+            self.0 = (self.0 & !Self::ALL_LABELS) | Self::LABEL3;
+        } else {
+            self.0 &= !Self::LABEL3;
+        }
+    }
+
+    /// Set label 4 (clears other labels) or clear it.
+    pub fn set_label4(&mut self, value: bool) {
+        if value {
+            self.0 = (self.0 & !Self::ALL_LABELS) | Self::LABEL4;
+        } else {
+            self.0 &= !Self::LABEL4;
+        }
+    }
+
+    /// Clear all labels.
+    pub fn clear_labels(&mut self) {
+        self.0 &= !Self::ALL_LABELS;
+    }
+
+    /// Convert to equipped flags (clear backpack bit).
+    pub fn to_equipped(mut self) -> Self {
+        self.0 &= !Self::IN_BACKPACK;
+        self
+    }
+
+    /// Convert to backpack flags (set backpack bit).
+    pub fn to_backpack(mut self) -> Self {
+        self.0 |= Self::IN_BACKPACK;
+        self
+    }
+}
+
+impl From<u32> for StateFlags {
+    fn from(v: u32) -> Self {
+        Self(v)
+    }
+}
+
+impl From<StateFlags> for u32 {
+    fn from(f: StateFlags) -> Self {
+        f.0
+    }
+}
+
 #[derive(Error, Debug)]
 pub enum SaveError {
     #[error("Failed to parse YAML: {0}")]
@@ -318,6 +555,153 @@ impl ChangeSet {
         self.add(
             "state.experience[1].points".to_string(),
             serde_yaml::Value::Number(xp.into()),
+        );
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Backpack Item Operations
+    // ─────────────────────────────────────────────────────────────────
+
+    /// Add an item to a backpack slot.
+    ///
+    /// # Arguments
+    /// * `slot` - Backpack slot number (0-22 typically)
+    /// * `serial` - Item serial string (e.g., "@Ugr$ZCm/...")
+    /// * `flags` - State flags for the item
+    ///
+    /// # Example
+    /// ```
+    /// use bl4::{ChangeSet, StateFlags};
+    ///
+    /// let mut changes = ChangeSet::new();
+    /// changes.add_backpack_item(0, "@Ugr$ZCm/...", StateFlags::backpack());
+    /// ```
+    pub fn add_backpack_item(&mut self, slot: u8, serial: &str, flags: StateFlags) {
+        let base = format!("state.inventory.items.backpack.slot_{}", slot);
+        self.add(
+            format!("{}.serial", base),
+            serde_yaml::Value::String(serial.to_string()),
+        );
+        self.add(
+            format!("{}.flags", base),
+            serde_yaml::Value::Number(0.into()),
+        );
+        self.add(
+            format!("{}.state_flags", base),
+            serde_yaml::Value::Number((flags.0 as i64).into()),
+        );
+    }
+
+    /// Set state_flags on an existing backpack item.
+    pub fn set_backpack_flags(&mut self, slot: u8, flags: StateFlags) {
+        self.add(
+            format!("state.inventory.items.backpack.slot_{}.state_flags", slot),
+            serde_yaml::Value::Number((flags.0 as i64).into()),
+        );
+    }
+
+    /// Set or clear the favorite flag on a backpack item.
+    pub fn set_favorite(&mut self, slot: u8, value: bool) {
+        let mut flags = StateFlags::backpack();
+        flags.set_favorite(value);
+        self.set_backpack_flags(slot, flags);
+    }
+
+    /// Set or clear the junk flag on a backpack item.
+    pub fn set_junk(&mut self, slot: u8, value: bool) {
+        let mut flags = StateFlags::backpack();
+        flags.set_junk(value);
+        self.set_backpack_flags(slot, flags);
+    }
+
+    /// Set or clear label 1 on a backpack item.
+    pub fn set_label1(&mut self, slot: u8, value: bool) {
+        let mut flags = StateFlags::backpack();
+        flags.set_label1(value);
+        self.set_backpack_flags(slot, flags);
+    }
+
+    /// Set or clear label 2 on a backpack item.
+    pub fn set_label2(&mut self, slot: u8, value: bool) {
+        let mut flags = StateFlags::backpack();
+        flags.set_label2(value);
+        self.set_backpack_flags(slot, flags);
+    }
+
+    /// Set or clear label 3 on a backpack item.
+    pub fn set_label3(&mut self, slot: u8, value: bool) {
+        let mut flags = StateFlags::backpack();
+        flags.set_label3(value);
+        self.set_backpack_flags(slot, flags);
+    }
+
+    /// Set or clear label 4 on a backpack item.
+    pub fn set_label4(&mut self, slot: u8, value: bool) {
+        let mut flags = StateFlags::backpack();
+        flags.set_label4(value);
+        self.set_backpack_flags(slot, flags);
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Bank Item Operations (profile.sav)
+    // ─────────────────────────────────────────────────────────────────
+
+    /// Add an item to a bank slot.
+    ///
+    /// Note: Bank items are stored in profile.sav, not character saves.
+    ///
+    /// # Arguments
+    /// * `slot` - Bank slot number
+    /// * `serial` - Item serial string
+    /// * `flags` - State flags for the item
+    pub fn add_bank_item(&mut self, slot: u16, serial: &str, flags: StateFlags) {
+        let base = format!("domains.local.shared.inventory.items.bank.slot_{}", slot);
+        self.add(
+            format!("{}.serial", base),
+            serde_yaml::Value::String(serial.to_string()),
+        );
+        self.add(
+            format!("{}.state_flags", base),
+            serde_yaml::Value::Number((flags.0 as i64).into()),
+        );
+    }
+
+    /// Set state_flags on an existing bank item.
+    pub fn set_bank_flags(&mut self, slot: u16, flags: StateFlags) {
+        self.add(
+            format!(
+                "domains.local.shared.inventory.items.bank.slot_{}.state_flags",
+                slot
+            ),
+            serde_yaml::Value::Number((flags.0 as i64).into()),
+        );
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Equipped Item Operations
+    // ─────────────────────────────────────────────────────────────────
+
+    /// Equip an item to a slot.
+    ///
+    /// This adds the item to equipped_inventory. The item should also
+    /// exist in the backpack with matching flags.
+    ///
+    /// # Arguments
+    /// * `slot` - Equipped slot (0-3 weapons, 4 shield, 5 grenade, 6+ gear)
+    /// * `serial` - Item serial string
+    pub fn equip_item(&mut self, slot: u8, serial: &str) {
+        let yaml = format!("- serial: '{}'\n  flags: 1\n  state_flags: 1", serial);
+        let _ = self.add_raw(
+            format!("state.inventory.equipped_inventory.equipped.slot_{}", slot),
+            &yaml,
+        );
+    }
+
+    /// Clear an equipped slot (unequip item).
+    pub fn unequip_slot(&mut self, slot: u8) {
+        let _ = self.add_raw(
+            format!("state.inventory.equipped_inventory.equipped.slot_{}", slot),
+            "[]",
         );
     }
 }
@@ -747,5 +1131,198 @@ eridium: 6666
         assert_eq!(save.get_character_name(), Some("BatchTest"));
         assert_eq!(save.get_character_level(), Some((10, 77777)));
         assert_eq!(save.get_specialization_level(), Some((5, 66666)));
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // StateFlags Tests
+    // ─────────────────────────────────────────────────────────────────
+
+    #[test]
+    fn test_state_flags_backpack() {
+        let flags = StateFlags::backpack();
+        assert_eq!(flags.0, 513); // 1 (valid) + 512 (in_backpack)
+        assert!(flags.is_in_backpack());
+        assert!(!flags.is_equipped());
+    }
+
+    #[test]
+    fn test_state_flags_equipped() {
+        let flags = StateFlags::equipped();
+        assert_eq!(flags.0, 1); // just valid
+        assert!(!flags.is_in_backpack());
+        assert!(flags.is_equipped());
+    }
+
+    #[test]
+    fn test_state_flags_bank() {
+        let flags = StateFlags::bank();
+        assert_eq!(flags.0, 1); // just valid
+    }
+
+    #[test]
+    fn test_state_flags_with_favorite() {
+        let flags = StateFlags::backpack().with_favorite();
+        assert_eq!(flags.0, 515); // 513 + 2
+        assert!(flags.is_favorite());
+        assert!(flags.is_in_backpack());
+    }
+
+    #[test]
+    fn test_state_flags_with_junk() {
+        let flags = StateFlags::backpack().with_junk();
+        assert_eq!(flags.0, 517); // 513 + 4
+        assert!(flags.is_junk());
+    }
+
+    #[test]
+    fn test_state_flags_labels() {
+        // Labels are mutually exclusive - only the last one set should be active
+        let flags = StateFlags::backpack()
+            .with_label2()
+            .with_label3()
+            .with_label4(); // Only label4 remains
+        assert!(!flags.has_label2());
+        assert!(!flags.has_label3());
+        assert!(flags.has_label4());
+        assert_eq!(flags.0, 513 + 128); // backpack + label4
+
+        // Verify each label clears the others
+        let fav = StateFlags::backpack().with_favorite();
+        assert_eq!(fav.0, 515); // 513 + 2
+
+        let junk = fav.with_junk(); // Changes from favorite to junk
+        assert!(!junk.is_favorite());
+        assert!(junk.is_junk());
+        assert_eq!(junk.0, 517); // 513 + 4
+    }
+
+    #[test]
+    fn test_state_flags_mutation() {
+        let mut flags = StateFlags::backpack();
+        assert!(!flags.is_favorite());
+
+        flags.set_favorite(true);
+        assert!(flags.is_favorite());
+        assert_eq!(flags.0, 515); // 513 + 2 (favorite)
+
+        flags.set_favorite(false);
+        assert!(!flags.is_favorite());
+        assert_eq!(flags.0, 513);
+    }
+
+    #[test]
+    fn test_state_flags_to_equipped() {
+        let backpack = StateFlags::backpack().with_favorite();
+        let equipped = backpack.to_equipped();
+        assert!(!equipped.is_in_backpack());
+        assert!(equipped.is_favorite()); // preserves other flags
+        assert_eq!(equipped.0, 3); // 1 + 2 (valid + favorite)
+    }
+
+    #[test]
+    fn test_state_flags_to_backpack() {
+        let equipped = StateFlags::equipped().with_junk();
+        let backpack = equipped.to_backpack();
+        assert!(backpack.is_in_backpack());
+        assert!(backpack.is_junk()); // preserves other flags
+        assert_eq!(backpack.0, 517); // 513 + 4 (backpack + junk)
+    }
+
+    #[test]
+    fn test_state_flags_from_raw() {
+        let flags = StateFlags::from_raw(515); // 513 + 2 = backpack + favorite
+        assert!(flags.is_in_backpack());
+        assert!(flags.is_favorite());
+    }
+
+    #[test]
+    fn test_state_flags_conversions() {
+        let flags = StateFlags::backpack();
+        let raw: u32 = flags.into();
+        assert_eq!(raw, 513);
+
+        let restored: StateFlags = 515.into(); // 513 + 2 = backpack + favorite
+        assert!(restored.is_favorite());
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Inventory ChangeSet Tests
+    // ─────────────────────────────────────────────────────────────────
+
+    #[test]
+    fn test_changeset_add_backpack_item() {
+        let mut changeset = ChangeSet::new();
+        changeset.add_backpack_item(5, "@TestSerial", StateFlags::backpack().with_favorite());
+
+        assert!(changeset.has_change("state.inventory.items.backpack.slot_5.serial"));
+        assert!(changeset.has_change("state.inventory.items.backpack.slot_5.flags"));
+        assert!(changeset.has_change("state.inventory.items.backpack.slot_5.state_flags"));
+
+        let state_flags = changeset
+            .get_change("state.inventory.items.backpack.slot_5.state_flags")
+            .unwrap();
+        assert_eq!(state_flags.as_i64(), Some(515)); // 513 + 2 (backpack + favorite)
+    }
+
+    #[test]
+    fn test_changeset_set_backpack_flags() {
+        let mut changeset = ChangeSet::new();
+        changeset.set_backpack_flags(3, StateFlags::backpack().with_junk());
+
+        let change = changeset
+            .get_change("state.inventory.items.backpack.slot_3.state_flags")
+            .unwrap();
+        assert_eq!(change.as_i64(), Some(517)); // 513 + 4 (backpack + junk)
+    }
+
+    #[test]
+    fn test_changeset_set_favorite() {
+        let mut changeset = ChangeSet::new();
+        changeset.set_favorite(0, true);
+
+        let change = changeset
+            .get_change("state.inventory.items.backpack.slot_0.state_flags")
+            .unwrap();
+        assert_eq!(change.as_i64(), Some(515)); // 513 + 2 (backpack + favorite)
+    }
+
+    #[test]
+    fn test_changeset_set_junk() {
+        let mut changeset = ChangeSet::new();
+        changeset.set_junk(1, true);
+
+        let change = changeset
+            .get_change("state.inventory.items.backpack.slot_1.state_flags")
+            .unwrap();
+        assert_eq!(change.as_i64(), Some(517)); // 513 + 4 (backpack + junk)
+    }
+
+    #[test]
+    fn test_changeset_add_bank_item() {
+        let mut changeset = ChangeSet::new();
+        changeset.add_bank_item(10, "@BankSerial", StateFlags::bank());
+
+        assert!(changeset.has_change("domains.local.shared.inventory.items.bank.slot_10.serial"));
+        assert!(
+            changeset.has_change("domains.local.shared.inventory.items.bank.slot_10.state_flags")
+        );
+        // Bank items don't have a flags field
+        assert!(!changeset.has_change("domains.local.shared.inventory.items.bank.slot_10.flags"));
+    }
+
+    #[test]
+    fn test_changeset_equip_item() {
+        let mut changeset = ChangeSet::new();
+        changeset.equip_item(0, "@WeaponSerial");
+
+        assert!(changeset.has_change("state.inventory.equipped_inventory.equipped.slot_0"));
+    }
+
+    #[test]
+    fn test_changeset_unequip_slot() {
+        let mut changeset = ChangeSet::new();
+        changeset.unequip_slot(4);
+
+        assert!(changeset.has_change("state.inventory.equipped_inventory.equipped.slot_4"));
     }
 }

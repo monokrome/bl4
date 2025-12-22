@@ -240,16 +240,42 @@ The `equipped_inventory.equipped` section uses numbered slots:
 
 ### State Flags
 
-The `state_flags` field indicates the item's status:
+The `state_flags` field is a bitmask indicating item status and labels:
 
-| Value | Meaning |
-|-------|---------|
-| 1 | Basic equipped state |
-| 3 | Equipped gear (shields, class mods) |
-| 513 | In backpack (not equipped) |
-| 517 | Equipped weapon |
+**Bit Definitions (verified in-game):**
 
-Items in inventory appear as serials—those Base85-encoded strings we'll decode in Chapter 5. Each item also has `flags` (various item properties) and `state_flags` (equipped/backpack status).
+| Bit | Value | Meaning |
+|-----|-------|---------|
+| 0 | 1 | Item exists/valid (always set) |
+| 1 | 2 | Favorite |
+| 2 | 4 | Junk |
+| 4 | 16 | Label 1 |
+| 5 | 32 | Label 2 |
+| 6 | 64 | Label 3 |
+| 7 | 128 | Label 4 |
+| 9 | 512 | Backpack only (NOT equipped) |
+
+**Note:** Favorite, Junk, and Labels 1-4 are mutually exclusive—only one can be set at a time.
+
+**How Equipping Works:**
+
+When you equip an item, its serial is **copied** from `inventory.items` to `equipped_inventory.equipped`. Both copies keep bit 9 **clear** (0) to indicate the item is equipped. When unequipped, bit 9 is **set** (1) on the backpack copy and the equipped_inventory copy is removed.
+
+**Common Values:**
+
+| Value | Binary | Meaning |
+|-------|--------|---------|
+| 1 | `0000000001` | Equipped item |
+| 3 | `0000000011` | Equipped item + favorite |
+| 513 | `1000000001` | Backpack only (not equipped) |
+| 515 | `1000000011` | Backpack only + Favorite |
+| 517 | `1000000101` | Backpack only + Junk |
+| 529 | `1000010001` | Backpack only + Label 1 |
+| 545 | `1000100001` | Backpack only + Label 2 |
+| 577 | `1001000001` | Backpack only + Label 3 |
+| 641 | `1010000001` | Backpack only + Label 4 |
+
+Items in inventory appear as serials—those Base85-encoded strings we'll decode in Chapter 5. Each item also has `flags` (various item properties) and `state_flags` (the bitmask above).
 
 ---
 
@@ -307,7 +333,7 @@ backpack:
 2. Then, add a reference to the same item in equipped_inventory
 
 ```yaml
-# Step 1: Add to backpack
+# Step 1: Add to backpack (bit 9 clear = equipped)
 state:
   inventory:
     items:
@@ -315,20 +341,20 @@ state:
         slot_22:
           serial: '@Uge8jxm/)@{!bAp5s!;381FF>eS^@w'
           flags: 1
-          state_flags: 513    # Backpack item
+          state_flags: 1    # Equipped (bit 9 = 0)
 
-# Step 2: Add to equipped_inventory (reference the same serial)
+# Step 2: Add to equipped_inventory (same serial, same flags)
     equipped_inventory:
       equipped:
         slot_4:               # Shield slot
           - serial: '@Uge8jxm/)@{!bAp5s!;381FF>eS^@w'
             flags: 1
-            state_flags: 1    # Equipped state
+            state_flags: 1    # Equipped
 ```
 
 The same serial appears in both places—the backpack holds the actual item data, and equipped_inventory references it.
 
-**Critical**: Only ONE item per slot type can have `state_flags: 1`. If you have multiple shields all marked as equipped (state_flags: 1), the game will refuse to equip any of them. Make sure all other shields in your backpack have `state_flags: 513`.
+**Critical**: Only ONE item per slot type can have `state_flags: 1` (equipped). If you have multiple shields all marked as equipped, the game will refuse to equip any of them. Make sure all other shields in your backpack have `state_flags: 513` (backpack only, not equipped).
 
 ### Live Editing Limitations
 
@@ -406,6 +432,177 @@ state:
 ```
 
 Invalid serials cause problems—items may not appear, or the game might crash. Always test with a backup save.
+
+---
+
+## Map Exploration Data (foddatas)
+
+The `foddatas` section stores your map exploration progress—the areas you've uncovered as you explore each zone. This data is surprisingly large, as it tracks exploration state at a granular level for every map in the game.
+
+### Structure
+
+```yaml
+fodsaveversion: 2
+foddatas:
+  - levelname: World_P
+    foddimensionx: 128
+    foddimensiony: 128
+    compressiontype: Zlib
+    foddata: eJztW3tYTVkb37kMkec...  # Base64-encoded zlib data
+  - levelname: Fortress_Grasslands_P
+    foddimensionx: 128
+    foddimensiony: 128
+    compressiontype: Zlib
+    foddata: eJztm3k8lO0axv...
+  # ... one entry per visited zone
+```
+
+Each zone entry contains:
+
+| Field | Description |
+|-------|-------------|
+| `levelname` | Internal zone identifier (e.g., `World_P`, `Fortress_Grasslands_P`) |
+| `foddimensionx` | Grid width (typically 128) |
+| `foddimensiony` | Grid height (typically 128) |
+| `compressiontype` | Always `Zlib` |
+| `foddata` | Base64-encoded, zlib-compressed exploration bitmap |
+
+### Zone Names
+
+| Level Name | In-Game Zone |
+|------------|--------------|
+| `Intro_P` | Tutorial area |
+| `World_P` | Main open world hub |
+| `Fortress_Grasslands_P` | Grasslands region |
+| `Fortress_Shatteredlands_P` | Shattered Lands region |
+| `Fortress_Mountains_P` | Mountains region |
+| `ElpisElevator_P` | Elpis elevator zone |
+| `Elpis_P` | Moon base |
+| `UpperCity_P` | Upper city |
+
+### Copying Exploration Progress
+
+To copy exploration data from one character to another, extract the entire `foddatas` block (including `fodsaveversion`) and replace it in the target save:
+
+```bash
+# Decrypt both saves
+bl4 decrypt -i source.sav -o source.yaml
+bl4 decrypt -i target.sav -o target.yaml
+
+# Copy foddatas section (use text manipulation or YAML tools)
+# Then re-encrypt
+bl4 encrypt -i target_modified.yaml -o target.sav
+```
+
+The foddata is substantial—a fully-explored save can have 40KB+ of exploration data compared to a fresh character's few hundred bytes.
+
+---
+
+## Safehouse and World Progress
+
+The `openworld` section tracks your progression through the open world activities: safehouses captured, silos cleared, bounties completed, and collectibles found.
+
+### Safehouses
+
+```yaml
+openworld:
+  activities:
+    safehouses:
+      safehouse_grasslands_1: 1
+      safehouse_grasslands_3: 1
+      safehouse_grasslands_4: 1
+      safehouse_mountains_1: 1
+      safehouse_mountains_2: 1
+      safehouse_mountains_3: 1
+      safehouse_mountains_4: 1
+      safehouse_shatteredlands_2: 1
+      safehouse_city_1: 1
+      safehouse_city_3: 1
+```
+
+A value of `1` indicates the safehouse is captured. Missing entries or `0` means uncaptured.
+
+### Silos
+
+```yaml
+    silos:
+      silo_grasslands_1: 1
+      silo_grasslands_2: 1
+      silo_grasslands_3: 1
+      silo_mountains_1: 1
+      silo_mountains_2: 1
+      silo_mountains_3: 1
+      silo_shatteredlands_1: 1
+      silo_shatteredlands_2: 1
+      silo_shatteredlands_3: 1
+```
+
+### Bounties
+
+Three bounty types track different faction activities:
+
+```yaml
+    bounties_augur:
+      augurbounty_mountains_1: 1
+      augurbounty_mountains_2: 1
+      augurbounty_shatteredlands_1: 1
+    bounties_order:
+      orderbounty_grasslands_1: 1
+      orderbounty_grasslands_2: 1
+    bounties_vanguard:
+      vanguardbounty_grasslands_1: 1
+      vanguardbounty_mountains_1: 1
+```
+
+### Collectibles
+
+```yaml
+    collectibles:
+      vaultsymbols:
+        vaultsymbol_grasslands_4: 1
+        vaultsymbol_grasslands_5: 1
+      shrines:
+        shrine_mountains_10: 1
+      safes:
+        safe_shatteredlands_10: 1
+      echologs_general:
+        el_g_grasslands:
+          gra_gen_02: 1
+          gra_gen_10: 1
+          gra_mis_04: 1
+```
+
+---
+
+## Unlockables
+
+The `unlockables` section tracks cosmetic items and vehicle customizations you've collected.
+
+### Hoverdrive Skins
+
+```yaml
+unlockables:
+  unlockable_hoverdrives:
+    entries:
+      - unlockable_hoverdrives.jakobs_01
+      - unlockable_hoverdrives.daedalus_01
+      - unlockable_hoverdrives.jakobs_03
+      - unlockable_hoverdrives.borg_03
+      - unlockable_hoverdrives.vladof_01
+      - unlockable_hoverdrives.maliwan_02
+      - unlockable_hoverdrives.order_02
+      - unlockable_hoverdrives.tediore_01
+```
+
+Each entry represents a vehicle skin tied to a manufacturer. The naming pattern is `unlockable_hoverdrives.<manufacturer>_<number>`.
+
+### Vault Hunter Rank
+
+```yaml
+highest_unlocked_vault_hunter_level: 6
+```
+
+This tracks your progression through the Vault Hunter Rank challenges. Values typically range from 1 (starting) to 6 (max rank).
 
 ---
 

@@ -74,7 +74,8 @@ pub trait AsyncItemsRepository {
     async fn get_values(&self, serial: &str, field: &str) -> AsyncRepoResult<Vec<ItemValue>>;
 
     /// Get the best value for a field
-    async fn get_best_value(&self, serial: &str, field: &str) -> AsyncRepoResult<Option<ItemValue>>;
+    async fn get_best_value(&self, serial: &str, field: &str)
+        -> AsyncRepoResult<Option<ItemValue>>;
 
     /// Get all values for an item
     async fn get_all_values(&self, serial: &str) -> AsyncRepoResult<Vec<ItemValue>>;
@@ -348,7 +349,9 @@ pub mod sqlite {
             .map_err(|e| RepoError::Database(e.to_string()))?;
 
             match row {
-                Some(r) => Ok(Some(Self::row_to_item(r).map_err(|e| RepoError::Database(e.to_string()))?)),
+                Some(r) => Ok(Some(
+                    Self::row_to_item(r).map_err(|e| RepoError::Database(e.to_string()))?,
+                )),
                 None => Ok(None),
             }
         }
@@ -499,7 +502,9 @@ pub mod sqlite {
                 .await
                 .map_err(|e| RepoError::Database(e.to_string()))?;
 
-            let count: i64 = row.try_get("count").map_err(|e| RepoError::Database(e.to_string()))?;
+            let count: i64 = row
+                .try_get("count")
+                .map_err(|e| RepoError::Database(e.to_string()))?;
             Ok(count)
         }
 
@@ -707,11 +712,21 @@ pub mod sqlite {
                 .map(|row| {
                     use sqlx::Row;
                     Ok(Attachment {
-                        id: row.try_get("id").map_err(|e| RepoError::Database(e.to_string()))?,
-                        item_serial: row.try_get("item_serial").map_err(|e| RepoError::Database(e.to_string()))?,
-                        name: row.try_get("name").map_err(|e| RepoError::Database(e.to_string()))?,
-                        mime_type: row.try_get("mime_type").map_err(|e| RepoError::Database(e.to_string()))?,
-                        view: row.try_get("view").map_err(|e| RepoError::Database(e.to_string()))?,
+                        id: row
+                            .try_get("id")
+                            .map_err(|e| RepoError::Database(e.to_string()))?,
+                        item_serial: row
+                            .try_get("item_serial")
+                            .map_err(|e| RepoError::Database(e.to_string()))?,
+                        name: row
+                            .try_get("name")
+                            .map_err(|e| RepoError::Database(e.to_string()))?,
+                        mime_type: row
+                            .try_get("mime_type")
+                            .map_err(|e| RepoError::Database(e.to_string()))?,
+                        view: row
+                            .try_get("view")
+                            .map_err(|e| RepoError::Database(e.to_string()))?,
                     })
                 })
                 .collect()
@@ -727,7 +742,9 @@ pub mod sqlite {
             match row {
                 Some(r) => {
                     use sqlx::Row;
-                    let data: Vec<u8> = r.try_get("data").map_err(|e| RepoError::Database(e.to_string()))?;
+                    let data: Vec<u8> = r
+                        .try_get("data")
+                        .map_err(|e| RepoError::Database(e.to_string()))?;
                     Ok(Some(data))
                 }
                 None => Ok(None),
@@ -780,10 +797,7 @@ pub mod postgres {
     impl SqlxPgDb {
         /// Connect to a PostgreSQL database
         pub async fn connect(url: &str) -> Result<Self, sqlx::Error> {
-            let pool = PgPoolOptions::new()
-                .max_connections(5)
-                .connect(url)
-                .await?;
+            let pool = PgPoolOptions::new().max_connections(5).connect(url).await?;
             Ok(Self { pool })
         }
 
@@ -985,7 +999,9 @@ pub mod postgres {
             .map_err(|e| RepoError::Database(e.to_string()))?;
 
             match row {
-                Some(r) => Ok(Some(Self::row_to_item(r).map_err(|e| RepoError::Database(e.to_string()))?)),
+                Some(r) => Ok(Some(
+                    Self::row_to_item(r).map_err(|e| RepoError::Database(e.to_string()))?,
+                )),
                 None => Ok(None),
             }
         }
@@ -1143,7 +1159,9 @@ pub mod postgres {
                 .await
                 .map_err(|e| RepoError::Database(e.to_string()))?;
 
-            let count: i64 = row.try_get("count").map_err(|e| RepoError::Database(e.to_string()))?;
+            let count: i64 = row
+                .try_get("count")
+                .map_err(|e| RepoError::Database(e.to_string()))?;
             Ok(count)
         }
 
@@ -1340,7 +1358,9 @@ pub mod postgres {
             .map_err(|e| RepoError::Database(e.to_string()))?;
 
             use sqlx::Row;
-            let id: i64 = row.try_get("id").map_err(|e| RepoError::Database(e.to_string()))?;
+            let id: i64 = row
+                .try_get("id")
+                .map_err(|e| RepoError::Database(e.to_string()))?;
             Ok(id)
         }
 
@@ -1357,11 +1377,21 @@ pub mod postgres {
                 .map(|row| {
                     use sqlx::Row;
                     Ok(Attachment {
-                        id: row.try_get("id").map_err(|e| RepoError::Database(e.to_string()))?,
-                        item_serial: row.try_get("item_serial").map_err(|e| RepoError::Database(e.to_string()))?,
-                        name: row.try_get("name").map_err(|e| RepoError::Database(e.to_string()))?,
-                        mime_type: row.try_get("mime_type").map_err(|e| RepoError::Database(e.to_string()))?,
-                        view: row.try_get("view").map_err(|e| RepoError::Database(e.to_string()))?,
+                        id: row
+                            .try_get("id")
+                            .map_err(|e| RepoError::Database(e.to_string()))?,
+                        item_serial: row
+                            .try_get("item_serial")
+                            .map_err(|e| RepoError::Database(e.to_string()))?,
+                        name: row
+                            .try_get("name")
+                            .map_err(|e| RepoError::Database(e.to_string()))?,
+                        mime_type: row
+                            .try_get("mime_type")
+                            .map_err(|e| RepoError::Database(e.to_string()))?,
+                        view: row
+                            .try_get("view")
+                            .map_err(|e| RepoError::Database(e.to_string()))?,
                     })
                 })
                 .collect()
@@ -1377,7 +1407,9 @@ pub mod postgres {
             match row {
                 Some(r) => {
                     use sqlx::Row;
-                    let data: Vec<u8> = r.try_get("data").map_err(|e| RepoError::Database(e.to_string()))?;
+                    let data: Vec<u8> = r
+                        .try_get("data")
+                        .map_err(|e| RepoError::Database(e.to_string()))?;
                     Ok(Some(data))
                 }
                 None => Ok(None),

@@ -666,13 +666,13 @@ impl ItemsRepository for SqliteDb {
             let current = entry.get(&field);
 
             let should_replace = current
-                .map(|(_, src_prio, conf_prio)| {
-                    match source.priority().cmp(src_prio) {
+                .map(
+                    |(_, src_prio, conf_prio)| match source.priority().cmp(src_prio) {
                         std::cmp::Ordering::Greater => true,
                         std::cmp::Ordering::Equal => confidence.priority() > *conf_prio,
                         std::cmp::Ordering::Less => false,
-                    }
-                })
+                    },
+                )
                 .unwrap_or(true);
 
             if should_replace {
@@ -950,8 +950,8 @@ impl ImportExportRepository for SqliteDb {
 
         std::fs::write(dir.join("serial.txt"), &item.serial)?;
 
-        let metadata = serde_json::to_string_pretty(&item)
-            .map_err(|e| RepoError::Database(e.to_string()))?;
+        let metadata =
+            serde_json::to_string_pretty(&item).map_err(|e| RepoError::Database(e.to_string()))?;
         std::fs::write(dir.join("metadata.json"), metadata)?;
 
         #[cfg(feature = "attachments")]
