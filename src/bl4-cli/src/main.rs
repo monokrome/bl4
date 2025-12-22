@@ -5199,50 +5199,76 @@ fn handle_items_db_command(cmd: ItemsDbCommand, db: &PathBuf) -> Result<()> {
                 return Ok(());
             }
 
-            // Build bulk request
-            let bulk_items: Vec<serde_json::Value> = items
-                .iter()
-                .map(|item| {
-                    serde_json::json!({
-                        "serial": item.serial,
-                        "name": item.name,
-                        "source": "bl4-cli"
-                    })
-                })
-                .collect();
+            // Group items by source for separate batch UUIDs on server
+            let mut groups: std::collections::HashMap<String, Vec<&bl4_idb::Item>> =
+                std::collections::HashMap::new();
+            for item in &items {
+                let source_key = item.source.clone().unwrap_or_default();
+                groups.entry(source_key).or_default().push(item);
+            }
+
+            println!("  Groups: {} (by source)", groups.len());
 
             let url = format!("{}/items/bulk", server.trim_end_matches('/'));
+            let mut total_succeeded = 0u64;
+            let mut total_failed = 0u64;
 
-            let response = ureq::post(&url)
-                .set("Content-Type", "application/json")
-                .send_json(serde_json::json!({ "items": bulk_items }));
+            for (group_idx, (_source, group_items)) in groups.iter().enumerate() {
+                let bulk_items: Vec<serde_json::Value> = group_items
+                    .iter()
+                    .map(|item| {
+                        serde_json::json!({
+                            "serial": item.serial,
+                            "name": item.name,
+                            "source": "bl4-cli"
+                        })
+                    })
+                    .collect();
 
-            match response {
-                Ok(resp) => {
-                    let result: serde_json::Value = resp.into_json()?;
-                    let succeeded = result["succeeded"].as_u64().unwrap_or(0);
-                    let failed = result["failed"].as_u64().unwrap_or(0);
+                let response = ureq::post(&url)
+                    .set("Content-Type", "application/json")
+                    .send_json(serde_json::json!({ "items": bulk_items }));
 
-                    println!("\nPublish complete:");
-                    println!("  Items succeeded: {}", succeeded);
-                    println!("  Items failed: {}", failed);
+                match response {
+                    Ok(resp) => {
+                        let result: serde_json::Value = resp.into_json()?;
+                        let succeeded = result["succeeded"].as_u64().unwrap_or(0);
+                        let failed = result["failed"].as_u64().unwrap_or(0);
+                        total_succeeded += succeeded;
+                        total_failed += failed;
 
-                    if let Some(results) = result["results"].as_array() {
-                        for r in results {
-                            if !r["created"].as_bool().unwrap_or(true) {
-                                println!("  {} - {}", r["serial"], r["message"]);
+                        if let Some(batch_id) = result["batch_id"].as_str() {
+                            println!(
+                                "  Group {}: {} items -> batch {}",
+                                group_idx + 1,
+                                group_items.len(),
+                                batch_id
+                            );
+                        }
+
+                        if let Some(results) = result["results"].as_array() {
+                            for r in results {
+                                if !r["created"].as_bool().unwrap_or(true) {
+                                    println!("    {} - {}", r["serial"], r["message"]);
+                                }
                             }
                         }
                     }
-                }
-                Err(ureq::Error::Status(code, resp)) => {
-                    let body = resp.into_string().unwrap_or_default();
-                    bail!("Server returned {}: {}", code, body);
-                }
-                Err(e) => {
-                    bail!("Request failed: {}", e);
+                    Err(ureq::Error::Status(code, resp)) => {
+                        let body = resp.into_string().unwrap_or_default();
+                        println!("  Group {} failed: {} - {}", group_idx + 1, code, body);
+                        total_failed += group_items.len() as u64;
+                    }
+                    Err(e) => {
+                        println!("  Group {} failed: {}", group_idx + 1, e);
+                        total_failed += group_items.len() as u64;
+                    }
                 }
             }
+
+            println!("\nPublish complete:");
+            println!("  Items succeeded: {}", total_succeeded);
+            println!("  Items failed: {}", total_failed);
 
             // Upload attachments if enabled
             if server_supports_attachments {
