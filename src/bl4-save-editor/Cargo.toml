@@ -1,0 +1,35 @@
+[package]
+name = "bl4-save-editor"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "GUI save editor for Borderlands 4"
+
+[[bin]]
+name = "bl4se"
+path = "src/main.rs"
+
+[features]
+default = ["desktop"]
+desktop = ["tauri", "tauri-build"]
+server = ["axum", "tower-http", "tokio"]
+
+[dependencies]
+bl4 = { path = "../bl4" }
+bl4-idb = { path = "../bl4-idb", features = ["sqlite-sync"] }
+serde.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+
+# Desktop (Tauri)
+tauri = { version = "2", features = ["devtools"], optional = true }
+
+# Server (Axum)
+axum = { version = "0.8", optional = true }
+tower-http = { version = "0.6", features = ["cors", "fs"], optional = true }
+tokio = { version = "1", features = ["full"], optional = true }
+
+[build-dependencies]
+tauri-build = { version = "2", optional = true }
