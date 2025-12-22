@@ -12,8 +12,8 @@ use axum::{
     Json, Router,
 };
 use bl4_idb::{
-    AsyncAttachmentsRepository, AsyncItemsRepository, Confidence, ItemFilter, SqlxSqliteDb,
-    ValueSource,
+    AsyncAttachmentsRepository, AsyncItemsRepository, Confidence, ItemFilter, SqlxPgDb,
+    SqlxSqliteDb, ValueSource,
 };
 use clap::Parser;
 use serde::{Deserialize, Serialize};
@@ -25,6 +25,26 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utoipa::{IntoParams, OpenApi, ToSchema};
 use utoipa_scalar::{Scalar, Servable};
 use uuid::Uuid;
+
+// =============================================================================
+// Helpers
+
+/// Sanitize a database URL by redacting the password portion.
+fn sanitize_db_url(url: &str) -> String {
+    // Match ://user:password@ pattern and redact password
+    if let Some(proto_end) = url.find("://") {
+        let after_proto = &url[proto_end + 3..];
+        if let Some(at_pos) = after_proto.find('@') {
+            let creds = &after_proto[..at_pos];
+            if let Some(colon) = creds.find(':') {
+                let user = &creds[..colon];
+                let rest = &after_proto[at_pos + 1..];
+                return format!("{}://{}:***@{}", &url[..proto_end], user, rest);
+            }
+        }
+    }
+    url.to_string()
+}
 
 // =============================================================================
 // CLI
@@ -60,8 +80,117 @@ enum Command {
 // App State
 // =============================================================================
 
+pub enum Database {
+    Sqlite(SqlxSqliteDb),
+    Postgres(SqlxPgDb),
+}
+
+impl Database {
+    async fn connect(url: &str) -> anyhow::Result<Self> {
+        if url.starts_with("postgres://") || url.starts_with("postgresql://") {
+            Ok(Database::Postgres(SqlxPgDb::connect(url).await?))
+        } else {
+            Ok(Database::Sqlite(SqlxSqliteDb::connect(url).await?))
+        }
+    }
+
+    async fn init(&self) -> Result<(), bl4_idb::RepoError> {
+        match self {
+            Database::Sqlite(db) => db.init().await,
+            Database::Postgres(db) => db.init().await,
+        }
+    }
+
+    async fn stats(&self) -> Result<bl4_idb::DbStats, bl4_idb::RepoError> {
+        match self {
+            Database::Sqlite(db) => db.stats().await,
+            Database::Postgres(db) => db.stats().await,
+        }
+    }
+
+    async fn list_items(
+        &self,
+        filter: &ItemFilter,
+    ) -> Result<Vec<bl4_idb::Item>, bl4_idb::RepoError> {
+        match self {
+            Database::Sqlite(db) => db.list_items(filter).await,
+            Database::Postgres(db) => db.list_items(filter).await,
+        }
+    }
+
+    async fn count_items(&self, filter: &ItemFilter) -> Result<i64, bl4_idb::RepoError> {
+        match self {
+            Database::Sqlite(db) => db.count_items(filter).await,
+            Database::Postgres(db) => db.count_items(filter).await,
+        }
+    }
+
+    async fn get_item(&self, serial: &str) -> Result<Option<bl4_idb::Item>, bl4_idb::RepoError> {
+        match self {
+            Database::Sqlite(db) => db.get_item(serial).await,
+            Database::Postgres(db) => db.get_item(serial).await,
+        }
+    }
+
+    async fn add_item(&self, serial: &str) -> Result<(), bl4_idb::RepoError> {
+        match self {
+            Database::Sqlite(db) => db.add_item(serial).await,
+            Database::Postgres(db) => db.add_item(serial).await,
+        }
+    }
+
+    async fn set_value(
+        &self,
+        serial: &str,
+        field: &str,
+        value: &str,
+        source: ValueSource,
+        source_detail: Option<&str>,
+        confidence: Confidence,
+    ) -> Result<(), bl4_idb::RepoError> {
+        match self {
+            Database::Sqlite(db) => {
+                db.set_value(serial, field, value, source, source_detail, confidence)
+                    .await
+            }
+            Database::Postgres(db) => {
+                db.set_value(serial, field, value, source, source_detail, confidence)
+                    .await
+            }
+        }
+    }
+
+    async fn add_attachment(
+        &self,
+        serial: &str,
+        name: &str,
+        mime_type: &str,
+        data: &[u8],
+        view: &str,
+    ) -> Result<i64, bl4_idb::RepoError> {
+        match self {
+            Database::Sqlite(db) => db.add_attachment(serial, name, mime_type, data, view).await,
+            Database::Postgres(db) => db.add_attachment(serial, name, mime_type, data, view).await,
+        }
+    }
+
+    async fn set_source(&self, serial: &str, source: &str) -> Result<(), bl4_idb::RepoError> {
+        match self {
+            Database::Sqlite(db) => db.set_source(serial, source).await,
+            Database::Postgres(db) => db.set_source(serial, source).await,
+        }
+    }
+
+    async fn set_item_type(&self, serial: &str, item_type: &str) -> Result<(), bl4_idb::RepoError> {
+        match self {
+            Database::Sqlite(db) => db.set_item_type(serial, item_type).await,
+            Database::Postgres(db) => db.set_item_type(serial, item_type).await,
+        }
+    }
+}
+
 pub struct AppState {
-    pub db: SqlxSqliteDb,
+    pub db: Database,
 }
 
 // =============================================================================
@@ -810,8 +939,8 @@ async fn main() -> anyhow::Result<()> {
                 format!("sqlite:{}?mode=rwc", database)
             };
 
-            tracing::info!("Connecting to database: {}", db_url);
-            let db = SqlxSqliteDb::connect(&db_url).await?;
+            tracing::info!("Connecting to database: {}", sanitize_db_url(&db_url));
+            let db = Database::connect(&db_url).await?;
             db.init().await?;
             tracing::info!("Database initialized");
 
