@@ -259,7 +259,7 @@ const MAX_ATTACHMENT_SIZE: usize = 10 * 1024 * 1024;
 
 #[utoipa::path(
     get,
-    path = "/api/capabilities",
+    path = "/capabilities",
     responses((status = 200, description = "Server capabilities", body = CapabilitiesResponse)),
     tag = "System"
 )]
@@ -278,7 +278,7 @@ async fn options_schema() -> Json<utoipa::openapi::OpenApi> {
 
 #[utoipa::path(
     get,
-    path = "/api/stats",
+    path = "/stats",
     responses((status = 200, description = "Database statistics", body = StatsResponse)),
     tag = "System"
 )]
@@ -301,7 +301,7 @@ async fn get_stats(
 
 #[utoipa::path(
     get,
-    path = "/api/items",
+    path = "/items",
     params(ListItemsQuery),
     responses((status = 200, description = "List of items", body = ListItemsResponse)),
     tag = "Items"
@@ -370,7 +370,7 @@ async fn list_items(
 
 #[utoipa::path(
     get,
-    path = "/api/items/{serial}",
+    path = "/items/{serial}",
     params(("serial" = String, Path, description = "Item serial code")),
     responses(
         (status = 200, description = "Item found", body = ItemResponse),
@@ -406,7 +406,7 @@ async fn get_item(
 
 #[utoipa::path(
     post,
-    path = "/api/items/{serial}/attachments",
+    path = "/items/{serial}/attachments",
     request_body(content_type = "multipart/form-data"),
     params(
         ("serial" = String, Path, description = "Item serial")
@@ -502,7 +502,7 @@ async fn upload_attachment(
 
 #[utoipa::path(
     post,
-    path = "/api/items",
+    path = "/items",
     request_body = CreateItemRequest,
     responses(
         (status = 201, description = "Item created", body = CreateItemResponse),
@@ -577,7 +577,7 @@ async fn create_item(
 
 #[utoipa::path(
     post,
-    path = "/api/items/bulk",
+    path = "/items/bulk",
     request_body = BulkCreateRequest,
     responses((status = 200, description = "Bulk creation results", body = BulkCreateResponse)),
     tag = "Items"
@@ -679,7 +679,7 @@ async fn create_items_bulk(
 
 #[utoipa::path(
     post,
-    path = "/api/decode",
+    path = "/decode",
     request_body = DecodeRequest,
     responses(
         (status = 200, description = "Successfully decoded", body = DecodeResponse),
@@ -746,7 +746,7 @@ async fn decode_serial(
 
 #[utoipa::path(
     post,
-    path = "/api/encode",
+    path = "/encode",
     request_body = EncodeRequest,
     responses(
         (status = 200, description = "Successfully encoded", body = EncodeResponse),
@@ -811,14 +811,14 @@ async fn main() -> anyhow::Result<()> {
             // API routes with CORS
             let api_routes = Router::new()
                 .route("/health", get(health))
-                .route("/api/capabilities", get(get_capabilities))
-                .route("/api/items", get(list_items).post(create_item))
-                .route("/api/items/bulk", post(create_items_bulk))
-                .route("/api/items/{serial}", get(get_item))
-                .route("/api/items/{serial}/attachments", post(upload_attachment))
-                .route("/api/decode", post(decode_serial))
-                .route("/api/encode", post(encode_serial))
-                .route("/api/stats", get(get_stats))
+                .route("/capabilities", get(get_capabilities))
+                .route("/items", get(list_items).post(create_item))
+                .route("/items/bulk", post(create_items_bulk))
+                .route("/items/{serial}", get(get_item))
+                .route("/items/{serial}/attachments", post(upload_attachment))
+                .route("/decode", post(decode_serial))
+                .route("/encode", post(encode_serial))
+                .route("/stats", get(get_stats))
                 .merge(Scalar::with_url("/scalar", ApiDoc::openapi()))
                 .route("/openapi.json", get(|| async { Json(ApiDoc::openapi()) }))
                 .with_state(state)

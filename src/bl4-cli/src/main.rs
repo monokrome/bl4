@@ -4555,7 +4555,7 @@ fn handle_items_db_command(cmd: ItemsDbCommand, db: &PathBuf) -> Result<()> {
 
             // Check server capabilities if attachments requested
             let server_supports_attachments = if attachments {
-                let caps_url = format!("{}/api/capabilities", server.trim_end_matches('/'));
+                let caps_url = format!("{}/capabilities", server.trim_end_matches('/'));
                 match ureq::get(&caps_url).call() {
                     Ok(resp) => {
                         let caps: serde_json::Value = resp.into_json()?;
@@ -4602,7 +4602,7 @@ fn handle_items_db_command(cmd: ItemsDbCommand, db: &PathBuf) -> Result<()> {
                 })
                 .collect();
 
-            let url = format!("{}/api/items/bulk", server.trim_end_matches('/'));
+            let url = format!("{}/items/bulk", server.trim_end_matches('/'));
 
             let response = ureq::post(&url)
                 .set("Content-Type", "application/json")
@@ -4649,7 +4649,7 @@ fn handle_items_db_command(cmd: ItemsDbCommand, db: &PathBuf) -> Result<()> {
                         };
 
                         let upload_url = format!(
-                            "{}/api/items/{}/attachments",
+                            "{}/items/{}/attachments",
                             server.trim_end_matches('/'),
                             urlencoding::encode(&item.serial)
                         );
@@ -4734,7 +4734,7 @@ fn handle_items_db_command(cmd: ItemsDbCommand, db: &PathBuf) -> Result<()> {
 
             loop {
                 let url = format!(
-                    "{}/api/items?limit={}&offset={}",
+                    "{}/items?limit={}&offset={}",
                     server.trim_end_matches('/'),
                     limit,
                     offset
