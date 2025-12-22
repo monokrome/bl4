@@ -39,13 +39,16 @@ jobs:
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Run tests
-        run: cargo test --all-features
+        run: cargo test --workspace
+
+      - name: Test save-editor server feature
+        run: cargo test -p bl4-save-editor --features server
 
       - name: Check formatting
         run: cargo fmt --all -- --check
 
       - name: Run clippy
-        run: cargo clippy --all-targets --all-features -- -D warnings
+        run: cargo clippy --workspace -- -D warnings
 
   build:
     name: Build
@@ -60,8 +63,8 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Build
-        run: cargo build --release --all-features
-
       - name: Build CLI
         run: cargo build --release -p bl4-cli
+
+      - name: Build save-editor (server)
+        run: cargo build --release -p bl4-save-editor --features server

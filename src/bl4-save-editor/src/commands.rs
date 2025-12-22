@@ -1,5 +1,5 @@
 use crate::state::{AppState, LoadedSave};
-use bl4::{decrypt_sav, encrypt_sav, SaveFile};
+use bl4::{decrypt_sav, encrypt_sav, ItemSerial, SaveFile};
 use bl4_idb::{ItemsRepository, SqliteDb};
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -28,7 +28,7 @@ pub struct CharacterInfo {
     pub eridium: Option<u64>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InventoryItem {
     pub slot: u32,
     pub serial: String,
@@ -36,6 +36,56 @@ pub struct InventoryItem {
     pub is_favorite: bool,
     pub is_junk: bool,
     pub is_equipped: bool,
+    // Decoded info
+    pub name: Option<String>,
+    pub level: Option<u32>,
+    pub manufacturer: Option<String>,
+    pub weapon_type: Option<String>,
+    pub rarity: Option<String>,
+    pub elements: Option<String>,
+    pub item_type: Option<String>,
+    pub decode_success: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ItemDetail {
+    pub serial: String,
+    pub item_type: String,
+    pub item_type_name: String,
+    pub manufacturer: Option<String>,
+    pub weapon_type: Option<String>,
+    pub level: Option<u32>,
+    pub rarity: Option<String>,
+    pub elements: Option<String>,
+    pub parts: Vec<PartDetail>,
+    pub decode_success: bool,
+    // Confidence levels for editing
+    pub level_editable: bool,
+    pub element_editable: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PartDetail {
+    pub index: u32,
+    pub category: Option<String>,
+    pub name: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct BankInfo {
+    pub items: Vec<InventoryItem>,
+    pub count: u32,
+    pub max_capacity: u32,
+    pub sdu_warning: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[allow(dead_code)] // Will be used for change tracking UI
+pub struct ChangeEntry {
+    pub path: String,
+    pub old_value: Option<String>,
+    pub new_value: String,
+    pub field_name: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -47,79 +97,13 @@ pub struct SetCharacterRequest {
     pub specialization_xp: Option<u64>,
 }
 
-/// Open and decrypt a save file.
-#[cfg(feature = "desktop")]
-#[tauri::command]
-pub fn open_save(
-    state: tauri::State<AppState>,
+// Implementation functions (shared between server and servo)
+
+pub fn open_save_impl(
+    state: &AppState,
     path: String,
     steam_id: String,
 ) -> Result<SaveInfo, String> {
-    open_save_impl(&state, path, steam_id)
-}
-
-/// Save and encrypt changes.
-#[cfg(feature = "desktop")]
-#[tauri::command]
-pub fn save_changes(state: tauri::State<AppState>) -> Result<(), String> {
-    save_changes_impl(&state)
-}
-
-/// Get info about the currently loaded save.
-#[cfg(feature = "desktop")]
-#[tauri::command]
-pub fn get_save_info(state: tauri::State<AppState>) -> Result<Option<SaveInfo>, String> {
-    get_save_info_impl(&state)
-}
-
-/// Get character attributes.
-#[cfg(feature = "desktop")]
-#[tauri::command]
-pub fn get_character(state: tauri::State<AppState>) -> Result<CharacterInfo, String> {
-    get_character_impl(&state)
-}
-
-/// Update character attributes.
-#[cfg(feature = "desktop")]
-#[tauri::command]
-pub fn set_character(
-    state: tauri::State<AppState>,
-    request: SetCharacterRequest,
-) -> Result<(), String> {
-    set_character_impl(&state, request)
-}
-
-/// Get inventory items.
-#[cfg(feature = "desktop")]
-#[tauri::command]
-pub fn get_inventory(state: tauri::State<AppState>) -> Result<Vec<InventoryItem>, String> {
-    get_inventory_impl(&state)
-}
-
-/// Connect to items database.
-#[cfg(feature = "desktop")]
-#[tauri::command]
-pub fn connect_db(state: tauri::State<AppState>, path: String) -> Result<(), String> {
-    connect_db_impl(&state, path)
-}
-
-/// Sync items from save to bank.
-#[cfg(feature = "desktop")]
-#[tauri::command]
-pub fn sync_to_bank(state: tauri::State<AppState>, serials: Vec<String>) -> Result<u32, String> {
-    sync_to_bank_impl(&state, serials)
-}
-
-/// Sync items from bank to save.
-#[cfg(feature = "desktop")]
-#[tauri::command]
-pub fn sync_from_bank(state: tauri::State<AppState>, serials: Vec<String>) -> Result<u32, String> {
-    sync_from_bank_impl(&state, serials)
-}
-
-// Implementation functions (shared between desktop and server)
-
-pub fn open_save_impl(state: &AppState, path: String, steam_id: String) -> Result<SaveInfo, String> {
     let path_buf = PathBuf::from(&path);
     let is_profile = path_buf
         .file_name()
@@ -286,14 +270,8 @@ pub fn get_inventory_impl(state: &AppState) -> Result<Vec<InventoryItem>, String
                     .unwrap_or(0) as u32;
 
                 let flags = bl4::StateFlags::from_raw(state_flags);
-                items.push(InventoryItem {
-                    slot,
-                    serial: serial.to_string(),
-                    state_flags,
-                    is_favorite: flags.is_favorite(),
-                    is_junk: flags.is_junk(),
-                    is_equipped: flags.is_equipped(),
-                });
+                let item = decode_inventory_item(slot, serial, state_flags, &flags);
+                items.push(item);
             }
         }
     }
@@ -301,9 +279,161 @@ pub fn get_inventory_impl(state: &AppState) -> Result<Vec<InventoryItem>, String
     Ok(items)
 }
 
+fn decode_inventory_item(
+    slot: u32,
+    serial: &str,
+    state_flags: u32,
+    flags: &bl4::StateFlags,
+) -> InventoryItem {
+    let decoded = ItemSerial::decode(serial);
+
+    let (decode_success, level, manufacturer, weapon_type, rarity, elements, item_type) =
+        match &decoded {
+            Ok(item) => {
+                let (mfg, wtype) = item.weapon_info().unzip();
+                let lvl = item
+                    .level
+                    .and_then(bl4::parts::level_from_code)
+                    .map(|(capped, _)| capped as u32);
+                let rar = item.rarity_name().map(String::from);
+                let elem = item.element_names();
+                let itype = Some(item.item_type_description().to_string());
+                (
+                    true,
+                    lvl,
+                    mfg.map(String::from),
+                    wtype.map(String::from),
+                    rar,
+                    elem,
+                    itype,
+                )
+            }
+            Err(_) => (false, None, None, None, None, None, None),
+        };
+
+    // Try to get name from rarity + manufacturer + weapon type
+    let name = match (&rarity, &manufacturer, &weapon_type) {
+        (Some(r), Some(m), Some(w)) => Some(format!("{} {} {}", r, m, w)),
+        (Some(r), Some(m), None) => Some(format!("{} {}", r, m)),
+        (Some(r), None, Some(w)) => Some(format!("{} {}", r, w)),
+        _ => item_type.clone(),
+    };
+
+    InventoryItem {
+        slot,
+        serial: serial.to_string(),
+        state_flags,
+        is_favorite: flags.is_favorite(),
+        is_junk: flags.is_junk(),
+        is_equipped: flags.is_equipped(),
+        name,
+        level,
+        manufacturer,
+        weapon_type,
+        rarity,
+        elements,
+        item_type,
+        decode_success,
+    }
+}
+
+pub fn get_bank_impl(state: &AppState) -> Result<BankInfo, String> {
+    let current = state
+        .current_save
+        .lock()
+        .map_err(|e| format!("Lock error: {}", e))?;
+
+    let loaded = current.as_ref().ok_or("No save file loaded")?;
+    let save = &loaded.save;
+
+    let mut items = Vec::new();
+
+    // Bank items in profile.sav
+    for slot in 0..400 {
+        let serial_path = format!(
+            "domains.local.shared.inventory.items.bank.slot_{}.serial",
+            slot
+        );
+        let flags_path = format!(
+            "domains.local.shared.inventory.items.bank.slot_{}.state_flags",
+            slot
+        );
+
+        if let Ok(serial_val) = save.get(&serial_path) {
+            if let Some(serial) = serial_val.as_str() {
+                if serial.is_empty() {
+                    continue;
+                }
+                let state_flags = save
+                    .get(&flags_path)
+                    .ok()
+                    .and_then(|v| v.as_u64())
+                    .unwrap_or(0) as u32;
+
+                let flags = bl4::StateFlags::from_raw(state_flags);
+                let item = decode_inventory_item(slot, serial, state_flags, &flags);
+                items.push(item);
+            }
+        }
+    }
+
+    let count = items.len() as u32;
+    // TODO: Check SDU level from character save
+    let sdu_warning = count > 100; // Default warning if over base capacity
+
+    Ok(BankInfo {
+        items,
+        count,
+        max_capacity: 400,
+        sdu_warning,
+    })
+}
+
+pub fn get_item_detail_impl(_state: &AppState, serial: &str) -> Result<ItemDetail, String> {
+    let decoded = ItemSerial::decode(serial).map_err(|e| format!("Failed to decode: {}", e))?;
+
+    let (mfg, wtype) = decoded.weapon_info().unzip();
+    let level = decoded
+        .level
+        .and_then(bl4::parts::level_from_code)
+        .map(|(capped, _)| capped as u32);
+    let rarity = decoded.rarity_name().map(String::from);
+    let elements = decoded.element_names();
+
+    let parts: Vec<PartDetail> = decoded
+        .parts()
+        .iter()
+        .map(|(idx, _bits)| {
+            let cat_id = bl4::parts::serial_id_to_parts_category(*idx);
+            let category = bl4::parts::category_name(cat_id as i64).map(String::from);
+            PartDetail {
+                index: *idx as u32,
+                category,
+                name: None, // TODO: look up part name from manifest
+            }
+        })
+        .collect();
+
+    Ok(ItemDetail {
+        serial: serial.to_string(),
+        item_type: decoded.item_type.to_string(),
+        item_type_name: decoded.item_type_description().to_string(),
+        manufacturer: mfg.map(String::from),
+        weapon_type: wtype.map(String::from),
+        level,
+        rarity,
+        elements,
+        parts,
+        decode_success: true,
+        level_editable: level.is_some(), // We're confident about level decoding
+        element_editable: true,          // We're confident about element handling
+    })
+}
+
 pub fn connect_db_impl(state: &AppState, path: String) -> Result<(), String> {
     let db = SqliteDb::open(&path).map_err(|e| format!("Failed to open database: {}", e))?;
-    db.init().map_err(|e| format!("Failed to init database: {}", e))?;
+    db.init()
+        .map_err(|e| format!("Failed to init database: {}", e))?;
 
     let mut db_lock = state
         .items_db

@@ -1,7 +1,7 @@
 use crate::commands::{
-    connect_db_impl, get_character_impl, get_inventory_impl, get_save_info_impl, open_save_impl,
-    save_changes_impl, set_character_impl, sync_to_bank_impl, CharacterInfo, InventoryItem,
-    SaveInfo, SetCharacterRequest,
+    connect_db_impl, get_bank_impl, get_character_impl, get_inventory_impl, get_item_detail_impl,
+    get_save_info_impl, open_save_impl, save_changes_impl, set_character_impl, sync_to_bank_impl,
+    BankInfo, CharacterInfo, InventoryItem, ItemDetail, SaveInfo, SetCharacterRequest,
 };
 use crate::state::AppState;
 use axum::{
@@ -30,6 +30,11 @@ pub struct ConnectDbRequest {
 #[derive(Deserialize)]
 pub struct SyncRequest {
     serials: Vec<String>,
+}
+
+#[derive(Deserialize)]
+pub struct ItemDetailRequest {
+    serial: String,
 }
 
 #[derive(Serialize)]
@@ -146,6 +151,23 @@ async fn sync_to_bank(
         .map_err(ApiResponse::error)
 }
 
+async fn get_bank(
+    State(state): State<AppStateArc>,
+) -> Result<Json<ApiResponse<BankInfo>>, (StatusCode, Json<ApiResponse<()>>)> {
+    get_bank_impl(&state)
+        .map(ApiResponse::ok)
+        .map_err(ApiResponse::error)
+}
+
+async fn get_item_detail(
+    State(state): State<AppStateArc>,
+    Json(req): Json<ItemDetailRequest>,
+) -> Result<Json<ApiResponse<ItemDetail>>, (StatusCode, Json<ApiResponse<()>>)> {
+    get_item_detail_impl(&state, &req.serial)
+        .map(ApiResponse::ok)
+        .map_err(ApiResponse::error)
+}
+
 pub async fn run() {
     let state = Arc::new(AppState::default());
 
@@ -162,8 +184,10 @@ pub async fn run() {
         .route("/character", get(get_character))
         .route("/character", post(set_character))
         .route("/inventory", get(get_inventory))
-        .route("/db/connect", post(connect_db))
-        .route("/bank/sync", post(sync_to_bank));
+        .route("/bank", get(get_bank))
+        .route("/bank/sync", post(sync_to_bank))
+        .route("/item/detail", post(get_item_detail))
+        .route("/db/connect", post(connect_db));
 
     let app = Router::new()
         .nest("/api", api_routes)
