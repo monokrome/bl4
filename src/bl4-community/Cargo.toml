@@ -1,0 +1,39 @@
+[package]
+name = "bl4-community"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Community API server for Borderlands 4 items database"
+
+[[bin]]
+name = "bl4-community"
+path = "src/main.rs"
+
+[dependencies]
+bl4 = { version = "0.3.0", path = "../bl4" }
+bl4-idb = { version = "0.3.0", path = "../bl4-idb", features = ["sqlx-sqlite"] }
+
+# Web framework
+axum = { version = "0.8", features = ["multipart"] }
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+tokio = { version = "1", features = ["full"] }
+
+# OpenAPI
+utoipa = { version = "5", features = ["axum_extras"] }
+utoipa-scalar = { version = "0.3", features = ["axum"] }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# CLI
+clap = { workspace = true }
+
+# Error handling
+anyhow = { workspace = true }

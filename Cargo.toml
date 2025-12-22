@@ -2,7 +2,9 @@
 resolver = "2"
 members = [
     "src/bl4",
+    "src/bl4-idb",
     "src/bl4-cli",
+    "src/bl4-community",
     "src/bl4-research",
     "src/uextract",
 ]
