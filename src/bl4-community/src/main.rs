@@ -803,8 +803,12 @@ async fn main() -> anyhow::Result<()> {
                 .with(tracing_subscriber::fmt::layer())
                 .init();
 
-            // Build database URL
-            let db_url = format!("sqlite:{}?mode=rwc", database);
+            // Build database URL - only add sqlite: prefix for local file paths
+            let db_url = if database.contains("://") {
+                database.clone()
+            } else {
+                format!("sqlite:{}?mode=rwc", database)
+            };
 
             tracing::info!("Connecting to database: {}", db_url);
             let db = SqlxSqliteDb::connect(&db_url).await?;
