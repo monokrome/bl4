@@ -37,3 +37,6 @@ clap = { workspace = true }
 
 # Error handling
 anyhow = { workspace = true }
+
+# UUID generation
+uuid = { version = "1.11", features = ["v4"] }

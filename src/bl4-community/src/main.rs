@@ -8,7 +8,7 @@ use std::sync::Arc;
 use axum::{
     extract::{Multipart, Path as AxumPath, Query, State},
     http::StatusCode,
-    routing::{get, post, MethodRouter},
+    routing::{get, post},
     Json, Router,
 };
 use bl4_idb::{AsyncAttachmentsRepository, AsyncItemsRepository, Confidence, ItemFilter, SqlxSqliteDb, ValueSource};
@@ -21,6 +21,7 @@ use tower_http::{
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utoipa::{IntoParams, OpenApi, ToSchema};
 use utoipa_scalar::{Scalar, Servable};
+use uuid::Uuid;
 
 // =============================================================================
 // CLI
@@ -81,6 +82,7 @@ pub struct AppState {
         create_item,
         create_items_bulk,
         decode_serial,
+        encode_serial,
         get_stats,
     ),
     components(schemas(
@@ -95,6 +97,8 @@ pub struct AppState {
         BulkCreateResponse,
         DecodeRequest,
         DecodeResponse,
+        EncodeRequest,
+        EncodeResponse,
         PartInfo,
         StatsResponse,
         AttachmentUploadResponse,
@@ -167,6 +171,8 @@ pub struct BulkCreateRequest {
 
 #[derive(Debug, Serialize, ToSchema)]
 pub struct BulkCreateResponse {
+    /// Unique batch ID assigned to all items in this upload
+    pub batch_id: String,
     pub succeeded: usize,
     pub failed: usize,
     pub results: Vec<CreateItemResponse>,
@@ -195,6 +201,18 @@ pub struct DecodeResponse {
     pub rarity: Option<String>,
     pub element: Option<String>,
     pub parts: Vec<PartInfo>,
+}
+
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct EncodeRequest {
+    pub serial: String,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct EncodeResponse {
+    pub original: String,
+    pub encoded: String,
+    pub matches: bool,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -256,11 +274,6 @@ async fn get_capabilities() -> Json<CapabilitiesResponse> {
 /// OPTIONS handler returns OpenAPI schema for API discovery
 async fn options_schema() -> Json<utoipa::openapi::OpenApi> {
     Json(ApiDoc::openapi())
-}
-
-/// Helper to add OPTIONS schema handler to a route
-fn with_options(router: MethodRouter<Arc<AppState>>) -> MethodRouter<Arc<AppState>> {
-    router.options(options_schema)
 }
 
 #[utoipa::path(
@@ -521,9 +534,13 @@ async fn create_item(
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
+    // Generate unique source ID for this upload
+    let upload_id = Uuid::new_v4().to_string();
+    let source = format!("community:{}", upload_id);
+
     state
         .db
-        .set_source(&req.serial, "community")
+        .set_source(&req.serial, &source)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
@@ -553,7 +570,7 @@ async fn create_item(
         Json(CreateItemResponse {
             serial: req.serial,
             created: true,
-            message: "Item created with community source".into(),
+            message: format!("Item created with source community:{}", upload_id),
         }),
     ))
 }
@@ -569,6 +586,10 @@ async fn create_items_bulk(
     State(state): State<Arc<AppState>>,
     Json(req): Json<BulkCreateRequest>,
 ) -> Result<Json<BulkCreateResponse>, (StatusCode, String)> {
+    // Generate a unique batch ID for this upload
+    let batch_id = Uuid::new_v4().to_string();
+    let batch_source = format!("community:{}", batch_id);
+
     let mut results = Vec::new();
     let mut succeeded = 0;
     let mut failed = 0;
@@ -619,7 +640,8 @@ async fn create_items_bulk(
             continue;
         }
 
-        let _ = state.db.set_source(&item.serial, "community").await;
+        // Use the batch-specific source for all items in this upload
+        let _ = state.db.set_source(&item.serial, &batch_source).await;
         let _ = state
             .db
             .set_item_type(&item.serial, &decoded.item_type.to_string())
@@ -648,6 +670,7 @@ async fn create_items_bulk(
     }
 
     Ok(Json(BulkCreateResponse {
+        batch_id,
         succeeded,
         failed,
         results,
@@ -662,13 +685,20 @@ async fn create_items_bulk(
         (status = 200, description = "Successfully decoded", body = DecodeResponse),
         (status = 400, description = "Invalid serial format")
     ),
-    tag = "Decode"
+    tag = "Serial"
 )]
 async fn decode_serial(
+    State(state): State<Arc<AppState>>,
     Json(req): Json<DecodeRequest>,
 ) -> Result<Json<DecodeResponse>, (StatusCode, String)> {
     let item = bl4::ItemSerial::decode(&req.serial)
         .map_err(|e| (StatusCode::BAD_REQUEST, format!("Failed to decode: {}", e)))?;
+
+    // Auto-insert valid serials into DB with community:decode source
+    // Ignore errors - item may already exist
+    if state.db.add_item(&req.serial).await.is_ok() {
+        let _ = state.db.set_source(&req.serial, "community:decode").await;
+    }
 
     let (manufacturer, weapon_type) = if let Some(mfg_id) = item.manufacturer {
         bl4::parts::weapon_info_from_first_varint(mfg_id)
@@ -714,6 +744,32 @@ async fn decode_serial(
     }))
 }
 
+#[utoipa::path(
+    post,
+    path = "/api/encode",
+    request_body = EncodeRequest,
+    responses(
+        (status = 200, description = "Successfully encoded", body = EncodeResponse),
+        (status = 400, description = "Invalid serial format")
+    ),
+    tag = "Serial"
+)]
+async fn encode_serial(
+    Json(req): Json<EncodeRequest>,
+) -> Result<Json<EncodeResponse>, (StatusCode, String)> {
+    let item = bl4::ItemSerial::decode(&req.serial)
+        .map_err(|e| (StatusCode::BAD_REQUEST, format!("Failed to decode: {}", e)))?;
+
+    let encoded = item.encode();
+    let matches = encoded == req.serial;
+
+    Ok(Json(EncodeResponse {
+        original: req.serial,
+        encoded,
+        matches,
+    }))
+}
+
 // =============================================================================
 // Main
 // =============================================================================
@@ -747,28 +803,32 @@ async fn main() -> anyhow::Result<()> {
 
             let state = Arc::new(AppState { db });
 
-            let app = Router::new()
-                .route("/health", with_options(get(health)))
-                .route("/api/capabilities", with_options(get(get_capabilities)))
-                .route("/api/items", with_options(get(list_items).post(create_item)))
-                .route("/api/items/bulk", with_options(post(create_items_bulk)))
-                .route("/api/items/{serial}", with_options(get(get_item)))
-                .route("/api/items/{serial}/attachments", with_options(post(upload_attachment)))
-                .route("/api/decode", with_options(post(decode_serial)))
-                .route("/api/stats", with_options(get(get_stats)))
+            let cors = CorsLayer::new()
+                .allow_origin(Any)
+                .allow_methods(Any)
+                .allow_headers(Any);
+
+            // API routes with CORS
+            let api_routes = Router::new()
+                .route("/health", get(health))
+                .route("/api/capabilities", get(get_capabilities))
+                .route("/api/items", get(list_items).post(create_item))
+                .route("/api/items/bulk", post(create_items_bulk))
+                .route("/api/items/{serial}", get(get_item))
+                .route("/api/items/{serial}/attachments", post(upload_attachment))
+                .route("/api/decode", post(decode_serial))
+                .route("/api/encode", post(encode_serial))
+                .route("/api/stats", get(get_stats))
                 .merge(Scalar::with_url("/scalar", ApiDoc::openapi()))
-                .route(
-                    "/openapi.json",
-                    get(|| async { Json(ApiDoc::openapi()) }),
-                )
+                .route("/openapi.json", get(|| async { Json(ApiDoc::openapi()) }))
                 .with_state(state)
-                .layer(TraceLayer::new_for_http())
-                .layer(
-                    CorsLayer::new()
-                        .allow_origin(Any)
-                        .allow_methods(Any)
-                        .allow_headers(Any),
-                );
+                .layer(cors);
+
+            // Root OPTIONS returns OpenAPI schema (no CORS interception)
+            let app = Router::new()
+                .route("/", axum::routing::options(options_schema))
+                .merge(api_routes)
+                .layer(TraceLayer::new_for_http());
 
             let bind_addr = format!("{}:{}", bind, port);
             tracing::info!("Starting server on {}", bind_addr);
