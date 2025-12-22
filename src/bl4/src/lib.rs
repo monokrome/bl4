@@ -38,6 +38,7 @@
 
 pub mod backup;
 pub mod crypto;
+pub mod manifest;
 pub mod parts;
 pub mod save;
 pub mod serial;
@@ -54,3 +55,6 @@ pub use parts::{
 };
 pub use save::{ChangeSet, SaveError, SaveFile, StateFlags};
 pub use serial::{ItemSerial, SerialError};
+
+// Manifest data lookups
+pub use manifest::{all_categories, all_manufacturers, part_name, stats as manifest_stats};

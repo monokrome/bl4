@@ -114,101 +114,8 @@ pub fn serial_id_to_parts_category(serial_id: u64) -> u64 {
         .unwrap_or(serial_id)
 }
 
-/// Part Group ID (Category) to name mapping
-/// Derived from memory dump analysis and serial decoding
-static CATEGORY_NAMES: phf::Map<i64, &'static str> = phf_map! {
-    // Shields (verified from tagged bank items 2025-12-20)
-    31i64 => "Armor Shield",
-    76i64 => "Energy Shield",  // [V] Type 'e' format
-    204i64 => "Armor Shield",
-
-    // Pistols
-    2i64 => "Daedalus Pistol",
-    3i64 => "Jakobs Pistol",
-    4i64 => "Tediore Pistol",
-    5i64 => "Torgue Pistol",
-    6i64 => "Order Pistol",
-    7i64 => "Vladof Pistol",
-
-    // Shotguns
-    8i64 => "Daedalus Shotgun",
-    9i64 => "Jakobs Shotgun",
-    10i64 => "Tediore Shotgun",
-    11i64 => "Torgue Shotgun",
-    12i64 => "Bor Shotgun",
-
-    // Assault Rifles
-    13i64 => "Daedalus Assault Rifle",
-    14i64 => "Jakobs Assault Rifle",
-    15i64 => "Tediore Assault Rifle",
-    16i64 => "Torgue Assault Rifle",
-    17i64 => "Vladof Assault Rifle",
-    18i64 => "Order Assault Rifle",
-
-    // Maliwan Shotgun (gap filler)
-    19i64 => "Maliwan Shotgun",
-
-    // SMGs
-    20i64 => "Daedalus SMG",
-    21i64 => "Bor SMG",
-    22i64 => "Vladof SMG",
-    23i64 => "Maliwan SMG",
-    24i64 => "Tediore SMG",  // [I] Inferred from category pattern
-
-    // Snipers
-    25i64 => "Bor Sniper",
-    26i64 => "Jakobs Sniper",
-    27i64 => "Vladof Sniper",
-    28i64 => "Order Sniper",
-    29i64 => "Maliwan Sniper",
-    30i64 => "Tediore Sniper",  // [I] Inferred from category pattern
-
-    // Class Mods (derived from serial analysis - categories 44, 55, 97, 140)
-    44i64 => "Dark Siren Class Mod",
-    55i64 => "Paladin Class Mod",
-    97i64 => "Gravitar Class Mod",
-    140i64 => "Exo Soldier Class Mod",
-
-    // Firmware (category 151)
-    151i64 => "Firmware",
-
-    // Heavy Weapons
-    244i64 => "Vladof Heavy",
-    245i64 => "Torgue Heavy",
-    246i64 => "Bor Heavy",
-    247i64 => "Maliwan Heavy",
-
-    // Shields (r-type serial categories - verified from tagged bank items)
-    279i64 => "Energy Shield",
-    280i64 => "Bor Shield",
-    281i64 => "Daedalus Shield",
-    282i64 => "Jakobs Shield",
-    283i64 => "Armor Shield",
-    284i64 => "Maliwan Shield",
-    285i64 => "Order Shield",
-    286i64 => "Tediore Shield",
-    287i64 => "Torgue Shield",
-    288i64 => "Vladof Shield",
-    289i64 => "Shield Variant",
-
-    // Gadgets and Gear
-    300i64 => "Grenade Gadget",
-    310i64 => "Turret Gadget",
-    320i64 => "Repair Kit",
-    330i64 => "Terminal Gadget",
-
-    // Enhancements
-    400i64 => "Daedalus Enhancement",
-    401i64 => "Bor Enhancement",
-    402i64 => "Jakobs Enhancement",
-    403i64 => "Maliwan Enhancement",
-    404i64 => "Order Enhancement",
-    405i64 => "Tediore Enhancement",
-    406i64 => "Torgue Enhancement",
-    407i64 => "Vladof Enhancement",
-    408i64 => "COV Enhancement",
-    409i64 => "Atlas Enhancement",
-};
+// Category names are now loaded from manifest data at compile time
+// See crate::manifest for the source data
 
 /// Serial format configuration
 ///
@@ -302,8 +209,8 @@ pub fn weapon_type_from_first_varint(id: u64) -> Option<&'static str> {
 }
 
 pub fn category_name(category: i64) -> Option<&'static str> {
-    // Try exact match first
-    if let Some(name) = CATEGORY_NAMES.get(&category).copied() {
+    // Delegate to manifest module (loads from compiled-in JSON data)
+    if let Some(name) = crate::manifest::category_name(category) {
         return Some(name);
     }
 
@@ -311,7 +218,7 @@ pub fn category_name(category: i64) -> Option<&'static str> {
     // e.g., 321 -> 320 (Repair Kit), 301 -> 300 (Grenade Gadget)
     if (300..400).contains(&category) {
         let base = category / 10 * 10;
-        return CATEGORY_NAMES.get(&base).copied();
+        return crate::manifest::category_name(base);
     }
 
     None
@@ -336,8 +243,8 @@ pub fn category_name_for_type(item_type: char, category: i64) -> Option<&'static
         'r' => SHIELD_CATEGORY_NAMES
             .get(&category)
             .copied()
-            .or_else(|| CATEGORY_NAMES.get(&category).copied()),
-        _ => CATEGORY_NAMES.get(&category).copied(),
+            .or_else(|| crate::manifest::category_name(category)),
+        _ => crate::manifest::category_name(category),
     }
 }
 
