@@ -40,7 +40,7 @@ const DEFAULT_EXTRACT_DIR: &str = "/tmp/bl4_extract";
 
 #[derive(Parser)]
 #[command(name = "bl4-research")]
-#[command(about = "Borderlands 4 Research Tools", long_about = None)]
+#[command(about = "DEPRECATED: Borderlands 4 Research Tools. Use `bl4 idb` for items DB.", long_about = None)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -364,15 +364,23 @@ enum ItemsDbCommand {
 
     /// Add an image attachment to an item
     Attach {
-        /// Item serial
-        serial: String,
-
         /// Path to image file
         image: PathBuf,
+
+        /// Item serial
+        serial: String,
 
         /// Attachment name (defaults to filename without extension)
         #[arg(short, long)]
         name: Option<String>,
+
+        /// Mark as POPUP view (item card)
+        #[arg(long)]
+        popup: bool,
+
+        /// Mark as DETAIL view (3D inspect)
+        #[arg(long)]
+        detail: bool,
     },
 
     /// Import items from share/weapons directories
@@ -1074,7 +1082,7 @@ fn handle_items_db_command(cmd: ItemsDbCommand, db: &PathBuf) -> Result<()> {
                 if !attachments.is_empty() {
                     println!("\nAttachments:");
                     for a in attachments {
-                        println!("  {} ({})", a.name, a.mime_type);
+                        println!("  {} ({}, {})", a.name, a.view, a.mime_type);
                     }
                 }
             } else {
@@ -1083,12 +1091,23 @@ fn handle_items_db_command(cmd: ItemsDbCommand, db: &PathBuf) -> Result<()> {
         }
 
         ItemsDbCommand::Attach {
-            serial,
             image,
+            serial,
             name,
+            popup,
+            detail,
         } => {
             let wdb = items::ItemsDb::open(db)?;
             wdb.init()?;
+
+            // Determine view type from flags (default to OTHER)
+            let view = if popup {
+                "POPUP"
+            } else if detail {
+                "DETAIL"
+            } else {
+                "OTHER"
+            };
 
             let attachment_name = name.unwrap_or_else(|| {
                 image
@@ -1105,10 +1124,10 @@ fn handle_items_db_command(cmd: ItemsDbCommand, db: &PathBuf) -> Result<()> {
             };
 
             let data = std::fs::read(&image)?;
-            let attachment_id = wdb.add_attachment(&serial, &attachment_name, mime_type, &data)?;
+            let attachment_id = wdb.add_attachment(&serial, &attachment_name, mime_type, &data, &view)?;
             println!(
-                "Added attachment '{}' (ID {}) to item {}",
-                attachment_name, attachment_id, serial
+                "Added attachment '{}' (ID {}, view: {}) to item {}",
+                attachment_name, attachment_id, view, serial
             );
         }
 

@@ -2,7 +2,7 @@
 name = "bl4-research"
 version.workspace = true
 edition.workspace = true
-description = "Research tools for BL4 reverse engineering"
+description = "DEPRECATED: Research tools for BL4 reverse engineering. Use `bl4 idb` for items DB. Other commands will move to uextract."
 
 [[bin]]
 name = "bl4-research"

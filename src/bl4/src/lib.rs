@@ -42,6 +42,9 @@ pub mod parts;
 pub mod save;
 pub mod serial;
 
+#[cfg(feature = "db")]
+pub mod items;
+
 #[cfg(feature = "wasm")]
 pub mod wasm;
 
@@ -52,5 +55,8 @@ pub use parts::{
     category_name, category_name_for_type, item_type_name, level_from_code, manufacturer_name,
     serial_format, serial_id_to_parts_category, SerialFormat,
 };
-pub use save::{ChangeSet, SaveError, SaveFile};
+pub use save::{ChangeSet, SaveError, SaveFile, StateFlags};
 pub use serial::{ItemSerial, SerialError};
+
+#[cfg(feature = "db")]
+pub use items::{Attachment, DbStats, Item, ItemPart, ItemsDb, VerificationStatus, DEFAULT_DB_PATH};

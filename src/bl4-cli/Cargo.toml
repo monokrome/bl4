@@ -12,7 +12,8 @@ name = "bl4"
 path = "src/main.rs"
 
 [dependencies]
-bl4 = { version = "0.3.0", path = "../bl4" }
+bl4 = { version = "0.3.0", path = "../bl4", features = ["db"] }
+rusqlite = { workspace = true }
 clap.workspace = true
 anyhow.workspace = true
 serde_yaml.workspace = true
