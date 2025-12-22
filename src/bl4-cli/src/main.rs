@@ -264,34 +264,18 @@ enum Commands {
         yes: bool,
     },
 
-    /// Show info about a usmap file
-    UsmapInfo {
-        /// Path to usmap file
-        path: PathBuf,
+    /// Usmap file utilities (requires 'research' feature)
+    #[cfg(feature = "research")]
+    Usmap {
+        #[command(subcommand)]
+        command: UsmapCommand,
     },
 
-    /// Search usmap for struct/enum names
-    UsmapSearch {
-        /// Path to usmap file
-        path: PathBuf,
-
-        /// Search pattern (case-insensitive substring match)
-        pattern: String,
-
-        /// Show struct properties
-        #[arg(short, long)]
-        verbose: bool,
-    },
-
-    /// Extract part pools from the parts database (category groupings)
-    ExtractPartPools {
-        /// Input parts database JSON
-        #[arg(short, long, default_value = "share/manifest/parts_database.json")]
-        input: PathBuf,
-
-        /// Output part pools JSON
-        #[arg(short, long, default_value = "share/manifest/part_pools.json")]
-        output: PathBuf,
+    /// Data extraction utilities (requires 'research' feature)
+    #[cfg(feature = "research")]
+    Extract {
+        #[command(subcommand)]
+        command: ExtractCommand,
     },
 
     /// Manage the verified items database
@@ -558,6 +542,44 @@ pub enum OutputFormat {
     Table,
     Csv,
     Json,
+}
+
+#[cfg(feature = "research")]
+#[derive(Subcommand)]
+enum UsmapCommand {
+    /// Show info about a usmap file
+    Info {
+        /// Path to usmap file
+        path: PathBuf,
+    },
+
+    /// Search usmap for struct/enum names
+    Search {
+        /// Path to usmap file
+        path: PathBuf,
+
+        /// Search pattern (case-insensitive substring match)
+        pattern: String,
+
+        /// Show struct properties
+        #[arg(short, long)]
+        verbose: bool,
+    },
+}
+
+#[cfg(feature = "research")]
+#[derive(Subcommand)]
+enum ExtractCommand {
+    /// Extract part pools from the parts database (category groupings)
+    PartPools {
+        /// Input parts database JSON
+        #[arg(short, long, default_value = "share/manifest/parts_database.json")]
+        input: PathBuf,
+
+        /// Output part pools JSON
+        #[arg(short, long, default_value = "share/manifest/part_pools.json")]
+        output: PathBuf,
+    },
 }
 
 #[derive(Subcommand)]
@@ -3492,7 +3514,10 @@ fn main() -> Result<()> {
                 .context("Failed to launch Steam")?;
         }
 
-        Commands::UsmapInfo { path } => {
+        #[cfg(feature = "research")]
+        Commands::Usmap {
+            command: UsmapCommand::Info { path },
+        } => {
             use byteorder::{LittleEndian as LE, ReadBytesExt};
             use std::io::{BufReader, Seek, SeekFrom};
 
@@ -3617,10 +3642,14 @@ fn main() -> Result<()> {
             println!("\nFile size: {} bytes", file_size);
         }
 
-        Commands::UsmapSearch {
-            path,
-            pattern,
-            verbose,
+        #[cfg(feature = "research")]
+        Commands::Usmap {
+            command:
+                UsmapCommand::Search {
+                    path,
+                    pattern,
+                    verbose,
+                },
         } => {
             use byteorder::{LittleEndian as LE, ReadBytesExt};
             use std::io::{BufReader, Read, Seek, SeekFrom};
@@ -3850,7 +3879,10 @@ fn main() -> Result<()> {
             }
         }
 
-        Commands::ExtractPartPools { input, output } => {
+        #[cfg(feature = "research")]
+        Commands::Extract {
+            command: ExtractCommand::PartPools { input, output },
+        } => {
             use std::collections::BTreeMap;
 
             // Read the parts database (memory-extracted names + verified category assignments)

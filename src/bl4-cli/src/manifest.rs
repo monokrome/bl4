@@ -1,6 +1,9 @@
 //! Manifest extraction from game files
 //!
 //! Extracts game data from unpacked .uasset files into organized JSON manifest files.
+//!
+//! Note: This module is research code with many functions for future use.
+#![allow(dead_code)]
 
 use anyhow::{Context, Result};
 use regex::Regex;
