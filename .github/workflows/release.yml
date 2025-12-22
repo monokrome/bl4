@@ -12,63 +12,6 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  download-manifests:
-    name: Download manifest data from release
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get release info
-        id: release
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const tag = context.ref.replace('refs/tags/', '');
-            try {
-              const release = await github.rest.repos.getReleaseByTag({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                tag: tag
-              });
-              return release.data;
-            } catch (error) {
-              if (error.status === 404) {
-                core.setFailed(`Release for tag ${tag} not found. Create the release and upload manifest files before pushing the tag.`);
-              }
-              throw error;
-            }
-
-      - name: Download manifest assets
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const release = ${{ steps.release.outputs.result }};
-
-            // Create manifest directory
-            fs.mkdirSync('share/manifest', { recursive: true });
-
-            // Download all JSON assets
-            for (const asset of release.assets) {
-              if (asset.name.endsWith('.json') || asset.name.endsWith('.usmap')) {
-                console.log(`Downloading ${asset.name}...`);
-                const response = await github.rest.repos.getReleaseAsset({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  asset_id: asset.id,
-                  headers: {
-                    Accept: 'application/octet-stream'
-                  }
-                });
-                fs.writeFileSync(`share/manifest/${asset.name}`, Buffer.from(response.data));
-                console.log(`Downloaded ${asset.name}`);
-              }
-            }
-
-      - name: Upload manifest artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: manifest-data
-          path: share/manifest/
-
   publish-crates:
     name: Publish to crates.io
     runs-on: ubuntu-latest
@@ -94,45 +37,10 @@ jobs:
       - name: Publish bl4-cli
         run: cargo publish -p bl4-cli --token ${{ secrets.CARGO_TOKEN }}
 
-  publish-npm:
-    name: Publish to NPM
-    runs-on: ubuntu-latest
-    environment: build
-    needs: publish-crates
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install wasm-pack
-        uses: jetli/wasm-pack-action@v0.4.0
-        with:
-          version: 'latest'
-
-      - name: Build WASM package
-        run: |
-          cd crates/bl4
-          ./build-wasm.sh
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
-
-      - name: Publish to NPM
-        run: |
-          cd crates/bl4/pkg
-          npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
   build-binaries:
     name: Build release binaries
     runs-on: ${{ matrix.os }}
     environment: build
-    needs: download-manifests
     strategy:
       matrix:
         include:
@@ -155,12 +63,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Download manifest data
-        uses: actions/download-artifact@v4
-        with:
-          name: manifest-data
-          path: share/manifest/
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -235,8 +137,8 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  create-release:
-    name: Create GitHub Release
+  upload-release:
+    name: Upload to GitHub Release
     runs-on: ubuntu-latest
     environment: build
     needs: [build-binaries, build-books, build-docker]
@@ -253,11 +155,10 @@ jobs:
           mkdir -p release
           find artifacts -type f -exec cp {} release/ \;
 
-      - name: Upload binaries and books to existing release
+      - name: Upload binaries and books to release
         uses: softprops/action-gh-release@v1
         with:
           files: release/*
-          # Don't fail if release already exists - we want to add to it
           fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
