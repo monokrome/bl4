@@ -12,7 +12,7 @@ name = "bl4se"
 path = "src/main.rs"
 
 [features]
-default = ["desktop"]
+default = []
 desktop = ["tauri", "tauri-build"]
 server = ["axum", "tower-http", "tokio"]
 
