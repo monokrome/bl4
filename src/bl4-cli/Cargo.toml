@@ -16,8 +16,8 @@ default = []
 research = ["dep:regex", "dep:walkdir", "dep:unreal_asset", "dep:chrono"]
 
 [dependencies]
-bl4 = { version = "0.3.0", path = "../bl4" }
-bl4-idb = { version = "0.3.0", path = "../bl4-idb", features = ["sqlite-sync", "attachments"] }
+bl4 = { version = "0.4.0", path = "../bl4" }
+bl4-idb = { version = "0.4.0", path = "../bl4-idb", features = ["sqlite-sync", "attachments"] }
 rusqlite = { workspace = true }  # For direct database operations (merge)
 clap.workspace = true
 anyhow.workspace = true
