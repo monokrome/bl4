@@ -286,19 +286,23 @@ dependencies = [
  "bl4",
  "bl4-idb",
  "byteorder",
+ "chrono",
  "clap",
  "dirs",
  "memchr",
  "memmap2",
  "process-memory",
+ "regex",
  "rusqlite",
  "serde",
  "serde_json",
  "serde_yaml",
  "sysinfo",
  "toml",
+ "unreal_asset",
  "ureq",
  "urlencoding",
+ "walkdir",
 ]
 
 [[package]]
@@ -332,23 +336,6 @@ dependencies = [
  "sqlx",
  "thiserror 1.0.69",
  "tokio",
-]
-
-[[package]]
-name = "bl4-research"
-version = "0.3.0"
-dependencies = [
- "anyhow",
- "bl4",
- "chrono",
- "clap",
- "regex",
- "rusqlite",
- "serde",
- "serde_json",
- "serde_yaml",
- "unreal_asset",
- "walkdir",
 ]
 
 [[package]]

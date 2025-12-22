@@ -140,6 +140,7 @@ enum Commands {
 
     /// Data extraction utilities (requires 'research' feature)
     #[cfg(feature = "research")]
+    #[command(visible_alias = "e")]
     Extract {
         #[command(subcommand)]
         command: ExtractCommand,
@@ -595,7 +596,8 @@ enum UsmapCommand {
 #[cfg(feature = "research")]
 #[derive(Subcommand)]
 enum ExtractCommand {
-    /// Extract part pools from the parts database (category groupings)
+    /// Extract part pools from the parts database
+    #[command(visible_alias = "pp")]
     PartPools {
         /// Input parts database JSON
         #[arg(short, long, default_value = "share/manifest/parts_database.json")]
@@ -603,6 +605,78 @@ enum ExtractCommand {
 
         /// Output part pools JSON
         #[arg(short, long, default_value = "share/manifest/part_pools.json")]
+        output: PathBuf,
+    },
+
+    /// Extract manufacturer data from pak_manifest.json
+    #[command(visible_alias = "m")]
+    Manufacturers {
+        /// Path to pak_manifest.json
+        #[arg(short, long, default_value = "share/manifest/pak_manifest.json")]
+        input: PathBuf,
+
+        /// Output file
+        #[arg(short, long, default_value = "share/manifest/manufacturers.json")]
+        output: PathBuf,
+    },
+
+    /// Extract weapon type data from pak_manifest.json
+    #[command(visible_alias = "wt")]
+    WeaponTypes {
+        /// Path to pak_manifest.json
+        #[arg(short, long, default_value = "share/manifest/pak_manifest.json")]
+        input: PathBuf,
+
+        /// Output file
+        #[arg(short, long, default_value = "share/manifest/weapon_types.json")]
+        output: PathBuf,
+    },
+
+    /// Extract gear type data from pak_manifest.json
+    #[command(visible_alias = "gt")]
+    GearTypes {
+        /// Path to pak_manifest.json
+        #[arg(short, long, default_value = "share/manifest/pak_manifest.json")]
+        input: PathBuf,
+
+        /// Output file
+        #[arg(short, long, default_value = "share/manifest/gear_types.json")]
+        output: PathBuf,
+    },
+
+    /// Extract element types from pak_manifest.json
+    #[command(visible_alias = "el")]
+    Elements {
+        /// Path to pak_manifest.json
+        #[arg(short, long, default_value = "share/manifest/pak_manifest.json")]
+        input: PathBuf,
+
+        /// Output file
+        #[arg(short, long, default_value = "share/manifest/elements.json")]
+        output: PathBuf,
+    },
+
+    /// Extract rarity tiers from pak_manifest.json
+    #[command(visible_alias = "ra")]
+    Rarities {
+        /// Path to pak_manifest.json
+        #[arg(short, long, default_value = "share/manifest/pak_manifest.json")]
+        input: PathBuf,
+
+        /// Output file
+        #[arg(short, long, default_value = "share/manifest/rarities.json")]
+        output: PathBuf,
+    },
+
+    /// Extract stat types from pak_manifest.json
+    #[command(visible_alias = "st")]
+    Stats {
+        /// Path to pak_manifest.json
+        #[arg(short, long, default_value = "share/manifest/pak_manifest.json")]
+        input: PathBuf,
+
+        /// Output file
+        #[arg(short, long, default_value = "share/manifest/stats.json")]
         output: PathBuf,
     },
 }
@@ -4133,6 +4207,139 @@ fn main() -> Result<()> {
             println!("  Categories: Prefix matching (verified by decode)");
             println!("  Part order: Alphabetical (not authoritative)");
             println!("\nWritten to: {}", output.display());
+        }
+
+        #[cfg(feature = "research")]
+        Commands::Extract {
+            command: ExtractCommand::Manufacturers { input, output },
+        } => {
+            println!("Extracting manufacturer data from {:?}...", input);
+            let manufacturers = manifest::extract_manufacturer_names_from_pak(&input)?;
+
+            println!("\nDiscovered {} manufacturers:", manufacturers.len());
+            for (code, mfr) in &manufacturers {
+                println!("  {} = {} (source: {})", code, mfr.name, mfr.name_source);
+            }
+
+            let json = serde_json::to_string_pretty(&manufacturers)?;
+            fs::write(&output, json)?;
+            println!("\nSaved to {:?}", output);
+        }
+
+        #[cfg(feature = "research")]
+        Commands::Extract {
+            command: ExtractCommand::WeaponTypes { input, output },
+        } => {
+            println!("Extracting weapon type data from {:?}...", input);
+            let weapon_types = manifest::extract_weapon_types_from_pak(&input)?;
+
+            println!("\nDiscovered {} weapon types:", weapon_types.len());
+            for (name, wt) in &weapon_types {
+                println!(
+                    "  {} ({}) - {} manufacturers: {:?}",
+                    name,
+                    wt.code,
+                    wt.manufacturers.len(),
+                    wt.manufacturers
+                );
+            }
+
+            let json = serde_json::to_string_pretty(&weapon_types)?;
+            fs::write(&output, json)?;
+            println!("\nSaved to {:?}", output);
+        }
+
+        #[cfg(feature = "research")]
+        Commands::Extract {
+            command: ExtractCommand::GearTypes { input, output },
+        } => {
+            println!("Extracting gear type data from {:?}...", input);
+            let gear_types = manifest::extract_gear_types_from_pak(&input)?;
+
+            println!("\nDiscovered {} gear types:", gear_types.len());
+            for (name, gt) in &gear_types {
+                if gt.manufacturers.is_empty() {
+                    println!("  {} (no manufacturers)", name);
+                } else {
+                    println!(
+                        "  {} - {} manufacturers: {:?}",
+                        name,
+                        gt.manufacturers.len(),
+                        gt.manufacturers
+                    );
+                }
+                if !gt.subcategories.is_empty() {
+                    println!("    subcategories: {:?}", gt.subcategories);
+                }
+            }
+
+            let json = serde_json::to_string_pretty(&gear_types)?;
+            fs::write(&output, json)?;
+            println!("\nSaved to {:?}", output);
+        }
+
+        #[cfg(feature = "research")]
+        Commands::Extract {
+            command: ExtractCommand::Elements { input, output },
+        } => {
+            println!("Extracting element types from {:?}...", input);
+            let elements = manifest::extract_elements_from_pak(&input)?;
+
+            println!("\nDiscovered {} element types:", elements.len());
+            for name in elements.keys() {
+                println!("  {}", name);
+            }
+
+            let json = serde_json::to_string_pretty(&elements)?;
+            fs::write(&output, json)?;
+            println!("\nSaved to {:?}", output);
+        }
+
+        #[cfg(feature = "research")]
+        Commands::Extract {
+            command: ExtractCommand::Rarities { input, output },
+        } => {
+            println!("Extracting rarity tiers from {:?}...", input);
+            let rarities = manifest::extract_rarities_from_pak(&input)?;
+
+            println!("\nDiscovered {} rarity tiers:", rarities.len());
+            for rarity in &rarities {
+                println!("  {} ({}) = {}", rarity.tier, rarity.code, rarity.name);
+            }
+
+            let json = serde_json::to_string_pretty(&rarities)?;
+            fs::write(&output, json)?;
+            println!("\nSaved to {:?}", output);
+        }
+
+        #[cfg(feature = "research")]
+        Commands::Extract {
+            command: ExtractCommand::Stats { input, output },
+        } => {
+            println!("Extracting stat types from {:?}...", input);
+            let stats = manifest::extract_stats_from_pak(&input)?;
+
+            println!(
+                "\nDiscovered {} stat types (top 20 by occurrence):",
+                stats.len()
+            );
+            for stat in stats.iter().take(20) {
+                if stat.modifier_types.is_empty() {
+                    println!("  {} ({} occurrences)", stat.name, stat.occurrences);
+                } else {
+                    println!(
+                        "  {} [{:?}] ({} occurrences)",
+                        stat.name, stat.modifier_types, stat.occurrences
+                    );
+                }
+            }
+            if stats.len() > 20 {
+                println!("  ... and {} more", stats.len() - 20);
+            }
+
+            let json = serde_json::to_string_pretty(&stats)?;
+            fs::write(&output, json)?;
+            println!("\nSaved to {:?}", output);
         }
 
         Commands::Idb { db, command } => {
