@@ -168,7 +168,7 @@ impl SqliteDb {
     pub fn get_distinct_sources(&self) -> RepoResult<Vec<String>> {
         let mut stmt = self
             .conn
-            .prepare("SELECT DISTINCT source FROM weapons WHERE source IS NOT NULL")
+            .prepare("SELECT DISTINCT source FROM items WHERE source IS NOT NULL")
             .map_err(|e| RepoError::Database(e.to_string()))?;
         let sources = stmt
             .query_map([], |row| row.get(0))
@@ -288,13 +288,6 @@ impl SqliteDb {
                     key TEXT PRIMARY KEY NOT NULL,
                     value TEXT NOT NULL
                 );
-
-                CREATE INDEX IF NOT EXISTS idx_weapons_name ON weapons(name);
-                CREATE INDEX IF NOT EXISTS idx_weapons_manufacturer ON weapons(manufacturer);
-                CREATE INDEX IF NOT EXISTS idx_weapon_parts_item_serial ON weapon_parts(item_serial);
-                CREATE INDEX IF NOT EXISTS idx_item_values_serial ON item_values(item_serial);
-                CREATE INDEX IF NOT EXISTS idx_item_values_field ON item_values(item_serial, field);
-                CREATE INDEX IF NOT EXISTS idx_attachments_item_serial ON attachments(item_serial);
                 "#,
                 )
                 .map_err(|e| RepoError::Database(e.to_string()))?;
@@ -308,8 +301,34 @@ impl SqliteDb {
             }
         }
 
-        // Future migrations go here:
-        // if !self.is_migration_applied("0002_...")? { ... }
+        // Migration 0002: Rename weapons -> items, weapon_parts -> item_parts
+        if !self.is_migration_applied("0002_rename_tables")? {
+            self.conn
+                .execute_batch(
+                    r#"
+                    ALTER TABLE weapons RENAME TO items;
+                    ALTER TABLE weapon_parts RENAME TO item_parts;
+                    "#,
+                )
+                .map_err(|e| RepoError::Database(e.to_string()))?;
+
+            self.mark_migration_applied("0002_rename_tables")?;
+            println!("SQLite: Applied migration 0002_rename_tables");
+        }
+
+        // Create indexes AFTER all migrations (on new table names)
+        self.conn
+            .execute_batch(
+                r#"
+                CREATE INDEX IF NOT EXISTS idx_items_name ON items(name);
+                CREATE INDEX IF NOT EXISTS idx_items_manufacturer ON items(manufacturer);
+                CREATE INDEX IF NOT EXISTS idx_item_parts_item_serial ON item_parts(item_serial);
+                CREATE INDEX IF NOT EXISTS idx_item_values_serial ON item_values(item_serial);
+                CREATE INDEX IF NOT EXISTS idx_item_values_field ON item_values(item_serial, field);
+                CREATE INDEX IF NOT EXISTS idx_attachments_item_serial ON attachments(item_serial);
+                "#,
+            )
+            .map_err(|e| RepoError::Database(e.to_string()))?;
 
         Ok(())
     }
@@ -351,7 +370,7 @@ impl ItemsRepository for SqliteDb {
 
     fn add_item(&self, serial: &str) -> RepoResult<()> {
         self.conn
-            .execute("INSERT INTO weapons (serial) VALUES (?1)", params![serial])
+            .execute("INSERT INTO items (serial) VALUES (?1)", params![serial])
             .map_err(|e| RepoError::Database(e.to_string()))?;
         Ok(())
     }
@@ -363,7 +382,7 @@ impl ItemsRepository for SqliteDb {
                 "SELECT serial, name, prefix, manufacturer, weapon_type, item_type, rarity, level, element,
                     dps, damage, accuracy, fire_rate, reload_time, mag_size, value, red_text,
                     notes, verification_status, verification_notes, verified_at, legal, source, created_at
-             FROM weapons WHERE serial = ?1",
+             FROM items WHERE serial = ?1",
             )
             .map_err(|e| RepoError::Database(e.to_string()))?;
 
@@ -410,7 +429,7 @@ impl ItemsRepository for SqliteDb {
     fn update_item(&self, serial: &str, update: &ItemUpdate) -> RepoResult<()> {
         self.conn
             .execute(
-                r#"UPDATE weapons SET
+                r#"UPDATE items SET
                 name = COALESCE(?2, name),
                 prefix = COALESCE(?3, prefix),
                 manufacturer = COALESCE(?4, manufacturer),
@@ -457,7 +476,7 @@ impl ItemsRepository for SqliteDb {
             "SELECT serial, name, prefix, manufacturer, weapon_type, item_type, rarity, level, element,
                     dps, damage, accuracy, fire_rate, reload_time, mag_size, value, red_text,
                     notes, verification_status, verification_notes, verified_at, legal, source, created_at
-             FROM weapons WHERE 1=1",
+             FROM items WHERE 1=1",
         );
 
         let mut params_vec: Vec<Box<dyn rusqlite::ToSql>> = Vec::new();
@@ -540,7 +559,7 @@ impl ItemsRepository for SqliteDb {
     fn delete_item(&self, serial: &str) -> RepoResult<bool> {
         let rows = self
             .conn
-            .execute("DELETE FROM weapons WHERE serial = ?1", params![serial])
+            .execute("DELETE FROM items WHERE serial = ?1", params![serial])
             .map_err(|e| RepoError::Database(e.to_string()))?;
         Ok(rows > 0)
     }
@@ -553,7 +572,7 @@ impl ItemsRepository for SqliteDb {
     ) -> RepoResult<()> {
         self.conn
             .execute(
-                r#"UPDATE weapons SET
+                r#"UPDATE items SET
                 verification_status = ?2,
                 verification_notes = COALESCE(?3, verification_notes),
                 verified_at = CASE WHEN ?2 != 'unverified' THEN CURRENT_TIMESTAMP ELSE verified_at END
@@ -567,7 +586,7 @@ impl ItemsRepository for SqliteDb {
     fn set_legal(&self, serial: &str, legal: bool) -> RepoResult<()> {
         self.conn
             .execute(
-                "UPDATE weapons SET legal = ?2 WHERE serial = ?1",
+                "UPDATE items SET legal = ?2 WHERE serial = ?1",
                 params![serial, legal],
             )
             .map_err(|e| RepoError::Database(e.to_string()))?;
@@ -577,7 +596,7 @@ impl ItemsRepository for SqliteDb {
     fn set_all_legal(&self, legal: bool) -> RepoResult<usize> {
         let rows = self
             .conn
-            .execute("UPDATE weapons SET legal = ?1", params![legal])
+            .execute("UPDATE items SET legal = ?1", params![legal])
             .map_err(|e| RepoError::Database(e.to_string()))?;
         Ok(rows)
     }
@@ -585,7 +604,7 @@ impl ItemsRepository for SqliteDb {
     fn set_item_type(&self, serial: &str, item_type: &str) -> RepoResult<()> {
         self.conn
             .execute(
-                "UPDATE weapons SET item_type = ?2 WHERE serial = ?1",
+                "UPDATE items SET item_type = ?2 WHERE serial = ?1",
                 params![serial, item_type],
             )
             .map_err(|e| RepoError::Database(e.to_string()))?;
@@ -595,7 +614,7 @@ impl ItemsRepository for SqliteDb {
     fn set_source(&self, serial: &str, source: &str) -> RepoResult<()> {
         self.conn
             .execute(
-                "UPDATE weapons SET source = ?2 WHERE serial = ?1",
+                "UPDATE items SET source = ?2 WHERE serial = ?1",
                 params![serial, source],
             )
             .map_err(|e| RepoError::Database(e.to_string()))?;
@@ -606,7 +625,7 @@ impl ItemsRepository for SqliteDb {
         let rows = self
             .conn
             .execute(
-                "UPDATE weapons SET source = ?1 WHERE source IS NULL",
+                "UPDATE items SET source = ?1 WHERE source IS NULL",
                 params![source],
             )
             .map_err(|e| RepoError::Database(e.to_string()))?;
@@ -614,7 +633,7 @@ impl ItemsRepository for SqliteDb {
     }
 
     fn set_source_where(&self, source: &str, condition: &str) -> RepoResult<usize> {
-        let sql = format!("UPDATE weapons SET source = ?1 WHERE {}", condition);
+        let sql = format!("UPDATE items SET source = ?1 WHERE {}", condition);
         let rows = self
             .conn
             .execute(&sql, params![source])
@@ -628,7 +647,7 @@ impl ItemsRepository for SqliteDb {
             .prepare(
                 "SELECT id, item_serial, slot, part_index, part_name, manufacturer, effect,
                     verified, verification_method, verification_notes, verified_at
-             FROM weapon_parts WHERE item_serial = ?1",
+             FROM item_parts WHERE item_serial = ?1",
             )
             .map_err(|e| RepoError::Database(e.to_string()))?;
 
@@ -820,12 +839,12 @@ impl ItemsRepository for SqliteDb {
     fn stats(&self) -> RepoResult<DbStats> {
         let item_count: i64 = self
             .conn
-            .query_row("SELECT COUNT(*) FROM weapons", [], |row| row.get(0))
+            .query_row("SELECT COUNT(*) FROM items", [], |row| row.get(0))
             .map_err(|e| RepoError::Database(e.to_string()))?;
 
         let part_count: i64 = self
             .conn
-            .query_row("SELECT COUNT(*) FROM weapon_parts", [], |row| row.get(0))
+            .query_row("SELECT COUNT(*) FROM item_parts", [], |row| row.get(0))
             .map_err(|e| RepoError::Database(e.to_string()))?;
 
         let attachment_count: i64 = self
@@ -874,7 +893,7 @@ impl ItemsRepository for SqliteDb {
                 "SELECT serial, name, prefix, manufacturer, weapon_type, item_type, rarity,
                     level, element, dps, damage, accuracy, fire_rate, reload_time,
                     mag_size, value, red_text
-             FROM weapons",
+             FROM items",
             )
             .map_err(|e| RepoError::Database(e.to_string()))?;
 
@@ -1231,7 +1250,7 @@ mod tests {
         // Should be able to query the tables
         let count: i64 = db
             .conn
-            .query_row("SELECT COUNT(*) FROM weapons", [], |row| row.get(0))
+            .query_row("SELECT COUNT(*) FROM items", [], |row| row.get(0))
             .unwrap();
         assert_eq!(count, 0);
     }

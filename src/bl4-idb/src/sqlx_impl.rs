@@ -251,7 +251,7 @@ pub mod sqlite {
         /// Get all distinct sources from the database
         pub async fn get_distinct_sources(&self) -> AsyncRepoResult<Vec<String>> {
             let rows: Vec<(String,)> =
-                sqlx::query_as("SELECT DISTINCT source FROM weapons WHERE source IS NOT NULL")
+                sqlx::query_as("SELECT DISTINCT source FROM items WHERE source IS NOT NULL")
                     .fetch_all(&self.pool)
                     .await
                     .map_err(|e| RepoError::Database(e.to_string()))?;
@@ -263,7 +263,7 @@ pub mod sqlite {
         async fn init(&self) -> AsyncRepoResult<()> {
             sqlx::query(
                 r#"
-                CREATE TABLE IF NOT EXISTS weapons (
+                CREATE TABLE IF NOT EXISTS items (
                     serial TEXT PRIMARY KEY NOT NULL,
                     name TEXT,
                     prefix TEXT,
@@ -297,9 +297,9 @@ pub mod sqlite {
 
             sqlx::query(
                 r#"
-                CREATE TABLE IF NOT EXISTS weapon_parts (
+                CREATE TABLE IF NOT EXISTS item_parts (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    item_serial TEXT NOT NULL REFERENCES weapons(serial) ON DELETE CASCADE,
+                    item_serial TEXT NOT NULL REFERENCES items(serial) ON DELETE CASCADE,
                     slot TEXT NOT NULL,
                     part_index INTEGER,
                     part_name TEXT,
@@ -320,7 +320,7 @@ pub mod sqlite {
                 r#"
                 CREATE TABLE IF NOT EXISTS attachments (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    item_serial TEXT NOT NULL REFERENCES weapons(serial) ON DELETE CASCADE,
+                    item_serial TEXT NOT NULL REFERENCES items(serial) ON DELETE CASCADE,
                     name TEXT NOT NULL,
                     mime_type TEXT NOT NULL,
                     data BLOB NOT NULL,
@@ -336,7 +336,7 @@ pub mod sqlite {
                 r#"
                 CREATE TABLE IF NOT EXISTS item_values (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    item_serial TEXT NOT NULL REFERENCES weapons(serial) ON DELETE CASCADE,
+                    item_serial TEXT NOT NULL REFERENCES items(serial) ON DELETE CASCADE,
                     field TEXT NOT NULL,
                     value TEXT NOT NULL,
                     source TEXT NOT NULL,
@@ -364,11 +364,11 @@ pub mod sqlite {
             .await
             .map_err(|e| RepoError::Database(e.to_string()))?;
 
-            // Create indexes
+            // Create indexes (use new table names - base schema uses old names but migrations rename)
             for sql in [
-                "CREATE INDEX IF NOT EXISTS idx_weapons_name ON weapons(name)",
-                "CREATE INDEX IF NOT EXISTS idx_weapons_manufacturer ON weapons(manufacturer)",
-                "CREATE INDEX IF NOT EXISTS idx_weapon_parts_item_serial ON weapon_parts(item_serial)",
+                "CREATE INDEX IF NOT EXISTS idx_items_name ON items(name)",
+                "CREATE INDEX IF NOT EXISTS idx_items_manufacturer ON items(manufacturer)",
+                "CREATE INDEX IF NOT EXISTS idx_item_parts_item_serial ON item_parts(item_serial)",
                 "CREATE INDEX IF NOT EXISTS idx_item_values_serial ON item_values(item_serial)",
                 "CREATE INDEX IF NOT EXISTS idx_item_values_field ON item_values(item_serial, field)",
                 "CREATE INDEX IF NOT EXISTS idx_attachments_item_serial ON attachments(item_serial)",
@@ -383,7 +383,7 @@ pub mod sqlite {
         }
 
         async fn add_item(&self, serial: &str) -> AsyncRepoResult<()> {
-            sqlx::query("INSERT INTO weapons (serial) VALUES (?)")
+            sqlx::query("INSERT INTO items (serial) VALUES (?)")
                 .bind(serial)
                 .execute(&self.pool)
                 .await
@@ -396,7 +396,7 @@ pub mod sqlite {
                 r#"SELECT serial, name, prefix, manufacturer, weapon_type, item_type, rarity, level, element,
                         dps, damage, accuracy, fire_rate, reload_time, mag_size, value, red_text,
                         notes, verification_status, verification_notes, verified_at, legal, source, created_at
-                   FROM weapons WHERE serial = ?"#,
+                   FROM items WHERE serial = ?"#,
             )
             .bind(serial)
             .fetch_optional(&self.pool)
@@ -413,7 +413,7 @@ pub mod sqlite {
 
         async fn update_item(&self, serial: &str, update: &ItemUpdate) -> AsyncRepoResult<()> {
             sqlx::query(
-                r#"UPDATE weapons SET
+                r#"UPDATE items SET
                     name = COALESCE(?, name),
                     prefix = COALESCE(?, prefix),
                     manufacturer = COALESCE(?, manufacturer),
@@ -460,7 +460,7 @@ pub mod sqlite {
                 r#"SELECT serial, name, prefix, manufacturer, weapon_type, item_type, rarity, level, element,
                         dps, damage, accuracy, fire_rate, reload_time, mag_size, value, red_text,
                         notes, verification_status, verification_notes, verified_at, legal, source, created_at
-                   FROM weapons WHERE 1=1"#,
+                   FROM items WHERE 1=1"#,
             );
 
             // Build dynamic query - SQLx doesn't support truly dynamic queries well,
@@ -514,7 +514,7 @@ pub mod sqlite {
         }
 
         async fn delete_item(&self, serial: &str) -> AsyncRepoResult<bool> {
-            let result = sqlx::query("DELETE FROM weapons WHERE serial = ?")
+            let result = sqlx::query("DELETE FROM items WHERE serial = ?")
                 .bind(serial)
                 .execute(&self.pool)
                 .await
@@ -523,7 +523,7 @@ pub mod sqlite {
         }
 
         async fn count_items(&self, filter: &ItemFilter) -> AsyncRepoResult<i64> {
-            let mut sql = String::from("SELECT COUNT(*) as count FROM weapons WHERE 1=1");
+            let mut sql = String::from("SELECT COUNT(*) as count FROM items WHERE 1=1");
 
             if filter.manufacturer.is_some() {
                 sql.push_str(" AND manufacturer = ?");
@@ -572,7 +572,7 @@ pub mod sqlite {
             notes: Option<&str>,
         ) -> AsyncRepoResult<()> {
             sqlx::query(
-                r#"UPDATE weapons SET
+                r#"UPDATE items SET
                     verification_status = ?,
                     verification_notes = COALESCE(?, verification_notes),
                     verified_at = CASE WHEN ? != 'unverified' THEN CURRENT_TIMESTAMP ELSE verified_at END
@@ -589,7 +589,7 @@ pub mod sqlite {
         }
 
         async fn set_legal(&self, serial: &str, legal: bool) -> AsyncRepoResult<()> {
-            sqlx::query("UPDATE weapons SET legal = ? WHERE serial = ?")
+            sqlx::query("UPDATE items SET legal = ? WHERE serial = ?")
                 .bind(legal)
                 .bind(serial)
                 .execute(&self.pool)
@@ -599,7 +599,7 @@ pub mod sqlite {
         }
 
         async fn set_item_type(&self, serial: &str, item_type: &str) -> AsyncRepoResult<()> {
-            sqlx::query("UPDATE weapons SET item_type = ? WHERE serial = ?")
+            sqlx::query("UPDATE items SET item_type = ? WHERE serial = ?")
                 .bind(item_type)
                 .bind(serial)
                 .execute(&self.pool)
@@ -609,7 +609,7 @@ pub mod sqlite {
         }
 
         async fn set_source(&self, serial: &str, source: &str) -> AsyncRepoResult<()> {
-            sqlx::query("UPDATE weapons SET source = ? WHERE serial = ?")
+            sqlx::query("UPDATE items SET source = ? WHERE serial = ?")
                 .bind(source)
                 .bind(serial)
                 .execute(&self.pool)
@@ -694,14 +694,14 @@ pub mod sqlite {
         }
 
         async fn stats(&self) -> AsyncRepoResult<DbStats> {
-            let item_count: i64 = sqlx::query("SELECT COUNT(*) as count FROM weapons")
+            let item_count: i64 = sqlx::query("SELECT COUNT(*) as count FROM items")
                 .fetch_one(&self.pool)
                 .await
                 .map_err(|e| RepoError::Database(e.to_string()))?
                 .try_get("count")
                 .map_err(|e| RepoError::Database(e.to_string()))?;
 
-            let part_count: i64 = sqlx::query("SELECT COUNT(*) as count FROM weapon_parts")
+            let part_count: i64 = sqlx::query("SELECT COUNT(*) as count FROM item_parts")
                 .fetch_one(&self.pool)
                 .await
                 .map_err(|e| RepoError::Database(e.to_string()))?
@@ -964,7 +964,7 @@ pub mod postgres {
         /// Get all distinct sources from the database
         pub async fn get_distinct_sources(&self) -> AsyncRepoResult<Vec<String>> {
             let rows: Vec<(String,)> =
-                sqlx::query_as("SELECT DISTINCT source FROM weapons WHERE source IS NOT NULL")
+                sqlx::query_as("SELECT DISTINCT source FROM items WHERE source IS NOT NULL")
                     .fetch_all(&self.pool)
                     .await
                     .map_err(|e| RepoError::Database(e.to_string()))?;
@@ -1033,6 +1033,15 @@ pub mod postgres {
                     "0010_weapon_parts_verified_at_tz",
                     "ALTER TABLE weapon_parts ALTER COLUMN verified_at TYPE TIMESTAMPTZ",
                 ),
+                // Rename tables from weapon-centric to generic item names
+                (
+                    "0011_rename_weapons_to_items",
+                    "ALTER TABLE weapons RENAME TO items",
+                ),
+                (
+                    "0012_rename_weapon_parts_to_item_parts",
+                    "ALTER TABLE weapon_parts RENAME TO item_parts",
+                ),
             ];
 
             for (id, sql) in migrations {
@@ -1078,9 +1087,9 @@ pub mod postgres {
 
             sqlx::query(
                 r#"
-                UPDATE weapons SET source = data.source
+                UPDATE items SET source = data.source
                 FROM (SELECT UNNEST($1::text[]) as serial, UNNEST($2::text[]) as source) as data
-                WHERE weapons.serial = data.serial
+                WHERE items.serial = data.serial
                 "#,
             )
             .bind(&serials)
@@ -1105,9 +1114,9 @@ pub mod postgres {
 
             sqlx::query(
                 r#"
-                UPDATE weapons SET item_type = data.item_type
+                UPDATE items SET item_type = data.item_type
                 FROM (SELECT UNNEST($1::text[]) as serial, UNNEST($2::text[]) as item_type) as data
-                WHERE weapons.serial = data.serial
+                WHERE items.serial = data.serial
                 "#,
             )
             .bind(&serials)
@@ -1262,11 +1271,14 @@ pub mod postgres {
             .await
             .map_err(|e| RepoError::Database(e.to_string()))?;
 
-            // Create indexes (IF NOT EXISTS for PostgreSQL)
+            // Run migrations FIRST (includes table renames)
+            self.run_migrations().await?;
+
+            // Create indexes AFTER migrations (use new table names)
             for sql in [
-                "CREATE INDEX IF NOT EXISTS idx_weapons_name ON weapons(name)",
-                "CREATE INDEX IF NOT EXISTS idx_weapons_manufacturer ON weapons(manufacturer)",
-                "CREATE INDEX IF NOT EXISTS idx_weapon_parts_item_serial ON weapon_parts(item_serial)",
+                "CREATE INDEX IF NOT EXISTS idx_items_name ON items(name)",
+                "CREATE INDEX IF NOT EXISTS idx_items_manufacturer ON items(manufacturer)",
+                "CREATE INDEX IF NOT EXISTS idx_item_parts_item_serial ON item_parts(item_serial)",
                 "CREATE INDEX IF NOT EXISTS idx_item_values_serial ON item_values(item_serial)",
                 "CREATE INDEX IF NOT EXISTS idx_item_values_field ON item_values(item_serial, field)",
                 "CREATE INDEX IF NOT EXISTS idx_attachments_item_serial ON attachments(item_serial)",
@@ -1277,14 +1289,11 @@ pub mod postgres {
                     .map_err(|e| RepoError::Database(e.to_string()))?;
             }
 
-            // Run migrations
-            self.run_migrations().await?;
-
             Ok(())
         }
 
         async fn add_item(&self, serial: &str) -> AsyncRepoResult<()> {
-            sqlx::query("INSERT INTO weapons (serial) VALUES ($1)")
+            sqlx::query("INSERT INTO items (serial) VALUES ($1)")
                 .bind(serial)
                 .execute(&self.pool)
                 .await
@@ -1297,7 +1306,7 @@ pub mod postgres {
                 r#"SELECT serial, name, prefix, manufacturer, weapon_type, item_type, rarity, level, element,
                         dps, damage, accuracy, fire_rate, reload_time, mag_size, value, red_text,
                         notes, verification_status, verification_notes, verified_at, legal, source, created_at
-                   FROM weapons WHERE serial = $1"#,
+                   FROM items WHERE serial = $1"#,
             )
             .bind(serial)
             .fetch_optional(&self.pool)
@@ -1314,7 +1323,7 @@ pub mod postgres {
 
         async fn update_item(&self, serial: &str, update: &ItemUpdate) -> AsyncRepoResult<()> {
             sqlx::query(
-                r#"UPDATE weapons SET
+                r#"UPDATE items SET
                     name = COALESCE($1, name),
                     prefix = COALESCE($2, prefix),
                     manufacturer = COALESCE($3, manufacturer),
@@ -1361,7 +1370,7 @@ pub mod postgres {
                 r#"SELECT serial, name, prefix, manufacturer, weapon_type, item_type, rarity, level, element,
                         dps, damage, accuracy, fire_rate, reload_time, mag_size, value, red_text,
                         notes, verification_status, verification_notes, verified_at, legal, source, created_at
-                   FROM weapons WHERE 1=1"#,
+                   FROM items WHERE 1=1"#,
             );
 
             let mut param_idx = 1;
@@ -1418,7 +1427,7 @@ pub mod postgres {
         }
 
         async fn delete_item(&self, serial: &str) -> AsyncRepoResult<bool> {
-            let result = sqlx::query("DELETE FROM weapons WHERE serial = $1")
+            let result = sqlx::query("DELETE FROM items WHERE serial = $1")
                 .bind(serial)
                 .execute(&self.pool)
                 .await
@@ -1427,7 +1436,7 @@ pub mod postgres {
         }
 
         async fn count_items(&self, filter: &ItemFilter) -> AsyncRepoResult<i64> {
-            let mut sql = String::from("SELECT COUNT(*) as count FROM weapons WHERE 1=1");
+            let mut sql = String::from("SELECT COUNT(*) as count FROM items WHERE 1=1");
             let mut param_idx = 1;
 
             if filter.manufacturer.is_some() {
@@ -1480,7 +1489,7 @@ pub mod postgres {
             notes: Option<&str>,
         ) -> AsyncRepoResult<()> {
             sqlx::query(
-                r#"UPDATE weapons SET
+                r#"UPDATE items SET
                     verification_status = $1,
                     verification_notes = COALESCE($2, verification_notes),
                     verified_at = CASE WHEN $1 != 'unverified' THEN CURRENT_TIMESTAMP ELSE verified_at END
@@ -1496,7 +1505,7 @@ pub mod postgres {
         }
 
         async fn set_legal(&self, serial: &str, legal: bool) -> AsyncRepoResult<()> {
-            sqlx::query("UPDATE weapons SET legal = $1 WHERE serial = $2")
+            sqlx::query("UPDATE items SET legal = $1 WHERE serial = $2")
                 .bind(legal)
                 .bind(serial)
                 .execute(&self.pool)
@@ -1506,7 +1515,7 @@ pub mod postgres {
         }
 
         async fn set_item_type(&self, serial: &str, item_type: &str) -> AsyncRepoResult<()> {
-            sqlx::query("UPDATE weapons SET item_type = $1 WHERE serial = $2")
+            sqlx::query("UPDATE items SET item_type = $1 WHERE serial = $2")
                 .bind(item_type)
                 .bind(serial)
                 .execute(&self.pool)
@@ -1516,7 +1525,7 @@ pub mod postgres {
         }
 
         async fn set_source(&self, serial: &str, source: &str) -> AsyncRepoResult<()> {
-            sqlx::query("UPDATE weapons SET source = $1 WHERE serial = $2")
+            sqlx::query("UPDATE items SET source = $1 WHERE serial = $2")
                 .bind(source)
                 .bind(serial)
                 .execute(&self.pool)
@@ -1606,14 +1615,14 @@ pub mod postgres {
         }
 
         async fn stats(&self) -> AsyncRepoResult<DbStats> {
-            let item_count: i64 = sqlx::query("SELECT COUNT(*) as count FROM weapons")
+            let item_count: i64 = sqlx::query("SELECT COUNT(*) as count FROM items")
                 .fetch_one(&self.pool)
                 .await
                 .map_err(|e| RepoError::Database(e.to_string()))?
                 .try_get("count")
                 .map_err(|e| RepoError::Database(e.to_string()))?;
 
-            let part_count: i64 = sqlx::query("SELECT COUNT(*) as count FROM weapon_parts")
+            let part_count: i64 = sqlx::query("SELECT COUNT(*) as count FROM item_parts")
                 .fetch_one(&self.pool)
                 .await
                 .map_err(|e| RepoError::Database(e.to_string()))?
@@ -1680,12 +1689,12 @@ pub mod postgres {
             let view_val = if view.is_empty() { None } else { Some(view) };
 
             let row = if view_val.is_some() {
-                // Non-NULL view: use ON CONFLICT to update
+                // Non-NULL view: use ON CONFLICT with partial index (WHERE view IS NOT NULL)
                 sqlx::query(
                     r#"
                     INSERT INTO attachments (item_serial, name, mime_type, blob_hash, view)
                     VALUES ($1, $2, $3, $4, $5)
-                    ON CONFLICT (item_serial, name, view) DO UPDATE SET
+                    ON CONFLICT (item_serial, name, view) WHERE view IS NOT NULL DO UPDATE SET
                         mime_type = EXCLUDED.mime_type,
                         blob_hash = EXCLUDED.blob_hash
                     RETURNING id
@@ -1804,7 +1813,7 @@ pub mod postgres {
             let serials_vec: Vec<String> = serials.iter().map(|s| s.to_string()).collect();
 
             let rows_affected = sqlx::query(
-                "INSERT INTO weapons (serial) SELECT * FROM UNNEST($1::text[]) ON CONFLICT DO NOTHING",
+                "INSERT INTO items (serial) SELECT * FROM UNNEST($1::text[]) ON CONFLICT DO NOTHING",
             )
             .bind(&serials_vec)
             .execute(&self.pool)
