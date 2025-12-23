@@ -895,7 +895,9 @@ pub mod postgres {
                     .parse()
                     .unwrap_or(VerificationStatus::Unverified),
                 verification_notes: row.try_get("verification_notes")?,
-                verified_at: row.try_get("verified_at")?,
+                verified_at: row
+                    .try_get::<Option<chrono::DateTime<chrono::Utc>>, _>("verified_at")?
+                    .map(|dt| dt.to_rfc3339()),
                 legal: row.try_get::<Option<bool>, _>("legal")?.unwrap_or(false),
                 source: row.try_get("source")?,
                 created_at: row
