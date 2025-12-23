@@ -2,6 +2,30 @@
 //!
 //! Provides lookup functions for part names, category names, manufacturers, etc.
 //! Data is embedded at compile time from share/manifest/ JSON files.
+//!
+//! ## Category Names
+//!
+//! Maps category IDs to human-readable names:
+//!
+//! ```json
+#![doc = include_str!("../lib/manifest/category_names.json")]
+//! ```
+//!
+//! ## Manufacturers
+//!
+//! Maps manufacturer codes to full names:
+//!
+//! ```json
+#![doc = include_str!("../lib/manifest/manufacturers.json")]
+//! ```
+//!
+//! ## Weapon Types
+//!
+//! Maps weapon types to their valid manufacturers:
+//!
+//! ```json
+#![doc = include_str!("../lib/manifest/weapon_types.json")]
+//! ```
 
 use once_cell::sync::Lazy;
 use serde::Deserialize;
