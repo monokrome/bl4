@@ -40,3 +40,6 @@ anyhow = { workspace = true }
 
 # UUID generation
 uuid = { version = "1.11", features = ["v4"] }
+
+# Image resizing
+image = "0.25"

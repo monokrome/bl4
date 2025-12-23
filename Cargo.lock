@@ -748,7 +748,7 @@ dependencies = [
 
 [[package]]
 name = "bl4"
-version = "0.5.9"
+version = "0.5.10"
 dependencies = [
  "adler",
  "aes",
@@ -769,7 +769,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-cli"
-version = "0.5.9"
+version = "0.5.10"
 dependencies = [
  "anyhow",
  "bl4",
@@ -796,13 +796,14 @@ dependencies = [
 
 [[package]]
 name = "bl4-community"
-version = "0.5.9"
+version = "0.5.10"
 dependencies = [
  "anyhow",
  "axum",
  "bl4",
  "bl4-idb",
  "clap",
+ "image",
  "serde",
  "serde_json",
  "tokio",
@@ -816,7 +817,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-idb"
-version = "0.5.9"
+version = "0.5.10"
 dependencies = [
  "anyhow",
  "chrono",
@@ -834,7 +835,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-save-editor"
-version = "0.5.9"
+version = "0.5.10"
 dependencies = [
  "anyhow",
  "axum",
@@ -4582,6 +4583,7 @@ dependencies = [
  "moxcms",
  "num-traits",
  "png 0.18.0",
+ "qoi",
  "ravif",
  "rayon",
  "rgb",
@@ -7258,6 +7260,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7186d3822593aa4393561d186d1393b3923e9d6163d3fbfd6e825e3e6cf3e6a8"
 dependencies = [
  "num-traits",
+]
+
+[[package]]
+name = "qoi"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f6d64c71eb498fe9eae14ce4ec935c555749aef511cca85b5568910d6e48001"
+dependencies = [
+ "bytemuck",
 ]
 
 [[package]]
