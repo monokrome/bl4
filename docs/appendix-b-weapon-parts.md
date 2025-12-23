@@ -8,7 +8,7 @@ This appendix catalogs all known weapon parts extracted from BL4 game files, org
 
 Parts follow this pattern:
 
-```
+```text
 {MFG}_{TYPE}_{Part}_{Variant}_L{Level}_{SubVariant}
 ```
 
@@ -394,7 +394,7 @@ A critical discovery: **parts don't have external indices assigned to them—eac
 
 Every part UObject contains a `GbxSerialNumberIndex` at offset +0x28:
 
-```
+```text
 Part UObject + 0x28:
 ├── Scope (1 byte)   ← Always 2 for inventory parts
 ├── Status (1 byte)  ← Reserved
@@ -470,7 +470,7 @@ A `DAD_PS.part_barrel_01` **cannot** appear on a `DAD_AR` weapon.
 
 Barrel accessories are **barrel-specific**. The naming convention encodes the dependency:
 
-```
+```text
 part_barrel_XX_Y  →  only valid with part_barrel_XX
 ```
 
@@ -487,7 +487,7 @@ part_barrel_XX_Y  →  only valid with part_barrel_XX
 
 Scope accessories have a **two-dimensional dependency** on both scope type and lens type:
 
-```
+```text
 part_scope_acc_sXX_lYY_Z  →  only valid with part_scope_XX_lens_YY
 ```
 
@@ -504,7 +504,7 @@ part_scope_acc_sXX_lYY_Z  →  only valid with part_scope_XX_lens_YY
 
 Certain magazine stat modifiers are tied to specific barrels:
 
-```
+```text
 part_mag_*_barrel_XX  →  only valid with part_barrel_XX
 ```
 
@@ -704,7 +704,7 @@ Parts affect weapon prefix names through the naming table system.
 
 ### Internal Format
 
-```
+```text
 {MFG}_{TYPE}.comp_0{N}_{rarity}_{name}
 ```
 

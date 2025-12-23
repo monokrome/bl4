@@ -27,7 +27,7 @@ The encoding is compact. A 40-character serial describes an item that would need
 
 Serials transform through multiple stages. Understanding each stage reveals how the pieces fit together.
 
-```
+```text
 "@Ugr$ZCm/&tH!..."  →  Strip "@U" prefix
 "gr$ZCm/&tH!..."    →  Base85 decode to bytes
 [0x84, 0xA5, ...]   →  Bit-mirror each byte
@@ -43,7 +43,7 @@ The prefix `@U` marks this as a BL4 serial. The third character indicates item t
 
 BL4 doesn't use standard ASCII85. It uses a custom 85-character alphabet:
 
-```
+```text
 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{/}~
 ```
 
@@ -51,7 +51,7 @@ Every 5 characters encode 4 bytes. The math: 85⁵ ≈ 4.4 billion, which fits i
 
 To decode, look up each character's position in the alphabet, combine them as a base-85 number, then extract 4 bytes big-endian:
 
-```
+```text
 Characters: g r $ Z C
 Positions:  42 53 64 35 12
 
@@ -125,7 +125,7 @@ BL4 uses two distinct token structures, distinguished by the first token after t
 
 Weapons start with a VarInt encoding a combined manufacturer/weapon-type ID:
 
-```
+```text
 [0] VarInt: manufacturer_weapon_id   (e.g., 2 = Jakobs Pistol, 14 = Ripper Shotgun)
 [1] SoftSeparator
 [2] VarInt: 0
@@ -146,7 +146,7 @@ Weapons start with a VarInt encoding a combined manufacturer/weapon-type ID:
 
 Equipment (shields, grenades, class mods) starts with a VarBit encoding the category:
 
-```
+```text
 [0] VarBit: category_identifier      <- Category * divisor
 [1] Separator
 [2] VarBit: level_code               <- LEVEL ENCODED HERE
@@ -157,7 +157,7 @@ Equipment (shields, grenades, class mods) starts with a VarBit encoding the cate
 ```
 
 For VarBit-first serials, the category is extracted using a divisor:
-```
+```text
 Category ≈ first_varbit / 385   (most equipment)
 Category ≈ first_varbit / 8192  (some shields)
 ```
@@ -214,13 +214,13 @@ First 5 characters `gr$ZC`:
 Continue for remaining characters.
 
 **Step 3: Bit-mirror each byte**
-```
+```text
 Original: 84 A5 86 06 ...
 Mirrored: 21 A5 61 60 ...
 ```
 
 **Step 4: Parse bitstream**
-```
+```text
 Binary: 00100001 10100101 01100001 ...
         └──────┘ └────────────────...
          Magic   Tokens begin
@@ -235,7 +235,7 @@ Part Group ID = 180928 / 8192 = 22 (Vladof SMG)
 
 The bl4 tool handles all this:
 ```bash
-bl4 decode '@Ugr$ZCm/&tH!t{KgK/Shxu>k'
+bl4 serial decode '@Ugr$ZCm/&tH!t{KgK/Shxu>k'
 # Output shows tokens: 180928 | 50 | {0:1} 21 {4} , 2 , , 105 102 41
 ```
 
@@ -400,7 +400,7 @@ Codes 192 and 200 both correspond to level 50 items but appear on items with dif
 
 For VarBit-first equipment, the first VarBit encodes category plus additional data:
 
-```
+```text
 category = first_varbit / divisor
 remainder = first_varbit % divisor
 ```
@@ -415,7 +415,7 @@ Observed correlations between remainder bits and database rarity:
 
 Element types are encoded as Part tokens. The observed pattern:
 
-```
+```text
 Part Index = 128 + Element ID
 ```
 
@@ -429,7 +429,7 @@ Part Index = 128 + Element ID
 | 14 | Fire | `{142}` | Hellwalker |
 
 Multi-element weapons contain multiple element tokens:
-```
+```text
 Tokens: ... {136} {141} ...  → Shock + Cryo
 ```
 
@@ -439,7 +439,7 @@ Tokens: ... {136} {141} ...  → Shock + Cryo
 
 Behind serials, parts are defined as UE5 objects. The `GbxSerialNumberIndex` structure links parts to their encoding:
 
-```
+```text
 GbxSerialNumberIndex
 ├── Category (Int64): Part Group ID
 ├── scope (Byte): Root=1, Sub=2
@@ -457,7 +457,7 @@ The game's internal registration order determines indices—not alphabetical sor
 
 When you have two similar items and want to find what differs:
 
-```
+```text
 Serial 1: @Ugd$YMq/.&{!gQaYQ1)<G9C8...
 Serial 2: @Ugd$YMq/.&{!gQaYQ1)<?B8b...
 ```
@@ -473,7 +473,7 @@ Decode both, align the tokens, find where they diverge. The difference reveals w
 Serial: `@Ugd_t@FmVuJyjIXzRG}JG7S$K^1{DjH5&-`
 
 Decoded tokens:
-```
+```text
 9 ,  0 ,  8 ,  200 | 4 ,  1367 | | {172} {4} {6} {164} {167} {142} {65} {19:7}
 ```
 
@@ -487,7 +487,7 @@ Decoded tokens:
 Serial: `@Uge8jxm/)@{!bAp5s!;381FF>eS^@w`
 
 Decoded tokens:
-```
+```text
 107200 | 50 | "" 4 ,  56 | | {9} {4} {250:131} {5}
 ```
 
@@ -508,7 +508,7 @@ Given these serials, what category is each?
 
 **Exercise 2: Decode a Manufacturer**
 
-Use `bl4 decode` on a weapon serial. What Part Group ID does it use? What manufacturer does that correspond to?
+Use `bl4 serial decode` on a weapon serial. What Part Group ID does it use? What manufacturer does that correspond to?
 
 **Exercise 3: Compare Two Items**
 

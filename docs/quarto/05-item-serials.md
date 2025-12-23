@@ -14,9 +14,10 @@ Inside that string:
 - Item type (weapon, shield, class mod)
 - Manufacturer
 - Level
+- Element type (Kinetic, Corrosive, Shock, Radiation, Cryo, Fire)
 - Every part (barrel, grip, scope, magazine)
 - Random seed for stat calculations
-- Any special modifiers
+- Additional flags (some correlate with rarity in database)
 
 The encoding is compact. A 40-character serial describes an item that would need hundreds of bytes in a more verbose format.
 
@@ -26,7 +27,7 @@ The encoding is compact. A 40-character serial describes an item that would need
 
 Serials transform through multiple stages. Understanding each stage reveals how the pieces fit together.
 
-```
+```text
 "@Ugr$ZCm/&tH!..."  →  Strip "@U" prefix
 "gr$ZCm/&tH!..."    →  Base85 decode to bytes
 [0x84, 0xA5, ...]   →  Bit-mirror each byte
@@ -42,7 +43,7 @@ The prefix `@U` marks this as a BL4 serial. The third character indicates item t
 
 BL4 doesn't use standard ASCII85. It uses a custom 85-character alphabet:
 
-```
+```text
 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{/}~
 ```
 
@@ -50,7 +51,7 @@ Every 5 characters encode 4 bytes. The math: 85⁵ ≈ 4.4 billion, which fits i
 
 To decode, look up each character's position in the alphabet, combine them as a base-85 number, then extract 4 bytes big-endian:
 
-```
+```text
 Characters: g r $ Z C
 Positions:  42 53 64 35 12
 
@@ -124,7 +125,7 @@ BL4 uses two distinct token structures, distinguished by the first token after t
 
 Weapons start with a VarInt encoding a combined manufacturer/weapon-type ID:
 
-```
+```text
 [0] VarInt: manufacturer_weapon_id   (e.g., 2 = Jakobs Pistol, 14 = Ripper Shotgun)
 [1] SoftSeparator
 [2] VarInt: 0
@@ -145,7 +146,7 @@ Weapons start with a VarInt encoding a combined manufacturer/weapon-type ID:
 
 Equipment (shields, grenades, class mods) starts with a VarBit encoding the category:
 
-```
+```text
 [0] VarBit: category_identifier      <- Category * divisor
 [1] Separator
 [2] VarBit: level_code               <- LEVEL ENCODED HERE
@@ -156,7 +157,7 @@ Equipment (shields, grenades, class mods) starts with a VarBit encoding the cate
 ```
 
 For VarBit-first serials, the category is extracted using a divisor:
-```
+```text
 Category ≈ first_varbit / 385   (most equipment)
 Category ≈ first_varbit / 8192  (some shields)
 ```
@@ -213,13 +214,13 @@ First 5 characters `gr$ZC`:
 Continue for remaining characters.
 
 **Step 3: Bit-mirror each byte**
-```
+```text
 Original: 84 A5 86 06 ...
 Mirrored: 21 A5 61 60 ...
 ```
 
 **Step 4: Parse bitstream**
-```
+```text
 Binary: 00100001 10100101 01100001 ...
         └──────┘ └────────────────...
          Magic   Tokens begin
@@ -234,7 +235,7 @@ Part Group ID = 180928 / 8192 = 22 (Vladof SMG)
 
 The bl4 tool handles all this:
 ```bash
-bl4 decode '@Ugr$ZCm/&tH!t{KgK/Shxu>k'
+bl4 serial decode '@Ugr$ZCm/&tH!t{KgK/Shxu>k'
 # Output shows tokens: 180928 | 50 | {0:1} 21 {4} , 2 , , 105 102 41
 ```
 
@@ -379,32 +380,58 @@ Equipment levels are stored as `level - 1`:
 
 **Verification:** All items with `/)}}` pattern (level 50) have VarBit=49. Tested across Throwing Knives, Energy Shields, Class Mods, and Grenades.
 
-### Weapon Level Encoding
+### Observed Values
 
-Weapons use a different formula with codes that may include rarity information:
+| Code | Binary | In-Game Level | DB Rarity Label |
+|------|--------|---------------|-----------------|
+| 30 | `00011110` | 30 | Common |
+| 50 | `00110010` | 50 | Common |
+| 142 | `10001110` | 44 | Common |
+| 192 | `11000000` | 50 | Epic |
+| 200 | `11001000` | 50 | Legendary |
 
-```rust
-fn level_from_code(code: u64) -> Option<u8> {
-    if code >= 128 {
-        // High-level encoding: level = 2 * (code - 120)
-        Some((2 * (code - 120)) as u8)
-    } else if code <= 50 {
-        // Direct encoding for levels 1-50
-        Some(code as u8)
-    } else {
-        None  // Invalid range 51-127
-    }
-}
+For codes 1-50, level equals the code directly. For codes 128+, the formula `level = 2 × (code - 120)` works for values up to 145 (which gives level 50).
+
+Codes 192 and 200 both correspond to level 50 items but appear on items with different rarity labels in the database. The bit differences:
+- Bit 6 (0x40): Set in 192 and 200, clear in 142
+- Bit 3 (0x08): Set in 200, clear in 192
+
+### Equipment First VarBit
+
+For VarBit-first equipment, the first VarBit encodes category plus additional data:
+
+```text
+category = first_varbit / divisor
+remainder = first_varbit % divisor
 ```
 
-| Code | Level | Formula |
-|------|-------|---------|
-| 1-50 | 1-50 | Direct (code = level) |
-| 128 | 16 | 2 × (128-120) = 16 |
-| 135 | 30 | 2 × (135-120) = 30 |
-| 145 | 50 | 2 × (145-120) = 50 |
+Observed correlations between remainder bits and database rarity:
+- VarBit 107200 (remainder 64, bits 7-6 = 1) → DB shows "Epic"
+- VarBit 78528 (remainder 192, bits 7-6 = 3) → DB shows "Legendary"
 
-**Equipment uses VarBit for level**, not VarInt. This was a key discovery—equipment items encode level as a VarBit token, while weapons use VarInt. The bl4 tools detect the format automatically by checking if the first token is VarInt or VarBit.
+---
+
+## Element Encoding
+
+Element types are encoded as Part tokens. The observed pattern:
+
+```text
+Part Index = 128 + Element ID
+```
+
+| Element ID | Element | Part Token | Verified On |
+|------------|---------|------------|-------------|
+| 0 | Kinetic (None) | `{128}` | Hellhound |
+| 5 | Corrosive | `{133}` | Seventh Sense |
+| 8 | Shock | `{136}` | Armored Pre-Emptive Bod |
+| 9 | Radiation | `{137}` | (from research notes) |
+| 13 | Cryo | `{141}` | Seventh Sense |
+| 14 | Fire | `{142}` | Hellwalker |
+
+Multi-element weapons contain multiple element tokens:
+```text
+Tokens: ... {136} {141} ...  → Shock + Cryo
+```
 
 ---
 
@@ -412,7 +439,7 @@ fn level_from_code(code: u64) -> Option<u8> {
 
 Behind serials, parts are defined as UE5 objects. The `GbxSerialNumberIndex` structure links parts to their encoding:
 
-```
+```text
 GbxSerialNumberIndex
 ├── Category (Int64): Part Group ID
 ├── scope (Byte): Root=1, Sub=2
@@ -430,7 +457,7 @@ The game's internal registration order determines indices—not alphabetical sor
 
 When you have two similar items and want to find what differs:
 
-```
+```text
 Serial 1: @Ugd$YMq/.&{!gQaYQ1)<G9C8...
 Serial 2: @Ugd$YMq/.&{!gQaYQ1)<?B8b...
 ```
@@ -439,51 +466,34 @@ Decode both, align the tokens, find where they diverge. The difference reveals w
 
 ---
 
-## Practical Usage
+## Decoding Examples
 
-The bl4 tool decodes serials instantly:
+### Weapon Serial
 
-```bash
-# Weapon
-bl4 decode '@Ugb)KvFg_4rJ}%H-RG}IbsZG^E#X_Y-00'
+Serial: `@Ugd_t@FmVuJyjIXzRG}JG7S$K^1{DjH5&-`
 
-# Output:
-Serial: @Ugb)KvFg_4rJ}%H-RG}IbsZG^E#X_Y-00
-Item type: b (Weapon)
-Weapon: Jakobs Pistol
-Level: 30
-Seed: 2591
-Tokens: 2 ,  0 ,  8 ,  135 | 4 ,  2591 | | {175} {4} {6} ...
+Decoded tokens:
+```text
+9 ,  0 ,  8 ,  200 | 4 ,  1367 | | {172} {4} {6} {164} {167} {142} {65} {19:7}
 ```
 
-Equipment items now show levels too:
+- First VarInt (9): Jakobs Shotgun
+- 4th VarInt (200): Level 50, additional flags set
+- Seed (1367): Random seed after first separator
+- Part token `{142}`: Fire element (128 + 14)
 
-```bash
-# Shield
-bl4 decode '@Uge98>m/)}}!c5JeNWCvCXc7'
+### Equipment Serial
 
-# Output:
-Serial: @Uge98>m/)}}!c5JeNWCvCXc7
-Item type: e (Item)
-Category: Shield Variant (289)
-Level: 49
-Tokens: 111296 | 49 | "" 4 | ,  | 171 | ...
+Serial: `@Uge8jxm/)@{!bAp5s!;381FF>eS^@w`
 
-# Class Mod
-bl4 decode '@Uge8;)m/)@{!X>!SqTZJibf`hSk4B2r6#)'
-
-# Output:
-Serial: @Uge8;)m/)@{!X>!SqTZJibf`hSk4B2r6#)
-Item type: e (Item)
-Category: Paladin Class Mod (55)
-Level: 50
+Decoded tokens:
+```text
+107200 | 50 | "" 4 ,  56 | | {9} {4} {250:131} {5}
 ```
 
-For more detail:
-```bash
-bl4 decode --verbose '@Ugr$ZCm/&...'   # Shows raw bytes and bit positions
-bl4 decode --debug '@Ugr$ZCm/&...'     # Shows bit-by-bit parsing
-```
+- First VarBit (107200): Category 279 (Energy Shield), remainder 64
+- Second VarBit (50): Level 50
+- Part tokens follow after separators
 
 ---
 
@@ -498,7 +508,7 @@ Given these serials, what category is each?
 
 **Exercise 2: Decode a Manufacturer**
 
-Use `bl4 decode` on a weapon serial. What Part Group ID does it use? What manufacturer does that correspond to?
+Use `bl4 serial decode` on a weapon serial. What Part Group ID does it use? What manufacturer does that correspond to?
 
 **Exercise 3: Compare Two Items**
 

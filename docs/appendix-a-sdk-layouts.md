@@ -429,7 +429,7 @@ These offsets are from the PE image base (0x140000000):
 
 For finding globals via code scanning:
 
-```
+```text
 GNames:   48 8D 0D ? ? ? ? E8 ? ? ? ? C6 05 ? ? ? ? ? 8B 05
 GObjects: 48 8B 15 ? ? ? ? C1 E8 ? 48 8D 0C 49 C1 E1 ? 48 03
 GWorld:   48 8B 05 ? ? ? ? 48 89 44 24 ? 48 8D 54 24 ? 4C 8D

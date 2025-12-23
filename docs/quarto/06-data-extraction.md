@@ -10,7 +10,7 @@ This chapter explores what data we can extract, what we can't, and why. Along th
 
 BL4's data lives in Unreal Engine pak files, stored in IoStore format:
 
-```
+```text
 Borderlands 4/OakGame/Content/Paks/
 ├── pakchunk0-Windows_0_P.utoc    ← Main game assets
 ├── pakchunk0-Windows_0_P.ucas    ← Compressed data
@@ -43,7 +43,7 @@ Some game data extracts cleanly from pak files:
 
 These assets follow Unreal's content structure:
 
-```
+```text
 OakGame/Content/
 ├── Gear/
 │   ├── Weapons/
@@ -95,7 +95,7 @@ But examining the context revealed it was near crypto code—specifically "Poly1
 
 From usmap analysis, we confirmed the exact structure linking parts to serials:
 
-```
+```text
 GbxSerialNumberIndex (12 bytes)
 ├── Category (Int64): Part Group ID
 ├── scope (Byte): EGbxSerialNumberIndexScope (Root=1, Sub=2)
@@ -126,7 +126,7 @@ Here's the crucial design pattern we discovered: **there is no separate mapping 
 
 Every part UObject contains a `GbxSerialNumberIndex` structure at offset +0x28:
 
-```
+```text
 UObject + 0x28: GbxSerialNumberIndex (4 bytes)
 ├── Scope (1 byte)   ← EGbxSerialNumberIndexScope (Root=1, Sub=2)
 ├── Status (1 byte)  ← Reserved/state flags
@@ -162,7 +162,7 @@ Through systematic memory analysis, we discovered **authoritative part-to-index 
 
 When the game loads, it creates UObjects for each part and registers them in an internal array. This array has a discoverable pattern:
 
-```
+```text
 Part Array Entry (24 bytes):
 ├── FName Index (4 bytes)     ← References the part name in FNamePool
 ├── Padding (4 bytes)         ← Always zero
@@ -173,7 +173,7 @@ Part Array Entry (24 bytes):
 
 The serial **Index** is stored **inside the pointed UObject**, at offset +0x28:
 
-```
+```text
 UObject at Pointer (offset +0x28):
 ├── Scope (1 byte)            ← EGbxSerialNumberIndexScope (always 2 for parts)
 ├── Reserved (1 byte)         ← Usually 0
@@ -354,7 +354,7 @@ cargo build --release -p uextract
 
 UE5 uses "unversioned" serialization. Properties are stored without field names:
 
-```
+```text
 Versioned (old):   "Damage": 50.0, "Level": 10
 Unversioned (new): 0x42480000 0x0000000A
                    └── Just values, no names
@@ -439,7 +439,7 @@ The result maps parts to categories and indices:
 
 Extracted `.uasset` files follow the Zen package format:
 
-```
+```text
 Package
 ├── Header
 ├── Name Map (local FNames)
@@ -496,7 +496,7 @@ Stats follow naming conventions: `StatName_ModifierType_Index_GUID`
 
 BL4 uses Oodle compression (RAD Game Tools). The `retoc` tool handles decompression automatically by loading the game's DLL:
 
-```
+```text
 ~/.steam/steam/steamapps/common/"Borderlands 4"/Engine/Binaries/ThirdParty/Oodle/
 └── oo2core_9_win64.dll
 ```
@@ -521,9 +521,6 @@ retoc unpack "$GAME_DIR/OakGame/Content/Paks/pakchunk0-Windows_0_P.utoc" "$OUTPU
 
 # Parse with usmap
 ./target/release/uextract "$OUTPUT_DIR/raw" -o "$OUTPUT_DIR/parsed" --usmap "$USMAP"
-
-# Generate manifest
-bl4-research pak-manifest -e "$OUTPUT_DIR/parsed" -o "$OUTPUT_DIR/manifest"
 ```
 
 ---

@@ -25,10 +25,8 @@ struct FVector {
 };
 ```
 
-::: {.callout-warning}
-UE5 uses `double` (8 bytes) for vectors, not `float` like UE4. This is a common source of offset calculation errors.
-
-:::
+!!! warning
+    UE5 uses `double` (8 bytes) for vectors, not `float` like UE4. This is a common source of offset calculation errors.
 
 ### FRotator (24 bytes)
 
@@ -422,10 +420,8 @@ These offsets are from the PE image base (0x140000000):
 | GWorld | 0x11532cb8 | 0x151532cb8 | Current world |
 | ProcessEvent | 0x14f7010 | 0x144f7010 | Event dispatcher |
 
-::: {.callout-note}
-These offsets are from the November 2025 patch. Earlier versions had offsets 0x1000 lower.
-
-:::
+!!! note
+    These offsets are from the November 2025 patch. Earlier versions had offsets 0x1000 lower.
 
 ---
 
@@ -433,7 +429,7 @@ These offsets are from the November 2025 patch. Earlier versions had offsets 0x1
 
 For finding globals via code scanning:
 
-```
+```text
 GNames:   48 8D 0D ? ? ? ? E8 ? ? ? ? C6 05 ? ? ? ? ? 8B 05
 GObjects: 48 8B 15 ? ? ? ? C1 E8 ? 48 8D 0C 49 C1 E1 ? 48 03
 GWorld:   48 8B 05 ? ? ? ? 48 89 44 24 ? 48 8D 54 24 ? 4C 8D
@@ -483,4 +479,3 @@ struct FProperty : FField {
 ---
 
 *These layouts are from SDK dumps as of November 2025. Offsets may change with game patches.*
-

@@ -10,7 +10,7 @@ This chapter peels back those layers. We'll decrypt the encryption, decompress t
 
 Save files live in predictable locations. On Linux with Proton, they're in your Steam compatdata folder (not the userdata folder):
 
-```
+```text
 ~/.local/share/Steam/steamapps/compatdata/1285190/pfx/drive_c/users/steamuser/
   Documents/My Games/Borderlands 4/Saved/SaveGames/<steam_id>/Profiles/
 ├── profile.sav          # Your main profile (bank, golden keys, unlocks)
@@ -24,7 +24,7 @@ Save files live in predictable locations. On Linux with Proton, they're in your 
 ```
 
 On Windows, they're typically in:
-```
+```text
 %USERPROFILE%\Documents\My Games\Borderlands 4\Saved\SaveGames\<steam_id>\
 ```
 
@@ -36,7 +36,7 @@ Your Steam ID is a 17-digit number starting with 7656119. The game syncs these t
 
 BL4 saves are an onion. The outer layer is AES-256-ECB encryption. Peel that away, and you find zlib compression. Decompress that, and you reach YAML—the actual save data in a format you can read and edit.
 
-```
+```text
 .sav file
     └── AES-256-ECB encrypted
         └── zlib compressed
@@ -51,7 +51,7 @@ To edit a save, you reverse this process: decrypt, decompress, edit the YAML, co
 
 Open a save file in a hex editor and the first bytes tell you what you're dealing with:
 
-```
+```hexdump
 00000000: 41 45 53 2D 32 35 36 2D 45 43 42 00 ...
           A  E  S  -  2  5  6  -  E  C  B  \0
 ```
@@ -285,16 +285,21 @@ The bl4 tools make save editing straightforward.
 
 **Decrypt a save to YAML:**
 ```bash
-bl4 decrypt -i 1.sav -o character.yaml
-# or use stdin/stdout
-bl4 decrypt -i 1.sav > character.yaml
+bl4 save decrypt 1.sav character.yaml
+# or use stdout
+bl4 save decrypt 1.sav > character.yaml
 ```
 
 **Edit the YAML** with any text editor. Add items, change currency, modify stats.
 
 **Re-encrypt:**
 ```bash
-bl4 encrypt -i character.yaml -o 1.sav
+bl4 save encrypt character.yaml 1.sav
+```
+
+**Or use the interactive editor** (decrypts, opens in `$EDITOR`, re-encrypts on save):
+```bash
+bl4 save edit 1.sav
 ```
 
 The Steam ID is configured once and stored, so you don't need to specify it each time.
@@ -486,12 +491,12 @@ To copy exploration data from one character to another, extract the entire `fodd
 
 ```bash
 # Decrypt both saves
-bl4 decrypt -i source.sav -o source.yaml
-bl4 decrypt -i target.sav -o target.yaml
+bl4 save decrypt source.sav source.yaml
+bl4 save decrypt target.sav target.yaml
 
 # Copy foddatas section (use text manipulation or YAML tools)
 # Then re-encrypt
-bl4 encrypt -i target_modified.yaml -o target.sav
+bl4 save encrypt target_modified.yaml target.sav
 ```
 
 The foddata is substantial—a fully-explored save can have 40KB+ of exploration data compared to a fresh character's few hundred bytes.
@@ -606,22 +611,19 @@ This tracks your progression through the Vault Hunter Rank challenges. Values ty
 
 ---
 
-## The Backup System
+## Backups
 
-Never edit saves without a backup. The bl4 tools include smart backup management.
+Never edit saves without a backup. Before making any changes, copy your save file:
 
 ```bash
-# Create a backup before editing
-bl4 backup profile.sav
+# Simple backup
+cp 1.sav 1.sav.backup
 
-# List all backups for a file
-bl4 backup --list profile.sav
-
-# Restore a specific backup
-bl4 restore profile.sav --timestamp 2025-01-15T10:30:00
+# Or with timestamp
+cp 1.sav "1.sav.$(date +%Y%m%d_%H%M%S).backup"
 ```
 
-Backups are stored with content hashes, so identical saves don't create duplicate backups. You can accumulate a history of significant states without filling your disk.
+Steam Cloud will also sync your saves. If you're experimenting, disable cloud sync temporarily to prevent conflicts.
 
 ---
 

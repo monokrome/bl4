@@ -59,7 +59,7 @@ From `/crates/bl4/src/parts.rs` `category_name()` function:
    - `share/manifest/parts_database.json` - Regenerated with 2,615 parts across 56 categories
 
 5. **CLI enhanced**:
-   - `bl4 decode` now shows Category name and ID in output
+   - `bl4 serial decode` now shows Category name and ID in output
 
 ### Still Missing
 
@@ -90,7 +90,7 @@ Four playable characters confirmed:
 
 ### Category Derivation Formula
 
-```
+```text
 Weapons (type 'r'):     category = first_varbit_token / 8192
 Equipment (type 'e'):   category = first_varbit_token / 384
 ```
@@ -107,7 +107,7 @@ Other class mod parts may exist but weren't loaded when the memory dump was take
 
 The authoritative source for category mappings is the `GbxSerialNumberIndex` structure:
 
-```
+```text
 GbxSerialNumberIndex:
   Category  : Int64   <- Part Group ID
   scope     : Byte    <- Root/Sub scope
@@ -136,7 +136,6 @@ cargo test -p bl4 validate -- --nocapture
 
 Decode a serial to see category:
 ```bash
-bl4 decode '@Uge8;)m/&zJ!tkr0N4>8ns8H{t!6ljj'
+bl4 serial decode '@Uge8;)m/&zJ!tkr0N4>8ns8H{t!6ljj'
 # Output includes: Category: Paladin Class Mod (55)
 ```
-

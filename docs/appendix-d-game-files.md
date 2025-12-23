@@ -21,13 +21,13 @@ This appendix provides a complete reference of BL4's file structure, asset organ
 
 ### Steam (Linux)
 
-```
+```text
 ~/.steam/steam/steamapps/common/Borderlands 4/OakGame/Content/Paks/
 ```
 
 ### Steam (Windows)
 
-```
+```text
 C:\Program Files (x86)\Steam\steamapps\common\Borderlands 4\OakGame\Content\Paks\
 ```
 
@@ -46,7 +46,7 @@ C:\Program Files (x86)\Steam\steamapps\common\Borderlands 4\OakGame\Content\Paks
 
 ## Top-Level Content Structure
 
-```
+```text
 OakGame/Content/
 ├── AI/                     # Enemy AI, NPCs, bosses
 ├── Atlases/                # Texture atlases
@@ -77,7 +77,7 @@ OakGame/Content/
 
 ## Player Characters (Vault Hunters)
 
-```
+```text
 PlayerCharacters/
 ├── Customizations/         # Player cosmetics
 ├── DarkSiren/              # Character: Dark Siren
@@ -94,7 +94,7 @@ PlayerCharacters/
 
 ### Equipment Types
 
-```
+```text
 Gear/
 ├── ArmorShard/             # Armor shard items
 ├── Enhancements/           # Enhancement items
@@ -126,7 +126,7 @@ Gear/
 
 ### Weapon System
 
-```
+```text
 Gear/Weapons/
 ├── _Manufacturer/          # Manufacturer-specific data
 │   ├── BOR/                # Borg
@@ -157,7 +157,7 @@ Gear/Weapons/
 
 ## GameData System
 
-```
+```text
 GameData/
 ├── Activities/             # Activity/event system
 ├── Animation/              # Animation configs
@@ -195,7 +195,7 @@ GameData/
 
 ## AI System
 
-```
+```text
 AI/
 ├── ArmyBandit/             # Bandit enemy faction
 ├── ArmyOrder/              # Order enemy faction

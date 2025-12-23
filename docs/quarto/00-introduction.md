@@ -104,4 +104,3 @@ Turn the page to Chapter 1. We'll start with binary basics, and before you know 
 ---
 
 *This guide accompanies the bl4 project: https://github.com/monokrome/bl4*
-

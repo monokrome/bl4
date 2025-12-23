@@ -1,105 +1,112 @@
 # Borderlands 4 Reverse Engineering Guide
 
-When you pick up a legendary weapon in Borderlands 4 and share it with a friend using a serial code, something remarkable happens. That short string of characters—maybe 40 characters long—encodes everything about your weapon: its manufacturer, every part attached to it, the random seed that determined its stats, even which rarity tier it rolled. Your friend pastes the code, and they get an exact duplicate.
+**Zero to Hero**
 
-But how does it work?
-
-This guide exists because someone asked that question. What started as curiosity about save file formats turned into a deep dive through binary data, encryption schemes, Unreal Engine internals, and ultimately a complete understanding of how Borderlands 4 stores and encodes its item system.
+A comprehensive guide to understanding game internals, reverse engineering techniques, and using the bl4 tooling to analyze and modify Borderlands 4.
 
 ---
 
-## The Journey Ahead
+<div class="grid cards" markdown>
 
-You're about to learn reverse engineering by doing it. We won't just explain concepts—we'll use them immediately to solve real problems. By the time you finish this guide, you'll be able to:
+-   :material-download:{ .lg .middle } **Download**
 
-**Decrypt and edit save files.** BL4 saves are encrypted with AES-256, compressed, and structured as YAML. We'll walk through the entire process of opening them up, making changes, and putting them back together.
+    ---
 
-**Decode item serials.** Those cryptic strings that encode weapons use a custom Base85 alphabet, bit mirroring, and a token-based format. We'll parse them byte by byte until they make perfect sense.
+    Get the complete guide for offline reading.
 
-**Extract data from game files.** Unreal Engine 5 packs everything into `.pak` containers with a proprietary format. We'll build tools to crack them open and pull out the good stuff—weapon definitions, part databases, drop tables.
+    [:material-file-pdf-box: PDF](downloads/bl4-guide.pdf){ .md-button .md-button--primary }
+    [:material-book-open-variant: EPUB](downloads/bl4-guide.epub){ .md-button }
+    [:material-kindle: MOBI](downloads/bl4-guide.mobi){ .md-button }
 
-**Understand memory analysis.** Sometimes the only way to find what you need is to take a snapshot of the running game. We'll learn to navigate gigabytes of process memory to locate specific structures.
-
-None of this requires prior reverse engineering experience. If you can write basic code and use a command line, you have everything you need to start.
-
----
-
-## How This Guide Works
-
-Each chapter builds on the previous, taking you from fundamentals to practical application. The structure follows the natural progression of a reverse engineering project:
-
-**First**, we establish foundations. Binary representation, data types, memory layout—these concepts appear everywhere in game data. Understanding them makes everything else click into place.
-
-**Then**, we learn Unreal Engine's architecture. BL4 runs on UE5, and knowing how Unreal organizes data (UObjects, reflection, property serialization) explains patterns we'll see repeatedly in memory dumps and pak files.
-
-**Next**, we apply these concepts. We'll analyze save files, decode serials, dump process memory, and extract game assets. Each technique opens new doors.
-
-**Finally**, we use the tools. The bl4 project provides command-line utilities for everything we've learned. The tools chapter serves as your practical reference for day-to-day use.
+</div>
 
 ---
 
-## A Word on Philosophy
+## Chapters
 
-The best reverse engineers share a common trait: they form hypotheses and test them ruthlessly. "I think this byte controls weapon damage" leads to "let me change it and see what happens." Wrong guesses are valuable—they narrow down possibilities.
+### Part I: Foundations
 
-Keep notes as you explore. The documentation you're reading started as scratch files filled with hex dumps and question marks. Over time, patterns emerged, and those scratch notes became explanations. Your discoveries might become documentation too.
+| Chapter | Title | Description |
+|:-------:|-------|-------------|
+| 1 | [Binary Basics](01-binary-basics.md) | Hexadecimal, endianness, data types, and memory layout |
+| 2 | [Unreal Engine Architecture](02-unreal-architecture.md) | UObjects, reflection system, pak files, and usmap |
+
+### Part II: Analysis Techniques
+
+| Chapter | Title | Description |
+|:-------:|-------|-------------|
+| 3 | [Memory Analysis](03-memory-analysis.md) | Process memory, dumps, pattern scanning, pointer chains |
+| 4 | [Save File Format](04-save-files.md) | Encryption, compression, YAML structure, key derivation |
+| 5 | [Item Serials](05-item-serials.md) | Base85 encoding, bit manipulation, token parsing |
+
+### Part III: Practical Application
+
+| Chapter | Title | Description |
+|:-------:|-------|-------------|
+| 6 | [Data Extraction](06-data-extraction.md) | Pak files, asset parsing, manifest generation |
+| 7 | [Using bl4 Tools](07-bl4-tools.md) | Complete CLI reference and practical workflows |
+
+### Appendices
+
+| Appendix | Title | Description |
+|:--------:|-------|-------------|
+| A | [SDK Class Layouts](appendix-a-sdk-layouts.md) | Memory layouts for UObject, AOakCharacter, AWeapon, etc. |
+| B | [Weapon Parts Reference](appendix-b-weapon-parts.md) | Complete catalog of weapon parts by manufacturer |
+| C | [Loot System Internals](appendix-c-loot-system.md) | Drop pools, rarity weights, luck system |
+| D | [Game File Structure](appendix-d-game-files.md) | Full asset tree and file organization |
+
+### Reference
+
+| | Title | Description |
+|:--:|-------|-------------|
+| | [Glossary](glossary.md) | Terms, definitions, and quick reference tables |
 
 ---
 
-## Ethics and Intent
+## Quick Start
 
-This guide exists for education and personal use. It's for:
+**New to reverse engineering?**
+Start with [Chapter 1: Binary Basics](01-binary-basics.md) and work through sequentially.
 
-- Understanding how games work beneath the surface
-- Building save editors that modify your own single-player experience
-- Learning reverse engineering techniques applicable far beyond gaming
-- Satisfying the curiosity that comes from wanting to know *how things work*
+**Want to edit saves?**
+Jump to [Chapter 4: Save File Format](04-save-files.md).
 
-It's not for cheating in multiplayer, bypassing DRM, or violating terms of service. The techniques here are powerful—use them responsibly.
+**Need to decode an item?**
+See [Chapter 5: Item Serials](05-item-serials.md).
+
+**Just want the tool reference?**
+Go to [Chapter 7: Using bl4 Tools](07-bl4-tools.md).
 
 ---
 
-## What You'll Need
+## Prerequisites
 
-Before we begin, make sure you have the Rust toolchain installed. We'll be building and using the bl4 tools throughout:
+Before starting, ensure you have:
+
+- Basic programming knowledge (any language)
+- Command line familiarity
+- Rust toolchain installed ([rustup.rs](https://rustup.rs))
+- The bl4 repository cloned and built
 
 ```bash
-# Install Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Clone and build
 git clone https://github.com/monokrome/bl4
 cd bl4
 cargo build --release
 ```
 
-A hex editor (any will do) and familiarity with your system's terminal will help. If you're on Linux, tools like `xxd` for hex dumps come pre-installed. On Windows, HxD is a solid free option.
+---
 
-For deeper analysis work, Ghidra (free) or IDA (commercial) let you decompile binaries. Rizin or Radare2 provide scriptable binary analysis. We'll use some of these in later chapters, but they're not strictly required to follow along.
+## About This Guide
+
+This guide accompanies the **bl4** project—a Borderlands 4 save file editor and item serial decoder. It documents not just *how* to use the tools, but *why* they work, giving you the knowledge to explore further on your own.
+
+Each chapter includes:
+
+- **Concept explanations** with visual diagrams
+- **Practical examples** you can try immediately
+- **Exercises** to test your understanding
+- **Tips** from real reverse engineering sessions
 
 ---
 
-## Finding Your Path
-
-This guide is meant to be read sequentially, but you might have a specific goal in mind:
-
-**Want to decode a weapon serial?** The encoding process is fascinating, but it also requires understanding binary basics and the token format. Start at Chapter 1 and work through Chapter 5. You'll have full context.
-
-**Need to edit a save file?** Chapter 4 covers the format in detail. If you're comfortable with encryption concepts and binary data, jump there. Otherwise, Chapters 1-2 provide helpful background.
-
-**Interested in extracting game assets?** Chapter 6 walks through pak file parsing. Chapter 2's coverage of Unreal Engine architecture explains why assets are structured the way they are.
-
-**Curious about the whole picture?** Start from the beginning. Each chapter adds a piece to the puzzle.
-
----
-
-## Let's Begin
-
-The first step in any reverse engineering project is understanding how computers represent data. It sounds basic, but it's foundational. Knowing that 0x41 means 'A' in ASCII, that little-endian systems store bytes backwards, and that a 4-byte integer can represent about 4 billion values—these facts become second nature, and they unlock everything else.
-
-Turn the page to Chapter 1. We'll start with binary basics, and before you know it, you'll be reading hex dumps like they're plain English.
-
----
-
-*This guide accompanies the bl4 project: https://github.com/monokrome/bl4*
-
+*For the latest version of this guide, visit [book.bl4.dev](https://book.bl4.dev)*

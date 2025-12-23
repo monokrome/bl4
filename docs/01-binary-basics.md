@@ -14,7 +14,7 @@ Writing out binary gets tedious fast. An 8-byte pointer becomes 64 ones and zero
 
 Here's the relationship:
 
-```
+```text
 Decimal:     137
 Binary:      1000 1001
 Hexadecimal: 8    9     →  0x89
@@ -58,7 +58,7 @@ Intel CPUs—which means basically every PC—store multi-byte numbers with the 
 
 The value 0x12345678 stored on a little-endian system:
 
-```
+```text
 Memory address:  0x00  0x01  0x02  0x03
 Stored bytes:    0x78  0x56  0x34  0x12
 ```
@@ -73,7 +73,7 @@ BL4 uses both. Save files are little-endian because they're made for x86 process
 
 Let's look at real data. Here's the first 64 bytes of a BL4 save file:
 
-```
+```hexdump
 00000000: 4145 532d 3235 362d 4543 4200 0000 0000  AES-256-ECB.....
 00000010: 0000 0000 0000 0000 a8de 0700 0000 0000  ................
 00000020: 789c 0bc9 c82c 5600 5346 4b23 0b32 4b32  x....,.V.SFK#.2K2
@@ -108,7 +108,7 @@ Sometimes a single byte holds multiple values. Games do this to save space or be
 
 Consider item flags. An item might be equipped (yes/no), favorited (yes/no), marked as junk (yes/no), and new (yes/no). Four boolean values could use four bytes, but why waste three? Pack them into one:
 
-```
+```text
 Bit 7  6  5  4  3  2  1  0
     _  _  _  _  N  J  F  E
 
@@ -158,12 +158,12 @@ In hex dumps, ASCII strings are easy to spot because the bytes fall in the print
 Two common string storage formats:
 
 **Null-terminated**: The string ends when you hit 0x00.
-```
+```text
 48 65 6C 6C 6F 00  →  "Hello"
 ```
 
 **Length-prefixed**: A length value precedes the characters.
-```
+```text
 05 00 00 00 48 65 6C 6C 6F  →  5 characters, then "Hello"
 ```
 
@@ -198,7 +198,7 @@ The struct logically contains 14 bytes of data (1+4+1+8), but its actual size is
 
 Let's decode a small example. Say you find these bytes at the start of an item record:
 
-```
+```text
 32 00 00 00 01 00 00 00 E8 03 00 00
 ```
 

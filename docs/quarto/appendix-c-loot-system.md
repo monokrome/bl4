@@ -355,12 +355,9 @@ The executable uses protection (likely Denuvo):
 - Heavy obfuscation (XOR, NOT, RCL patterns)
 - Runtime analysis more effective than static
 
-::: {.callout-warning}
-Static binary analysis is difficult. Runtime analysis via memory attachment is recommended.
-
-:::
+!!! warning
+    Static binary analysis is difficult. Runtime analysis via memory attachment is recommended.
 
 ---
 
 *Data from live memory analysis using `bl4 memory` tool.*
-

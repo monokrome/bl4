@@ -44,7 +44,7 @@ When you see an address like `0x1513878f0`, that's a virtual address. It doesn't
 
 BL4 on Windows loads at a base address around `0x140000000`. From there:
 
-```
+```text
 0x140000000 - 0x14e61c000   Executable code (.text section)
 0x14e61c000 - 0x15120e000   Read-only data (.rdata)
 0x15120e000 - 0x15175c000   Writable data (.data, .bss)
@@ -119,7 +119,7 @@ After enough time in hex dumps, certain patterns become instant recognition.
 
 **Floats** have recognizable patterns too. The value 1.0 is always `00 00 80 3F`. The value 100.0 is `00 00 C8 42`. When you're looking at unknown data and see `00 00 80 3F`, you've probably found a float field with value 1.0.
 
-```
+```text
 Common float patterns:
 0x3F800000 = 1.0    (scale, multiplier, percentage)
 0x40000000 = 2.0    (damage multiplier, maybe)
@@ -138,9 +138,9 @@ The bl4 project provides commands for common memory operations:
 bl4 memory --dump bl4_dump.core read 0x1513878f0 --size 64
 ```
 
-**Dumping all FNames:**
+**Looking up FNames by string:**
 ```bash
-bl4 memory --dump bl4_dump.core dump-names --limit 1000
+bl4 memory --dump bl4_dump.core fname-search "Damage"
 ```
 
 **Generating a usmap:**
@@ -296,4 +296,3 @@ Memory analysis reveals runtime state, but most players interact with the game t
 Next, we'll crack open BL4 save files—understanding the encryption, decompression, and YAML structure that makes save editing possible.
 
 **Next: [Chapter 4: Save File Format](04-save-files.md)**
-

@@ -14,7 +14,7 @@ This design creates a unified system where the engine can manage, serialize, and
 
 The inheritance hierarchy for a Borderlands 4 player character looks like this:
 
-```
+```text
 UObject
 └── AActor (things that exist in the world)
     └── APawn (things that can be possessed/controlled)
@@ -31,7 +31,7 @@ Every step adds capabilities. UObject provides basic memory management and refle
 
 Every UObject begins with the same 40-byte (0x28) header. Recognizing this structure in memory dumps is a core skill.
 
-```
+```text
 Offset  Size  Field          Purpose
 ------  ----  -----          -------
 0x00    8     VTable         Pointer to virtual function table
@@ -54,7 +54,7 @@ Storing the string "Damage" every time a weapon references that property would w
 
 An `FName` isn't a string—it's an 8-byte value containing an index into this pool:
 
-```
+```text
 FName (8 bytes)
 ├── Bits 0-31:  ComparisonIndex (which name in the pool)
 └── Bits 32-63: Number (instance suffix, like "Actor_5")
@@ -62,7 +62,7 @@ FName (8 bytes)
 
 When Unreal needs the actual string, it looks up the index in the name pool. The pool itself is organized as a chunked array—multiple blocks of entries, where each entry stores the actual characters:
 
-```
+```text
 FNameEntry
 ├── Header (2 bytes): bit 0 = is_wide, bits 6-15 = length
 └── Characters (N bytes): the actual string data
@@ -110,7 +110,7 @@ Unreal tracks all live UObjects in a global array called `GUObjectArray`. This i
 
 The array is chunked—multiple blocks of ~65536 entries each. Each entry (`FUObjectItem`) is 24 bytes:
 
-```
+```text
 FUObjectItem (0x18 bytes)
 ├── Object pointer (8 bytes): the actual UObject
 ├── Flags (4 bytes): item-level flags
@@ -143,7 +143,7 @@ On disk, Unreal games store assets in `.pak` archives. BL4 uses UE5's IoStore fo
 
 Inside these archives, individual assets follow the Zen package format:
 
-```
+```text
 Zen Package
 ├── Summary (package metadata)
 ├── Name Map (local FNames used in this package)
@@ -161,13 +161,13 @@ The export data contains the actual property values, but here's the catch: UE5 u
 A `.usmap` file contains the schema needed to parse unversioned assets. It's essentially a dump of the reflection system: all class names, property names, types, and offsets.
 
 Without usmap:
-```
+```text
 Raw bytes: 42 48 00 00 40 1C 00 00 ...
 Meaning: ???
 ```
 
 With usmap:
-```
+```text
 Damage (f32): 50.0
 Level (u32): 7200
 ElementType (enum): Fire
@@ -176,7 +176,7 @@ ElementType (enum): Fire
 
 The usmap format is straightforward:
 
-```
+```text
 Header
 ├── Magic: 0x30C4
 ├── Version: 3 (most recent)
@@ -197,7 +197,7 @@ The bl4 project generates usmap files from memory dumps. Our current usmap conta
 Certain types appear everywhere in Unreal. Recognizing them speeds up analysis.
 
 **TArray<T>** (16 bytes): Dynamic arrays.
-```
+```text
 ├── Data pointer (8 bytes): heap allocation
 ├── Count (4 bytes): current elements
 └── Max (4 bytes): allocated capacity
@@ -207,7 +207,7 @@ Certain types appear everywhere in Unreal. Recognizing them speeds up analysis.
 When serialized: length as i32 (negative means UTF-16), then characters, then null terminator.
 
 **FVector** (24 bytes in UE5): 3D coordinates.
-```
+```text
 ├── X (8 bytes, double)
 ├── Y (8 bytes, double)
 └── Z (8 bytes, double)
@@ -216,7 +216,7 @@ When serialized: length as i32 (negative means UTF-16), then characters, then nu
 Note: UE4 used 12-byte vectors with floats. UE5 switched to doubles. This is a common source of parsing errors when adapting UE4 tools.
 
 **FTransform** (96 bytes): Position + rotation + scale.
-```
+```text
 ├── Rotation (32 bytes, FQuat)
 ├── Translation (32 bytes, FVector + padding)
 └── Scale3D (32 bytes, FVector + padding)
@@ -228,7 +228,7 @@ Note: UE4 used 12-byte vectors with floats. UE5 switched to doubles. This is a c
 
 The Gearbox-specific classes follow predictable patterns. AOakCharacter, the player/enemy base class, is about 38KB (0x9790 bytes) and contains:
 
-```
+```text
 AOakCharacter (inherits AGbxCharacter)
 ├── ~0x4038: FOakDamageState (0x608 bytes)
 ├── ~0x4640: FOakCharacterHealthState (0x1E8 bytes)
@@ -238,7 +238,7 @@ AOakCharacter (inherits AGbxCharacter)
 
 AWeapon, the weapon class, runs about 3.4KB (0xD48 bytes):
 
-```
+```text
 AWeapon (inherits AInventory)
 ├── ~0xC40: FDamageModifierData (0x6C bytes)
 ├── ~0xCB8: FGbxAttributeFloat ZoomTimeScale
@@ -280,7 +280,7 @@ This two-phase approach—find objects, then decode them—works for any Unreal 
 **Exercise 1: Decode a UObject Header**
 
 Given this memory dump:
-```
+```hexdump
 00000000: 50 3A 4F 14 01 00 00 00  00 00 00 02 38 04 00 00
 00000010: E0 51 8B 90 01 00 00 00  38 09 00 00 00 00 00 00
 00000020: 80 25 6E 91 01 00 00 00
@@ -309,7 +309,7 @@ What classes would you encounter?
 3. FName index: 0x00000938 = 2360 (bytes 0x18-0x1B, lower 32 bits)
 
 **Exercise 2:**
-```
+```text
 AOakCharacter
 └── AGbxCharacter
     └── ACharacter

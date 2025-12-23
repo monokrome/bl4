@@ -25,4 +25,3 @@
 - [Loot System Internals](appendix-c-loot-system.md)
 - [Game File Structure](appendix-d-game-files.md)
 - [Glossary](glossary.md)
-
