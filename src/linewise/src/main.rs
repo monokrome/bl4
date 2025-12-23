@@ -819,10 +819,7 @@ fn boundary_detection(records: &[Vec<u8>], max_positions: usize) {
     }
 
     // Print detected fields
-    println!(
-        "{:>4}-{:<4}  {:>8}  Description",
-        "Start", "End", "Type"
-    );
+    println!("{:>4}-{:<4}  {:>8}  Description", "Start", "End", "Type");
     println!("{}", "-".repeat(50));
 
     for (start, end, is_fixed) in &fields {
