@@ -30,7 +30,7 @@ Binary location: `target/release/bl4`
 
 JavaScript/TypeScript (NPM):
 ```bash
-npm install bl4
+npm install @monokrome/bl4
 ```
 
 ## Usage
@@ -144,7 +144,7 @@ Documentation: https://docs.rs/bl4
 ### JavaScript/TypeScript
 
 ```javascript
-import init, { SaveFile, decryptSav, encryptSav } from 'bl4';
+import init, { SaveFile, decryptSav, encryptSav } from '@monokrome/bl4';
 
 await init();
 

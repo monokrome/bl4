@@ -197,7 +197,7 @@ jobs:
       - name: Update package.json for npm
         run: |
           cd pkg/bl4-wasm
-          jq '.version = "${{ steps.version.outputs.VERSION }}" | .repository = {"type": "git", "url": "https://github.com/monokrome/bl4"} | del(.repository.directory)' package.json > package.json.tmp
+          jq '.name = "@monokrome/bl4" | .version = "${{ steps.version.outputs.VERSION }}" | .repository = {"type": "git", "url": "https://github.com/monokrome/bl4"}' package.json > package.json.tmp
           mv package.json.tmp package.json
           cat package.json
 
