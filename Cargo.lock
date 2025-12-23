@@ -748,7 +748,7 @@ dependencies = [
 
 [[package]]
 name = "bl4"
-version = "0.5.7"
+version = "0.5.8"
 dependencies = [
  "adler",
  "aes",
@@ -769,7 +769,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-cli"
-version = "0.5.7"
+version = "0.5.8"
 dependencies = [
  "anyhow",
  "bl4",
@@ -796,7 +796,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-community"
-version = "0.5.7"
+version = "0.5.8"
 dependencies = [
  "anyhow",
  "axum",
@@ -816,7 +816,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-idb"
-version = "0.5.7"
+version = "0.5.8"
 dependencies = [
  "anyhow",
  "chrono",
@@ -834,7 +834,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-save-editor"
-version = "0.5.7"
+version = "0.5.8"
 dependencies = [
  "anyhow",
  "axum",
