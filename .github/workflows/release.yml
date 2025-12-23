@@ -46,20 +46,16 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            artifact_name: bl4
-            asset_name: bl4-linux-x86_64
+            ext: ''
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            artifact_name: bl4.exe
-            asset_name: bl4-windows-x86_64.exe
+            ext: '.exe'
           - os: macos-latest
             target: x86_64-apple-darwin
-            artifact_name: bl4
-            asset_name: bl4-macos-x86_64
+            ext: ''
           - os: macos-latest
             target: aarch64-apple-darwin
-            artifact_name: bl4
-            asset_name: bl4-macos-aarch64
+            ext: ''
 
     steps:
       - uses: actions/checkout@v4
@@ -69,14 +65,23 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      - name: Build binary
+      - name: Build bl4-cli
         run: cargo build --release -p bl4-cli --target ${{ matrix.target }}
 
-      - name: Upload binary
+      - name: Build linewise
+        run: cargo build --release -p linewise --target ${{ matrix.target }}
+
+      - name: Upload bl4-cli binary
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.asset_name }}
-          path: target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
+          name: bl4-${{ matrix.target }}${{ matrix.ext }}
+          path: target/${{ matrix.target }}/release/bl4${{ matrix.ext }}
+
+      - name: Upload linewise binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: linewise-${{ matrix.target }}${{ matrix.ext }}
+          path: target/${{ matrix.target }}/release/linewise${{ matrix.ext }}
 
   build-books:
     name: Build Guide Books
@@ -137,11 +142,38 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  build-wasm:
+    name: Build WASM package
+    runs-on: ubuntu-latest
+    environment: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build bl4 wasm package
+        run: wasm-pack build src/bl4 --target web --features wasm --out-dir ../../pkg/bl4-wasm
+
+      - name: Create tarball
+        run: tar -czvf bl4-wasm.tar.gz -C pkg bl4-wasm
+
+      - name: Upload wasm artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bl4-wasm
+          path: bl4-wasm.tar.gz
+
   upload-release:
     name: Upload to GitHub Release
     runs-on: ubuntu-latest
     environment: build
-    needs: [build-binaries, build-books, build-docker]
+    needs: [build-binaries, build-books, build-docker, build-wasm]
     steps:
       - uses: actions/checkout@v4
 
