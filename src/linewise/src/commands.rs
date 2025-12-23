@@ -1,5 +1,5 @@
 use crate::analysis::PositionStats;
-use crate::records::{group_by_position, filter_by_position};
+use crate::records::{filter_by_position, group_by_position};
 
 pub fn group_analysis(records: &[Vec<u8>], group_position: usize, max_positions: usize) {
     let groups = group_by_position(records, group_position);
@@ -7,7 +7,11 @@ pub fn group_analysis(records: &[Vec<u8>], group_position: usize, max_positions:
     let mut keys: Vec<_> = groups.keys().copied().collect();
     keys.sort();
 
-    println!("Grouping by position {} ({} groups)\n", group_position, keys.len());
+    println!(
+        "Grouping by position {} ({} groups)\n",
+        group_position,
+        keys.len()
+    );
 
     for key in keys {
         let group = &groups[&key];
@@ -17,8 +21,8 @@ pub fn group_analysis(records: &[Vec<u8>], group_position: usize, max_positions:
         let positions = max_len.min(max_positions);
 
         println!(
-            "{:>4}  {:>6}  {:>8}  {:>6}  {:>8}  {}",
-            "Pos", "Count", "Unique", "Entropy", "Common", "Distribution"
+            "{:>4}  {:>6}  {:>8}  {:>6}  {:>8}  Distribution",
+            "Pos", "Count", "Unique", "Entropy", "Common"
         );
         println!("{}", "-".repeat(70));
 
@@ -59,8 +63,8 @@ pub fn filter_analysis(records: &[Vec<u8>], position: usize, value: u8, max_posi
     let positions = max_len.min(max_positions);
 
     println!(
-        "{:>4}  {:>6}  {:>8}  {:>6}  {:>8}  {}",
-        "Pos", "Count", "Unique", "Entropy", "Common", "Distribution"
+        "{:>4}  {:>6}  {:>8}  {:>6}  {:>8}  Distribution",
+        "Pos", "Count", "Unique", "Entropy", "Common"
     );
     println!("{}", "-".repeat(70));
 

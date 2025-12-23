@@ -20,7 +20,12 @@ struct Cli {
     interactive: Option<PathBuf>,
 
     /// Input format for -i mode
-    #[arg(short = 'f', long = "format", default_value = "length16", global = true)]
+    #[arg(
+        short = 'f',
+        long = "format",
+        default_value = "length16",
+        global = true
+    )]
     format: String,
 
     #[command(subcommand)]
@@ -285,8 +290,8 @@ fn analyze(records: &[Vec<u8>], max_positions: usize, show_bits: bool) {
     println!();
 
     println!(
-        "{:>4}  {:>6}  {:>8}  {:>6}  {:>8}  {}",
-        "Pos", "Count", "Unique", "Entropy", "Common", "Distribution"
+        "{:>4}  {:>6}  {:>8}  {:>6}  {:>8}  Distribution",
+        "Pos", "Count", "Unique", "Entropy", "Common"
     );
     println!("{}", "-".repeat(70));
 
@@ -334,7 +339,11 @@ fn analyze(records: &[Vec<u8>], max_positions: usize, show_bits: bool) {
                 .collect::<Vec<_>>()
                 .join(" ")
         } else if entropy < 2.0 {
-            format!("LOW-ENT (top: 0x{:02x} {}%)", common_val, common_count * 100 / values.len())
+            format!(
+                "LOW-ENT (top: 0x{:02x} {}%)",
+                common_val,
+                common_count * 100 / values.len()
+            )
         } else {
             format!("varied ({} unique)", unique)
         };
@@ -355,7 +364,11 @@ fn analyze(records: &[Vec<u8>], max_positions: usize, show_bits: bool) {
             for bit in (0..8).rev() {
                 let ones: usize = values.iter().filter(|&&v| (v >> bit) & 1 == 1).count();
                 let zeros = values.len() - ones;
-                if ones > 0 && zeros > 0 && (ones as f64 / values.len() as f64) > 0.1 && (zeros as f64 / values.len() as f64) > 0.1 {
+                if ones > 0
+                    && zeros > 0
+                    && (ones as f64 / values.len() as f64) > 0.1
+                    && (zeros as f64 / values.len() as f64) > 0.1
+                {
                     println!(
                         "       bit {}: 0={:<5} 1={:<5} ({:.1}% ones)",
                         bit,
@@ -385,7 +398,7 @@ fn ngrams(records: &[Vec<u8>], size: usize, min_count: usize) {
     pairs.sort_by(|a, b| b.1.cmp(&a.1));
 
     println!("Top {}-grams (min count {}):", size, min_count);
-    println!("{:>8}  {}", "Count", "Bytes");
+    println!("{:>8}  Bytes", "Count");
     println!("{}", "-".repeat(40));
 
     for (bytes, count) in pairs.iter().take(50) {
@@ -433,7 +446,12 @@ fn entropy_analysis(records: &[Vec<u8>], max_positions: usize) {
         let bar_len = (entropy * 8.0) as usize;
         let bar: String = "#".repeat(bar_len) + &" ".repeat(64 - bar_len);
 
-        println!("{:>3}: [{:.2}] |{}|", pos, entropy, &bar[..64.min(bar.len())]);
+        println!(
+            "{:>3}: [{:.2}] |{}|",
+            pos,
+            entropy,
+            &bar[..64.min(bar.len())]
+        );
     }
 }
 
@@ -449,12 +467,21 @@ fn diff_analysis(records_a: &[Vec<u8>], records_b: &[Vec<u8>]) {
         .unwrap_or(0);
 
     println!("\nPositions with different distributions:\n");
-    println!("{:>4}  {:>10}  {:>10}  {}", "Pos", "A common", "B common", "Notes");
+    println!(
+        "{:>4}  {:>10}  {:>10}  Notes",
+        "Pos", "A common", "B common"
+    );
     println!("{}", "-".repeat(50));
 
     for pos in 0..max_len.min(64) {
-        let values_a: Vec<u8> = records_a.iter().filter_map(|r| r.get(pos).copied()).collect();
-        let values_b: Vec<u8> = records_b.iter().filter_map(|r| r.get(pos).copied()).collect();
+        let values_a: Vec<u8> = records_a
+            .iter()
+            .filter_map(|r| r.get(pos).copied())
+            .collect();
+        let values_b: Vec<u8> = records_b
+            .iter()
+            .filter_map(|r| r.get(pos).copied())
+            .collect();
 
         if values_a.is_empty() || values_b.is_empty() {
             continue;
@@ -496,7 +523,9 @@ async fn main() -> Result<()> {
         return interactive::run_interactive(records, auto_preset);
     }
 
-    let command = cli.command.ok_or_else(|| anyhow::anyhow!("No command specified. Use -i <file> or a subcommand."))?;
+    let command = cli
+        .command
+        .ok_or_else(|| anyhow::anyhow!("No command specified. Use -i <file> or a subcommand."))?;
 
     match command {
         Command::Analyze {
@@ -614,12 +643,21 @@ fn split_by_header(records: &[Vec<u8>], header_len: usize, output_dir: &PathBuf)
     let mut sorted_groups: Vec<_> = groups.into_iter().collect();
     sorted_groups.sort_by(|a, b| b.1.len().cmp(&a.1.len()));
 
-    println!("Split {} records into {} groups by {}-byte header:\n", records.len(), sorted_groups.len(), header_len);
+    println!(
+        "Split {} records into {} groups by {}-byte header:\n",
+        records.len(),
+        sorted_groups.len(),
+        header_len
+    );
 
     for (idx, (header, group_records)) in sorted_groups.iter().enumerate() {
         // Generate filename: group_a.bin, group_b.bin, etc.
         let letter = (b'a' + (idx as u8 % 26)) as char;
-        let suffix = if idx >= 26 { format!("{}", idx / 26) } else { String::new() };
+        let suffix = if idx >= 26 {
+            format!("{}", idx / 26)
+        } else {
+            String::new()
+        };
         let filename = format!("group_{}{}.bin", letter, suffix);
         let path = output_dir.join(&filename);
 
@@ -637,7 +675,9 @@ fn split_by_header(records: &[Vec<u8>], header_len: usize, output_dir: &PathBuf)
         let header_hex: String = header.iter().map(|b| format!("{:02x}", b)).collect();
         println!(
             "  {} : {:>5} records  header={}",
-            filename, group_records.len(), header_hex
+            filename,
+            group_records.len(),
+            header_hex
         );
     }
 
@@ -655,10 +695,13 @@ fn frequency_analysis(records: &[Vec<u8>], max_positions: usize, threshold: usiz
     let positions = max_len.min(max_positions);
     let total = records.len();
 
-    println!("Frequency analysis: {} records, {} positions\n", total, positions);
     println!(
-        "{:>4}  {:>6}  {:>6}  {:>8}  {}",
-        "Pos", "Top%", "Top2%", "TopVal", "Frequency Bar"
+        "Frequency analysis: {} records, {} positions\n",
+        total, positions
+    );
+    println!(
+        "{:>4}  {:>6}  {:>6}  {:>8}  Frequency Bar",
+        "Pos", "Top%", "Top2%", "TopVal"
     );
     println!("{}", "-".repeat(70));
 
@@ -691,7 +734,11 @@ fn frequency_analysis(records: &[Vec<u8>], max_positions: usize, threshold: usiz
         let bar: String = "█".repeat(bar_len) + &"░".repeat(40 - bar_len);
 
         // Mark high-frequency positions
-        let marker = if top_pct >= threshold { " ◀ FIXED" } else { "" };
+        let marker = if top_pct >= threshold {
+            " ◀ FIXED"
+        } else {
+            ""
+        };
 
         println!(
             "{:>4}  {:>5}%  {:>5}%  0x{:02x}     |{}|{}",
@@ -728,11 +775,19 @@ fn boundary_detection(records: &[Vec<u8>], max_positions: usize) {
             .values()
             .map(|&count| {
                 let p = count as f64 / total;
-                if p > 0.0 { -p * p.log2() } else { 0.0 }
+                if p > 0.0 {
+                    -p * p.log2()
+                } else {
+                    0.0
+                }
             })
             .sum();
 
-        let (top_val, top_count) = freq.iter().max_by_key(|(_, &c)| c).map(|(&v, &c)| (v, c)).unwrap_or((0, 0));
+        let (top_val, top_count) = freq
+            .iter()
+            .max_by_key(|(_, &c)| c)
+            .map(|(&v, &c)| (v, c))
+            .unwrap_or((0, 0));
         entropies.push((pos, entropy, top_val, top_count));
     }
 
@@ -764,7 +819,10 @@ fn boundary_detection(records: &[Vec<u8>], max_positions: usize) {
     }
 
     // Print detected fields
-    println!("{:>4}-{:<4}  {:>8}  {}", "Start", "End", "Type", "Description");
+    println!(
+        "{:>4}-{:<4}  {:>8}  Description",
+        "Start", "End", "Type"
+    );
     println!("{}", "-".repeat(50));
 
     for (start, end, is_fixed) in &fields {

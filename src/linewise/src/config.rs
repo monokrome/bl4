@@ -25,16 +25,31 @@ impl Rule {
                 // byte_equals <position> <value>
                 let position = parts.get(1)?.parse().ok();
                 let value = parts.get(2)?.parse().ok();
-                Some(Rule { rule_type, position, value, length: None })
+                Some(Rule {
+                    rule_type,
+                    position,
+                    value,
+                    length: None,
+                })
             }
             "min_length" => {
                 // min_length <length>
                 let length = parts.get(1)?.parse().ok();
-                Some(Rule { rule_type, position: None, value: None, length })
+                Some(Rule {
+                    rule_type,
+                    position: None,
+                    value: None,
+                    length,
+                })
             }
             "max_length" => {
                 let length = parts.get(1)?.parse().ok();
-                Some(Rule { rule_type, position: None, value: None, length })
+                Some(Rule {
+                    rule_type,
+                    position: None,
+                    value: None,
+                    length,
+                })
             }
             _ => None,
         }

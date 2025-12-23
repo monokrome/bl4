@@ -79,11 +79,6 @@ impl PositionStats {
         })
     }
 
-    pub fn from_owned_records(records: &[Vec<u8>], position: usize) -> Option<Self> {
-        let refs: Vec<&Vec<u8>> = records.iter().collect();
-        Self::from_records(&refs, position)
-    }
-
     pub fn distribution_summary(&self) -> String {
         if self.unique == 1 {
             format!("FIXED: 0x{:02x}", self.most_common.0)

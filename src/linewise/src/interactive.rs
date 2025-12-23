@@ -272,8 +272,7 @@ impl InteractiveState {
         content.push_str("# byte_equals 0 33\n");
         content.push_str("# min_length 30\n");
 
-        fs::write(&path, content)
-            .map_err(|e| format!("Failed to save: {}", e))
+        fs::write(&path, content).map_err(|e| format!("Failed to save: {}", e))
     }
 
     fn save_config(&self) -> Result<String, String> {
@@ -295,8 +294,7 @@ impl InteractiveState {
             self.wrap_mode, self.frequency_mode
         );
 
-        fs::write(&config_path, content)
-            .map_err(|e| format!("Failed to save: {}", e))?;
+        fs::write(&config_path, content).map_err(|e| format!("Failed to save: {}", e))?;
 
         Ok(config_path)
     }
@@ -349,8 +347,8 @@ impl InteractiveState {
     fn load_preset(&mut self, name: &str) -> Result<(), String> {
         let path = Self::resolve_preset_path(name, None);
 
-        let content = fs::read_to_string(&path)
-            .map_err(|e| format!("Failed to read '{}': {}", path, e))?;
+        let content =
+            fs::read_to_string(&path).map_err(|e| format!("Failed to read '{}': {}", path, e))?;
 
         let mut new_fields = Vec::new();
         for line in content.lines() {
@@ -388,7 +386,8 @@ impl InteractiveState {
                     // :w foo - save to "foo" but don't change current, error if exists
                     let path = Self::resolve_preset_path(name, None);
                     if Path::new(&path).exists() {
-                        self.message = Some(format!("'{}' exists. Use :w! {} to overwrite", name, name));
+                        self.message =
+                            Some(format!("'{}' exists. Use :w! {} to overwrite", name, name));
                     } else {
                         match self.save_preset(name) {
                             Ok(()) => self.message = Some(format!("Saved to '{}'", name)),
@@ -422,13 +421,19 @@ impl InteractiveState {
                 }
             }
             "p" | "preset" => {
-                let name = parts.get(1).map(|s| s.to_string())
+                let name = parts
+                    .get(1)
+                    .map(|s| s.to_string())
                     .or_else(|| self.current_preset.clone());
                 if let Some(name) = name {
                     match self.load_preset(&name) {
                         Ok(()) => {
                             self.current_preset = Some(name.clone());
-                            self.message = Some(format!("Loaded preset '{}' ({} fields)", name, self.locked_fields.len()));
+                            self.message = Some(format!(
+                                "Loaded preset '{}' ({} fields)",
+                                name,
+                                self.locked_fields.len()
+                            ));
                         }
                         Err(e) => self.message = Some(e),
                     }
@@ -439,7 +444,9 @@ impl InteractiveState {
             "e" | "o" | "open" | "edit" => {
                 if let Some(path) = parts.get(1) {
                     match self.open_file(path) {
-                        Ok(count) => self.message = Some(format!("Opened '{}' ({} records)", path, count)),
+                        Ok(count) => {
+                            self.message = Some(format!("Opened '{}' ({} records)", path, count))
+                        }
                         Err(e) => self.message = Some(e),
                     }
                 } else {
@@ -450,12 +457,10 @@ impl InteractiveState {
                 self.locked_fields.clear();
                 self.message = Some("Cleared all locked fields".to_string());
             }
-            "s" | "save" => {
-                match self.save_config() {
-                    Ok(path) => self.message = Some(format!("Saved config to {}", path)),
-                    Err(e) => self.message = Some(e),
-                }
-            }
+            "s" | "save" => match self.save_config() {
+                Ok(path) => self.message = Some(format!("Saved config to {}", path)),
+                Err(e) => self.message = Some(e),
+            },
             "q" | "quit" => {
                 return true; // Signal to quit
             }
@@ -467,8 +472,7 @@ impl InteractiveState {
     }
 
     fn open_file(&mut self, path: &str) -> Result<usize, String> {
-        let file = fs::File::open(path)
-            .map_err(|e| format!("Failed to open '{}': {}", path, e))?;
+        let file = fs::File::open(path).map_err(|e| format!("Failed to open '{}': {}", path, e))?;
 
         let mut reader = std::io::BufReader::new(file);
         let mut records = Vec::new();
@@ -506,7 +510,11 @@ impl InteractiveState {
 
     /// Max number of fields in the current record
     fn max_fields(&self) -> usize {
-        let record_len = self.records.get(self.current_record).map(|r| r.len()).unwrap_or(0);
+        let record_len = self
+            .records
+            .get(self.current_record)
+            .map(|r| r.len())
+            .unwrap_or(0);
         self.field_count(record_len)
     }
 
@@ -530,10 +538,17 @@ impl InteractiveState {
         }
 
         // Check if we have enough bytes in the record
-        let record_len = self.records.get(self.current_record).map(|r| r.len()).unwrap_or(0);
+        let record_len = self
+            .records
+            .get(self.current_record)
+            .map(|r| r.len())
+            .unwrap_or(0);
         if byte_off + byte_len > record_len {
-            self.message = Some(format!("Cannot lock: {} bytes needed, only {} available",
-                byte_len, record_len.saturating_sub(byte_off)));
+            self.message = Some(format!(
+                "Cannot lock: {} bytes needed, only {} available",
+                byte_len,
+                record_len.saturating_sub(byte_off)
+            ));
             return;
         }
 
@@ -545,10 +560,19 @@ impl InteractiveState {
         self.locked_fields.sort_by_key(|f| f.byte_offset);
 
         if count > 1 {
-            self.message = Some(format!("Locked {}x{} ({} bytes) at byte {}",
-                count, self.current_type.name(), byte_len, byte_off));
+            self.message = Some(format!(
+                "Locked {}x{} ({} bytes) at byte {}",
+                count,
+                self.current_type.name(),
+                byte_len,
+                byte_off
+            ));
         } else {
-            self.message = Some(format!("Locked {} at byte {}", self.current_type.name(), byte_off));
+            self.message = Some(format!(
+                "Locked {} at byte {}",
+                self.current_type.name(),
+                byte_off
+            ));
         }
     }
 
@@ -582,7 +606,11 @@ impl InteractiveState {
 
     /// Shift field alignment forward by 1 byte (l key)
     fn shift_offset_forward(&mut self) {
-        let max_offset = self.records.get(self.current_record).map(|r| r.len()).unwrap_or(0);
+        let max_offset = self
+            .records
+            .get(self.current_record)
+            .map(|r| r.len())
+            .unwrap_or(0);
         let type_size = self.current_type.byte_size().unwrap_or(1);
         if self.field_offset + 1 < type_size.min(max_offset) {
             self.field_offset += 1;
@@ -615,7 +643,10 @@ pub fn run_interactive(records: Vec<Vec<u8>>, auto_preset: Option<String>) -> Re
             }
             Err(e) => {
                 state.current_preset = Some(preset_name.clone());
-                state.message = Some(format!("Auto-detect found '{}' but failed to load: {}", preset_name, e));
+                state.message = Some(format!(
+                    "Auto-detect found '{}' but failed to load: {}",
+                    preset_name, e
+                ));
             }
         }
     }
@@ -707,7 +738,9 @@ pub fn run_interactive(records: Vec<Vec<u8>>, auto_preset: Option<String>) -> Re
                     let max_idx = state.records.len().saturating_sub(1);
                     state.current_record = (state.current_record + count).min(max_idx);
                     if state.current_record >= state.scroll_offset + state.visible_records {
-                        state.scroll_offset = state.current_record.saturating_sub(state.visible_records - 1);
+                        state.scroll_offset = state
+                            .current_record
+                            .saturating_sub(state.visible_records - 1);
                     }
                 }
                 (KeyCode::Char('k'), KeyModifiers::NONE) | (KeyCode::Up, _) => {
@@ -724,7 +757,8 @@ pub fn run_interactive(records: Vec<Vec<u8>>, auto_preset: Option<String>) -> Re
                     state.pending_g = false;
                     state.count_buffer.clear();
                     let jump = state.visible_records / 2;
-                    state.current_record = (state.current_record + jump).min(state.records.len() - 1);
+                    state.current_record =
+                        (state.current_record + jump).min(state.records.len() - 1);
                     if state.current_record >= state.scroll_offset + state.visible_records {
                         state.scroll_offset = state.current_record - state.visible_records + 1;
                     }
@@ -828,7 +862,14 @@ pub fn run_interactive(records: Vec<Vec<u8>>, auto_preset: Option<String>) -> Re
                         state.count_buffer.clear();
                         state.wrap_mode = !state.wrap_mode;
                         state.horizontal_scroll = 0;
-                        state.message = Some(if state.wrap_mode { "Wrap ON" } else { "Wrap OFF" }.to_string());
+                        state.message = Some(
+                            if state.wrap_mode {
+                                "Wrap ON"
+                            } else {
+                                "Wrap OFF"
+                            }
+                            .to_string(),
+                        );
                     } else if state.pending_open_bracket {
                         // [w = force wrap on
                         state.clear_pending();
@@ -856,7 +897,14 @@ pub fn run_interactive(records: Vec<Vec<u8>>, auto_preset: Option<String>) -> Re
                         state.clear_pending();
                         state.count_buffer.clear();
                         state.show_locks = !state.show_locks;
-                        state.message = Some(if state.show_locks { "Locks ON" } else { "Locks OFF" }.to_string());
+                        state.message = Some(
+                            if state.show_locks {
+                                "Locks ON"
+                            } else {
+                                "Locks OFF"
+                            }
+                            .to_string(),
+                        );
                     } else if state.pending_open_bracket {
                         // [l = force locks visible
                         state.clear_pending();
@@ -883,7 +931,14 @@ pub fn run_interactive(records: Vec<Vec<u8>>, auto_preset: Option<String>) -> Re
                         state.clear_pending();
                         state.count_buffer.clear();
                         state.show_gutter = !state.show_gutter;
-                        state.message = Some(if state.show_gutter { "Gutter ON" } else { "Gutter OFF" }.to_string());
+                        state.message = Some(
+                            if state.show_gutter {
+                                "Gutter ON"
+                            } else {
+                                "Gutter OFF"
+                            }
+                            .to_string(),
+                        );
                     } else if state.pending_open_bracket {
                         // [g = force gutter visible
                         state.clear_pending();
@@ -927,9 +982,9 @@ fn draw_ui(f: &mut Frame, state: &mut InteractiveState) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(1),  // Header
-            Constraint::Min(3),     // Records view
-            Constraint::Length(1),  // Status bar (or command input)
+            Constraint::Length(1), // Header
+            Constraint::Min(3),    // Records view
+            Constraint::Length(1), // Status bar (or command input)
         ])
         .split(f.area());
 
@@ -952,7 +1007,9 @@ fn draw_header(f: &mut Frame, area: Rect, state: &InteractiveState) {
     // Current type
     spans.push(Span::styled(
         format!(" {} ", state.current_type.name()),
-        Style::default().fg(Color::Green).add_modifier(Modifier::BOLD),
+        Style::default()
+            .fg(Color::Green)
+            .add_modifier(Modifier::BOLD),
     ));
 
     spans.push(Span::styled("│", Style::default().fg(Color::DarkGray)));
@@ -983,10 +1040,18 @@ fn draw_header(f: &mut Frame, area: Rect, state: &InteractiveState) {
 
     // Mode indicators
     let mut modes = Vec::new();
-    if state.frequency_mode { modes.push("freq"); }
-    if state.wrap_mode { modes.push("wrap"); }
-    if !state.show_locks { modes.push("~lock"); }
-    if !state.show_gutter { modes.push("~gut"); }
+    if state.frequency_mode {
+        modes.push("freq");
+    }
+    if state.wrap_mode {
+        modes.push("wrap");
+    }
+    if !state.show_locks {
+        modes.push("~lock");
+    }
+    if !state.show_gutter {
+        modes.push("~gut");
+    }
 
     if !modes.is_empty() {
         spans.push(Span::styled("│", Style::default().fg(Color::DarkGray)));
@@ -1011,23 +1076,19 @@ fn draw_records(f: &mut Frame, area: Rect, state: &mut InteractiveState) {
 
     // Calculate how many fields fit on screen
     let field_width = match state.current_type {
-        DataType::U8 => 4,      // "255 "
-        DataType::Hex => 3,     // "ff "
-        DataType::Binary => 9,  // "00000000 "
-        DataType::U16Le | DataType::U16Be => 6,   // "65535 "
-        DataType::U32Le | DataType::U32Be => 11,  // "4294967295 "
+        DataType::U8 => 4,                       // "255 "
+        DataType::Hex => 3,                      // "ff "
+        DataType::Binary => 9,                   // "00000000 "
+        DataType::U16Le | DataType::U16Be => 6,  // "65535 "
+        DataType::U32Le | DataType::U32Be => 11, // "4294967295 "
         DataType::VarInt => 11,
-        DataType::Ascii => 2,   // "X "
+        DataType::Ascii => 2, // "X "
     };
     let visible_fields = (area.width as usize).saturating_sub(prefix_width) / field_width;
     let center_field = visible_fields / 2;
 
     // Calculate scroll to keep cursor centered
-    let scroll_field = if state.current_field > center_field {
-        state.current_field - center_field
-    } else {
-        0
-    };
+    let scroll_field = state.current_field.saturating_sub(center_field);
 
     let mut lines: Vec<Line> = Vec::new();
     let mut record_idx = state.scroll_offset;
@@ -1040,7 +1101,9 @@ fn draw_records(f: &mut Frame, area: Rect, state: &mut InteractiveState) {
 
         // Line number
         let line_num_style = if is_current {
-            Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
+            Style::default()
+                .fg(Color::Yellow)
+                .add_modifier(Modifier::BOLD)
         } else {
             Style::default().fg(Color::Rgb(100, 100, 100))
         };
@@ -1129,7 +1192,10 @@ fn draw_records(f: &mut Frame, area: Rect, state: &mut InteractiveState) {
         }
 
         // Handle remaining bytes that don't form a complete field (at end of record)
-        if fields_rendered < visible_fields && byte_pos < record.len() && byte_pos + type_size > record.len() {
+        if fields_rendered < visible_fields
+            && byte_pos < record.len()
+            && byte_pos + type_size > record.len()
+        {
             let remaining = record.len() - byte_pos;
             let is_cursor = is_current && field_idx == state.current_field;
             let style = if is_cursor {
@@ -1152,8 +1218,8 @@ fn draw_records(f: &mut Frame, area: Rect, state: &mut InteractiveState) {
     // Scrollbar
     if state.records.len() > state.visible_records {
         let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight);
-        let mut scrollbar_state = ScrollbarState::new(state.records.len())
-            .position(state.current_record);
+        let mut scrollbar_state =
+            ScrollbarState::new(state.records.len()).position(state.current_record);
         f.render_stateful_widget(scrollbar, area, &mut scrollbar_state);
     }
 }
@@ -1161,15 +1227,18 @@ fn draw_records(f: &mut Frame, area: Rect, state: &mut InteractiveState) {
 /// Decode a value from the record at the given byte offset
 fn decode_value(record: &[u8], byte_off: usize, dtype: DataType) -> String {
     match dtype {
-        DataType::U8 => {
-            record.get(byte_off).map(|&v| format!("{}", v)).unwrap_or_default()
-        }
-        DataType::Hex => {
-            record.get(byte_off).map(|&v| format!("{:02x}", v)).unwrap_or_default()
-        }
-        DataType::Binary => {
-            record.get(byte_off).map(|&v| format!("{:08b}", v)).unwrap_or_default()
-        }
+        DataType::U8 => record
+            .get(byte_off)
+            .map(|&v| format!("{}", v))
+            .unwrap_or_default(),
+        DataType::Hex => record
+            .get(byte_off)
+            .map(|&v| format!("{:02x}", v))
+            .unwrap_or_default(),
+        DataType::Binary => record
+            .get(byte_off)
+            .map(|&v| format!("{:08b}", v))
+            .unwrap_or_default(),
         DataType::U16Le => {
             if byte_off + 2 <= record.len() {
                 let v = u16::from_le_bytes([record[byte_off], record[byte_off + 1]]);
@@ -1232,15 +1301,18 @@ fn decode_value(record: &[u8], byte_off: usize, dtype: DataType) -> String {
             }
         }
         DataType::Ascii => {
-            record.get(byte_off).map(|&v| {
-                if v >= 0x20 && v <= 0x7E {
-                    // Printable ASCII
-                    (v as char).to_string()
-                } else {
-                    // Non-printable - show as dot
-                    ".".to_string()
-                }
-            }).unwrap_or_default()
+            record
+                .get(byte_off)
+                .map(|&v| {
+                    if (0x20..=0x7E).contains(&v) {
+                        // Printable ASCII
+                        (v as char).to_string()
+                    } else {
+                        // Non-printable - show as dot
+                        ".".to_string()
+                    }
+                })
+                .unwrap_or_default()
         }
     }
 }
@@ -1248,13 +1320,13 @@ fn decode_value(record: &[u8], byte_off: usize, dtype: DataType) -> String {
 /// Format a field value with consistent width for the data type
 fn format_field_value(value: &str, dtype: DataType) -> String {
     let width = match dtype {
-        DataType::U8 => 3,      // 0-255
-        DataType::Hex => 2,     // 00-ff
-        DataType::Binary => 8,  // 8 bits
-        DataType::U16Le | DataType::U16Be => 5,   // 0-65535
-        DataType::U32Le | DataType::U32Be => 10,  // 0-4294967295
-        DataType::VarInt => 10, // variable, but cap display
-        DataType::Ascii => 1,   // single character
+        DataType::U8 => 3,                       // 0-255
+        DataType::Hex => 2,                      // 00-ff
+        DataType::Binary => 8,                   // 8 bits
+        DataType::U16Le | DataType::U16Be => 5,  // 0-65535
+        DataType::U32Le | DataType::U32Be => 10, // 0-4294967295
+        DataType::VarInt => 10,                  // variable, but cap display
+        DataType::Ascii => 1,                    // single character
     };
     format!("{:>width$}", value, width = width)
 }
@@ -1265,7 +1337,12 @@ fn draw_status_bar(f: &mut Frame, area: Rect, state: &InteractiveState) {
         let line = Line::from(vec![
             Span::styled(":", Style::default().fg(Color::Yellow)),
             Span::styled(&state.command_buffer, Style::default().fg(Color::White)),
-            Span::styled("_", Style::default().fg(Color::White).add_modifier(Modifier::SLOW_BLINK)),
+            Span::styled(
+                "_",
+                Style::default()
+                    .fg(Color::White)
+                    .add_modifier(Modifier::SLOW_BLINK),
+            ),
         ]);
         let widget = Paragraph::new(line);
         f.render_widget(widget, area);
@@ -1305,4 +1382,3 @@ fn draw_status_bar(f: &mut Frame, area: Rect, state: &InteractiveState) {
     let widget = Paragraph::new(Line::from(spans));
     f.render_widget(widget, area);
 }
-
