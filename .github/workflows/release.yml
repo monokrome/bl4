@@ -46,15 +46,19 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
+            name: linux-x86_64
             cross: false
           - os: ubuntu-latest
             target: aarch64-unknown-linux-gnu
+            name: linux-aarch64
             cross: true
           - os: macos-latest
             target: x86_64-apple-darwin
+            name: macos-x86_64
             cross: false
           - os: macos-latest
             target: aarch64-apple-darwin
+            name: macos-aarch64
             cross: false
 
     steps:
@@ -81,23 +85,23 @@ jobs:
         env:
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: ${{ matrix.cross && 'aarch64-linux-gnu-gcc' || '' }}
 
-      - name: Rename binaries with target
+      - name: Rename binaries
         run: |
           cd target/${{ matrix.target }}/release
-          mv bl4 bl4-${{ matrix.target }} || mv bl4.exe bl4-${{ matrix.target }}.exe || true
-          mv linewise linewise-${{ matrix.target }} || mv linewise.exe linewise-${{ matrix.target }}.exe || true
+          mv bl4 bl4-${{ matrix.name }} || true
+          mv linewise linewise-${{ matrix.name }} || true
 
       - name: Upload bl4-cli binary
         uses: actions/upload-artifact@v4
         with:
-          name: bl4-${{ matrix.target }}
-          path: target/${{ matrix.target }}/release/bl4-${{ matrix.target }}
+          name: bl4-${{ matrix.name }}
+          path: target/${{ matrix.target }}/release/bl4-${{ matrix.name }}
 
       - name: Upload linewise binary
         uses: actions/upload-artifact@v4
         with:
-          name: linewise-${{ matrix.target }}
-          path: target/${{ matrix.target }}/release/linewise-${{ matrix.target }}
+          name: linewise-${{ matrix.name }}
+          path: target/${{ matrix.target }}/release/linewise-${{ matrix.name }}
 
   build-books:
     name: Build Guide Books
