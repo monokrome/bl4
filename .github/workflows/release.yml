@@ -143,7 +143,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   build-wasm:
-    name: Build WASM package
+    name: Build and publish WASM package
     runs-on: ubuntu-latest
     environment: build
     steps:
@@ -154,11 +154,32 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
       - name: Build bl4 wasm package
         run: wasm-pack build src/bl4 --target web --features wasm --out-dir ../../pkg/bl4-wasm
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Update package.json version
+        run: |
+          cd pkg/bl4-wasm
+          jq '.version = "${{ steps.version.outputs.VERSION }}"' package.json > package.json.tmp
+          mv package.json.tmp package.json
+
+      - name: Publish to npm
+        run: npm publish pkg/bl4-wasm --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create tarball
         run: tar -czvf bl4-wasm.tar.gz -C pkg bl4-wasm
