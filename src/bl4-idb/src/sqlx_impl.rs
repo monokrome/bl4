@@ -1042,6 +1042,11 @@ pub mod postgres {
                     "0012_rename_weapon_parts_to_item_parts",
                     "ALTER TABLE weapon_parts RENAME TO item_parts",
                 ),
+                // Make data column nullable since we now use blob_hash for content-addressed storage
+                (
+                    "0013_attachments_data_nullable",
+                    "ALTER TABLE attachments ALTER COLUMN data DROP NOT NULL",
+                ),
             ];
 
             for (id, sql) in migrations {
