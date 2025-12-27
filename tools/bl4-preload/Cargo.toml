@@ -1,0 +1,13 @@
+[package]
+name = "bl4-preload"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+libc = "0.2"
+once_cell = "1.19"
+ctor = "0.2"
+backtrace = "0.3"

@@ -1,0 +1,26 @@
+[package]
+name = "bl4-ncs"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "NCS (Nexus Config Store) parser for Borderlands 4 gBx files"
+
+[dependencies]
+# Oodle decompression (pure Rust implementation)
+oozextract = "0.5"
+
+# Binary parsing
+byteorder = "1.5"
+memchr = "2.7"
+
+# Error handling
+thiserror = "2.0"
+
+# Serialization (for parsed content)
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[dev-dependencies]
+anyhow = "1"
