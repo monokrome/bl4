@@ -60,7 +60,7 @@ pub use reflection::{
 };
 
 // Re-export walker functions
-pub use walker::{analyze_dump, extract_property, walk_guobject_array};
+pub use walker::{analyze_dump, extract_property, read_property_type, walk_guobject_array};
 
 // Re-export usmap functions
 pub use usmap::{
