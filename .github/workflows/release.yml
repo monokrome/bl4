@@ -22,6 +22,12 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Publish bl4-ncs library
+        run: cargo publish -p bl4-ncs --token ${{ secrets.CARGO_TOKEN }}
+
+      - name: Wait for crates.io to update
+        run: sleep 30
+
       - name: Publish bl4 library
         run: cargo publish -p bl4 --token ${{ secrets.CARGO_TOKEN }}
 
