@@ -60,4 +60,12 @@ mod tests {
         let h3 = fnv1a_hash(b"sections|map");
         assert_ne!(h1, h3);
     }
+
+    #[test]
+    fn test_fnv1a_hash_str() {
+        // String wrapper should match byte slice version
+        assert_eq!(fnv1a_hash_str("test"), fnv1a_hash(b"test"));
+        assert_eq!(fnv1a_hash_str(""), fnv1a_hash(b""));
+        assert_eq!(fnv1a_hash_str("children|map"), fnv1a_hash(b"children|map"));
+    }
 }

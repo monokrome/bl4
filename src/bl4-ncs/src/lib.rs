@@ -146,4 +146,70 @@ mod tests {
         assert!(is_ncs_manifest(&[0x5f, 0x4e, 0x43, 0x53, 0x2f, 0x00]));
         assert!(!is_ncs_manifest(&[0x01, 0x4e, 0x43, 0x53, 0x00]));
     }
+
+    #[test]
+    fn test_magic_constants() {
+        assert_eq!(NCS_MAGIC, *b"NCS");
+        assert_eq!(NCS_MANIFEST_MAGIC, *b"_NCS/");
+        assert_eq!(OODLE_MAGIC, 0xb7756362);
+    }
+
+    #[test]
+    fn test_header_size_constants() {
+        assert_eq!(NCS_HEADER_SIZE, 16);
+        assert_eq!(NCS_MANIFEST_HEADER_SIZE, 8);
+        assert_eq!(NCS_INNER_HEADER_MIN, 0x40);
+    }
+
+    #[allow(deprecated)]
+    #[test]
+    fn test_ncs_parser_legacy() {
+        let parser = LegacyParser::new().unwrap();
+
+        // Test is_gbx static method
+        assert!(LegacyParser::is_gbx(&[0x67, 0x42, 0x78, 0x39]));
+        assert!(!LegacyParser::is_gbx(&[0x00, 0x00, 0x00, 0x00]));
+
+        // Test get_variant static method
+        assert_eq!(LegacyParser::get_variant(&[0x67, 0x42, 0x78, 0x39]), Some(GbxVariant::V9));
+        assert_eq!(LegacyParser::get_variant(&[0x00, 0x00, 0x00, 0x00]), None);
+
+        // Test decompress with invalid data (should error)
+        let result = parser.decompress(&[0x00; 20]);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_error_display() {
+        let err = Error::InvalidNcsMagic(0x00, 0x00, 0x00);
+        assert!(err.to_string().contains("Invalid NCS magic"));
+
+        let err = Error::InvalidManifestMagic([0x00; 5]);
+        assert!(err.to_string().contains("Invalid NCS manifest magic"));
+
+        let err = Error::InvalidMagic(0x00, 0x00, 0x00);
+        assert!(err.to_string().contains("Invalid magic bytes"));
+
+        let err = Error::UnknownVariant(0xFF);
+        assert!(err.to_string().contains("Unknown gBx variant"));
+
+        let err = Error::InvalidInnerMagic(0x00000000);
+        assert!(err.to_string().contains("Invalid inner magic"));
+
+        let err = Error::Oodle("test error".to_string());
+        assert!(err.to_string().contains("Oodle decompression error"));
+
+        let err = Error::DecompressionSize { expected: 100, actual: 50 };
+        assert!(err.to_string().contains("Decompression size mismatch"));
+
+        let err = Error::DataTooShort { needed: 16, actual: 8 };
+        assert!(err.to_string().contains("Data too short"));
+    }
+
+    #[test]
+    fn test_error_debug() {
+        let err = Error::InvalidNcsMagic(0x00, 0x00, 0x00);
+        let debug = format!("{:?}", err);
+        assert!(debug.contains("InvalidNcsMagic"));
+    }
 }
