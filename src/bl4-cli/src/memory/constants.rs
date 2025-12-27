@@ -353,3 +353,94 @@ pub const MIN_VTABLE_ADDR: usize = 0x140000000;
 
 /// Maximum vtable address (in executable data sections)
 pub const MAX_VTABLE_ADDR: usize = 0x175000000;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_pe_image_base_is_standard_x64() {
+        // Windows x64 default image base
+        assert_eq!(PE_IMAGE_BASE, 0x140000000);
+    }
+
+    #[test]
+    fn test_uobject_layout_offsets() {
+        // Verify UObject structure layout is consistent
+        assert_eq!(UOBJECT_VTABLE_OFFSET, 0x00);
+        assert_eq!(UOBJECT_FLAGS_OFFSET, 0x08);
+        assert_eq!(UOBJECT_INTERNAL_INDEX_OFFSET, 0x0C);
+        assert_eq!(UOBJECT_CLASS_OFFSET, 0x10);
+        assert_eq!(UOBJECT_NAME_OFFSET, 0x18);
+        assert_eq!(UOBJECT_OUTER_OFFSET, 0x20);
+        assert_eq!(UOBJECT_HEADER_SIZE, 0x28);
+    }
+
+    #[test]
+    fn test_ustruct_layout_offsets() {
+        // UStruct extends UField, so offsets start at 0x30
+        assert!(USTRUCT_SUPER_OFFSET > UFIELD_SIZE);
+        assert_eq!(USTRUCT_SUPER_OFFSET, 0x40);
+        assert_eq!(USTRUCT_CHILDREN_OFFSET, 0x48);
+        assert_eq!(USTRUCT_CHILDPROPERTIES_OFFSET, 0x50);
+        assert_eq!(USTRUCT_SIZE_OFFSET, 0x58);
+    }
+
+    #[test]
+    fn test_fproperty_layout_offsets() {
+        // FProperty extends FField
+        assert!(FPROPERTY_ARRAYDIM_OFFSET > FFIELD_FLAGS_OFFSET);
+        assert_eq!(FPROPERTY_ARRAYDIM_OFFSET, 0x30);
+        assert_eq!(FPROPERTY_OFFSET_OFFSET, 0x4C);
+    }
+
+    #[test]
+    fn test_sdk_offsets_are_reasonable() {
+        // SDK offsets should be positive and less than 2GB
+        assert!(GOBJECTS_OFFSET > 0);
+        assert!(GOBJECTS_OFFSET < 0x80000000);
+        assert!(GNAMES_OFFSET > 0);
+        assert!(GNAMES_OFFSET < 0x80000000);
+    }
+
+    #[test]
+    fn test_pointer_validation_ranges() {
+        // Min pointer should exclude NULL and low addresses
+        assert!(MIN_VALID_POINTER > 0);
+        assert_eq!(MIN_VALID_POINTER, 0x10000);
+
+        // Max pointer should be in 48-bit address space
+        assert!(MAX_VALID_POINTER <= 0x800000000000);
+
+        // vtable range should be within executable area
+        assert!(MIN_VTABLE_ADDR >= PE_IMAGE_BASE);
+        assert!(MAX_VTABLE_ADDR > MIN_VTABLE_ADDR);
+    }
+
+    #[test]
+    fn test_fname_constants() {
+        // FName block shift determines entries per block (2^16 = 65536)
+        assert_eq!(FNAME_BLOCK_SHIFT, 16);
+        assert_eq!(FNAME_OFFSET_MASK, 0xFFFF);
+
+        // Known FName indices should be small positive values
+        assert!(FNAME_CLASS_INDEX > 0);
+        assert!(FNAME_CLASS_INDEX < 1000);
+        assert!(FNAME_OBJECT_INDEX > 0);
+        assert!(FNAME_OBJECT_INDEX < 1000);
+    }
+
+    #[test]
+    fn test_guobjectarray_chunk_size() {
+        // Chunk size should be 64K (65536 = 2^16)
+        assert_eq!(GUOBJECTARRAY_CHUNK_SIZE, 65536);
+        assert_eq!(GUOBJECTARRAY_CHUNK_SIZE, 1 << FNAME_BLOCK_SHIFT);
+    }
+
+    #[test]
+    fn test_uclass_size_includes_default_object() {
+        // UClass::DefaultObject should be at a valid offset
+        assert!(UCLASS_DEFAULT_OBJECT_OFFSET > USTRUCT_SIZE);
+        assert!(UCLASS_DEFAULT_OBJECT_OFFSET < UCLASS_SIZE);
+    }
+}

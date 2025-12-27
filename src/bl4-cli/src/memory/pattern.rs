@@ -94,3 +94,69 @@ pub fn scan_pattern_fast(data: &[u8], pattern: &[u8], mask: &[u8]) -> Vec<usize>
 
     results
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_scan_pattern_exact_match() {
+        let data = b"hello world hello";
+        let pattern = b"hello";
+        let mask = vec![1u8; pattern.len()];
+
+        let results = scan_pattern_fast(data, pattern, &mask);
+        assert_eq!(results, vec![0, 12]);
+    }
+
+    #[test]
+    fn test_scan_pattern_with_wildcards() {
+        let data = b"test1234test5678";
+        let pattern = b"test????";
+        let mask = vec![1, 1, 1, 1, 0, 0, 0, 0]; // "test" must match, ???? are wildcards
+
+        let results = scan_pattern_fast(data, pattern, &mask);
+        assert_eq!(results, vec![0, 8]);
+    }
+
+    #[test]
+    fn test_scan_pattern_no_match() {
+        let data = b"hello world";
+        let pattern = b"xyz";
+        let mask = vec![1u8; pattern.len()];
+
+        let results = scan_pattern_fast(data, pattern, &mask);
+        assert!(results.is_empty());
+    }
+
+    #[test]
+    fn test_scan_pattern_empty() {
+        let data = b"hello";
+        let pattern = b"";
+        let mask = vec![];
+
+        let results = scan_pattern_fast(data, pattern, &mask);
+        assert!(results.is_empty());
+    }
+
+    #[test]
+    fn test_find_best_anchor() {
+        // Pattern with wildcards in the middle
+        let pattern = b"AB??CDEF";
+        let mask = vec![1, 1, 0, 0, 1, 1, 1, 1];
+
+        let (offset, anchor) = find_best_anchor(pattern, &mask);
+        assert_eq!(offset, 4); // "CDEF" is the longest anchor
+        assert_eq!(anchor, b"CDEF");
+    }
+
+    #[test]
+    fn test_verify_pattern() {
+        let data = b"hello";
+        let pattern = b"h?llo";
+        let mask = vec![1, 0, 1, 1, 1];
+
+        assert!(verify_pattern(data, pattern, &mask));
+        assert!(!verify_pattern(b"jello", pattern, &mask));
+    }
+}
