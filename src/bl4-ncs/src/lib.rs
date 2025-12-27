@@ -21,6 +21,7 @@
 //! - Bytes 6-7: Entry count
 //! - Remaining: Metadata and string table
 
+mod content;
 mod data;
 mod field;
 mod hash;
@@ -28,6 +29,7 @@ pub mod legacy;
 mod manifest;
 
 // Re-export main types
+pub use content::{Content as NcsContent, Header as NcsContentHeader};
 pub use data::{decompress as decompress_ncs, scan as scan_for_ncs, Header as NcsHeader};
 pub use field::{known as fields, Field, Type as FieldType};
 pub use hash::fnv1a_hash;
