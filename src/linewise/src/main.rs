@@ -272,6 +272,25 @@ fn read_records(path: &PathBuf, format: &str) -> Result<Vec<Vec<u8>>> {
     }
 }
 
+fn print_bit_analysis(records: &[Vec<u8>], pos: usize) {
+    let values: Vec<u8> = records.iter().filter_map(|r| r.get(pos).copied()).collect();
+    for bit in (0..8).rev() {
+        let ones: usize = values.iter().filter(|&&v| (v >> bit) & 1 == 1).count();
+        let zeros = values.len() - ones;
+        let ones_ratio = ones as f64 / values.len() as f64;
+        let zeros_ratio = zeros as f64 / values.len() as f64;
+        if ones > 0 && zeros > 0 && ones_ratio > 0.1 && zeros_ratio > 0.1 {
+            println!(
+                "       bit {}: 0={:<5} 1={:<5} ({:.1}% ones)",
+                bit,
+                zeros,
+                ones,
+                100.0 * ones_ratio
+            );
+        }
+    }
+}
+
 fn analyze(records: &[Vec<u8>], max_positions: usize, show_bits: bool) {
     if records.is_empty() {
         println!("No records to analyze");
@@ -280,6 +299,7 @@ fn analyze(records: &[Vec<u8>], max_positions: usize, show_bits: bool) {
 
     let max_len = records.iter().map(|r| r.len()).max().unwrap_or(0);
     let positions = max_len.min(max_positions);
+    let record_refs: Vec<&Vec<u8>> = records.iter().collect();
 
     println!("Records: {}", records.len());
     println!(
@@ -288,7 +308,6 @@ fn analyze(records: &[Vec<u8>], max_positions: usize, show_bits: bool) {
         max_len
     );
     println!();
-
     println!(
         "{:>4}  {:>6}  {:>8}  {:>6}  {:>8}  Distribution",
         "Pos", "Count", "Unique", "Entropy", "Common"
@@ -296,88 +315,23 @@ fn analyze(records: &[Vec<u8>], max_positions: usize, show_bits: bool) {
     println!("{}", "-".repeat(70));
 
     for pos in 0..positions {
-        let values: Vec<u8> = records.iter().filter_map(|r| r.get(pos).copied()).collect();
-
-        if values.is_empty() {
+        let Some(stats) = analysis::PositionStats::from_records(&record_refs, pos) else {
             continue;
-        }
-
-        let mut freq: HashMap<u8, usize> = HashMap::new();
-        for &v in &values {
-            *freq.entry(v).or_insert(0) += 1;
-        }
-
-        let unique = freq.len();
-        let total = values.len() as f64;
-
-        // Calculate entropy
-        let entropy: f64 = freq
-            .values()
-            .map(|&count| {
-                let p = count as f64 / total;
-                if p > 0.0 {
-                    -p * p.log2()
-                } else {
-                    0.0
-                }
-            })
-            .sum();
-
-        // Find most common value
-        let (common_val, common_count) = freq.iter().max_by_key(|(_, &c)| c).unwrap();
-
-        // Distribution summary
-        let dist = if unique == 1 {
-            format!("FIXED: 0x{:02x}", common_val)
-        } else if unique <= 4 {
-            let mut pairs: Vec<_> = freq.iter().collect();
-            pairs.sort_by(|a, b| b.1.cmp(a.1));
-            pairs
-                .iter()
-                .take(4)
-                .map(|(v, c)| format!("{:02x}:{}", v, c))
-                .collect::<Vec<_>>()
-                .join(" ")
-        } else if entropy < 2.0 {
-            format!(
-                "LOW-ENT (top: 0x{:02x} {}%)",
-                common_val,
-                common_count * 100 / values.len()
-            )
-        } else {
-            format!("varied ({} unique)", unique)
         };
 
         println!(
             "{:>4}  {:>6}  {:>8}  {:>6.2}  0x{:02x}:{:<4}  {}",
             pos,
-            values.len(),
-            unique,
-            entropy,
-            common_val,
-            common_count,
-            dist
+            stats.count,
+            stats.unique,
+            stats.entropy,
+            stats.most_common.0,
+            stats.most_common.1,
+            stats.distribution_summary()
         );
 
-        if show_bits && unique > 1 && unique < 16 {
-            // Show bit-level breakdown
-            for bit in (0..8).rev() {
-                let ones: usize = values.iter().filter(|&&v| (v >> bit) & 1 == 1).count();
-                let zeros = values.len() - ones;
-                if ones > 0
-                    && zeros > 0
-                    && (ones as f64 / values.len() as f64) > 0.1
-                    && (zeros as f64 / values.len() as f64) > 0.1
-                {
-                    println!(
-                        "       bit {}: 0={:<5} 1={:<5} ({:.1}% ones)",
-                        bit,
-                        zeros,
-                        ones,
-                        100.0 * ones as f64 / values.len() as f64
-                    );
-                }
-            }
+        if show_bits && stats.unique > 1 && stats.unique < 16 {
+            print_bit_analysis(records, pos);
         }
     }
 }
@@ -512,6 +466,7 @@ fn most_common(values: &[u8]) -> (u8, usize) {
 }
 
 #[tokio::main]
+#[allow(clippy::too_many_lines)] // CLI command dispatch
 async fn main() -> Result<()> {
     let cli = Cli::parse();
 
@@ -747,6 +702,38 @@ fn frequency_analysis(records: &[Vec<u8>], max_positions: usize, threshold: usiz
     }
 }
 
+fn detect_field_boundaries(stats: &[analysis::PositionStats]) -> Vec<(usize, usize, bool)> {
+    let mut fields = Vec::new();
+    let mut prev_fixed = false;
+    let mut field_start = 0;
+
+    for (i, s) in stats.iter().enumerate() {
+        let is_fixed = s.entropy < 1.0;
+        if i == 0 {
+            prev_fixed = is_fixed;
+            field_start = s.position;
+        } else if is_fixed != prev_fixed {
+            fields.push((field_start, s.position - 1, prev_fixed));
+            field_start = s.position;
+            prev_fixed = is_fixed;
+        }
+    }
+    if let Some(s) = stats.last() {
+        fields.push((field_start, s.position, prev_fixed));
+    }
+    fields
+}
+
+fn field_description(is_fixed: bool, len: usize) -> &'static str {
+    match (is_fixed, len) {
+        (true, 1..=4) => "likely header/delimiter",
+        (true, _) => "padding or constant",
+        (false, 1..=2) => "small field (ID?)",
+        (false, 3..=4) => "medium field (value?)",
+        (false, _) => "large field (data block)",
+    }
+}
+
 fn boundary_detection(records: &[Vec<u8>], max_positions: usize) {
     if records.is_empty() {
         println!("No records");
@@ -755,111 +742,49 @@ fn boundary_detection(records: &[Vec<u8>], max_positions: usize) {
 
     let max_len = records.iter().map(|r| r.len()).max().unwrap_or(0);
     let positions = max_len.min(max_positions);
+    let record_refs: Vec<&Vec<u8>> = records.iter().collect();
 
-    // Calculate entropy for each position
-    let mut entropies: Vec<(usize, f64, u8, usize)> = Vec::new(); // (pos, entropy, top_val, top_count)
+    let stats: Vec<_> = (0..positions)
+        .filter_map(|pos| analysis::PositionStats::from_records(&record_refs, pos))
+        .collect();
 
-    for pos in 0..positions {
-        let values: Vec<u8> = records.iter().filter_map(|r| r.get(pos).copied()).collect();
-        if values.is_empty() {
-            continue;
-        }
-
-        let mut freq: HashMap<u8, usize> = HashMap::new();
-        for &v in &values {
-            *freq.entry(v).or_insert(0) += 1;
-        }
-
-        let total = values.len() as f64;
-        let entropy: f64 = freq
-            .values()
-            .map(|&count| {
-                let p = count as f64 / total;
-                if p > 0.0 {
-                    -p * p.log2()
-                } else {
-                    0.0
-                }
-            })
-            .sum();
-
-        let (top_val, top_count) = freq
-            .iter()
-            .max_by_key(|(_, &c)| c)
-            .map(|(&v, &c)| (v, c))
-            .unwrap_or((0, 0));
-        entropies.push((pos, entropy, top_val, top_count));
-    }
+    let fields = detect_field_boundaries(&stats);
 
     println!("Field boundary detection: {} records\n", records.len());
     println!("Legend: ═══ fixed field, ─── variable field, │ boundary\n");
-
-    // Detect transitions between low and high entropy
-    let mut output = String::new();
-    let mut prev_fixed = false;
-    let mut field_start = 0;
-    let mut fields: Vec<(usize, usize, bool)> = Vec::new(); // (start, end, is_fixed)
-
-    for (i, &(pos, entropy, _, _)) in entropies.iter().enumerate() {
-        let is_fixed = entropy < 1.0; // Low entropy = fixed/padding
-
-        if i == 0 {
-            prev_fixed = is_fixed;
-            field_start = pos;
-        } else if is_fixed != prev_fixed {
-            // Boundary detected
-            fields.push((field_start, pos - 1, prev_fixed));
-            field_start = pos;
-            prev_fixed = is_fixed;
-        }
-    }
-    // Last field
-    if let Some(&(pos, _, _, _)) = entropies.last() {
-        fields.push((field_start, pos, prev_fixed));
-    }
-
-    // Print detected fields
     println!("{:>4}-{:<4}  {:>8}  Description", "Start", "End", "Type");
     println!("{}", "-".repeat(50));
 
-    for (start, end, is_fixed) in &fields {
+    for &(start, end, is_fixed) in &fields {
         let len = end - start + 1;
-        let field_type = if *is_fixed { "FIXED" } else { "VARIABLE" };
-        let desc = if *is_fixed && len <= 4 {
-            "likely header/delimiter"
-        } else if *is_fixed {
-            "padding or constant"
-        } else if len <= 2 {
-            "small field (ID?)"
-        } else if len <= 4 {
-            "medium field (value?)"
-        } else {
-            "large field (data block)"
-        };
-
+        let field_type = if is_fixed { "FIXED" } else { "VARIABLE" };
         println!(
             "{:>4}-{:<4}  {:>8}  {} ({} bytes)",
-            start, end, field_type, desc, len
+            start,
+            end,
+            field_type,
+            field_description(is_fixed, len),
+            len
         );
     }
 
     // Visual representation
     println!("\nVisual map (each char = 1 byte):");
-    for (start, end, is_fixed) in &fields {
-        let len = end - start + 1;
-        let sym = if *is_fixed { '═' } else { '─' };
-        output.push('│');
-        for _ in 0..len {
-            output.push(sym);
-        }
-    }
-    output.push('│');
-    println!("{}", output);
+    let visual: String = fields
+        .iter()
+        .flat_map(|&(start, end, is_fixed)| {
+            let len = end - start + 1;
+            let sym = if is_fixed { '═' } else { '─' };
+            std::iter::once('│').chain(std::iter::repeat(sym).take(len))
+        })
+        .chain(std::iter::once('│'))
+        .collect();
+    println!("{}", visual);
 
     // Position markers
     print!("0");
     let mut pos = 0;
-    for (start, end, _) in &fields {
+    for &(start, end, _) in &fields {
         let len = end - start + 1;
         pos += len + 1;
         if pos < 70 {

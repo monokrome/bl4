@@ -93,6 +93,78 @@ impl DataType {
             _ => None,
         }
     }
+
+    fn decode(&self, data: &[u8]) -> String {
+        match self {
+            DataType::U8 => data.first().map(|&v| format!("{}", v)).unwrap_or_default(),
+            DataType::Hex => data
+                .first()
+                .map(|&v| format!("{:02x}", v))
+                .unwrap_or_default(),
+            DataType::Binary => data
+                .first()
+                .map(|&v| format!("{:08b}", v))
+                .unwrap_or_default(),
+            DataType::Ascii => data
+                .first()
+                .map(|&v| {
+                    if v.is_ascii_graphic() || v == b' ' {
+                        (v as char).to_string()
+                    } else {
+                        format!("\\x{:02x}", v)
+                    }
+                })
+                .unwrap_or_default(),
+            DataType::U16Le if data.len() >= 2 => {
+                format!("{}", u16::from_le_bytes([data[0], data[1]]))
+            }
+            DataType::U16Be if data.len() >= 2 => {
+                format!("{}", u16::from_be_bytes([data[0], data[1]]))
+            }
+            DataType::U32Le if data.len() >= 4 => {
+                format!(
+                    "{}",
+                    u32::from_le_bytes([data[0], data[1], data[2], data[3]])
+                )
+            }
+            DataType::U32Be if data.len() >= 4 => {
+                format!(
+                    "{}",
+                    u32::from_be_bytes([data[0], data[1], data[2], data[3]])
+                )
+            }
+            DataType::VarInt => Self::decode_varint(data),
+            _ => String::new(),
+        }
+    }
+
+    fn decode_varint(data: &[u8]) -> String {
+        let mut value: u64 = 0;
+        let mut shift = 0;
+        for &byte in data {
+            if shift >= 64 {
+                break;
+            }
+            value |= ((byte & 0x7F) as u64) << shift;
+            if byte & 0x80 == 0 {
+                return format!("{}", value);
+            }
+            shift += 7;
+        }
+        String::new()
+    }
+
+    fn display_width(&self) -> usize {
+        match self {
+            DataType::U8 => 4,                       // "255 "
+            DataType::Hex => 3,                      // "ff "
+            DataType::Binary => 9,                   // "00000000 "
+            DataType::U16Le | DataType::U16Be => 6,  // "65535 "
+            DataType::U32Le | DataType::U32Be => 11, // "4294967295 "
+            DataType::VarInt => 11,
+            DataType::Ascii => 2, // "X "
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -100,6 +172,14 @@ pub struct LockedField {
     pub byte_offset: usize,
     pub byte_length: usize,
     pub data_type: DataType,
+}
+
+/// Toggle targets for yo*, [*, ]* prefix commands
+enum ToggleTarget {
+    Frequency,
+    Wrap,
+    ShowLocks,
+    ShowGutter,
 }
 
 pub struct InteractiveState {
@@ -199,6 +279,38 @@ impl InteractiveState {
         self.pending_yo = false;
         self.pending_open_bracket = false;
         self.pending_close_bracket = false;
+    }
+
+    /// Handle toggle prefix commands (yo*, [*, ]*)
+    /// Returns true if a toggle prefix was matched (and handled), false otherwise
+    fn handle_toggle(&mut self, target: ToggleTarget) -> bool {
+        let (field_ref, on_msg, off_msg) = match target {
+            ToggleTarget::Frequency => (
+                &mut self.frequency_mode,
+                "Frequency mode ON",
+                "Frequency mode OFF",
+            ),
+            ToggleTarget::Wrap => (&mut self.wrap_mode, "Wrap ON", "Wrap OFF"),
+            ToggleTarget::ShowLocks => (&mut self.show_locks, "Locks ON", "Locks OFF"),
+            ToggleTarget::ShowGutter => (&mut self.show_gutter, "Gutter ON", "Gutter OFF"),
+        };
+
+        if self.pending_yo {
+            *field_ref = !*field_ref;
+            self.message = Some((if *field_ref { on_msg } else { off_msg }).to_string());
+        } else if self.pending_open_bracket {
+            *field_ref = true;
+            self.message = Some(on_msg.to_string());
+        } else if self.pending_close_bracket {
+            *field_ref = false;
+            self.message = Some(off_msg.to_string());
+        } else {
+            return false;
+        }
+
+        self.clear_pending();
+        self.count_buffer.clear();
+        true
     }
 
     fn compute_frequencies(&mut self) {
@@ -370,6 +482,61 @@ impl InteractiveState {
         Ok(())
     }
 
+    fn cmd_write(&mut self, arg: Option<&str>, force: bool) {
+        let name = arg
+            .map(String::from)
+            .or_else(|| self.current_preset.clone());
+        let Some(name) = name else {
+            let cmd = if force { ":w!" } else { ":w" };
+            self.message = Some(format!("No preset loaded. Usage: {} <preset_name>", cmd));
+            return;
+        };
+
+        if !force && arg.is_some() {
+            let path = Self::resolve_preset_path(&name, None);
+            if Path::new(&path).exists() {
+                self.message = Some(format!("'{}' exists. Use :w! {} to overwrite", name, name));
+                return;
+            }
+        }
+
+        self.message = Some(match self.save_preset(&name) {
+            Ok(()) => format!("Saved to '{}'", name),
+            Err(e) => e,
+        });
+    }
+
+    fn cmd_preset(&mut self, arg: Option<&str>) {
+        let name = arg
+            .map(String::from)
+            .or_else(|| self.current_preset.clone());
+        let Some(name) = name else {
+            self.message = Some("No preset loaded. Usage: :p <preset_name>".to_string());
+            return;
+        };
+
+        match self.load_preset(&name) {
+            Ok(()) => {
+                let count = self.locked_fields.len();
+                self.current_preset = Some(name.clone());
+                self.message = Some(format!("Loaded preset '{}' ({} fields)", name, count));
+            }
+            Err(e) => self.message = Some(e),
+        }
+    }
+
+    fn cmd_open(&mut self, arg: Option<&str>) {
+        let Some(path) = arg else {
+            self.message = Some("Usage: :e <filename>".to_string());
+            return;
+        };
+
+        self.message = Some(match self.open_file(path) {
+            Ok(count) => format!("Opened '{}' ({} records)", path, count),
+            Err(e) => e,
+        });
+    }
+
     fn execute_command(&mut self) -> bool {
         let cmd = self.command_buffer.trim().to_string();
         self.command_buffer.clear();
@@ -380,93 +547,25 @@ impl InteractiveState {
         }
 
         let parts: Vec<&str> = cmd.splitn(2, ' ').collect();
+        let arg = parts.get(1).copied();
+
         match parts[0] {
-            "w" | "write" => {
-                if let Some(name) = parts.get(1) {
-                    // :w foo - save to "foo" but don't change current, error if exists
-                    let path = Self::resolve_preset_path(name, None);
-                    if Path::new(&path).exists() {
-                        self.message =
-                            Some(format!("'{}' exists. Use :w! {} to overwrite", name, name));
-                    } else {
-                        match self.save_preset(name) {
-                            Ok(()) => self.message = Some(format!("Saved to '{}'", name)),
-                            Err(e) => self.message = Some(e),
-                        }
-                    }
-                } else if let Some(ref name) = self.current_preset {
-                    // :w - save to current preset (always overwrites)
-                    match self.save_preset(name) {
-                        Ok(()) => self.message = Some(format!("Saved preset '{}'", name)),
-                        Err(e) => self.message = Some(e),
-                    }
-                } else {
-                    self.message = Some("No preset loaded. Usage: :w <preset_name>".to_string());
-                }
-            }
-            "w!" | "write!" => {
-                if let Some(name) = parts.get(1) {
-                    // :w! foo - force save to "foo"
-                    match self.save_preset(name) {
-                        Ok(()) => self.message = Some(format!("Saved to '{}'", name)),
-                        Err(e) => self.message = Some(e),
-                    }
-                } else if let Some(ref name) = self.current_preset {
-                    match self.save_preset(name) {
-                        Ok(()) => self.message = Some(format!("Saved preset '{}'", name)),
-                        Err(e) => self.message = Some(e),
-                    }
-                } else {
-                    self.message = Some("No preset loaded. Usage: :w! <preset_name>".to_string());
-                }
-            }
-            "p" | "preset" => {
-                let name = parts
-                    .get(1)
-                    .map(|s| s.to_string())
-                    .or_else(|| self.current_preset.clone());
-                if let Some(name) = name {
-                    match self.load_preset(&name) {
-                        Ok(()) => {
-                            self.current_preset = Some(name.clone());
-                            self.message = Some(format!(
-                                "Loaded preset '{}' ({} fields)",
-                                name,
-                                self.locked_fields.len()
-                            ));
-                        }
-                        Err(e) => self.message = Some(e),
-                    }
-                } else {
-                    self.message = Some("No preset loaded. Usage: :p <preset_name>".to_string());
-                }
-            }
-            "e" | "o" | "open" | "edit" => {
-                if let Some(path) = parts.get(1) {
-                    match self.open_file(path) {
-                        Ok(count) => {
-                            self.message = Some(format!("Opened '{}' ({} records)", path, count))
-                        }
-                        Err(e) => self.message = Some(e),
-                    }
-                } else {
-                    self.message = Some("Usage: :e <filename>".to_string());
-                }
-            }
+            "w" | "write" => self.cmd_write(arg, false),
+            "w!" | "write!" => self.cmd_write(arg, true),
+            "p" | "preset" => self.cmd_preset(arg),
+            "e" | "o" | "open" | "edit" => self.cmd_open(arg),
             "clear" => {
                 self.locked_fields.clear();
                 self.message = Some("Cleared all locked fields".to_string());
             }
-            "s" | "save" => match self.save_config() {
-                Ok(path) => self.message = Some(format!("Saved config to {}", path)),
-                Err(e) => self.message = Some(e),
-            },
-            "q" | "quit" => {
-                return true; // Signal to quit
+            "s" | "save" => {
+                self.message = Some(match self.save_config() {
+                    Ok(path) => format!("Saved config to {}", path),
+                    Err(e) => e,
+                });
             }
-            _ => {
-                self.message = Some(format!("Unknown command: {}", parts[0]));
-            }
+            "q" | "quit" => return true,
+            _ => self.message = Some(format!("Unknown command: {}", parts[0])),
         }
         false
     }
@@ -623,6 +722,222 @@ impl InteractiveState {
             self.field_offset -= 1;
         }
     }
+
+    /// Move down by count records (j key)
+    fn move_down(&mut self, count: usize) {
+        let max_idx = self.records.len().saturating_sub(1);
+        self.current_record = (self.current_record + count).min(max_idx);
+        if self.current_record >= self.scroll_offset + self.visible_records {
+            self.scroll_offset = self.current_record.saturating_sub(self.visible_records - 1);
+        }
+    }
+
+    /// Move up by count records (k key)
+    fn move_up(&mut self, count: usize) {
+        self.current_record = self.current_record.saturating_sub(count);
+        if self.current_record < self.scroll_offset {
+            self.scroll_offset = self.current_record;
+        }
+    }
+
+    /// Page down (Ctrl+d)
+    fn page_down(&mut self) {
+        let jump = self.visible_records / 2;
+        self.current_record =
+            (self.current_record + jump).min(self.records.len().saturating_sub(1));
+        if self.current_record >= self.scroll_offset + self.visible_records {
+            self.scroll_offset = self.current_record.saturating_sub(self.visible_records - 1);
+        }
+    }
+
+    /// Page up (Ctrl+u)
+    fn page_up(&mut self) {
+        let jump = self.visible_records / 2;
+        self.current_record = self.current_record.saturating_sub(jump);
+        if self.current_record < self.scroll_offset {
+            self.scroll_offset = self.current_record;
+        }
+    }
+
+    /// Jump to first record (gg)
+    fn jump_to_start(&mut self) {
+        self.current_record = 0;
+        self.scroll_offset = 0;
+        self.message = Some("Jumped to first record".to_string());
+    }
+
+    /// Jump to last record (G)
+    fn jump_to_end(&mut self) {
+        self.current_record = self.records.len().saturating_sub(1);
+        if self.current_record >= self.visible_records {
+            self.scroll_offset = self.current_record.saturating_sub(self.visible_records - 1);
+        }
+        self.message = Some("Jumped to last record".to_string());
+    }
+
+    /// Handle command mode input. Returns Some(true) to quit, Some(false) to continue, None if not in command mode.
+    fn handle_command_input(&mut self, code: KeyCode) -> Option<bool> {
+        if !self.command_mode {
+            return None;
+        }
+        match code {
+            KeyCode::Enter => Some(self.execute_command()),
+            KeyCode::Esc => {
+                self.command_mode = false;
+                self.command_buffer.clear();
+                self.message = None;
+                Some(false)
+            }
+            KeyCode::Backspace => {
+                self.command_buffer.pop();
+                Some(false)
+            }
+            KeyCode::Char(c) => {
+                self.command_buffer.push(c);
+                Some(false)
+            }
+            _ => Some(false),
+        }
+    }
+
+    /// Handle a normal mode key event
+    #[allow(clippy::too_many_lines)] // Keymap dispatch - each arm is a distinct key binding
+    fn handle_key(&mut self, code: KeyCode, modifiers: KeyModifiers) {
+        match (code, modifiers) {
+            (KeyCode::Char(':'), _) => {
+                self.command_mode = true;
+                self.command_buffer.clear();
+                self.message = None;
+            }
+            (KeyCode::Tab, KeyModifiers::NONE) => {
+                self.current_type = self.current_type.next();
+                self.message = Some(format!("Type: {}", self.current_type.name()));
+            }
+            (KeyCode::BackTab, _) => {
+                self.current_type = self.current_type.prev();
+                self.message = Some(format!("Type: {}", self.current_type.name()));
+            }
+            (KeyCode::Char('h'), KeyModifiers::NONE) => {
+                self.clear_pending();
+                self.shift_offset_backward();
+            }
+            (KeyCode::Char('b'), KeyModifiers::NONE) => {
+                self.clear_pending();
+                self.move_to_prev_field();
+            }
+            (KeyCode::Char(c @ '1'..='9'), KeyModifiers::NONE) => {
+                self.clear_pending();
+                self.count_buffer.push(c);
+            }
+            (KeyCode::Char('0'), KeyModifiers::NONE) => {
+                if !self.count_buffer.is_empty() {
+                    self.count_buffer.push('0');
+                } else {
+                    self.clear_pending();
+                    self.current_field = 0;
+                }
+            }
+            (KeyCode::Char('$'), KeyModifiers::NONE) => {
+                self.clear_pending();
+                self.count_buffer.clear();
+                self.current_field = self.max_fields().saturating_sub(1);
+            }
+            (KeyCode::Char('j'), KeyModifiers::NONE) | (KeyCode::Down, _) => {
+                self.pending_g = false;
+                let count = self.get_count();
+                self.move_down(count);
+            }
+            (KeyCode::Char('k'), KeyModifiers::NONE) | (KeyCode::Up, _) => {
+                self.pending_g = false;
+                let count = self.get_count();
+                self.move_up(count);
+            }
+            (KeyCode::Char('d'), KeyModifiers::CONTROL) | (KeyCode::PageDown, _) => {
+                self.pending_g = false;
+                self.count_buffer.clear();
+                self.page_down();
+            }
+            (KeyCode::Char('u'), KeyModifiers::CONTROL) | (KeyCode::PageUp, _) => {
+                self.pending_g = false;
+                self.count_buffer.clear();
+                self.page_up();
+            }
+            (KeyCode::Char('L'), _) => {
+                self.pending_g = false;
+                let count = self.get_count();
+                self.lock_current(count);
+            }
+            (KeyCode::Char('U'), _) => {
+                self.pending_g = false;
+                self.count_buffer.clear();
+                self.unlock_at_cursor();
+            }
+            (KeyCode::Char('G'), _) => {
+                self.clear_pending();
+                self.count_buffer.clear();
+                self.jump_to_end();
+            }
+            (KeyCode::Char('y'), KeyModifiers::NONE) => {
+                self.clear_pending();
+                self.pending_y = true;
+            }
+            (KeyCode::Char('o'), KeyModifiers::NONE) => {
+                if self.pending_y {
+                    self.pending_y = false;
+                    self.pending_yo = true;
+                } else {
+                    self.clear_pending();
+                }
+            }
+            (KeyCode::Char('['), KeyModifiers::NONE) => {
+                self.clear_pending();
+                self.pending_open_bracket = true;
+            }
+            (KeyCode::Char(']'), KeyModifiers::NONE) => {
+                self.clear_pending();
+                self.pending_close_bracket = true;
+            }
+            (KeyCode::Char('f'), KeyModifiers::NONE) => {
+                if self.handle_toggle(ToggleTarget::Frequency) {
+                    if self.frequency_mode {
+                        self.compute_frequencies();
+                    }
+                } else {
+                    self.clear_pending();
+                }
+            }
+            (KeyCode::Char('w'), KeyModifiers::NONE) => {
+                if self.handle_toggle(ToggleTarget::Wrap) {
+                    self.horizontal_scroll = 0;
+                } else {
+                    self.clear_pending();
+                    self.move_to_next_field();
+                }
+            }
+            (KeyCode::Char('l'), KeyModifiers::NONE) => {
+                if !self.handle_toggle(ToggleTarget::ShowLocks) {
+                    self.clear_pending();
+                    self.shift_offset_forward();
+                }
+            }
+            (KeyCode::Char('g'), KeyModifiers::NONE) => {
+                if !self.handle_toggle(ToggleTarget::ShowGutter) {
+                    if self.pending_g {
+                        self.clear_pending();
+                        self.count_buffer.clear();
+                        self.jump_to_start();
+                    } else {
+                        self.clear_pending();
+                        self.pending_g = true;
+                    }
+                }
+            }
+            _ => {
+                self.clear_pending();
+                self.count_buffer.clear();
+            }
+        }
+    }
 }
 
 pub fn run_interactive(records: Vec<Vec<u8>>, auto_preset: Option<String>) -> Result<()> {
@@ -655,321 +970,13 @@ pub fn run_interactive(records: Vec<Vec<u8>>, auto_preset: Option<String>) -> Re
         terminal.draw(|f| draw_ui(f, &mut state))?;
 
         if let Event::Key(key) = event::read()? {
-            // Command mode input
-            if state.command_mode {
-                match key.code {
-                    KeyCode::Enter => {
-                        if state.execute_command() {
-                            break; // :q command
-                        }
-                    }
-                    KeyCode::Esc => {
-                        state.command_mode = false;
-                        state.command_buffer.clear();
-                        state.message = None;
-                    }
-                    KeyCode::Backspace => {
-                        state.command_buffer.pop();
-                    }
-                    KeyCode::Char(c) => {
-                        state.command_buffer.push(c);
-                    }
-                    _ => {}
+            if let Some(should_quit) = state.handle_command_input(key.code) {
+                if should_quit {
+                    break;
                 }
                 continue;
             }
-
-            match (key.code, key.modifiers) {
-                // Enter command mode
-                (KeyCode::Char(':'), _) => {
-                    state.command_mode = true;
-                    state.command_buffer.clear();
-                    state.message = None;
-                }
-
-                // Type cycling
-                (KeyCode::Tab, KeyModifiers::NONE) => {
-                    state.current_type = state.current_type.next();
-                    state.message = Some(format!("Type: {}", state.current_type.name()));
-                }
-                (KeyCode::BackTab, _) => {
-                    state.current_type = state.current_type.prev();
-                    state.message = Some(format!("Type: {}", state.current_type.name()));
-                }
-
-                // h/l shift field alignment offset
-                (KeyCode::Char('h'), KeyModifiers::NONE) => {
-                    state.clear_pending();
-                    state.shift_offset_backward();
-                }
-
-                // b = previous field (w and l are handled later with toggle logic)
-                (KeyCode::Char('b'), KeyModifiers::NONE) => {
-                    state.clear_pending();
-                    state.move_to_prev_field();
-                }
-
-                // Digit keys for count prefix (1-9 to start, then 0-9)
-                (KeyCode::Char(c @ '1'..='9'), KeyModifiers::NONE) => {
-                    state.clear_pending();
-                    state.count_buffer.push(c);
-                }
-                (KeyCode::Char('0'), KeyModifiers::NONE) => {
-                    if !state.count_buffer.is_empty() {
-                        // Part of count prefix
-                        state.count_buffer.push('0');
-                    } else {
-                        // Go to first field
-                        state.clear_pending();
-                        state.current_field = 0;
-                    }
-                }
-                // $ = go to last field
-                (KeyCode::Char('$'), KeyModifiers::NONE) => {
-                    state.clear_pending();
-                    state.count_buffer.clear();
-                    state.current_field = state.max_fields().saturating_sub(1);
-                }
-
-                // Record navigation with count support
-                (KeyCode::Char('j'), KeyModifiers::NONE) | (KeyCode::Down, _) => {
-                    state.pending_g = false;
-                    let count = state.get_count();
-                    let max_idx = state.records.len().saturating_sub(1);
-                    state.current_record = (state.current_record + count).min(max_idx);
-                    if state.current_record >= state.scroll_offset + state.visible_records {
-                        state.scroll_offset = state
-                            .current_record
-                            .saturating_sub(state.visible_records - 1);
-                    }
-                }
-                (KeyCode::Char('k'), KeyModifiers::NONE) | (KeyCode::Up, _) => {
-                    state.pending_g = false;
-                    let count = state.get_count();
-                    state.current_record = state.current_record.saturating_sub(count);
-                    if state.current_record < state.scroll_offset {
-                        state.scroll_offset = state.current_record;
-                    }
-                }
-
-                // Page navigation
-                (KeyCode::Char('d'), KeyModifiers::CONTROL) | (KeyCode::PageDown, _) => {
-                    state.pending_g = false;
-                    state.count_buffer.clear();
-                    let jump = state.visible_records / 2;
-                    state.current_record =
-                        (state.current_record + jump).min(state.records.len() - 1);
-                    if state.current_record >= state.scroll_offset + state.visible_records {
-                        state.scroll_offset = state.current_record - state.visible_records + 1;
-                    }
-                }
-                (KeyCode::Char('u'), KeyModifiers::CONTROL) | (KeyCode::PageUp, _) => {
-                    state.pending_g = false;
-                    state.count_buffer.clear();
-                    let jump = state.visible_records / 2;
-                    state.current_record = state.current_record.saturating_sub(jump);
-                    if state.current_record < state.scroll_offset {
-                        state.scroll_offset = state.current_record;
-                    }
-                }
-
-                // Locking (with count prefix: 24L locks 24 consecutive fields)
-                (KeyCode::Char('L'), _) => {
-                    state.pending_g = false;
-                    let count = state.get_count();
-                    state.lock_current(count);
-                }
-                (KeyCode::Char('U'), _) => {
-                    state.pending_g = false;
-                    state.count_buffer.clear();
-                    state.unlock_at_cursor();
-                }
-
-                // G = jump to last record (g is handled later with gutter toggle)
-                (KeyCode::Char('G'), _) => {
-                    state.clear_pending();
-                    state.count_buffer.clear();
-                    state.current_record = state.records.len().saturating_sub(1);
-                    if state.current_record >= state.visible_records {
-                        state.scroll_offset = state.current_record - state.visible_records + 1;
-                    }
-                    state.message = Some("Jumped to last record".to_string());
-                }
-
-                // yo* for toggles (yof = toggle frequency, yow = toggle wrap)
-                (KeyCode::Char('y'), KeyModifiers::NONE) => {
-                    state.clear_pending();
-                    state.pending_y = true;
-                }
-                (KeyCode::Char('o'), KeyModifiers::NONE) => {
-                    if state.pending_y {
-                        // yo = now wait for toggle target (f, w, etc.)
-                        state.pending_y = false;
-                        state.pending_yo = true;
-                    } else {
-                        state.clear_pending();
-                    }
-                }
-
-                // [x = enable, ]x = disable
-                (KeyCode::Char('['), KeyModifiers::NONE) => {
-                    state.clear_pending();
-                    state.pending_open_bracket = true;
-                }
-                (KeyCode::Char(']'), KeyModifiers::NONE) => {
-                    state.clear_pending();
-                    state.pending_close_bracket = true;
-                }
-
-                // Handle 'f' for frequency commands
-                (KeyCode::Char('f'), KeyModifiers::NONE) => {
-                    if state.pending_yo {
-                        // yof = toggle frequency mode
-                        state.clear_pending();
-                        state.count_buffer.clear();
-                        state.frequency_mode = !state.frequency_mode;
-                        if state.frequency_mode {
-                            state.compute_frequencies();
-                            state.message = Some("Frequency mode ON".to_string());
-                        } else {
-                            state.message = Some("Frequency mode OFF".to_string());
-                        }
-                    } else if state.pending_open_bracket {
-                        // [f = force frequency on
-                        state.clear_pending();
-                        state.count_buffer.clear();
-                        if !state.frequency_mode {
-                            state.frequency_mode = true;
-                            state.compute_frequencies();
-                        }
-                        state.message = Some("Frequency mode ON".to_string());
-                    } else if state.pending_close_bracket {
-                        // ]f = force frequency off
-                        state.clear_pending();
-                        state.count_buffer.clear();
-                        state.frequency_mode = false;
-                        state.message = Some("Frequency mode OFF".to_string());
-                    } else {
-                        state.clear_pending();
-                    }
-                }
-
-                // Handle 'w' for wrap commands
-                (KeyCode::Char('w'), KeyModifiers::NONE) => {
-                    if state.pending_yo {
-                        // yow = toggle wrap mode
-                        state.clear_pending();
-                        state.count_buffer.clear();
-                        state.wrap_mode = !state.wrap_mode;
-                        state.horizontal_scroll = 0;
-                        state.message = Some(
-                            if state.wrap_mode {
-                                "Wrap ON"
-                            } else {
-                                "Wrap OFF"
-                            }
-                            .to_string(),
-                        );
-                    } else if state.pending_open_bracket {
-                        // [w = force wrap on
-                        state.clear_pending();
-                        state.count_buffer.clear();
-                        state.wrap_mode = true;
-                        state.horizontal_scroll = 0;
-                        state.message = Some("Wrap ON".to_string());
-                    } else if state.pending_close_bracket {
-                        // ]w = force wrap off
-                        state.clear_pending();
-                        state.count_buffer.clear();
-                        state.wrap_mode = false;
-                        state.message = Some("Wrap OFF".to_string());
-                    } else {
-                        // Regular w = next field
-                        state.clear_pending();
-                        state.move_to_next_field();
-                    }
-                }
-
-                // Handle 'l' for lock visibility commands (yol, [l, ]l) OR regular l = shift offset
-                (KeyCode::Char('l'), KeyModifiers::NONE) => {
-                    if state.pending_yo {
-                        // yol = toggle lock visibility
-                        state.clear_pending();
-                        state.count_buffer.clear();
-                        state.show_locks = !state.show_locks;
-                        state.message = Some(
-                            if state.show_locks {
-                                "Locks ON"
-                            } else {
-                                "Locks OFF"
-                            }
-                            .to_string(),
-                        );
-                    } else if state.pending_open_bracket {
-                        // [l = force locks visible
-                        state.clear_pending();
-                        state.count_buffer.clear();
-                        state.show_locks = true;
-                        state.message = Some("Locks ON".to_string());
-                    } else if state.pending_close_bracket {
-                        // ]l = force locks hidden
-                        state.clear_pending();
-                        state.count_buffer.clear();
-                        state.show_locks = false;
-                        state.message = Some("Locks OFF".to_string());
-                    } else {
-                        // Regular l = shift offset forward
-                        state.clear_pending();
-                        state.shift_offset_forward();
-                    }
-                }
-
-                // Handle 'g' for gutter visibility commands (yog, [g, ]g) OR gg jump
-                (KeyCode::Char('g'), KeyModifiers::NONE) => {
-                    if state.pending_yo {
-                        // yog = toggle gutter visibility
-                        state.clear_pending();
-                        state.count_buffer.clear();
-                        state.show_gutter = !state.show_gutter;
-                        state.message = Some(
-                            if state.show_gutter {
-                                "Gutter ON"
-                            } else {
-                                "Gutter OFF"
-                            }
-                            .to_string(),
-                        );
-                    } else if state.pending_open_bracket {
-                        // [g = force gutter visible
-                        state.clear_pending();
-                        state.count_buffer.clear();
-                        state.show_gutter = true;
-                        state.message = Some("Gutter ON".to_string());
-                    } else if state.pending_close_bracket {
-                        // ]g = force gutter hidden
-                        state.clear_pending();
-                        state.count_buffer.clear();
-                        state.show_gutter = false;
-                        state.message = Some("Gutter OFF".to_string());
-                    } else if state.pending_g {
-                        // gg = jump to first record
-                        state.clear_pending();
-                        state.count_buffer.clear();
-                        state.current_record = 0;
-                        state.scroll_offset = 0;
-                        state.message = Some("Jumped to first record".to_string());
-                    } else {
-                        // Start g prefix
-                        state.clear_pending();
-                        state.pending_g = true;
-                    }
-                }
-
-                _ => {
-                    state.clear_pending();
-                    state.count_buffer.clear();
-                }
-            }
+            state.handle_key(key.code, key.modifiers);
         }
     }
 
@@ -993,78 +1000,66 @@ fn draw_ui(f: &mut Frame, state: &mut InteractiveState) {
     draw_status_bar(f, chunks[2], state);
 }
 
-fn draw_header(f: &mut Frame, area: Rect, state: &InteractiveState) {
-    let mut spans: Vec<Span> = Vec::new();
-
-    // Record position
-    spans.push(Span::styled(
-        format!(" {}/{} ", state.current_record + 1, state.records.len()),
-        Style::default().fg(Color::Cyan),
-    ));
-
-    spans.push(Span::styled("│", Style::default().fg(Color::DarkGray)));
-
-    // Current type
-    spans.push(Span::styled(
-        format!(" {} ", state.current_type.name()),
-        Style::default()
-            .fg(Color::Green)
-            .add_modifier(Modifier::BOLD),
-    ));
-
-    spans.push(Span::styled("│", Style::default().fg(Color::DarkGray)));
-
-    // Field position
-    spans.push(Span::styled(
-        format!(" field:{} +{} ", state.current_field, state.field_offset),
-        Style::default().fg(Color::Yellow),
-    ));
-
-    // Preset if loaded
-    if let Some(ref preset) = state.current_preset {
-        spans.push(Span::styled("│", Style::default().fg(Color::DarkGray)));
-        spans.push(Span::styled(
-            format!(" {} ", preset),
-            Style::default().fg(Color::Magenta),
-        ));
-    }
-
-    // Locked fields count
-    if !state.locked_fields.is_empty() {
-        spans.push(Span::styled("│", Style::default().fg(Color::DarkGray)));
-        spans.push(Span::styled(
-            format!(" {}L ", state.locked_fields.len()),
-            Style::default().fg(Color::Green),
-        ));
-    }
-
-    // Mode indicators
-    let mut modes = Vec::new();
-    if state.frequency_mode {
-        modes.push("freq");
-    }
-    if state.wrap_mode {
-        modes.push("wrap");
-    }
-    if !state.show_locks {
-        modes.push("~lock");
-    }
-    if !state.show_gutter {
-        modes.push("~gut");
-    }
-
-    if !modes.is_empty() {
-        spans.push(Span::styled("│", Style::default().fg(Color::DarkGray)));
-        spans.push(Span::styled(
-            format!(" {} ", modes.join(" ")),
-            Style::default().fg(Color::Blue),
-        ));
-    }
-
-    let widget = Paragraph::new(Line::from(spans));
-    f.render_widget(widget, area);
+fn separator() -> Span<'static> {
+    Span::styled("│", Style::default().fg(Color::DarkGray))
 }
 
+fn header_span(text: String, color: Color) -> Span<'static> {
+    Span::styled(text, Style::default().fg(color))
+}
+
+fn draw_header(f: &mut Frame, area: Rect, state: &InteractiveState) {
+    let mut spans: Vec<Span> = vec![
+        header_span(
+            format!(" {}/{} ", state.current_record + 1, state.records.len()),
+            Color::Cyan,
+        ),
+        separator(),
+        Span::styled(
+            format!(" {} ", state.current_type.name()),
+            Style::default()
+                .fg(Color::Green)
+                .add_modifier(Modifier::BOLD),
+        ),
+        separator(),
+        header_span(
+            format!(" field:{} +{} ", state.current_field, state.field_offset),
+            Color::Yellow,
+        ),
+    ];
+
+    if let Some(ref preset) = state.current_preset {
+        spans.push(separator());
+        spans.push(header_span(format!(" {} ", preset), Color::Magenta));
+    }
+
+    if !state.locked_fields.is_empty() {
+        spans.push(separator());
+        spans.push(header_span(
+            format!(" {}L ", state.locked_fields.len()),
+            Color::Green,
+        ));
+    }
+
+    let modes: Vec<_> = [
+        state.frequency_mode.then_some("freq"),
+        state.wrap_mode.then_some("wrap"),
+        (!state.show_locks).then_some("~lock"),
+        (!state.show_gutter).then_some("~gut"),
+    ]
+    .into_iter()
+    .flatten()
+    .collect();
+
+    if !modes.is_empty() {
+        spans.push(separator());
+        spans.push(header_span(format!(" {} ", modes.join(" ")), Color::Blue));
+    }
+
+    f.render_widget(Paragraph::new(Line::from(spans)), area);
+}
+
+#[allow(clippy::too_many_lines)] // TUI rendering with complex field/lock/scroll logic
 fn draw_records(f: &mut Frame, area: Rect, state: &mut InteractiveState) {
     state.terminal_width = area.width as usize;
     let type_size = state.current_type.byte_size().unwrap_or(1);
@@ -1075,15 +1070,7 @@ fn draw_records(f: &mut Frame, area: Rect, state: &mut InteractiveState) {
     let prefix_width = line_num_width + gutter_width + 1;
 
     // Calculate how many fields fit on screen
-    let field_width = match state.current_type {
-        DataType::U8 => 4,                       // "255 "
-        DataType::Hex => 3,                      // "ff "
-        DataType::Binary => 9,                   // "00000000 "
-        DataType::U16Le | DataType::U16Be => 6,  // "65535 "
-        DataType::U32Le | DataType::U32Be => 11, // "4294967295 "
-        DataType::VarInt => 11,
-        DataType::Ascii => 2, // "X "
-    };
+    let field_width = state.current_type.display_width();
     let visible_fields = (area.width as usize).saturating_sub(prefix_width) / field_width;
     let center_field = visible_fields / 2;
 
@@ -1159,23 +1146,16 @@ fn draw_records(f: &mut Frame, area: Rect, state: &mut InteractiveState) {
                 (val, state.current_type, type_size)
             };
 
-            // Determine style
-            let style = if overflows_into_lock {
-                // Overflows into locked section - red background with content
-                Style::default().fg(Color::White).bg(Color::Red)
-            } else if is_cursor {
-                Style::default().fg(Color::Black).bg(Color::Yellow)
-            } else if locked_field.is_some() {
-                Style::default().fg(Color::Black).bg(Color::Cyan)
-            } else if state.frequency_mode && is_current {
-                let freq_color = state.get_frequency_color(byte_pos, record[byte_pos]);
-                Style::default().fg(freq_color).add_modifier(Modifier::BOLD)
-            } else if is_current {
-                Style::default().fg(Color::White)
-            } else {
-                // Non-current records: use a dimmer but visible color
-                Style::default().fg(Color::Rgb(100, 100, 100))
-            };
+            let byte_val = record.get(byte_pos).copied().unwrap_or(0);
+            let style = field_style(
+                state,
+                is_cursor,
+                is_current,
+                locked_field.is_some(),
+                overflows_into_lock,
+                byte_pos,
+                byte_val,
+            );
 
             let formatted = format_field_value(&display_value, display_type);
             spans.push(Span::styled(formatted, style));
@@ -1226,94 +1206,35 @@ fn draw_records(f: &mut Frame, area: Rect, state: &mut InteractiveState) {
 
 /// Decode a value from the record at the given byte offset
 fn decode_value(record: &[u8], byte_off: usize, dtype: DataType) -> String {
-    match dtype {
-        DataType::U8 => record
-            .get(byte_off)
-            .map(|&v| format!("{}", v))
-            .unwrap_or_default(),
-        DataType::Hex => record
-            .get(byte_off)
-            .map(|&v| format!("{:02x}", v))
-            .unwrap_or_default(),
-        DataType::Binary => record
-            .get(byte_off)
-            .map(|&v| format!("{:08b}", v))
-            .unwrap_or_default(),
-        DataType::U16Le => {
-            if byte_off + 2 <= record.len() {
-                let v = u16::from_le_bytes([record[byte_off], record[byte_off + 1]]);
-                format!("{}", v)
-            } else {
-                String::new()
-            }
-        }
-        DataType::U16Be => {
-            if byte_off + 2 <= record.len() {
-                let v = u16::from_be_bytes([record[byte_off], record[byte_off + 1]]);
-                format!("{}", v)
-            } else {
-                String::new()
-            }
-        }
-        DataType::U32Le => {
-            if byte_off + 4 <= record.len() {
-                let v = u32::from_le_bytes([
-                    record[byte_off],
-                    record[byte_off + 1],
-                    record[byte_off + 2],
-                    record[byte_off + 3],
-                ]);
-                format!("{}", v)
-            } else {
-                String::new()
-            }
-        }
-        DataType::U32Be => {
-            if byte_off + 4 <= record.len() {
-                let v = u32::from_be_bytes([
-                    record[byte_off],
-                    record[byte_off + 1],
-                    record[byte_off + 2],
-                    record[byte_off + 3],
-                ]);
-                format!("{}", v)
-            } else {
-                String::new()
-            }
-        }
-        DataType::VarInt => {
-            let mut value: u64 = 0;
-            let mut i = byte_off;
-            let mut shift = 0;
-            while i < record.len() && shift < 64 {
-                let byte = record[i];
-                value |= ((byte & 0x7F) as u64) << shift;
-                i += 1;
-                if byte & 0x80 == 0 {
-                    break;
-                }
-                shift += 7;
-            }
-            if i > byte_off {
-                format!("{}", value)
-            } else {
-                String::new()
-            }
-        }
-        DataType::Ascii => {
-            record
-                .get(byte_off)
-                .map(|&v| {
-                    if (0x20..=0x7E).contains(&v) {
-                        // Printable ASCII
-                        (v as char).to_string()
-                    } else {
-                        // Non-printable - show as dot
-                        ".".to_string()
-                    }
-                })
-                .unwrap_or_default()
-        }
+    record
+        .get(byte_off..)
+        .map(|data| dtype.decode(data))
+        .unwrap_or_default()
+}
+
+/// Determine the style for a field based on cursor, lock, and frequency state
+fn field_style(
+    state: &InteractiveState,
+    is_cursor: bool,
+    is_current_record: bool,
+    locked: bool,
+    overflows: bool,
+    byte_pos: usize,
+    byte_val: u8,
+) -> Style {
+    if overflows {
+        Style::default().fg(Color::White).bg(Color::Red)
+    } else if is_cursor {
+        Style::default().fg(Color::Black).bg(Color::Yellow)
+    } else if locked {
+        Style::default().fg(Color::Black).bg(Color::Cyan)
+    } else if state.frequency_mode && is_current_record {
+        let freq_color = state.get_frequency_color(byte_pos, byte_val);
+        Style::default().fg(freq_color).add_modifier(Modifier::BOLD)
+    } else if is_current_record {
+        Style::default().fg(Color::White)
+    } else {
+        Style::default().fg(Color::Rgb(100, 100, 100))
     }
 }
 
