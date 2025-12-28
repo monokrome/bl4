@@ -33,39 +33,29 @@ pub mod walker;
 // Re-export constants at module level
 pub use constants::*;
 
-// Re-export binary types
-pub use binary::{CodeBounds, PeSection, find_code_bounds, scan_pattern};
+// Re-export source types
+pub use source::{Bl4Process, DumpFile, MemorySource};
 
 // Re-export discovery functions
-pub use discovery::{
-    discover_class_uclass, discover_gnames, discover_guobject_array, find_ue5_offsets, read_fname,
-};
-
-// Re-export source types
-pub use source::{Bl4Process, DumpFile, MemorySource, find_bl4_process};
+pub use discovery::{discover_class_uclass, discover_gnames, discover_guobject_array};
 
 // Re-export FName types
 pub use fname::{FNamePool, FNameReader};
 
-// Re-export UE5 types
-pub use ue5::{GNamesPool, GUObjectArray, UObjectIterator, Ue5Offsets, GUOBJECTARRAY_VA};
-
 // Re-export parts extraction
 pub use parts::extract_parts_raw;
 
-// Re-export reflection types
-pub use reflection::{
-    EPropertyType, EnumInfo, PropertyInfo, StructInfo, UClassMetaclassInfo, UObjectInfo,
-    UObjectOffsets, discover_uclass_metaclass_exhaustive, find_all_uclasses,
-};
-
 // Re-export walker functions
-pub use walker::{analyze_dump, extract_property, read_property_type, walk_guobject_array};
+pub use walker::{analyze_dump, walk_guobject_array};
 
 // Re-export usmap functions
-pub use usmap::{
-    extract_enum_values, extract_reflection_data, extract_struct_properties, write_usmap,
-};
+pub use usmap::{extract_reflection_data, write_usmap};
+
+// Re-export binary functions
+pub use binary::{find_code_bounds, scan_pattern};
+
+// Re-export reflection types
+pub use reflection::find_all_uclasses;
 
 // Legacy module contains remaining memory functionality
 // TODO: Further split into discovery.rs, reflection.rs

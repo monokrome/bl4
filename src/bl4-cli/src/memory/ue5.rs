@@ -265,10 +265,7 @@ mod tests {
     fn test_gnames_pool_structure() {
         let pool = GNamesPool {
             address: 0x200000000,
-            sample_names: vec![
-                (0, "None".to_string()),
-                (1, "ByteProperty".to_string()),
-            ],
+            sample_names: vec![(0, "None".to_string()), (1, "ByteProperty".to_string())],
         };
 
         assert_eq!(pool.address, 0x200000000);
@@ -377,15 +374,13 @@ mod tests {
         let source = MockMemorySource::with_regions(
             data,
             objects_ptr,
-            vec![
-                crate::memory::source::MemoryRegion {
-                    start: objects_ptr,
-                    end: objects_ptr + 0x200000,
-                    perms: "rw-p".to_string(),
-                    offset: 0,
-                    path: None,
-                },
-            ],
+            vec![crate::memory::source::MemoryRegion {
+                start: objects_ptr,
+                end: objects_ptr + 0x200000,
+                perms: "rw-p".to_string(),
+                offset: 0,
+                path: None,
+            }],
         );
 
         // We need to adjust - the chunk pointer needs to point within our data

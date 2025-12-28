@@ -38,7 +38,10 @@ pub fn read_fname(source: &dyn MemorySource, gnames_addr: usize, index: u32) -> 
         if string_len > 0 && string_len < 64 {
             let name_bytes = &data[2..2 + string_len];
             // Check if it looks like ASCII
-            if name_bytes.iter().all(|&b| b.is_ascii_graphic() || b == b'_') {
+            if name_bytes
+                .iter()
+                .all(|&b| b.is_ascii_graphic() || b == b'_')
+            {
                 return Ok(String::from_utf8_lossy(name_bytes).to_string());
             }
         }
@@ -47,7 +50,10 @@ pub fn read_fname(source: &dyn MemorySource, gnames_addr: usize, index: u32) -> 
         let alt_len = (data[0] >> 6) as usize;
         if alt_len > 0 && alt_len < 64 {
             let name_bytes = &data[1..1 + alt_len];
-            if name_bytes.iter().all(|&b| b.is_ascii_graphic() || b == b'_') {
+            if name_bytes
+                .iter()
+                .all(|&b| b.is_ascii_graphic() || b == b'_')
+            {
                 return Ok(String::from_utf8_lossy(name_bytes).to_string());
             }
         }
@@ -225,6 +231,9 @@ mod tests {
         assert_eq!(data[1], 0x8B);
         assert_eq!(data[2], 0x05);
         // Verify suffix
-        assert_eq!(&data[7..15], &[0x48, 0x8B, 0x0C, 0xC8, 0x48, 0x8D, 0x04, 0xD1]);
+        assert_eq!(
+            &data[7..15],
+            &[0x48, 0x8B, 0x0C, 0xC8, 0x48, 0x8D, 0x04, 0xD1]
+        );
     }
 }

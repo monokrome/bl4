@@ -19,9 +19,7 @@ mod object_search;
 mod part_defs;
 mod part_extraction;
 
-pub use object_search::{
-    find_objects_by_pattern, find_uclass_by_name, generate_object_map, ObjectMapEntry,
-};
+pub use object_search::{find_objects_by_pattern, generate_object_map, ObjectMapEntry};
 pub use part_defs::{get_category_for_part, GbxSerialNumberIndex, PartDefinition};
 pub use part_extraction::{
     extract_part_definitions, extract_parts_from_fname_arrays, list_all_part_fnames,

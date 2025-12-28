@@ -6,11 +6,14 @@
 //! - extract_property - Extract FProperty data from memory
 
 mod analyze;
+mod extraction;
 mod property;
+mod type_reader;
+mod validation;
 mod walk;
 
 pub use analyze::analyze_dump;
-pub use property::{extract_property, read_property_type};
+pub use extraction::extract_property;
 pub use walk::walk_guobject_array;
 
 #[cfg(test)]

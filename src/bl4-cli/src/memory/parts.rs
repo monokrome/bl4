@@ -161,7 +161,11 @@ pub fn extract_parts_raw(source: &dyn MemorySource) -> Result<PartsExtraction> {
 
         processed_regions += 1;
         if processed_regions % 500 == 0 {
-            eprintln!("  Processed {} regions, found {} parts...", processed_regions, parts.len());
+            eprintln!(
+                "  Processed {} regions, found {} parts...",
+                processed_regions,
+                parts.len()
+            );
         }
 
         let region_data = match source.read_bytes(region.start, region.size()) {
@@ -214,7 +218,8 @@ pub fn extract_parts_raw(source: &dyn MemorySource) -> Result<PartsExtraction> {
             };
 
             // Store with multiple interpretations
-            let raw_hex = raw_bytes.iter()
+            let raw_hex = raw_bytes
+                .iter()
                 .map(|b| format!("{:02x}", b))
                 .collect::<Vec<_>>()
                 .join(" ");
@@ -257,7 +262,11 @@ pub fn extract_parts_raw(source: &dyn MemorySource) -> Result<PartsExtraction> {
         }
     }
 
-    eprintln!("Extraction complete: {} parts from {} regions", parts.len(), processed_regions);
+    eprintln!(
+        "Extraction complete: {} parts from {} regions",
+        parts.len(),
+        processed_regions
+    );
 
     // Sort by name for consistency
     parts.sort_by(|a, b| a.name.cmp(&b.name));

@@ -15,8 +15,9 @@ mod region;
 mod traits;
 
 pub use dump::DumpFile;
+#[cfg(test)]
 pub use mock::MockMemorySource;
-pub use process::{find_bl4_process, get_tgid, parse_maps, Bl4Process};
+pub use process::{find_bl4_process, Bl4Process};
 pub use region::MemoryRegion;
 pub use traits::MemorySource;
 

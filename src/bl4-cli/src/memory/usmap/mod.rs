@@ -7,7 +7,10 @@
 //! - write_usmap - Write usmap file from reflection data
 
 mod extraction;
+pub mod format;
+mod name_table;
+mod serializer;
 mod writer;
 
-pub use extraction::{extract_enum_values, extract_reflection_data, extract_struct_properties};
-pub use writer::{format as usmap, write_usmap};
+pub use extraction::extract_reflection_data;
+pub use writer::write_usmap;

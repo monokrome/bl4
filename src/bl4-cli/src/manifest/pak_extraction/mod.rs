@@ -13,8 +13,8 @@ mod manufacturers;
 mod weapon_gear;
 
 pub use attributes::{
-    extract_elements_from_pak, extract_rarities_from_pak, extract_stats_from_pak,
-    ExtractedElement, ExtractedRarity, ExtractedStat,
+    extract_elements_from_pak, extract_rarities_from_pak, extract_stats_from_pak, ExtractedElement,
+    ExtractedRarity, ExtractedStat,
 };
 #[allow(deprecated)]
 pub use manufacturers::{

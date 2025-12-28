@@ -2,9 +2,9 @@
 //!
 //! Provides cached reading of FName entries with search capability.
 
-use super::pool::FNamePool;
 use super::super::constants::*;
 use super::super::source::MemorySource;
+use super::pool::FNamePool;
 
 use anyhow::{bail, Result};
 use byteorder::{ByteOrder, LE};

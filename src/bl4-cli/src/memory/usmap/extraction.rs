@@ -7,7 +7,7 @@
 
 use crate::memory::constants::*;
 use crate::memory::fname::FNameReader;
-use crate::memory::reflection::{EnumInfo, PropertyInfo, StructInfo, UObjectInfo};
+use crate::memory::reflection::{EnumInfo, StructInfo, UObjectInfo};
 use crate::memory::source::MemorySource;
 use crate::memory::walker::extract_property;
 
