@@ -197,7 +197,8 @@ pub fn list(
             }
         }
         OutputFormat::Table => {
-            let col_widths: Vec<usize> = field_list.iter().map(|f| field_display_width(f)).collect();
+            let col_widths: Vec<usize> =
+                field_list.iter().map(|f| field_display_width(f)).collect();
 
             let header: String = field_list
                 .iter()

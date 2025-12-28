@@ -47,10 +47,7 @@ pub fn handle_find_objects_by_pattern(
 ///
 /// Generates a JSON map of all UObjects grouped by class.
 /// Requires a dump file - does not work with live process.
-pub fn handle_generate_object_map(
-    output: Option<&Path>,
-    dump: Option<&Path>,
-) -> Result<()> {
+pub fn handle_generate_object_map(output: Option<&Path>, dump: Option<&Path>) -> Result<()> {
     let dump_path = dump.ok_or_else(|| {
         anyhow::anyhow!("GenerateObjectMap requires a memory dump file. Use --dump <path>")
     })?;

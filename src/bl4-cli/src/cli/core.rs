@@ -5,10 +5,11 @@ use std::path::PathBuf;
 
 use super::idb::ItemsDbCommand;
 use super::memory::MemoryAction;
-use super::save::SaveCommand;
-use super::serial::SerialCommand;
+use super::ncs::NcsCommand;
 #[cfg(feature = "research")]
 use super::research::{ExtractCommand, UsmapCommand};
+use super::save::SaveCommand;
+use super::serial::SerialCommand;
 
 #[derive(Parser)]
 #[command(name = "bl4")]
@@ -131,6 +132,13 @@ pub enum Commands {
 
         #[command(subcommand)]
         command: ItemsDbCommand,
+    },
+
+    /// NCS (Nexus Config Store) file operations
+    #[command(visible_alias = "n")]
+    Ncs {
+        #[command(subcommand)]
+        command: NcsCommand,
     },
 
     /// Generate manifest files from game data (requires 'research' feature)

@@ -45,8 +45,7 @@ pub fn handle_fname(source: &dyn MemorySource, index: u32, debug: bool) -> Resul
         Err(e) => {
             // Fall back to pattern-based discovery
             eprintln!("FNamePool::discover failed: {}", e);
-            let gnames =
-                memory::discover_gnames(source).context("Failed to find GNames pool")?;
+            let gnames = memory::discover_gnames(source).context("Failed to find GNames pool")?;
             println!("Using legacy FName reader (block 0 only)");
             let mut reader = memory::FNameReader::new_legacy(gnames.address);
             match reader.read_name(source, index) {
@@ -63,8 +62,7 @@ pub fn handle_fname(source: &dyn MemorySource, index: u32, debug: bool) -> Resul
 /// Searches for FNames containing the given query string.
 pub fn handle_fname_search(source: &dyn MemorySource, query: &str) -> Result<()> {
     // Discover FNamePool to get all blocks
-    let pool =
-        memory::FNamePool::discover(source).context("Failed to discover FNamePool")?;
+    let pool = memory::FNamePool::discover(source).context("Failed to discover FNamePool")?;
 
     println!(
         "Searching for \"{}\" across {} FName blocks...",
@@ -107,7 +105,12 @@ pub fn handle_fname_search(source: &dyn MemorySource, query: &str) -> Result<()>
                             // FName index = (block_idx << 16) | (byte_offset / 2)
                             let fname_index =
                                 ((block_idx as u32) << 16) | ((byte_offset / 2) as u32);
-                            found.push((fname_index, block_idx, byte_offset, full_name.to_string()));
+                            found.push((
+                                fname_index,
+                                block_idx,
+                                byte_offset,
+                                full_name.to_string(),
+                            ));
                         }
                     }
                 }

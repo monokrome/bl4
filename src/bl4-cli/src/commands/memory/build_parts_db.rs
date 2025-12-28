@@ -20,7 +20,11 @@ pub struct BuildResult {
 /// * `input` - Path to parts dump JSON
 /// * `output` - Path to output database JSON
 /// * `categories` - Path to category mappings JSON
-pub fn handle_build_parts_db(input: &Path, output: &Path, categories: &Path) -> Result<BuildResult> {
+pub fn handle_build_parts_db(
+    input: &Path,
+    output: &Path,
+    categories: &Path,
+) -> Result<BuildResult> {
     println!("Building parts database from {}...", input.display());
     println!("Loading categories from {}...", categories.display());
 
@@ -132,7 +136,12 @@ fn build_entries(
     for (prefix, category, description) in known_groups {
         if let Some(parts) = parts_by_prefix.get(prefix) {
             for (idx, part_name) in parts.iter().enumerate() {
-                db_entries.push((*category, idx as i16, part_name.clone(), description.clone()));
+                db_entries.push((
+                    *category,
+                    idx as i16,
+                    part_name.clone(),
+                    description.clone(),
+                ));
             }
         }
     }
@@ -308,11 +317,17 @@ mod tests {
         assert_eq!(entries.len(), 4);
 
         // Check known category entries
-        assert!(entries.iter().any(|(cat, _, name, _)| *cat == 3 && name.contains("JAK_PS")));
-        assert!(entries.iter().any(|(cat, _, name, _)| *cat == 5 && name.contains("VLA_AR")));
+        assert!(entries
+            .iter()
+            .any(|(cat, _, name, _)| *cat == 3 && name.contains("JAK_PS")));
+        assert!(entries
+            .iter()
+            .any(|(cat, _, name, _)| *cat == 5 && name.contains("VLA_AR")));
 
         // Check unmapped entries have category -1
-        assert!(entries.iter().any(|(cat, _, name, _)| *cat == -1 && name.contains("UNKNOWN")));
+        assert!(entries
+            .iter()
+            .any(|(cat, _, name, _)| *cat == -1 && name.contains("UNKNOWN")));
     }
 
     #[test]

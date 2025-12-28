@@ -138,11 +138,7 @@ pub fn handle_dump_usmap(source: &dyn MemorySource, output: &Path) -> Result<()>
 /// Handle the Monitor command
 ///
 /// Monitors a log file in real-time with optional filtering.
-pub fn handle_monitor(
-    log_file: &Path,
-    filter: Option<&str>,
-    game_only: bool,
-) -> Result<()> {
+pub fn handle_monitor(log_file: &Path, filter: Option<&str>, game_only: bool) -> Result<()> {
     println!("Monitoring: {}", log_file.display());
     if let Some(f) = filter {
         println!("Filter: {}", f);

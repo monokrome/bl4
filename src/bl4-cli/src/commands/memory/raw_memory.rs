@@ -19,8 +19,8 @@ fn parse_hex_bytes(bytes: &str) -> Result<Vec<u8>> {
     let parts: Vec<&str> = bytes.split_whitespace().collect();
     let mut data = Vec::new();
     for part in parts {
-        let byte = u8::from_str_radix(part, 16)
-            .with_context(|| format!("Invalid hex byte: {}", part))?;
+        let byte =
+            u8::from_str_radix(part, 16).with_context(|| format!("Invalid hex byte: {}", part))?;
         data.push(byte);
     }
     Ok(data)

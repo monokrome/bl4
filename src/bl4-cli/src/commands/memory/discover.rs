@@ -98,11 +98,7 @@ pub fn handle_discover(source: &dyn MemorySource, target: &str) -> Result<()> {
 /// Handle the Objects command
 ///
 /// Searches for class names in the FName pool.
-pub fn handle_objects(
-    source: &dyn MemorySource,
-    class: Option<&str>,
-    limit: usize,
-) -> Result<()> {
+pub fn handle_objects(source: &dyn MemorySource, class: Option<&str>, limit: usize) -> Result<()> {
     // First discover GNames
     let gnames = memory::discover_gnames(source).context("Failed to find GNames pool")?;
 
@@ -241,9 +237,9 @@ pub fn handle_find_class_uclass(source: &dyn MemorySource) -> Result<()> {
                 }
 
                 // Check ClassPrivate for self-reference
-                let class_ptr = byteorder::LE::read_u64(
-                    &data[offset + class_off..offset + class_off + 8],
-                ) as usize;
+                let class_ptr =
+                    byteorder::LE::read_u64(&data[offset + class_off..offset + class_off + 8])
+                        as usize;
                 if class_ptr != obj_addr {
                     continue;
                 }
@@ -266,7 +262,10 @@ pub fn handle_find_class_uclass(source: &dyn MemorySource) -> Result<()> {
             }
         }
 
-        println!("  Found {} self-referential objects:", found_self_refs.len());
+        println!(
+            "  Found {} self-referential objects:",
+            found_self_refs.len()
+        );
         for (addr, vtable, fname_idx, name) in found_self_refs.iter().take(10) {
             let marker = if *fname_idx == memory::FNAME_CLASS_INDEX {
                 " <-- CLASS!"

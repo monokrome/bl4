@@ -104,8 +104,7 @@ pub fn edit(input: &Path, steam_id: Option<String>, backup: bool) -> Result<()> 
     let encrypted =
         bl4::encrypt_sav(&modified_yaml, &steam_id).context("Failed to encrypt modified YAML")?;
 
-    fs::write(input, &encrypted)
-        .with_context(|| format!("Failed to write {}", input.display()))?;
+    fs::write(input, &encrypted).with_context(|| format!("Failed to write {}", input.display()))?;
 
     // Clean up temp file
     fs::remove_file(&abs_temp_path).context("Failed to remove temp file")?;
@@ -232,8 +231,7 @@ pub fn set(
         bl4::encrypt_sav(&modified_yaml, &steam_id).context("Failed to encrypt save file")?;
 
     // Write back
-    fs::write(input, &encrypted)
-        .with_context(|| format!("Failed to write {}", input.display()))?;
+    fs::write(input, &encrypted).with_context(|| format!("Failed to write {}", input.display()))?;
 
     // Update hash tracking after edit
     if backup {

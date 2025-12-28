@@ -209,7 +209,11 @@ pub fn import_save(
     serials.sort();
     serials.dedup();
 
-    println!("Found {} unique serials in {}", serials.len(), save.display());
+    println!(
+        "Found {} unique serials in {}",
+        serials.len(),
+        save.display()
+    );
 
     let wdb = bl4_idb::SqliteDb::open(db)?;
     wdb.init()?;

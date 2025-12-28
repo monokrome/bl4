@@ -304,13 +304,11 @@ mod tests {
 
     #[test]
     fn test_group_parts_with_unknown_type() {
-        let parts = vec![
-            PartEntry {
-                name: "UNKNOWN_FORMAT".to_string(),
-                category: 1,
-                index: 0,
-            },
-        ];
+        let parts = vec![PartEntry {
+            name: "UNKNOWN_FORMAT".to_string(),
+            category: 1,
+            index: 0,
+        }];
         let refs: Vec<&PartEntry> = parts.iter().collect();
         let by_type = group_parts_by_type(&refs);
 

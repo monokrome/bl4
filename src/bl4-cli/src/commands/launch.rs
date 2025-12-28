@@ -44,9 +44,7 @@ pub fn build_launch_options(lib_path: &PathBuf) -> String {
 pub fn print_launch_info(launch_options: &str) {
     println!("Add to Steam launch options:\n");
     println!("  {}\n", launch_options);
-    println!(
-        "Options: BL4_RNG_BIAS=max|high|low|min  BL4_PRELOAD_ALL=1  BL4_PRELOAD_STACKS=1"
-    );
+    println!("Options: BL4_RNG_BIAS=max|high|low|min  BL4_PRELOAD_ALL=1  BL4_PRELOAD_STACKS=1");
     println!("Log: /tmp/bl4_preload.log\n");
 }
 

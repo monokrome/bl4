@@ -12,8 +12,8 @@ use std::path::Path;
 /// Extracts part pools from a parts database JSON file.
 pub fn handle_part_pools(input: &Path, output: &Path) -> Result<()> {
     // Read the parts database (memory-extracted names + verified category assignments)
-    let data = fs::read_to_string(input)
-        .with_context(|| format!("Failed to read {}", input.display()))?;
+    let data =
+        fs::read_to_string(input).with_context(|| format!("Failed to read {}", input.display()))?;
 
     // Parse parts array from JSON
     // Structure: { "parts": [ { "category": N, "name": "...", ... }, ... ], "categories": {...} }
@@ -140,8 +140,7 @@ pub fn handle_part_pools(input: &Path, output: &Path) -> Result<()> {
                             if let Some(val_start) = name_section.find('"') {
                                 let name_rest = &name_section[val_start + 1..];
                                 if let Some(val_end) = name_rest.find('"') {
-                                    category_names
-                                        .insert(cat_id, name_rest[..val_end].to_string());
+                                    category_names.insert(cat_id, name_rest[..val_end].to_string());
                                 }
                             }
                         }

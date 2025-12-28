@@ -6,6 +6,7 @@ pub mod configure;
 pub mod items_db;
 pub mod launch;
 pub mod memory;
+pub mod ncs;
 pub mod parts;
 pub mod save;
 pub mod serial;

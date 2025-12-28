@@ -10,11 +10,7 @@ use std::path::{Path, PathBuf};
 /// Handle the ExtractCommand::MinidumpToExe command
 ///
 /// Extracts a PE executable from a Windows minidump file.
-pub fn handle_minidump_to_exe(
-    input: &Path,
-    output: Option<PathBuf>,
-    base: &str,
-) -> Result<()> {
+pub fn handle_minidump_to_exe(input: &Path, output: Option<PathBuf>, base: &str) -> Result<()> {
     // Parse base address
     let base_addr = if base.starts_with("0x") || base.starts_with("0X") {
         u64::from_str_radix(&base[2..], 16)
@@ -113,7 +109,8 @@ pub fn handle_minidump_to_exe(
 
         let end = (offset + region.bytes.len() as u64).min(size_of_image);
         let copy_len = (end - offset) as usize;
-        image[offset as usize..offset as usize + copy_len].copy_from_slice(&region.bytes[..copy_len]);
+        image[offset as usize..offset as usize + copy_len]
+            .copy_from_slice(&region.bytes[..copy_len]);
         bytes_copied += copy_len as u64;
     }
 
@@ -146,11 +143,8 @@ mod tests {
 
     #[test]
     fn test_handle_minidump_to_exe_missing_file() {
-        let result = handle_minidump_to_exe(
-            Path::new("/nonexistent/dump.dmp"),
-            None,
-            "0x140000000",
-        );
+        let result =
+            handle_minidump_to_exe(Path::new("/nonexistent/dump.dmp"), None, "0x140000000");
         assert!(result.is_err());
     }
 }

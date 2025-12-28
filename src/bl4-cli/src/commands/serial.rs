@@ -8,6 +8,7 @@ use std::io::Write;
 use std::path::Path;
 
 /// Handle `serial decode` command
+#[allow(clippy::too_many_lines)] // Serial decoding with debug output
 pub fn decode(
     serial: &str,
     verbose: bool,
@@ -246,6 +247,7 @@ pub fn encode(serial: &str) -> Result<()> {
 }
 
 /// Handle `serial compare` command
+#[allow(clippy::too_many_lines)] // Serial comparison output
 pub fn compare(serial1: &str, serial2: &str) -> Result<()> {
     let item1 = bl4::ItemSerial::decode(serial1).context("Failed to decode serial 1")?;
     let item2 = bl4::ItemSerial::decode(serial2).context("Failed to decode serial 2")?;
@@ -341,6 +343,7 @@ pub fn compare(serial1: &str, serial2: &str) -> Result<()> {
 }
 
 /// Handle `serial modify` command
+#[allow(clippy::too_many_lines)] // Serial modification command
 pub fn modify(base: &str, source: &str, parts: &str) -> Result<()> {
     use bl4::serial::Token;
 
