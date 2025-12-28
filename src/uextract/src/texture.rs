@@ -86,6 +86,7 @@ pub struct TextureInfo {
 /// - PackedData (num slices, flags)
 /// - PixelFormat (string)
 /// - Mip chain with bulk data references
+#[allow(clippy::too_many_lines)] // UE5 texture format parsing
 pub fn parse_texture_info(data: &[u8], header_size: usize) -> Result<TextureInfo> {
     // The texture data is in the export's cooked serial data
     // We need to skip the Zen header and find the FTexturePlatformData
