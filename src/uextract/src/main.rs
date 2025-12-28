@@ -147,6 +147,7 @@ enum OutputFormat {
     Both,
 }
 
+#[allow(clippy::too_many_lines)] // CLI setup and dispatch
 fn main() -> Result<()> {
     let args = Args::parse();
 
@@ -375,6 +376,7 @@ fn matches_filters(path: &str, args: &Args) -> bool {
     false
 }
 
+#[allow(clippy::too_many_lines)] // Binary extraction with format detection
 fn extract_entry(
     chunk: &iostore::ChunkInfo,
     path: &str,
@@ -486,6 +488,7 @@ struct ParsedProperty {
 
 /// Parse property values from export serialized data
 /// UE5 unversioned properties store numeric values at the end of the export data
+#[allow(clippy::too_many_lines)] // Complex UE5 property scanning logic
 fn parse_export_properties(
     data: &[u8],
     offset: usize,
@@ -787,6 +790,7 @@ fn get_property_size(inner: &usmap::PropertyInner) -> Option<usize> {
 }
 
 /// Parse a single property value from data
+#[allow(clippy::too_many_lines)] // UE5 property type handling
 fn parse_property_value(
     data: &[u8],
     pos: usize,
@@ -892,6 +896,7 @@ fn extract_property_info_from_names(names: &[String]) -> Vec<(String, u32, Strin
 }
 
 /// Parse properties using usmap schema for proper field names and types
+#[allow(clippy::too_many_lines)] // Schema-based UE5 property parsing
 fn parse_export_properties_with_schema(
     data: &[u8],
     offset: usize,
@@ -1046,6 +1051,7 @@ fn parse_export_properties_with_schema(
     parse_export_properties(data, offset, size, names)
 }
 
+#[allow(clippy::too_many_lines)] // Zen format to JSON conversion
 fn parse_zen_to_json(
     data: &[u8],
     path: &str,
@@ -1153,6 +1159,7 @@ fn parse_zen_to_json(
 // Texture Extraction Command
 // ============================================================================
 
+#[allow(clippy::too_many_lines)] // Texture extraction subcommand
 fn extract_texture_cmd(
     ubulk_path: &std::path::Path,
     width: u32,
@@ -1270,6 +1277,7 @@ struct ScriptObjectsDump {
     hash_to_path: HashMap<String, String>,
 }
 
+#[allow(clippy::too_many_lines)] // ScriptObjects extraction subcommand
 fn extract_script_objects(
     input: &std::path::Path,
     output: &std::path::Path,
@@ -1412,6 +1420,7 @@ fn resolve_script_object_path(
 // Find Assets by Class Command
 // ============================================================================
 
+#[allow(clippy::too_many_lines)] // Asset search subcommand
 fn find_assets_by_class(
     input: &std::path::Path,
     class_name: &str,
@@ -1566,6 +1575,7 @@ fn find_assets_by_class(
 }
 
 /// List all unique class hashes found in pak files
+#[allow(clippy::too_many_lines)] // Class listing subcommand
 fn list_classes(
     input: &PathBuf,
     scriptobjects_path: &PathBuf,
