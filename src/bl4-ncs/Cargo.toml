@@ -5,7 +5,7 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "NCS (Nexus Config Store) parser for Borderlands 4 gBx files"
+description = "NCS (Nexus Config Store) parser for Borderlands 4"
 
 [dependencies]
 # Oodle decompression (pure Rust implementation)

@@ -22,12 +22,6 @@ pub fn handle_check(input: &Path) -> Result<()> {
         println!("{:?}: valid NCS data file", input);
         println!("  Version: {}", header.version);
         println!("  Compressed: {}", header.is_compressed());
-    } else if bl4_ncs::is_gbx(&data) {
-        let variant = bl4_ncs::legacy::get_variant(&data);
-        println!("{:?}: valid gBx file (legacy)", input);
-        if let Some(v) = variant {
-            println!("  Variant: {:?}", v);
-        }
     } else {
         println!("{:?}: NOT a valid NCS file", input);
         if data.len() >= 5 {
@@ -43,7 +37,7 @@ pub fn handle_check(input: &Path) -> Result<()> {
 
 /// Handle the ExtractCommand::NcsDecompress command
 ///
-/// Decompresses an NCS or gBx file.
+/// Decompresses an NCS file.
 pub fn handle_decompress(input: &Path, output: Option<std::path::PathBuf>) -> Result<()> {
     let data = fs::read(input)?;
 
@@ -58,20 +52,19 @@ pub fn handle_decompress(input: &Path, output: Option<std::path::PathBuf>) -> Re
         return Ok(());
     }
 
-    let decompressed = if bl4_ncs::is_ncs(&data) {
-        println!("Parsing NCS header...");
-        let header = bl4_ncs::NcsHeader::from_bytes(&data)?;
-        println!(
-            "  Version: {}, compressed: {}",
-            header.version,
-            header.is_compressed()
-        );
-        println!("Decompressing...");
-        bl4_ncs::decompress_ncs(&data)?
-    } else {
-        println!("Parsing gBx header (legacy)...");
-        bl4_ncs::decompress_gbx(&data)?
-    };
+    if !bl4_ncs::is_ncs(&data) {
+        anyhow::bail!("Not a valid NCS file");
+    }
+
+    println!("Parsing NCS header...");
+    let header = bl4_ncs::NcsHeader::from_bytes(&data)?;
+    println!(
+        "  Version: {}, compressed: {}",
+        header.version,
+        header.is_compressed()
+    );
+    println!("Decompressing...");
+    let decompressed = bl4_ncs::decompress_ncs(&data)?;
 
     let out_path = output.unwrap_or_else(|| {
         let mut p = input.to_path_buf();
@@ -131,23 +124,6 @@ pub fn handle_info(input: &Path) -> Result<()> {
                 Err(e) => {
                     println!("  Decompression failed: {}", e);
                 }
-            }
-        }
-    } else if bl4_ncs::is_gbx(&data) {
-        let variant = bl4_ncs::legacy::get_variant(&data);
-
-        println!("gBx File (legacy): {:?}", input);
-        println!("  File size: {} bytes", data.len());
-        if let Some(v) = variant {
-            println!("  Variant: {:?}", v);
-        }
-
-        match bl4_ncs::decompress_gbx(&data) {
-            Ok(decompressed) => {
-                println!("  Decompressed size: {} bytes", decompressed.len());
-            }
-            Err(e) => {
-                println!("  Decompression failed: {}", e);
             }
         }
     } else {
@@ -213,10 +189,6 @@ fn check_file(path: &Path, found: &mut usize) -> Result<()> {
         } else if bl4_ncs::is_ncs_manifest(&header) {
             println!("{}: NCS manifest", path.display());
             *found += 1;
-        } else if bl4_ncs::is_gbx(&header) {
-            let variant = bl4_ncs::legacy::get_variant(&header);
-            println!("{}: gBx {:?}", path.display(), variant);
-            *found += 1;
         }
     }
     Ok(())
@@ -225,80 +197,39 @@ fn check_file(path: &Path, found: &mut usize) -> Result<()> {
 /// Handle the ExtractCommand::NcsScan command
 ///
 /// Scans a file for embedded NCS chunks.
-pub fn handle_scan(input: &Path, all: bool) -> Result<()> {
-    use std::io::BufReader;
-
+pub fn handle_scan(input: &Path, _all: bool) -> Result<()> {
     println!("Scanning {:?} for NCS chunks...", input);
-    let file = fs::File::open(input)?;
-    let file_size = file.metadata()?.len();
-    let mut reader = BufReader::new(file);
+    let data = fs::read(input)?;
+    let file_size = data.len();
 
-    if all {
-        let results = bl4_ncs::scan_for_gbx_all(&mut reader)?;
-        if results.is_empty() {
-            println!("No NCS magic found");
-        } else {
-            println!("Found {} NCS magic occurrences:\n", results.len());
-            for (i, r) in results.iter().enumerate() {
-                let status = if r.valid { "VALID" } else { "INVALID" };
-                println!(
-                    "  [{:4}] offset: 0x{:08x} ({:>12}), variant: {:?}, compressed: {:>12}, decompressed: {:>12} [{}]",
-                    i,
-                    r.offset,
-                    r.offset,
-                    r.variant,
-                    r.compressed_size,
-                    r.decompressed_size,
-                    status
-                );
-                if let Some(reason) = &r.invalid_reason {
-                    println!("         └─ {}", reason);
-                }
-            }
-            println!();
-            let valid_count = results.iter().filter(|r| r.valid).count();
-            println!(
-                "Valid: {}, Invalid: {}",
-                valid_count,
-                results.len() - valid_count
-            );
-        }
+    let chunks = bl4_ncs::scan_for_ncs(&data);
+
+    if chunks.is_empty() {
+        println!("No NCS chunks found");
     } else {
-        let chunks = bl4_ncs::scan_for_gbx(&mut reader)?;
-
-        if chunks.is_empty() {
-            println!("No NCS chunks found");
-        } else {
-            println!("Found {} NCS chunks:\n", chunks.len());
-            for (i, chunk) in chunks.iter().enumerate() {
-                println!(
-                    "  [{:4}] offset: 0x{:08x} ({:>12}), variant: {:?}, compressed: {:>8}, decompressed: {:>8}",
-                    i,
-                    chunk.offset,
-                    chunk.offset,
-                    chunk.header.variant,
-                    chunk.header.compressed_size,
-                    chunk.header.decompressed_size
-                );
-            }
-            println!();
-
-            let total_compressed: u64 = chunks
-                .iter()
-                .map(|c| c.header.compressed_size as u64)
-                .sum();
-            let total_decompressed: u64 = chunks
-                .iter()
-                .map(|c| c.header.decompressed_size as u64)
-                .sum();
-
-            println!("Total compressed size: {} bytes", total_compressed);
-            println!("Total decompressed size: {} bytes", total_decompressed);
+        println!("Found {} NCS chunks:\n", chunks.len());
+        for (i, (offset, header)) in chunks.iter().enumerate() {
             println!(
-                "Coverage: {:.2}% of file",
-                (total_compressed as f64 / file_size as f64) * 100.0
+                "  [{:4}] offset: 0x{:08x} ({:>12}), version: {}, compressed: {:>8}, decompressed: {:>8}",
+                i,
+                offset,
+                offset,
+                header.version,
+                header.compressed_size,
+                header.decompressed_size
             );
         }
+        println!();
+
+        let total_compressed: u64 = chunks.iter().map(|(_, h)| h.compressed_size as u64).sum();
+        let total_decompressed: u64 = chunks.iter().map(|(_, h)| h.decompressed_size as u64).sum();
+
+        println!("Total compressed size: {} bytes", total_compressed);
+        println!("Total decompressed size: {} bytes", total_decompressed);
+        println!(
+            "Coverage: {:.2}% of file",
+            (total_compressed as f64 / file_size as f64) * 100.0
+        );
     }
 
     Ok(())
@@ -308,13 +239,10 @@ pub fn handle_scan(input: &Path, all: bool) -> Result<()> {
 ///
 /// Extracts NCS chunks from a file.
 pub fn handle_extract(input: &Path, output: &Path, decompress: bool) -> Result<()> {
-    use std::io::{BufReader, Seek, SeekFrom};
-
     println!("Scanning {:?} for NCS chunks...", input);
-    let file = fs::File::open(input)?;
-    let mut reader = BufReader::new(file);
+    let data = fs::read(input)?;
 
-    let chunks = bl4_ncs::scan_for_gbx(&mut reader)?;
+    let chunks = bl4_ncs::scan_for_ncs(&data);
     println!("Found {} NCS chunks", chunks.len());
 
     fs::create_dir_all(output)?;
@@ -322,19 +250,15 @@ pub fn handle_extract(input: &Path, output: &Path, decompress: bool) -> Result<(
     let mut extracted = 0;
     let mut failed = 0;
 
-    for (i, chunk) in chunks.iter().enumerate() {
-        reader.seek(SeekFrom::Start(chunk.offset))?;
-        let data = bl4_ncs::extract_gbx_chunk(&mut reader, chunk)?;
+    for (i, (offset, header)) in chunks.iter().enumerate() {
+        let chunk_end = offset + header.total_size();
+        let chunk_data = &data[*offset..chunk_end];
 
-        let filename = if decompress {
-            format!("chunk_{:05}.ncs", i)
-        } else {
-            format!("chunk_{:05}.gbx", i)
-        };
+        let filename = format!("chunk_{:05}.ncs", i);
         let out_path = output.join(&filename);
 
         let write_data = if decompress {
-            match bl4_ncs::decompress_gbx(&data) {
+            match bl4_ncs::decompress_ncs(chunk_data) {
                 Ok(decompressed) => decompressed,
                 Err(e) => {
                     eprintln!("Failed to decompress chunk {}: {}", i, e);
@@ -343,7 +267,7 @@ pub fn handle_extract(input: &Path, output: &Path, decompress: bool) -> Result<(
                 }
             }
         } else {
-            data
+            chunk_data.to_vec()
         };
 
         fs::write(&out_path, &write_data)?;
