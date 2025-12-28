@@ -35,3 +35,6 @@ rayon = "1"
 texture2ddecoder = "0.1"
 image = { version = "0.25", default-features = false, features = ["png"] }
 byteorder = "1"
+
+[lints]
+workspace = true

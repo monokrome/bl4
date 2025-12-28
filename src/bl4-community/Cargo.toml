@@ -43,3 +43,6 @@ uuid = { version = "1.11", features = ["v4"] }
 
 # Image resizing
 image = "0.25"
+
+[lints]
+workspace = true

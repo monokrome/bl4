@@ -34,3 +34,6 @@ js-sys = { workspace = true, optional = true }
 [dev-dependencies]
 anyhow.workspace = true
 tempfile = "3.8"
+
+[lints]
+workspace = true

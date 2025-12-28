@@ -13,11 +13,12 @@ path = "src/main.rs"
 
 [features]
 default = []
-research = ["dep:regex", "dep:walkdir", "dep:unreal_asset", "dep:chrono"]
+research = ["dep:regex", "dep:unreal_asset", "dep:chrono", "dep:minidump"]
 
 [dependencies]
 bl4 = { version = "0.5", path = "../bl4" }
 bl4-idb = { version = "0.5", path = "../bl4-idb", features = ["sqlite-sync", "attachments"] }
+bl4-ncs = { version = "0.5", path = "../bl4-ncs" }
 rusqlite = { workspace = true }  # For direct database operations (merge)
 clap.workspace = true
 anyhow.workspace = true
@@ -26,6 +27,7 @@ serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 toml = "0.8"
 dirs = "5.0"
+walkdir = "2.4"
 
 # For process injection/memory access
 process-memory = "0.5"
@@ -40,6 +42,12 @@ urlencoding = "2.1"
 
 # Research feature dependencies (manifest generation)
 regex = { version = "1.10", optional = true }
-walkdir = { version = "2.4", optional = true }
 unreal_asset = { version = "0.1", optional = true }
 chrono = { version = "0.4", optional = true }
+minidump = { version = "0.26", optional = true }
+
+[dev-dependencies]
+tempfile = "3.14"
+
+[lints]
+workspace = true
