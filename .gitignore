@@ -1,25 +1,14 @@
 # Build artifacts
 node_modules/
 pkg/
+rendered/*
+site/*
 target/
+
+# Data files being worked with during development
 *.tmp
-
-# Rendered documentation
-/rendered/
-/docs/rendered/
-/site/
-
-*.lock
-!/Cargo.lock
-
-# BL4 data files (will be distributed via GitHub Releases)
 /share/*
-# But keep manifest files (small enough for git now)
 !/share/manifest/
-
-# Backup files
-*.bak
-*.bak.json
 
 # Non-git hidden file patterns
 .*
