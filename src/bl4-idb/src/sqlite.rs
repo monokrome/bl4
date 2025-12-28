@@ -16,6 +16,74 @@ pub struct SqliteDb {
     conn: Connection,
 }
 
+const ITEM_SELECT_COLUMNS: &str = "serial, name, prefix, manufacturer, weapon_type, item_type, rarity, level, element,
+                    dps, damage, accuracy, fire_rate, reload_time, mag_size, value, red_text,
+                    notes, verification_status, verification_notes, verified_at, legal, source, created_at";
+
+fn row_to_item(row: &rusqlite::Row<'_>) -> rusqlite::Result<Item> {
+    let status_str: String = row
+        .get::<_, Option<String>>(18)?
+        .unwrap_or_else(|| "unverified".to_string());
+    Ok(Item {
+        serial: row.get(0)?,
+        name: row.get(1)?,
+        prefix: row.get(2)?,
+        manufacturer: row.get(3)?,
+        weapon_type: row.get(4)?,
+        item_type: row.get(5)?,
+        rarity: row.get(6)?,
+        level: row.get(7)?,
+        element: row.get(8)?,
+        dps: row.get(9)?,
+        damage: row.get(10)?,
+        accuracy: row.get(11)?,
+        fire_rate: row.get(12)?,
+        reload_time: row.get(13)?,
+        mag_size: row.get(14)?,
+        value: row.get(15)?,
+        red_text: row.get(16)?,
+        notes: row.get(17)?,
+        verification_status: status_str.parse().unwrap_or(VerificationStatus::Unverified),
+        verification_notes: row.get(19)?,
+        verified_at: row.get(20)?,
+        legal: row.get::<_, Option<bool>>(21)?.unwrap_or(false),
+        source: row.get(22)?,
+        created_at: row.get::<_, Option<String>>(23)?.unwrap_or_default(),
+    })
+}
+
+fn build_list_query(filter: &ItemFilter) -> (String, Vec<Box<dyn rusqlite::ToSql>>) {
+    let mut sql = format!("SELECT {} FROM items WHERE 1=1", ITEM_SELECT_COLUMNS);
+    let mut params: Vec<Box<dyn rusqlite::ToSql>> = Vec::new();
+
+    if let Some(m) = &filter.manufacturer {
+        sql.push_str(" AND manufacturer = ?");
+        params.push(Box::new(m.clone()));
+    }
+    if let Some(w) = &filter.weapon_type {
+        sql.push_str(" AND weapon_type = ?");
+        params.push(Box::new(w.clone()));
+    }
+    if let Some(e) = &filter.element {
+        sql.push_str(" AND element = ?");
+        params.push(Box::new(e.clone()));
+    }
+    if let Some(r) = &filter.rarity {
+        sql.push_str(" AND rarity = ?");
+        params.push(Box::new(r.clone()));
+    }
+
+    sql.push_str(" ORDER BY created_at DESC");
+    if let Some(limit) = filter.limit {
+        sql.push_str(&format!(" LIMIT {}", limit));
+    }
+    if let Some(offset) = filter.offset {
+        sql.push_str(&format!(" OFFSET {}", offset));
+    }
+
+    (sql, params)
+}
+
 impl SqliteDb {
     /// Open or create the database
     pub fn open<P: AsRef<Path>>(path: P) -> Result<Self, rusqlite::Error> {
@@ -30,6 +98,7 @@ impl SqliteDb {
     }
 
     /// Check if migration from old schema is needed and perform it
+    #[allow(clippy::too_many_lines)] // SQL schema definition
     fn migrate_to_serial_pk(&self) -> RepoResult<()> {
         println!("Migrating database to use serial as primary key...");
 
@@ -206,6 +275,7 @@ impl SqliteDb {
     }
 
     /// Run pending migrations
+    #[allow(clippy::too_many_lines)] // SQL schema definition
     fn run_migrations(&self) -> RepoResult<()> {
         // Check if tables already exist (for existing databases)
         let tables_exist = self
@@ -376,53 +446,18 @@ impl ItemsRepository for SqliteDb {
     }
 
     fn get_item(&self, serial: &str) -> RepoResult<Option<Item>> {
+        let sql = format!(
+            "SELECT {} FROM items WHERE serial = ?1",
+            ITEM_SELECT_COLUMNS
+        );
         let mut stmt = self
             .conn
-            .prepare(
-                "SELECT serial, name, prefix, manufacturer, weapon_type, item_type, rarity, level, element,
-                    dps, damage, accuracy, fire_rate, reload_time, mag_size, value, red_text,
-                    notes, verification_status, verification_notes, verified_at, legal, source, created_at
-             FROM items WHERE serial = ?1",
-            )
+            .prepare(&sql)
             .map_err(|e| RepoError::Database(e.to_string()))?;
-
         let item = stmt
-            .query_row(params![serial], |row| {
-                let status_str: String = row
-                    .get::<_, Option<String>>(18)?
-                    .unwrap_or_else(|| "unverified".to_string());
-                Ok(Item {
-                    serial: row.get(0)?,
-                    name: row.get(1)?,
-                    prefix: row.get(2)?,
-                    manufacturer: row.get(3)?,
-                    weapon_type: row.get(4)?,
-                    item_type: row.get(5)?,
-                    rarity: row.get(6)?,
-                    level: row.get(7)?,
-                    element: row.get(8)?,
-                    dps: row.get(9)?,
-                    damage: row.get(10)?,
-                    accuracy: row.get(11)?,
-                    fire_rate: row.get(12)?,
-                    reload_time: row.get(13)?,
-                    mag_size: row.get(14)?,
-                    value: row.get(15)?,
-                    red_text: row.get(16)?,
-                    notes: row.get(17)?,
-                    verification_status: status_str
-                        .parse()
-                        .unwrap_or(VerificationStatus::Unverified),
-                    verification_notes: row.get(19)?,
-                    verified_at: row.get(20)?,
-                    legal: row.get::<_, Option<bool>>(21)?.unwrap_or(false),
-                    source: row.get(22)?,
-                    created_at: row.get::<_, Option<String>>(23)?.unwrap_or_default(),
-                })
-            })
+            .query_row(params![serial], row_to_item)
             .optional()
             .map_err(|e| RepoError::Database(e.to_string()))?;
-
         Ok(item)
     }
 
@@ -472,87 +507,18 @@ impl ItemsRepository for SqliteDb {
     }
 
     fn list_items(&self, filter: &ItemFilter) -> RepoResult<Vec<Item>> {
-        let mut sql = String::from(
-            "SELECT serial, name, prefix, manufacturer, weapon_type, item_type, rarity, level, element,
-                    dps, damage, accuracy, fire_rate, reload_time, mag_size, value, red_text,
-                    notes, verification_status, verification_notes, verified_at, legal, source, created_at
-             FROM items WHERE 1=1",
-        );
-
-        let mut params_vec: Vec<Box<dyn rusqlite::ToSql>> = Vec::new();
-
-        if let Some(m) = &filter.manufacturer {
-            sql.push_str(" AND manufacturer = ?");
-            params_vec.push(Box::new(m.clone()));
-        }
-        if let Some(w) = &filter.weapon_type {
-            sql.push_str(" AND weapon_type = ?");
-            params_vec.push(Box::new(w.clone()));
-        }
-        if let Some(e) = &filter.element {
-            sql.push_str(" AND element = ?");
-            params_vec.push(Box::new(e.clone()));
-        }
-        if let Some(r) = &filter.rarity {
-            sql.push_str(" AND rarity = ?");
-            params_vec.push(Box::new(r.clone()));
-        }
-
-        sql.push_str(" ORDER BY created_at DESC");
-
-        if let Some(limit) = filter.limit {
-            sql.push_str(&format!(" LIMIT {}", limit));
-        }
-        if let Some(offset) = filter.offset {
-            sql.push_str(&format!(" OFFSET {}", offset));
-        }
-
+        let (sql, params_vec) = build_list_query(filter);
         let mut stmt = self
             .conn
             .prepare(&sql)
             .map_err(|e| RepoError::Database(e.to_string()))?;
-
         let params_refs: Vec<&dyn rusqlite::ToSql> =
             params_vec.iter().map(|p| p.as_ref()).collect();
-
         let items = stmt
-            .query_map(params_refs.as_slice(), |row| {
-                let status_str: String = row
-                    .get::<_, Option<String>>(18)?
-                    .unwrap_or_else(|| "unverified".to_string());
-                Ok(Item {
-                    serial: row.get(0)?,
-                    name: row.get(1)?,
-                    prefix: row.get(2)?,
-                    manufacturer: row.get(3)?,
-                    weapon_type: row.get(4)?,
-                    item_type: row.get(5)?,
-                    rarity: row.get(6)?,
-                    level: row.get(7)?,
-                    element: row.get(8)?,
-                    dps: row.get(9)?,
-                    damage: row.get(10)?,
-                    accuracy: row.get(11)?,
-                    fire_rate: row.get(12)?,
-                    reload_time: row.get(13)?,
-                    mag_size: row.get(14)?,
-                    value: row.get(15)?,
-                    red_text: row.get(16)?,
-                    notes: row.get(17)?,
-                    verification_status: status_str
-                        .parse()
-                        .unwrap_or(VerificationStatus::Unverified),
-                    verification_notes: row.get(19)?,
-                    verified_at: row.get(20)?,
-                    legal: row.get::<_, Option<bool>>(21)?.unwrap_or(false),
-                    source: row.get(22)?,
-                    created_at: row.get::<_, Option<String>>(23)?.unwrap_or_default(),
-                })
-            })
+            .query_map(params_refs.as_slice(), row_to_item)
             .map_err(|e| RepoError::Database(e.to_string()))?
             .collect::<Result<Vec<_>, _>>()
             .map_err(|e| RepoError::Database(e.to_string()))?;
-
         Ok(items)
     }
 
@@ -865,6 +831,7 @@ impl ItemsRepository for SqliteDb {
         })
     }
 
+    #[allow(clippy::too_many_lines)] // column-by-column data migration
     fn migrate_column_values(&self, dry_run: bool) -> RepoResult<MigrationStats> {
         let mut stats = MigrationStats::default();
 

@@ -1325,4 +1325,229 @@ eridium: 6666
 
         assert!(changeset.has_change("state.inventory.equipped_inventory.equipped.slot_4"));
     }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Additional StateFlags Coverage Tests
+    // ─────────────────────────────────────────────────────────────────
+
+    #[test]
+    fn test_state_flags_set_junk_mutation() {
+        let mut flags = StateFlags::backpack();
+        flags.set_junk(true);
+        assert!(flags.is_junk());
+        assert!(!flags.is_favorite()); // Labels are mutually exclusive
+
+        flags.set_junk(false);
+        assert!(!flags.is_junk());
+    }
+
+    #[test]
+    fn test_state_flags_set_label1() {
+        let mut flags = StateFlags::backpack();
+        flags.set_label1(true);
+        assert!(flags.has_label1());
+        assert!(!flags.is_favorite());
+
+        flags.set_label1(false);
+        assert!(!flags.has_label1());
+    }
+
+    #[test]
+    fn test_state_flags_set_label2() {
+        let mut flags = StateFlags::backpack();
+        flags.set_label2(true);
+        assert!(flags.has_label2());
+
+        flags.set_label2(false);
+        assert!(!flags.has_label2());
+    }
+
+    #[test]
+    fn test_state_flags_set_label3() {
+        let mut flags = StateFlags::backpack();
+        flags.set_label3(true);
+        assert!(flags.has_label3());
+
+        flags.set_label3(false);
+        assert!(!flags.has_label3());
+    }
+
+    #[test]
+    fn test_state_flags_set_label4() {
+        let mut flags = StateFlags::backpack();
+        flags.set_label4(true);
+        assert!(flags.has_label4());
+
+        flags.set_label4(false);
+        assert!(!flags.has_label4());
+    }
+
+    #[test]
+    fn test_state_flags_clear_labels() {
+        let mut flags = StateFlags::backpack().with_favorite();
+        assert!(flags.is_favorite());
+
+        flags.clear_labels();
+        assert!(!flags.is_favorite());
+        assert!(!flags.is_junk());
+        assert!(!flags.has_label1());
+        assert!(flags.is_in_backpack()); // Non-label flags preserved
+    }
+
+    #[test]
+    fn test_state_flags_with_label1() {
+        let flags = StateFlags::backpack().with_label1();
+        assert!(flags.has_label1());
+        assert!(!flags.is_favorite());
+        assert!(!flags.is_junk());
+    }
+
+    #[test]
+    fn test_state_flags_with_no_label() {
+        let flags = StateFlags::backpack().with_favorite().with_no_label();
+        assert!(!flags.is_favorite());
+        assert!(!flags.is_junk());
+        assert!(!flags.has_label1());
+        assert!(flags.is_in_backpack());
+    }
+
+    #[test]
+    fn test_state_flags_to_raw() {
+        let flags = StateFlags::backpack();
+        assert_eq!(flags.to_raw(), 513);
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Additional ChangeSet Coverage Tests
+    // ─────────────────────────────────────────────────────────────────
+
+    #[test]
+    fn test_changeset_set_label1() {
+        let mut changeset = ChangeSet::new();
+        changeset.set_label1(2, true);
+
+        let change = changeset
+            .get_change("state.inventory.items.backpack.slot_2.state_flags")
+            .unwrap();
+        assert_eq!(change.as_i64(), Some(529)); // 513 + 16 (backpack + label1)
+    }
+
+    #[test]
+    fn test_changeset_set_label2() {
+        let mut changeset = ChangeSet::new();
+        changeset.set_label2(3, true);
+
+        let change = changeset
+            .get_change("state.inventory.items.backpack.slot_3.state_flags")
+            .unwrap();
+        assert_eq!(change.as_i64(), Some(545)); // 513 + 32 (backpack + label2)
+    }
+
+    #[test]
+    fn test_changeset_set_label3() {
+        let mut changeset = ChangeSet::new();
+        changeset.set_label3(4, true);
+
+        let change = changeset
+            .get_change("state.inventory.items.backpack.slot_4.state_flags")
+            .unwrap();
+        assert_eq!(change.as_i64(), Some(577)); // 513 + 64 (backpack + label3)
+    }
+
+    #[test]
+    fn test_changeset_set_label4() {
+        let mut changeset = ChangeSet::new();
+        changeset.set_label4(5, true);
+
+        let change = changeset
+            .get_change("state.inventory.items.backpack.slot_5.state_flags")
+            .unwrap();
+        assert_eq!(change.as_i64(), Some(641)); // 513 + 128 (backpack + label4)
+    }
+
+    #[test]
+    fn test_changeset_set_bank_flags() {
+        let mut changeset = ChangeSet::new();
+        changeset.set_bank_flags(42, StateFlags::bank().with_favorite());
+
+        let change = changeset
+            .get_change("domains.local.shared.inventory.items.bank.slot_42.state_flags")
+            .unwrap();
+        assert_eq!(change.as_i64(), Some(3)); // 1 + 2 (valid + favorite)
+    }
+
+    #[test]
+    fn test_changeset_add_raw() {
+        let mut changeset = ChangeSet::new();
+        let result =
+            changeset.add_raw("some.path".to_string(), "key: value\nnested:\n  field: 123");
+        assert!(result.is_ok());
+        assert!(changeset.has_change("some.path"));
+    }
+
+    #[test]
+    fn test_changeset_add_raw_invalid_yaml() {
+        let mut changeset = ChangeSet::new();
+        let result = changeset.add_raw("some.path".to_string(), "invalid: yaml: :::");
+        assert!(result.is_err());
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Additional parse_value Coverage Tests
+    // ─────────────────────────────────────────────────────────────────
+
+    #[test]
+    fn test_parse_value_float() {
+        let val = SaveFile::parse_value("3.14159");
+        assert!(val.as_f64().is_some());
+        assert!((val.as_f64().unwrap() - 3.14159).abs() < 0.0001);
+    }
+
+    #[test]
+    fn test_parse_value_negative_integer() {
+        let val = SaveFile::parse_value("-42");
+        assert_eq!(val.as_i64(), Some(-42));
+    }
+
+    #[test]
+    fn test_parse_value_large_unsigned() {
+        let val = SaveFile::parse_value("9999999999999");
+        assert_eq!(val.as_u64(), Some(9999999999999));
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // SaveFile Debug and Error Coverage Tests
+    // ─────────────────────────────────────────────────────────────────
+
+    #[test]
+    fn test_save_file_debug() {
+        let save = SaveFile::from_yaml(test_save_yaml().as_bytes()).unwrap();
+        let debug_str = format!("{:?}", save);
+        assert!(debug_str.contains("SaveFile"));
+        assert!(debug_str.contains("TestChar"));
+        assert!(debug_str.contains("1000")); // cash
+    }
+
+    #[test]
+    fn test_save_file_invalid_yaml() {
+        let result = SaveFile::from_yaml(b"invalid: yaml: :::");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_query_invalid_array_index_format() {
+        let save = SaveFile::from_yaml(test_save_yaml().as_bytes()).unwrap();
+        let result = save.get("state.experience[abc].level");
+        assert!(matches!(result, Err(SaveError::InvalidIndex(_))));
+    }
+
+    #[test]
+    fn test_set_invalid_array_index_format() {
+        let mut save = SaveFile::from_yaml(test_save_yaml().as_bytes()).unwrap();
+        let result = save.set(
+            "state.experience[abc].level",
+            serde_yaml::Value::Number(1.into()),
+        );
+        assert!(matches!(result, Err(SaveError::InvalidIndex(_))));
+    }
 }

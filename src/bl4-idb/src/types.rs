@@ -727,4 +727,125 @@ mod tests {
         let best = best_values_by_field(values);
         assert!(best.is_empty());
     }
+
+    #[test]
+    fn test_hash_source() {
+        let salt = "test_salt_12345";
+        let source = "monokrome";
+
+        let hash1 = hash_source(source, salt);
+        let hash2 = hash_source(source, salt);
+
+        // Same input produces same hash
+        assert_eq!(hash1, hash2);
+        // Hash is 12 hex characters (6 bytes)
+        assert_eq!(hash1.len(), 12);
+        // All characters are hex
+        assert!(hash1.chars().all(|c| c.is_ascii_hexdigit()));
+
+        // Different sources produce different hashes
+        let hash3 = hash_source("other_source", salt);
+        assert_ne!(hash1, hash3);
+
+        // Different salts produce different hashes
+        let hash4 = hash_source(source, "different_salt");
+        assert_ne!(hash1, hash4);
+    }
+
+    #[test]
+    fn test_generate_salt() {
+        let salt1 = generate_salt();
+        let salt2 = generate_salt();
+
+        // Salt is 64 hex characters (32 bytes)
+        assert_eq!(salt1.len(), 64);
+        assert_eq!(salt2.len(), 64);
+
+        // All characters are hex
+        assert!(salt1.chars().all(|c| c.is_ascii_hexdigit()));
+        assert!(salt2.chars().all(|c| c.is_ascii_hexdigit()));
+
+        // Salts are different (very high probability)
+        assert_ne!(salt1, salt2);
+    }
+
+    #[test]
+    fn test_lookup_source_hash() {
+        let salt = "lookup_test_salt";
+        let sources = ["alice", "bob", "charlie"];
+
+        // Hash one of the sources
+        let alice_hash = hash_source("alice", salt);
+
+        // Should find it in the list
+        let found = lookup_source_hash(&alice_hash, salt, sources.iter().copied());
+        assert_eq!(found, Some("alice".to_string()));
+
+        // Should not find a non-existent hash
+        let fake_hash = "000000000000";
+        let not_found = lookup_source_hash(fake_hash, salt, sources.iter().copied());
+        assert!(not_found.is_none());
+    }
+
+    #[test]
+    fn test_generate_item_uuid() {
+        let serial = "@Ug12345678901234567890";
+        let hashed_source = "abc123def456";
+
+        let uuid1 = generate_item_uuid(serial, hashed_source);
+        let uuid2 = generate_item_uuid(serial, hashed_source);
+
+        // Same inputs produce same UUID (deterministic)
+        assert_eq!(uuid1, uuid2);
+
+        // UUID is version 5
+        assert_eq!(uuid1.get_version_num(), 5);
+
+        // Different inputs produce different UUIDs
+        let uuid3 = generate_item_uuid("different_serial", hashed_source);
+        assert_ne!(uuid1, uuid3);
+
+        let uuid4 = generate_item_uuid(serial, "different_hash");
+        assert_ne!(uuid1, uuid4);
+    }
+
+    #[test]
+    fn test_generate_random_uuid() {
+        let uuid1 = generate_random_uuid();
+        let uuid2 = generate_random_uuid();
+
+        // UUID is version 4
+        assert_eq!(uuid1.get_version_num(), 4);
+
+        // Random UUIDs are different (very high probability)
+        assert_ne!(uuid1, uuid2);
+    }
+
+    #[test]
+    fn test_item_field_display_width() {
+        // Test all fields have reasonable widths
+        for field in ItemField::ALL {
+            let width = field.display_width();
+            assert!(width > 0);
+            assert!(width <= 30);
+        }
+
+        // Specific widths
+        assert_eq!(ItemField::Name.display_width(), 20);
+        assert_eq!(ItemField::Level.display_width(), 5);
+        assert_eq!(ItemField::RedText.display_width(), 30);
+    }
+
+    #[test]
+    fn test_item_field_all_variants() {
+        // ALL should contain exactly 16 fields
+        assert_eq!(ItemField::ALL.len(), 16);
+
+        // All fields should be parseable and display correctly
+        for field in ItemField::ALL {
+            let as_string = field.to_string();
+            let parsed: ItemField = as_string.parse().unwrap();
+            assert_eq!(parsed, *field);
+        }
+    }
 }

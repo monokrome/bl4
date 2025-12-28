@@ -94,7 +94,8 @@ fn decompress_inner(compressed: &[u8], decompressed_size: usize) -> Result<Vec<u
         });
     }
 
-    let inner_magic = u32::from_be_bytes([compressed[0], compressed[1], compressed[2], compressed[3]]);
+    let inner_magic =
+        u32::from_be_bytes([compressed[0], compressed[1], compressed[2], compressed[3]]);
     if inner_magic != OODLE_MAGIC {
         return Err(Error::InvalidInnerMagic(inner_magic));
     }
@@ -172,7 +173,12 @@ mod tests {
     use super::*;
 
     /// Create a valid NCS header with given parameters
-    fn make_ncs_header(version: u8, compression_flag: u32, decompressed: u32, compressed: u32) -> Vec<u8> {
+    fn make_ncs_header(
+        version: u8,
+        compression_flag: u32,
+        decompressed: u32,
+        compressed: u32,
+    ) -> Vec<u8> {
         let mut data = vec![version];
         data.extend_from_slice(&NCS_MAGIC);
         data.extend_from_slice(&compression_flag.to_le_bytes());
@@ -196,16 +202,27 @@ mod tests {
         let data = [0u8; 8];
         let result = Header::from_bytes(&data);
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), Error::DataTooShort { needed: 16, actual: 8 }));
+        assert!(matches!(
+            result.unwrap_err(),
+            Error::DataTooShort {
+                needed: 16,
+                actual: 8
+            }
+        ));
     }
 
     #[test]
     fn test_header_parse_invalid_magic() {
-        let data = [0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+        let data = [
+            0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00,
+        ];
         let result = Header::from_bytes(&data);
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), Error::InvalidNcsMagic(0x00, 0x00, 0x00)));
+        assert!(matches!(
+            result.unwrap_err(),
+            Error::InvalidNcsMagic(0x00, 0x00, 0x00)
+        ));
     }
 
     #[test]
@@ -257,11 +274,14 @@ mod tests {
     fn test_decompress_inner_too_short() {
         // Compressed flag = 1, but inner data is too short for Oodle header
         let mut data = make_ncs_header(1, 1, 100, 32);
-        data.extend_from_slice(&[0u8; 32]);  // Too short for INNER_HEADER_MIN (0x40)
+        data.extend_from_slice(&[0u8; 32]); // Too short for INNER_HEADER_MIN (0x40)
 
         let result = decompress(&data);
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), Error::DataTooShort { needed: 64, .. }));
+        assert!(matches!(
+            result.unwrap_err(),
+            Error::DataTooShort { needed: 64, .. }
+        ));
     }
 
     #[test]
@@ -270,11 +290,14 @@ mod tests {
         let mut data = make_ncs_header(1, 1, 100, 0x50);
         // Wrong magic (should be 0xb7756362)
         data.extend_from_slice(&[0x00, 0x00, 0x00, 0x00]);
-        data.extend_from_slice(&[0u8; 0x4C]);  // Padding to reach INNER_HEADER_MIN
+        data.extend_from_slice(&[0u8; 0x4C]); // Padding to reach INNER_HEADER_MIN
 
         let result = decompress(&data);
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), Error::InvalidInnerMagic(0x00000000)));
+        assert!(matches!(
+            result.unwrap_err(),
+            Error::InvalidInnerMagic(0x00000000)
+        ));
     }
 
     #[test]
@@ -288,7 +311,7 @@ mod tests {
         // Build inner header with Oodle magic
         let mut inner = vec![0u8; INNER_RAW_DATA_START];
         inner[0..4].copy_from_slice(&OODLE_MAGIC.to_be_bytes());
-        inner[INNER_COMPRESSION_TYPE] = 0;  // Raw data, no compression
+        inner[INNER_COMPRESSION_TYPE] = 0; // Raw data, no compression
         inner.extend_from_slice(raw_payload);
 
         data.extend_from_slice(&inner);
@@ -323,11 +346,11 @@ mod tests {
 
     #[test]
     fn test_scan_valid_ncs() {
-        let mut data = vec![0u8; 10];  // Padding before NCS
+        let mut data = vec![0u8; 10]; // Padding before NCS
         let ncs_data = make_ncs_header(1, 0, 8, 8);
         let ncs_start = data.len();
         data.extend_from_slice(&ncs_data);
-        data.extend_from_slice(&[0u8; 8]);  // Payload
+        data.extend_from_slice(&[0u8; 8]); // Payload
 
         let results = scan(&data);
         assert_eq!(results.len(), 1);
@@ -345,11 +368,11 @@ mod tests {
         // So we need proper structure
 
         // Build: [padding][_NCS/][rest]
-        let mut data = vec![0u8; 5];  // Padding so start > 0
-        data.push(b'_');              // This will be at start-1
-        // Now add version + NCS magic (the scan finds NCS at offset 7, start = 6)
-        data.push(0x01);              // Version byte (this is "start")
-        data.extend_from_slice(&NCS_MAGIC);  // NCS magic
+        let mut data = vec![0u8; 5]; // Padding so start > 0
+        data.push(b'_'); // This will be at start-1
+                         // Now add version + NCS magic (the scan finds NCS at offset 7, start = 6)
+        data.push(0x01); // Version byte (this is "start")
+        data.extend_from_slice(&NCS_MAGIC); // NCS magic
         data.push(b'/');
         data.extend_from_slice(&[0u8; 20]);
 
@@ -387,12 +410,12 @@ mod tests {
     fn test_scan_ncs_truncated() {
         // NCS header says 100 bytes but file is truncated
         let ncs = make_ncs_header(1, 0, 100, 100);
-        let mut data = vec![0u8; 5];  // Padding
+        let mut data = vec![0u8; 5]; // Padding
         data.extend_from_slice(&ncs);
         // No payload - total_size exceeds data length
 
         let results = scan(&data);
-        assert!(results.is_empty());  // Should not include truncated NCS
+        assert!(results.is_empty()); // Should not include truncated NCS
     }
 
     #[test]

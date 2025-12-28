@@ -397,4 +397,52 @@ mod tests {
         assert_eq!(level_from_code(51), None);
         assert_eq!(level_from_code(127), None);
     }
+
+    #[test]
+    fn test_serial_id_to_parts_category() {
+        // Known mappings from SERIAL_TO_PARTS_CAT
+        assert_eq!(serial_id_to_parts_category(1), 8); // DAD_SG
+        assert_eq!(serial_id_to_parts_category(9), 9); // JAK_SG
+        assert_eq!(serial_id_to_parts_category(128), 27); // VLA_SR
+        assert_eq!(serial_id_to_parts_category(138), 23); // MAL_SM
+
+        // Unknown ID returns the ID itself as fallback
+        assert_eq!(serial_id_to_parts_category(999), 999);
+    }
+
+    #[test]
+    fn test_weapon_type_from_first_varint() {
+        // Known weapon types
+        assert_eq!(weapon_type_from_first_varint(1), Some("Shotgun"));
+        assert_eq!(weapon_type_from_first_varint(2), Some("Pistol"));
+        assert_eq!(weapon_type_from_first_varint(128), Some("Sniper"));
+        assert_eq!(weapon_type_from_first_varint(138), Some("SMG"));
+        assert_eq!(weapon_type_from_first_varint(136), Some("AR"));
+
+        // Unknown returns None
+        assert_eq!(weapon_type_from_first_varint(999), None);
+    }
+
+    #[test]
+    fn test_category_name_for_type_regular() {
+        // Non-shield items use manifest lookup
+        assert_eq!(category_name_for_type('a', 2), Some("Daedalus Pistol"));
+        assert_eq!(category_name_for_type('e', 22), Some("Vladof SMG"));
+    }
+
+    #[test]
+    fn test_category_name_for_type_shield() {
+        // Shield items (type 'r') use SHIELD_CATEGORY_NAMES first
+        assert_eq!(category_name_for_type('r', 16), Some("Energy Shield"));
+        assert_eq!(category_name_for_type('r', 20), Some("Energy Shield"));
+        assert_eq!(category_name_for_type('r', 21), Some("Energy Shield"));
+    }
+
+    #[test]
+    fn test_category_name_for_type_fallback() {
+        // Unknown category falls back to manifest lookup
+        assert_eq!(category_name_for_type('r', 283), Some("Armor Shield"));
+        // Unknown category for unknown type returns None
+        assert_eq!(category_name_for_type('a', 99999), None);
+    }
 }
