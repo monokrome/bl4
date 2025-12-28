@@ -47,7 +47,10 @@ impl Manifest {
         let entry_count = u16::from_le_bytes([data[6], data[7]]);
         let entries = extract_entries(data, entry_count as usize);
 
-        Ok(Self { entry_count, entries })
+        Ok(Self {
+            entry_count,
+            entries,
+        })
     }
 
     /// Get all referenced NCS filenames
@@ -79,7 +82,10 @@ fn extract_entry_at(data: &[u8]) -> Option<Entry> {
     let null_pos = memchr::memchr(0, data);
     let end = match null_pos {
         Some(pos) => pos,
-        None => data.iter().position(|&b| b < 0x20 || b > 0x7e).unwrap_or(data.len()),
+        None => data
+            .iter()
+            .position(|&b| b < 0x20 || b > 0x7e)
+            .unwrap_or(data.len()),
     };
 
     if end < 5 {
@@ -97,7 +103,9 @@ fn extract_entry_at(data: &[u8]) -> Option<Entry> {
         return None;
     }
 
-    Some(Entry { filename: filename.to_string() })
+    Some(Entry {
+        filename: filename.to_string(),
+    })
 }
 
 /// Scan for NCS manifest chunks in data
@@ -121,8 +129,8 @@ mod tests {
     /// Create valid manifest header
     fn make_manifest_header(entry_count: u16) -> Vec<u8> {
         let mut data = Vec::new();
-        data.extend_from_slice(&NCS_MANIFEST_MAGIC);  // _NCS/
-        data.push(0);  // null byte at position 5
+        data.extend_from_slice(&NCS_MANIFEST_MAGIC); // _NCS/
+        data.push(0); // null byte at position 5
         data.extend_from_slice(&entry_count.to_le_bytes());
         data
     }
@@ -165,7 +173,13 @@ mod tests {
         let data = [0u8; 4];
         let result = Manifest::parse(&data);
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), Error::DataTooShort { needed: 8, actual: 4 }));
+        assert!(matches!(
+            result.unwrap_err(),
+            Error::DataTooShort {
+                needed: 8,
+                actual: 4
+            }
+        ));
     }
 
     #[test]
@@ -173,7 +187,10 @@ mod tests {
         let data = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
         let result = Manifest::parse(&data);
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), Error::InvalidManifestMagic(_)));
+        assert!(matches!(
+            result.unwrap_err(),
+            Error::InvalidManifestMagic(_)
+        ));
     }
 
     #[test]
@@ -232,7 +249,7 @@ mod tests {
 
     #[test]
     fn test_scan_single_manifest() {
-        let mut data = vec![0u8; 10];  // Padding
+        let mut data = vec![0u8; 10]; // Padding
         let manifest_start = data.len();
         data.extend_from_slice(&make_manifest_header(1));
         data.extend_from_slice(b"Nexus-Data-test.ncs\0");
@@ -280,9 +297,15 @@ mod tests {
 
     #[test]
     fn test_entry_equality() {
-        let entry1 = Entry { filename: "test.ncs".to_string() };
-        let entry2 = Entry { filename: "test.ncs".to_string() };
-        let entry3 = Entry { filename: "other.ncs".to_string() };
+        let entry1 = Entry {
+            filename: "test.ncs".to_string(),
+        };
+        let entry2 = Entry {
+            filename: "test.ncs".to_string(),
+        };
+        let entry3 = Entry {
+            filename: "other.ncs".to_string(),
+        };
 
         assert_eq!(entry1, entry2);
         assert_ne!(entry1, entry3);
@@ -290,7 +313,9 @@ mod tests {
 
     #[test]
     fn test_entry_debug() {
-        let entry = Entry { filename: "Nexus-Data-test.ncs".to_string() };
+        let entry = Entry {
+            filename: "Nexus-Data-test.ncs".to_string(),
+        };
         let debug = format!("{:?}", entry);
         assert!(debug.contains("Entry"));
         assert!(debug.contains("Nexus-Data-test.ncs"));

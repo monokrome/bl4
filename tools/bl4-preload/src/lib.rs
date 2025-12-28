@@ -33,9 +33,9 @@ impl HookGuard {
     fn try_enter() -> Option<Self> {
         let tid = unsafe { libc::pthread_self() } as u64;
         match HOOK_THREAD.compare_exchange(0, tid, Ordering::SeqCst, Ordering::SeqCst) {
-            Ok(_) => Some(Self),     // We claimed it
-            Err(owner) if owner == tid => None,  // Re-entry, skip
-            Err(_) => Some(Self),    // Another thread, proceed
+            Ok(_) => Some(Self),                // We claimed it
+            Err(owner) if owner == tid => None, // Re-entry, skip
+            Err(_) => Some(Self),               // Another thread, proceed
         }
     }
 }
@@ -126,12 +126,11 @@ static REAL_FOPEN: Lazy<unsafe extern "C" fn(*const c_char, *const c_char) -> *m
         std::mem::transmute(ptr)
     });
 
-static REAL_FREAD: Lazy<
-    unsafe extern "C" fn(*mut c_void, size_t, size_t, *mut c_void) -> size_t,
-> = Lazy::new(|| unsafe {
-    let ptr = libc::dlsym(libc::RTLD_NEXT, c"fread".as_ptr());
-    std::mem::transmute(ptr)
-});
+static REAL_FREAD: Lazy<unsafe extern "C" fn(*mut c_void, size_t, size_t, *mut c_void) -> size_t> =
+    Lazy::new(|| unsafe {
+        let ptr = libc::dlsym(libc::RTLD_NEXT, c"fread".as_ptr());
+        std::mem::transmute(ptr)
+    });
 
 static REAL_FWRITE: Lazy<
     unsafe extern "C" fn(*const c_void, size_t, size_t, *mut c_void) -> size_t,
@@ -186,7 +185,10 @@ fn should_log_stacks() -> bool {
 
 fn get_caller_addresses() -> Vec<usize> {
     // Only capture if explicitly enabled - backtrace is slow
-    if std::env::var("BL4_PRELOAD_CALLERS").map(|v| v == "1").unwrap_or(false) {
+    if std::env::var("BL4_PRELOAD_CALLERS")
+        .map(|v| v == "1")
+        .unwrap_or(false)
+    {
         let bt = Backtrace::new_unresolved();
         bt.frames()
             .iter()
@@ -224,9 +226,7 @@ fn log_with_caller(msg: &str, callers: &[usize]) {
 }
 
 fn get_capture_dir() -> Option<PathBuf> {
-    std::env::var("BL4_PRELOAD_CAPTURE")
-        .ok()
-        .map(PathBuf::from)
+    std::env::var("BL4_PRELOAD_CAPTURE").ok().map(PathBuf::from)
 }
 
 fn get_filter_patterns() -> Vec<String> {
@@ -303,7 +303,10 @@ pub unsafe extern "C" fn open(pathname: *const c_char, flags: c_int, mode: mode_
                     "READ"
                 };
                 let callers = get_caller_addresses();
-                log_with_caller(&format!("[OPEN] {} {} (fd={})", mode_str, path, fd), &callers);
+                log_with_caller(
+                    &format!("[OPEN] {} {} (fd={})", mode_str, path, fd),
+                    &callers,
+                );
 
                 // Initialize write buffer for files we're writing
                 if flags & O_WRONLY != 0 || flags & O_CREAT != 0 {
@@ -346,10 +349,13 @@ pub unsafe extern "C" fn openat(
                     "READ"
                 };
                 let callers = get_caller_addresses();
-                log_with_caller(&format!(
-                    "[OPENAT] {} {} (dirfd={}, fd={})",
-                    mode_str, path, dirfd, fd
-                ), &callers);
+                log_with_caller(
+                    &format!(
+                        "[OPENAT] {} {} (dirfd={}, fd={})",
+                        mode_str, path, dirfd, fd
+                    ),
+                    &callers,
+                );
 
                 if flags & O_WRONLY != 0 || flags & O_CREAT != 0 {
                     if let Ok(mut guard) = WRITE_BUFFERS.try_lock() {
@@ -405,10 +411,7 @@ pub unsafe extern "C" fn read(fd: c_int, buf: *mut c_void, count: size_t) -> ssi
 
     // Log reads from interesting files
     if result > 0 {
-        let path = FD_PATHS
-            .try_lock()
-            .ok()
-            .and_then(|g| g.get(&fd).cloned());
+        let path = FD_PATHS.try_lock().ok().and_then(|g| g.get(&fd).cloned());
 
         if let Some(path) = path {
             if is_interesting_path(&path) {
@@ -424,17 +427,27 @@ pub unsafe extern "C" fn read(fd: c_int, buf: *mut c_void, count: size_t) -> ssi
 
 /// Hook for pread() - positioned read (common for PAK files)
 #[no_mangle]
-pub unsafe extern "C" fn pread(fd: c_int, buf: *mut c_void, count: size_t, offset: off_t) -> ssize_t {
+pub unsafe extern "C" fn pread(
+    fd: c_int,
+    buf: *mut c_void,
+    count: size_t,
+    offset: off_t,
+) -> ssize_t {
     let result = REAL_PREAD(fd, buf, count, offset);
 
-    let Some(_guard) = HookGuard::try_enter() else { return result; };
+    let Some(_guard) = HookGuard::try_enter() else {
+        return result;
+    };
 
     if result > 0 {
         let path = FD_PATHS.try_lock().ok().and_then(|g| g.get(&fd).cloned());
 
         if let Some(path) = path {
             if is_interesting_path(&path) {
-                log(&format!("[PREAD] {} bytes at offset {} from {}", result, offset, path));
+                log(&format!(
+                    "[PREAD] {} bytes at offset {} from {}",
+                    result, offset, path
+                ));
             }
         }
     }
@@ -444,17 +457,27 @@ pub unsafe extern "C" fn pread(fd: c_int, buf: *mut c_void, count: size_t, offse
 
 /// Hook for pread64() - 64-bit positioned read
 #[no_mangle]
-pub unsafe extern "C" fn pread64(fd: c_int, buf: *mut c_void, count: size_t, offset: i64) -> ssize_t {
+pub unsafe extern "C" fn pread64(
+    fd: c_int,
+    buf: *mut c_void,
+    count: size_t,
+    offset: i64,
+) -> ssize_t {
     let result = REAL_PREAD64(fd, buf, count, offset);
 
-    let Some(_guard) = HookGuard::try_enter() else { return result; };
+    let Some(_guard) = HookGuard::try_enter() else {
+        return result;
+    };
 
     if result > 0 {
         let path = FD_PATHS.try_lock().ok().and_then(|g| g.get(&fd).cloned());
 
         if let Some(path) = path {
             if is_interesting_path(&path) {
-                log(&format!("[PREAD64] {} bytes at offset {} from {}", result, offset, path));
+                log(&format!(
+                    "[PREAD64] {} bytes at offset {} from {}",
+                    result, offset, path
+                ));
             }
         }
     }
@@ -481,7 +504,11 @@ pub unsafe extern "C" fn close(fd: c_int) -> c_int {
 
     if let (Some(data), Some(path)) = (captured, path.as_ref()) {
         if !data.is_empty() && matches_filter(path) {
-            log(&format!("[CLOSE] Captured {} bytes written to {}", data.len(), path));
+            log(&format!(
+                "[CLOSE] Captured {} bytes written to {}",
+                data.len(),
+                path
+            ));
 
             // Save to capture directory if configured
             if let Some(capture_dir) = get_capture_dir() {
@@ -522,7 +549,9 @@ pub unsafe extern "C" fn mmap(
 ) -> *mut c_void {
     let result = REAL_MMAP(addr, length, prot, flags, fd, offset);
 
-    let Some(_guard) = HookGuard::try_enter() else { return result; };
+    let Some(_guard) = HookGuard::try_enter() else {
+        return result;
+    };
 
     if !result.is_null() && result != libc::MAP_FAILED && fd >= 0 {
         let path = FD_PATHS.try_lock().ok().and_then(|g| g.get(&fd).cloned());
@@ -556,7 +585,9 @@ pub unsafe extern "C" fn mmap64(
 ) -> *mut c_void {
     let result = REAL_MMAP64(addr, length, prot, flags, fd, offset);
 
-    let Some(_guard) = HookGuard::try_enter() else { return result; };
+    let Some(_guard) = HookGuard::try_enter() else {
+        return result;
+    };
 
     if !result.is_null() && result != libc::MAP_FAILED && fd >= 0 {
         let path = FD_PATHS.try_lock().ok().and_then(|g| g.get(&fd).cloned());
@@ -583,7 +614,9 @@ pub unsafe extern "C" fn mmap64(
 pub unsafe extern "C" fn fopen(pathname: *const c_char, mode: *const c_char) -> *mut c_void {
     let fp = REAL_FOPEN(pathname, mode);
 
-    let Some(_guard) = HookGuard::try_enter() else { return fp; };
+    let Some(_guard) = HookGuard::try_enter() else {
+        return fp;
+    };
 
     if !fp.is_null() && !pathname.is_null() {
         if let Ok(path) = CStr::from_ptr(pathname).to_str() {
@@ -602,7 +635,10 @@ pub unsafe extern "C" fn fopen(pathname: *const c_char, mode: *const c_char) -> 
                     "?"
                 };
                 let callers = get_caller_addresses();
-                log_with_caller(&format!("[FOPEN] {} mode={} (fp={:#x})", path, mode_str, fp_key), &callers);
+                log_with_caller(
+                    &format!("[FOPEN] {} mode={} (fp={:#x})", path, mode_str, fp_key),
+                    &callers,
+                );
 
                 // Track writes for capture
                 if mode_str.contains('w') || mode_str.contains('a') {
@@ -627,17 +663,25 @@ pub unsafe extern "C" fn fread(
 ) -> size_t {
     let result = REAL_FREAD(ptr, size, nmemb, stream);
 
-    let Some(_guard) = HookGuard::try_enter() else { return result; };
+    let Some(_guard) = HookGuard::try_enter() else {
+        return result;
+    };
 
     if result > 0 {
         let fp_key = stream as usize;
-        let path = FILE_PATHS.try_lock().ok().and_then(|g| g.get(&fp_key).cloned());
+        let path = FILE_PATHS
+            .try_lock()
+            .ok()
+            .and_then(|g| g.get(&fp_key).cloned());
 
         if let Some(path) = path {
             if is_interesting_path(&path) {
                 let bytes_read = result * size;
                 let callers = get_caller_addresses();
-                log_with_caller(&format!("[FREAD] {} bytes from {}", bytes_read, path), &callers);
+                log_with_caller(
+                    &format!("[FREAD] {} bytes from {}", bytes_read, path),
+                    &callers,
+                );
             }
         }
     }
@@ -655,7 +699,9 @@ pub unsafe extern "C" fn fwrite(
 ) -> size_t {
     let result = REAL_FWRITE(ptr, size, nmemb, stream);
 
-    let Some(_guard) = HookGuard::try_enter() else { return result; };
+    let Some(_guard) = HookGuard::try_enter() else {
+        return result;
+    };
 
     if result > 0 && !ptr.is_null() {
         let fp_key = stream as usize;
@@ -686,7 +732,9 @@ pub unsafe extern "C" fn fwrite(
 pub unsafe extern "C" fn fclose(stream: *mut c_void) -> c_int {
     let result = REAL_FCLOSE(stream);
 
-    let Some(_guard) = HookGuard::try_enter() else { return result; };
+    let Some(_guard) = HookGuard::try_enter() else {
+        return result;
+    };
 
     let fp_key = stream as usize;
 
@@ -695,7 +743,10 @@ pub unsafe extern "C" fn fclose(stream: *mut c_void) -> c_int {
         .try_lock()
         .ok()
         .and_then(|mut g| g.remove(&fp_key));
-    let path = FILE_PATHS.try_lock().ok().and_then(|mut g| g.remove(&fp_key));
+    let path = FILE_PATHS
+        .try_lock()
+        .ok()
+        .and_then(|mut g| g.remove(&fp_key));
 
     if let (Some(data), Some(path)) = (captured, path.as_ref()) {
         if !data.is_empty() && matches_filter(path) {

@@ -80,7 +80,10 @@ mod tests {
     fn test_field_parse_typed_leaf() {
         let field = Field::parse("damagesource|leaf:damagesource").unwrap();
         assert_eq!(field.name, "damagesource");
-        assert_eq!(field.field_type, Type::TypedLeaf("damagesource".to_string()));
+        assert_eq!(
+            field.field_type,
+            Type::TypedLeaf("damagesource".to_string())
+        );
     }
 
     #[test]

@@ -230,4 +230,60 @@ mod tests {
         assert!(s.parts > 0);
         assert!(s.manufacturers > 0);
     }
+
+    #[test]
+    fn test_weapon_type_manufacturers() {
+        // Pistols should have manufacturers
+        let pistol_mfrs = weapon_type_manufacturers("Pistols");
+        assert!(pistol_mfrs.is_some());
+        assert!(!pistol_mfrs.unwrap().is_empty());
+
+        // SMG should have manufacturers
+        let smg_mfrs = weapon_type_manufacturers("SMG");
+        assert!(smg_mfrs.is_some());
+
+        // Shotguns should have manufacturers
+        let shotgun_mfrs = weapon_type_manufacturers("Shotguns");
+        assert!(shotgun_mfrs.is_some());
+
+        // Unknown type returns None
+        assert!(weapon_type_manufacturers("LaserBlaster3000").is_none());
+    }
+
+    #[test]
+    fn test_all_categories() {
+        let categories: Vec<_> = all_categories().collect();
+        assert!(!categories.is_empty());
+
+        // All IDs should be positive
+        for (id, name) in &categories {
+            assert!(*id >= 0);
+            assert!(!name.is_empty());
+        }
+    }
+
+    #[test]
+    fn test_all_manufacturers() {
+        let manufacturers: Vec<_> = all_manufacturers().collect();
+        assert!(!manufacturers.is_empty());
+
+        // Should include known manufacturers
+        let codes: Vec<&str> = manufacturers.iter().map(|(c, _)| *c).collect();
+        assert!(codes.contains(&"JAK")); // Jakobs
+        assert!(codes.contains(&"TOR")); // Torgue
+
+        // All entries should have non-empty values
+        for (code, name) in &manufacturers {
+            assert!(!code.is_empty());
+            assert!(!name.is_empty());
+        }
+    }
+
+    #[test]
+    fn test_is_loaded() {
+        // is_loaded forces initialization and always returns true
+        assert!(is_loaded());
+        // Call again to ensure it's idempotent
+        assert!(is_loaded());
+    }
 }

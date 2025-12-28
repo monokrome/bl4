@@ -601,4 +601,54 @@ mod tests {
         assert!(legendary_by_name("Seventh Sense").is_some());
         assert!(legendary_by_internal("JAK_PS.comp_05_legendary_SeventhSense").is_some());
     }
+
+    #[test]
+    fn test_gear_type_by_code() {
+        // Find known gear types
+        assert_eq!(gear_type_by_code("shield").map(|g| g.name), Some("Shield"));
+        assert_eq!(
+            gear_type_by_code("classmod").map(|g| g.name),
+            Some("Class Mod")
+        );
+        assert_eq!(
+            gear_type_by_code("grenade").map(|g| g.name),
+            Some("Grenade")
+        );
+        assert_eq!(
+            gear_type_by_code("enhancement").map(|g| g.name),
+            Some("Enhancement")
+        );
+        assert_eq!(gear_type_by_code("gadget").map(|g| g.name), Some("Gadget"));
+        assert_eq!(
+            gear_type_by_code("repair_kit").map(|g| g.name),
+            Some("Repair Kit")
+        );
+
+        // Unknown code returns None
+        assert!(gear_type_by_code("unknown").is_none());
+    }
+
+    #[test]
+    fn test_all_stat_descriptions() {
+        let stats = all_stat_descriptions();
+
+        // Should contain all known stats
+        assert_eq!(stats.get("Damage"), Some(&"Base damage"));
+        assert_eq!(stats.get("CritDamage"), Some(&"Critical hit damage"));
+        assert_eq!(stats.get("FireRate"), Some(&"Firing rate"));
+        assert_eq!(stats.get("ReloadTime"), Some(&"Reload time"));
+        assert_eq!(stats.get("MagSize"), Some(&"Magazine size"));
+        assert_eq!(stats.get("Accuracy"), Some(&"Base accuracy"));
+        assert_eq!(stats.get("Spread"), Some(&"Projectile spread"));
+        assert_eq!(stats.get("Recoil"), Some(&"Weapon recoil"));
+        assert_eq!(stats.get("ProjectilesPerShot"), Some(&"Pellets per shot"));
+        assert_eq!(stats.get("StatusChance"), Some(&"Status effect chance"));
+        assert_eq!(stats.get("DamageRadius"), Some(&"Splash damage radius"));
+
+        // Should have the expected count (21 stats)
+        assert_eq!(stats.len(), 21);
+
+        // Unknown stat not in map
+        assert!(stats.get("Unknown").is_none());
+    }
 }

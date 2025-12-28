@@ -475,35 +475,140 @@ fn parse_tokens(reader: &mut BitReader) -> Vec<Token> {
     parse_tokens_impl(reader, false)
 }
 
+/// Read a value list for Part tokens (values until 00 separator)
+fn read_part_value_list(reader: &mut BitReader) -> Vec<u64> {
+    let mut values = Vec::new();
+    loop {
+        let start_pos = reader.bit_offset;
+        let Some(peek) = reader.read_bits(2) else {
+            break;
+        };
+
+        // 00 = separator, end of list
+        if peek == 0b00 {
+            break;
+        }
+
+        // Read third bit to get full prefix
+        let Some(bit3) = reader.read_bits(1) else {
+            break;
+        };
+
+        match (peek << 1) | bit3 {
+            0b100 => {
+                if let Some(v) = reader.read_varint() {
+                    values.push(v);
+                }
+            }
+            0b110 => {
+                if let Some(v) = reader.read_varbit() {
+                    values.push(v);
+                }
+            }
+            _ => {
+                // Unknown prefix, rewind and break
+                reader.bit_offset = start_pos;
+                break;
+            }
+        }
+    }
+    values
+}
+
+/// Parse Part token data after the index has been read
+fn parse_part_values(reader: &mut BitReader) -> Vec<u64> {
+    let Some(type_flag) = reader.read_bits(1) else {
+        return Vec::new();
+    };
+
+    if type_flag == 1 {
+        // SUBTYPE_INT: single VARINT value + 000 terminator
+        let mut values = Vec::new();
+        if let Some(val) = reader.read_varint() {
+            values.push(val);
+        }
+        let _ = reader.read_bits(3); // 000 terminator
+        return values;
+    }
+
+    // Type 0: read 2-bit subtype
+    let Some(subtype) = reader.read_bits(2) else {
+        return Vec::new();
+    };
+
+    match subtype {
+        0b10 => Vec::new(),                   // SUBTYPE_NONE: no data
+        0b01 => read_part_value_list(reader), // SUBTYPE_LIST: values until 00
+        _ => Vec::new(),                      // Unknown subtype
+    }
+}
+
+/// Parse a String token (prefix 111)
+fn parse_string_token(reader: &mut BitReader) -> Option<Token> {
+    let length = reader.read_varint()?;
+
+    // Sanity check - don't read more than 128 chars
+    if length > 128 {
+        return None;
+    }
+
+    let mut chars = Vec::with_capacity(length as usize);
+    for _ in 0..length {
+        if let Some(ch) = reader.read_bits(7) {
+            chars.push(ch as u8);
+        }
+    }
+
+    let s = String::from_utf8(chars.clone())
+        .unwrap_or_else(|_| String::from_utf8_lossy(&chars).to_string());
+    Some(Token::String(s))
+}
+
+/// Parse tokens with 3-bit prefix (100, 101, 110, 111)
+fn parse_3bit_token(reader: &mut BitReader, prefix3: u64, debug: bool) -> Option<Token> {
+    match prefix3 {
+        0b100 => reader.read_varint().map(Token::VarInt),
+        0b110 => reader.read_varbit().map(Token::VarBit),
+        0b101 => {
+            let index = reader.read_varint()?;
+            if index > MAX_REASONABLE_PART_INDEX {
+                if debug {
+                    eprintln!(
+                        "         -> Part index {} exceeds max ({})",
+                        index, MAX_REASONABLE_PART_INDEX
+                    );
+                }
+                return None;
+            }
+            let values = parse_part_values(reader);
+            Some(Token::Part { index, values })
+        }
+        0b111 => parse_string_token(reader),
+        _ => None,
+    }
+}
+
 /// Parse tokens with optional debug output
 fn parse_tokens_impl(reader: &mut BitReader, debug: bool) -> Vec<Token> {
     let mut tokens = Vec::new();
 
     // Verify magic header (7 bits = 0010000)
-    if let Some(magic) = reader.read_bits(7) {
-        if magic != 0b0010000 {
-            if debug {
-                eprintln!("Warning: Invalid magic header: {:07b}", magic);
-            }
-            return tokens;
-        }
+    let Some(magic) = reader.read_bits(7) else {
+        return tokens;
+    };
+    if magic != 0b0010000 {
         if debug {
-            eprintln!("[bit {:3}] Magic header OK", reader.bit_offset);
+            eprintln!("Warning: Invalid magic header: {:07b}", magic);
         }
-    } else {
         return tokens;
     }
 
-    // Parse tokens until terminator (00) or end of data
-    let mut iteration = 0;
-    while iteration < 100 {
-        // Safety limit
-        iteration += 1;
+    // Parse tokens until terminator or end of data
+    for _ in 0..100 {
         let bit_pos = reader.bit_offset;
 
-        let prefix2 = match reader.read_bits(2) {
-            Some(p) => p,
-            None => break,
+        let Some(prefix2) = reader.read_bits(2) else {
+            break;
         };
 
         if debug {
@@ -512,198 +617,23 @@ fn parse_tokens_impl(reader: &mut BitReader, debug: bool) -> Vec<Token> {
 
         match prefix2 {
             0b00 => {
-                if debug {
-                    eprintln!(
-                        "         -> Separator (remaining bits: {})",
-                        reader.remaining_bits()
-                    );
-                }
                 tokens.push(Token::Separator);
-                // If we have very few bits left after a separator, stop parsing.
-                // This prevents interpreting trailing padding/garbage as tokens.
-                // Minimum meaningful token is 3 bits (prefix) + 5 bits (min varint) = 8 bits
+                // Need at least 8 bits for a meaningful token
                 if reader.remaining_bits() < 8 {
-                    if debug {
-                        eprintln!("         -> Insufficient bits remaining, stopping parse");
-                    }
                     break;
                 }
             }
-            0b01 => {
-                if debug {
-                    eprintln!("         -> SoftSeparator");
-                }
-                tokens.push(Token::SoftSeparator);
-            }
+            0b01 => tokens.push(Token::SoftSeparator),
             0b10 | 0b11 => {
-                // Need one more bit to distinguish
-                let bit3 = match reader.read_bits(1) {
-                    Some(b) => b,
-                    None => break,
+                let Some(bit3) = reader.read_bits(1) else {
+                    break;
                 };
-
                 let prefix3 = (prefix2 << 1) | bit3;
 
-                if debug {
-                    eprintln!("         -> 3-bit prefix: {:03b}", prefix3);
-                }
-
-                match prefix3 {
-                    0b100 => {
-                        // VARINT
-                        if let Some(val) = reader.read_varint() {
-                            if debug {
-                                eprintln!("         -> VarInt({})", val);
-                            }
-                            tokens.push(Token::VarInt(val));
-                        }
-                    }
-                    0b110 => {
-                        // VARBIT
-                        if let Some(val) = reader.read_varbit() {
-                            if debug {
-                                eprintln!("         -> VarBit({})", val);
-                            }
-                            tokens.push(Token::VarBit(val));
-                        }
-                    }
-                    0b101 => {
-                        // Part structure:
-                        // [VARINT index][1-bit type flag]
-                        //   Type 1: [VARINT value][000 terminator]
-                        //   Type 0: [2-bit subtype]
-                        //     10 = no data
-                        //     01 = value list until 00 terminator
-                        if let Some(index) = reader.read_varint() {
-                            // Validate part index is reasonable. If it's too large,
-                            // we're likely parsing garbage data past the end of valid tokens.
-                            if index > MAX_REASONABLE_PART_INDEX {
-                                if debug {
-                                    eprintln!("         -> Part index {} exceeds max ({}), stopping parse",
-                                              index, MAX_REASONABLE_PART_INDEX);
-                                }
-                                break;
-                            }
-
-                            let mut values = Vec::new();
-
-                            if let Some(type_flag) = reader.read_bits(1) {
-                                if type_flag == 1 {
-                                    // SUBTYPE_INT: single VARINT value + 000 terminator
-                                    if let Some(val) = reader.read_varint() {
-                                        values.push(val);
-                                    }
-                                    // Read 000 terminator (3 bits)
-                                    let _ = reader.read_bits(3);
-                                } else {
-                                    // Type 0: read 2-bit subtype
-                                    if let Some(subtype) = reader.read_bits(2) {
-                                        match subtype {
-                                            0b10 => {
-                                                // SUBTYPE_NONE: no additional data
-                                            }
-                                            0b01 => {
-                                                // SUBTYPE_LIST: read values until 00 separator
-                                                // Values can be VARINT or VARBIT
-                                                loop {
-                                                    // Peek at next 2 bits to check for terminator
-                                                    let start_pos = reader.bit_offset;
-                                                    if let Some(peek) = reader.read_bits(2) {
-                                                        if peek == 0b00 {
-                                                            // Hard separator - end of list
-                                                            break;
-                                                        }
-                                                        // Not a terminator, need to parse a value
-                                                        // Read 1 more bit to get 3-bit prefix
-                                                        if let Some(bit3) = reader.read_bits(1) {
-                                                            let prefix3 = (peek << 1) | bit3;
-                                                            match prefix3 {
-                                                                0b100 => {
-                                                                    if let Some(v) =
-                                                                        reader.read_varint()
-                                                                    {
-                                                                        values.push(v);
-                                                                    }
-                                                                }
-                                                                0b110 => {
-                                                                    if let Some(v) =
-                                                                        reader.read_varbit()
-                                                                    {
-                                                                        values.push(v);
-                                                                    }
-                                                                }
-                                                                _ => {
-                                                                    // Unknown prefix, rewind and break
-                                                                    reader.bit_offset = start_pos;
-                                                                    break;
-                                                                }
-                                                            }
-                                                        } else {
-                                                            break;
-                                                        }
-                                                    } else {
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                            _ => {
-                                                // Unknown subtype
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            if debug {
-                                eprintln!(
-                                    "         -> Part {{ index: {}, values: {:?} }}",
-                                    index, values
-                                );
-                            }
-                            tokens.push(Token::Part { index, values });
-                        }
-                    }
-                    0b111 => {
-                        // String: VARINT length + 7-bit ASCII chars
-                        if let Some(length) = reader.read_varint() {
-                            if debug {
-                                eprintln!(
-                                    "         -> String length: {} (would need {} bits)",
-                                    length,
-                                    length * 7
-                                );
-                            }
-                            // Sanity check - don't read more than 128 chars
-                            if length > 128 {
-                                if debug {
-                                    eprintln!("         -> String too long, skipping");
-                                }
-                                continue;
-                            }
-                            let mut chars = Vec::new();
-                            for _ in 0..length {
-                                // 7-bit ASCII (LSB-first)
-                                if let Some(ch) = reader.read_bits(7) {
-                                    chars.push(ch as u8);
-                                }
-                            }
-                            if let Ok(s) = String::from_utf8(chars.clone()) {
-                                if debug {
-                                    eprintln!("         -> String({:?})", s);
-                                }
-                                tokens.push(Token::String(s));
-                            } else {
-                                if debug {
-                                    eprintln!("         -> String (binary): {:?}", chars);
-                                }
-                                // Store as lossy string anyway
-                                tokens.push(Token::String(
-                                    String::from_utf8_lossy(&chars).to_string(),
-                                ));
-                            }
-                        }
-                    }
-                    _ => break,
+                match parse_3bit_token(reader, prefix3, debug) {
+                    Some(token) => tokens.push(token),
+                    None if prefix3 == 0b101 => break, // Part index too large
+                    None => {}
                 }
             }
             _ => break,
@@ -720,183 +650,191 @@ pub fn parse_tokens_debug(bytes: &[u8]) -> Vec<Token> {
     parse_tokens_impl(&mut reader, true)
 }
 
+/// Intermediate result for header extraction
+struct HeaderInfo {
+    manufacturer: Option<u64>,
+    level: Option<u64>,
+    raw_level: Option<u64>,
+    seed: Option<u64>,
+}
+
+/// Decode serial prefix, validate, and return raw bytes
+fn decode_serial_bytes(serial: &str) -> Result<(char, Vec<u8>), SerialError> {
+    if !serial.starts_with("@Ug") {
+        return Err(SerialError::InvalidEncoding(
+            "Serial must start with @Ug".to_string(),
+        ));
+    }
+
+    let item_type = serial.chars().nth(3).ok_or_else(|| {
+        SerialError::InvalidEncoding("Serial too short - no item type".to_string())
+    })?;
+
+    let encoded_data = &serial[2..];
+    let decoded = decode_base85(encoded_data)?;
+    let raw_bytes: Vec<u8> = decoded.iter().map(|&b| mirror_byte(b)).collect();
+
+    if raw_bytes.len() < 4 {
+        return Err(SerialError::TooShort {
+            expected: 4,
+            actual: raw_bytes.len(),
+        });
+    }
+
+    Ok((item_type, raw_bytes))
+}
+
+/// Collect VarInts before and after first separator
+fn collect_varints(tokens: &[Token]) -> (Vec<u64>, Vec<u64>) {
+    let mut before_sep = Vec::new();
+    let mut after_sep = Vec::new();
+    let mut seen_sep = false;
+
+    for token in tokens {
+        match token {
+            Token::VarInt(v) => {
+                if seen_sep {
+                    after_sep.push(*v);
+                } else {
+                    before_sep.push(*v);
+                }
+            }
+            Token::Separator => seen_sep = true,
+            _ => {}
+        }
+    }
+    (before_sep, after_sep)
+}
+
+/// Extract header info from equipment format (VarBit-first)
+fn extract_equipment_header(tokens: &[Token]) -> HeaderInfo {
+    let mut level = None;
+    let mut raw_level = None;
+    let mut seen_first_sep = false;
+
+    for token in tokens {
+        match token {
+            Token::Separator if !seen_first_sep => seen_first_sep = true,
+            Token::VarBit(v) if seen_first_sep && level.is_none() => {
+                let adjusted = v.saturating_add(1);
+                if let Some((capped, raw)) = level_from_code(adjusted) {
+                    level = Some(capped as u64);
+                    raw_level = Some(raw as u64);
+                }
+                break;
+            }
+            _ => {}
+        }
+    }
+
+    HeaderInfo {
+        manufacturer: None,
+        level,
+        raw_level,
+        seed: None,
+    }
+}
+
+/// Extract header info from weapon format (VarInt-first)
+fn extract_weapon_header(tokens: &[Token]) -> HeaderInfo {
+    let (header_varints, after_first_sep) = collect_varints(tokens);
+
+    let manufacturer = header_varints.first().copied();
+    let (level, raw_level) = if header_varints.len() >= 4 {
+        if let Some((capped, raw)) = level_from_code(header_varints[3]) {
+            if raw <= 50 {
+                (Some(capped as u64), Some(raw as u64))
+            } else {
+                (None, None)
+            }
+        } else {
+            (None, None)
+        }
+    } else {
+        (None, None)
+    };
+    let seed = after_first_sep.get(1).copied();
+
+    HeaderInfo {
+        manufacturer,
+        level,
+        raw_level,
+        seed,
+    }
+}
+
+/// Extract elements from Part tokens (index 128-142)
+fn extract_elements(tokens: &[Token]) -> Vec<Element> {
+    tokens
+        .iter()
+        .filter_map(|token| {
+            if let Token::Part { index, .. } = token {
+                if *index >= 128 && *index <= 142 {
+                    Element::from_id(index - 128)
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        })
+        .collect()
+}
+
+/// Extract rarity based on item format
+fn extract_rarity(tokens: &[Token], item_type: char, is_varbit_first: bool) -> Option<Rarity> {
+    if is_varbit_first {
+        let first_varbit = tokens.iter().find_map(|t| {
+            if let Token::VarBit(v) = t {
+                Some(*v)
+            } else {
+                None
+            }
+        })?;
+        let divisor = serial_format(item_type)
+            .map(|f| f.category_divisor)
+            .unwrap_or(384);
+        Rarity::from_equipment_varbit(first_varbit, divisor)
+    } else {
+        let (header_varints, _) = collect_varints(tokens);
+        if header_varints.len() >= 4 {
+            Rarity::from_weapon_level_code(header_varints[3])
+        } else {
+            None
+        }
+    }
+}
+
 impl ItemSerial {
     /// Decode a Borderlands 4 item serial
     ///
     /// Format: `@Ug<type><base85_data>`
     /// Example: @Ugr$ZCm/&tH!t{KgK/Shxu>k
     pub fn decode(serial: &str) -> Result<Self, SerialError> {
-        // Check for @Ug prefix
-        if !serial.starts_with("@Ug") {
-            return Err(SerialError::InvalidEncoding(
-                "Serial must start with @Ug".to_string(),
-            ));
-        }
+        let (item_type, raw_bytes) = decode_serial_bytes(serial)?;
 
-        // Extract item type (character after @Ug)
-        let item_type = serial.chars().nth(3).ok_or_else(|| {
-            SerialError::InvalidEncoding("Serial too short - no item type".to_string())
-        })?;
-
-        // Strip @Ug prefix, keeping the item type and data
-        let encoded_data = &serial[2..]; // Keep everything after @U
-
-        // Decode Base85
-        let decoded = decode_base85(encoded_data)?;
-
-        // Mirror all bits
-        let raw_bytes: Vec<u8> = decoded.iter().map(|&b| mirror_byte(b)).collect();
-
-        if raw_bytes.len() < 4 {
-            return Err(SerialError::TooShort {
-                expected: 4,
-                actual: raw_bytes.len(),
-            });
-        }
-
-        // Parse the bitstream
         let mut reader = BitReader::new(raw_bytes.clone());
         let tokens = parse_tokens(&mut reader);
 
-        // Extract common fields from tokens based on format
-        let mut manufacturer = None;
-        let mut level = None;
-        let mut raw_level = None;
-        let mut seed = None;
-
-        // Determine format from first token (more reliable than type character)
         let is_varbit_first = matches!(tokens.first(), Some(Token::VarBit(_)));
-
-        if is_varbit_first {
-            // Equipment format: VBIT(category) SEP VBIT(level) ...
-            // Level is the VarBit after the first separator
-            let mut seen_first_sep = false;
-            for token in &tokens {
-                match token {
-                    Token::Separator if !seen_first_sep => {
-                        seen_first_sep = true;
-                    }
-                    Token::VarBit(v) if seen_first_sep && level.is_none() => {
-                        // Equipment levels are 0-indexed in storage, add 1 for display
-                        // Verified: all /)}} items (level 50) have VarBit=49
-                        let adjusted = v.saturating_add(1);
-                        if let Some((capped, raw)) = level_from_code(adjusted) {
-                            level = Some(capped as u64);
-                            raw_level = Some(raw as u64);
-                        }
-                        break;
-                    }
-                    _ => {}
-                }
-            }
+        let header = if is_varbit_first {
+            extract_equipment_header(&tokens)
         } else {
-            // Weapon format: VINT(mfg) SOFT VINT(0) SOFT VINT(8) SOFT VINT(level) SEP ...
-            // Collect VarInts before first separator for header analysis
-            let mut header_varints: Vec<u64> = Vec::new();
-            let mut after_first_sep: Vec<u64> = Vec::new();
-            let mut seen_separator = false;
-
-            for token in &tokens {
-                match token {
-                    Token::VarInt(v) => {
-                        if seen_separator {
-                            after_first_sep.push(*v);
-                        } else {
-                            header_varints.push(*v);
-                        }
-                    }
-                    Token::Separator => {
-                        seen_separator = true;
-                    }
-                    _ => {}
-                }
-            }
-
-            // VarInt-first format detected from tokens - extract weapon info
-            // regardless of type character (some type 'e' items are weapons with Fme!K header)
-            if !header_varints.is_empty() {
-                manufacturer = Some(header_varints[0]);
-            }
-            if header_varints.len() >= 4 {
-                // Only extract level if it decodes to a valid value (1-50)
-                // If raw > 50, the 4th VarInt is not a level code (e.g., Fme!K format marker 55256)
-                if let Some((capped, raw)) = level_from_code(header_varints[3]) {
-                    if raw <= 50 {
-                        level = Some(capped as u64);
-                        raw_level = Some(raw as u64);
-                    }
-                    // If raw > 50, don't set level - it's not a valid level code
-                }
-            }
-            if after_first_sep.len() >= 2 {
-                seed = Some(after_first_sep[1]);
-            }
-        }
-
-        // Extract elements from Part tokens with index in element range (128-142)
-        let elements: Vec<Element> = tokens
-            .iter()
-            .filter_map(|token| {
-                if let Token::Part { index, .. } = token {
-                    // Element IDs are encoded as 128 + element_id
-                    if *index >= 128 && *index <= 142 {
-                        let element_id = index - 128;
-                        Element::from_id(element_id)
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                }
-            })
-            .collect();
-
-        // Extract rarity based on item format
-        let rarity = if is_varbit_first {
-            // VarBit-first equipment: rarity from first VarBit
-            let first_varbit = tokens.iter().find_map(|t| {
-                if let Token::VarBit(v) = t {
-                    Some(*v)
-                } else {
-                    None
-                }
-            });
-            if let Some(varbit) = first_varbit {
-                // Get divisor for this item type
-                let divisor = serial_format(item_type)
-                    .map(|f| f.category_divisor)
-                    .unwrap_or(384);
-                Rarity::from_equipment_varbit(varbit, divisor)
-            } else {
-                None
-            }
-        } else {
-            // VarInt-first weapons: rarity from 4th VarInt (level code)
-            // Extract 4th VarInt from header
-            let mut header_varints: Vec<u64> = Vec::new();
-            for token in &tokens {
-                match token {
-                    Token::VarInt(v) => header_varints.push(*v),
-                    Token::Separator => break,
-                    _ => {}
-                }
-            }
-            if header_varints.len() >= 4 {
-                Rarity::from_weapon_level_code(header_varints[3])
-            } else {
-                None
-            }
+            extract_weapon_header(&tokens)
         };
+
+        let elements = extract_elements(&tokens);
+        let rarity = extract_rarity(&tokens, item_type, is_varbit_first);
 
         Ok(ItemSerial {
             original: serial.to_string(),
             raw_bytes,
             item_type,
             tokens,
-            manufacturer,
-            level,
-            raw_level,
-            seed,
+            manufacturer: header.manufacturer,
+            level: header.level,
+            raw_level: header.raw_level,
+            seed: header.seed,
             elements,
             rarity,
         })
@@ -1320,5 +1258,260 @@ mod tests {
         let item = ItemSerial::decode("@Uge98>m/)}}!c5JeNWCvCXc7").unwrap();
         assert!(item.elements.is_empty());
         assert_eq!(item.element_names(), None);
+    }
+
+    // Tests for Rarity enum
+    mod rarity_tests {
+        use super::*;
+
+        #[test]
+        fn test_rarity_name() {
+            assert_eq!(Rarity::Common.name(), "Common");
+            assert_eq!(Rarity::Uncommon.name(), "Uncommon");
+            assert_eq!(Rarity::Rare.name(), "Rare");
+            assert_eq!(Rarity::Epic.name(), "Epic");
+            assert_eq!(Rarity::Legendary.name(), "Legendary");
+        }
+
+        #[test]
+        fn test_from_equipment_varbit_common() {
+            // Bits 6-7 = 0 -> Common
+            let rarity = Rarity::from_equipment_varbit(0, 384);
+            assert_eq!(rarity, Some(Rarity::Common));
+        }
+
+        #[test]
+        fn test_from_equipment_varbit_epic() {
+            // Bits 6-7 = 1 -> Epic (64 >> 6 = 1)
+            let rarity = Rarity::from_equipment_varbit(64, 384);
+            assert_eq!(rarity, Some(Rarity::Epic));
+        }
+
+        #[test]
+        fn test_from_equipment_varbit_legendary() {
+            // Bits 6-7 = 3 -> Legendary (192 >> 6 = 3)
+            let rarity = Rarity::from_equipment_varbit(192, 384);
+            assert_eq!(rarity, Some(Rarity::Legendary));
+        }
+
+        #[test]
+        fn test_from_equipment_varbit_zero_divisor() {
+            // Zero divisor should return None
+            let rarity = Rarity::from_equipment_varbit(100, 0);
+            assert_eq!(rarity, None);
+        }
+
+        #[test]
+        fn test_from_weapon_level_code_common() {
+            // Level codes <= 145 are Common
+            assert_eq!(Rarity::from_weapon_level_code(128), Some(Rarity::Common));
+            assert_eq!(Rarity::from_weapon_level_code(145), Some(Rarity::Common));
+        }
+
+        #[test]
+        fn test_from_weapon_level_code_epic() {
+            // Code 192 = Epic
+            assert_eq!(Rarity::from_weapon_level_code(192), Some(Rarity::Epic));
+        }
+
+        #[test]
+        fn test_from_weapon_level_code_legendary() {
+            // Code 200 = Legendary
+            assert_eq!(Rarity::from_weapon_level_code(200), Some(Rarity::Legendary));
+        }
+
+        #[test]
+        fn test_from_weapon_level_code_ranges() {
+            // Uncommon range: 146-180
+            assert_eq!(Rarity::from_weapon_level_code(150), Some(Rarity::Uncommon));
+
+            // Epic range: 181-195
+            assert_eq!(Rarity::from_weapon_level_code(185), Some(Rarity::Epic));
+
+            // Legendary range: 196+
+            assert_eq!(Rarity::from_weapon_level_code(210), Some(Rarity::Legendary));
+        }
+    }
+
+    // Tests for ItemSerial display methods
+    mod display_tests {
+        use super::*;
+
+        #[test]
+        fn test_hex_dump() {
+            let item = ItemSerial::decode("@Ugr$ZCm/&tH!t{KgK/Shxu>k").unwrap();
+            let hex = item.hex_dump();
+
+            // Should be a valid hex string (even length, hex chars only)
+            assert!(!hex.is_empty());
+            assert!(hex.len() % 2 == 0);
+            assert!(hex.chars().all(|c| c.is_ascii_hexdigit()));
+        }
+
+        #[test]
+        fn test_format_tokens_weapon() {
+            let item = ItemSerial::decode("@Ugr$ZCm/&tH!t{KgK/Shxu>k").unwrap();
+            let formatted = item.format_tokens();
+
+            // Should produce a non-empty string
+            assert!(!formatted.is_empty());
+
+            // Should contain at least a separator (|) and a part marker ({})
+            assert!(formatted.contains('|') || formatted.contains('{'));
+        }
+
+        #[test]
+        fn test_format_tokens_structure() {
+            let item = ItemSerial::decode("@Uge98>m/)}}!c5JeNWCvCXc7").unwrap();
+            let formatted = item.format_tokens();
+
+            // Formatted tokens should be parseable - contains VarInt/VarBit values
+            // and separators
+            assert!(!formatted.is_empty());
+        }
+
+        #[test]
+        fn test_item_type_description_weapon() {
+            // Hellwalker - type 'd' which is a VarInt-first weapon
+            let item = ItemSerial::decode("@Ugd_t@FmVuJyjIXzRG}JG7S$K^1{DjH5&-").unwrap();
+            assert_eq!(item.item_type_description(), "Weapon");
+        }
+
+        #[test]
+        fn test_item_type_description_shield() {
+            // Type 'r' is VarBit-first (shields/items)
+            let item = ItemSerial::decode("@Ugr$N8m/)}}!q9r4K/ShxuK@").unwrap();
+            assert_eq!(item.item_type_description(), "Item");
+        }
+
+        #[test]
+        fn test_item_type_description_equipment() {
+            let item = ItemSerial::decode("@Uge98>m/)}}!c5JeNWCvCXc7").unwrap();
+            // Equipment items return "Item" from item_type_name
+            assert_eq!(item.item_type_description(), "Item");
+        }
+
+        #[test]
+        fn test_item_type_description_class_mod() {
+            // Class mod - type '!'
+            let item =
+                ItemSerial::decode("@Ug!pHG2}TYgjMfjzn~K!T)XUVX)U4Eu)Qi+?RPAVZh!@!b00").unwrap();
+            assert_eq!(item.item_type_description(), "Class Mod");
+        }
+
+        #[test]
+        fn test_manufacturer_name_known() {
+            // Vladof SMG
+            let item = ItemSerial::decode("@Ugr$ZCm/&tH!t{KgK/Shxu>k").unwrap();
+            // The manufacturer ID maps to a known manufacturer
+            if let Some(name) = item.manufacturer_name() {
+                assert!(!name.is_empty());
+            }
+        }
+
+        #[test]
+        fn test_rarity_name_method() {
+            // Weapon with detectable rarity
+            let item = ItemSerial::decode("@Ugr$ZCm/&tH!t{KgK/Shxu>k").unwrap();
+            if let Some(rarity) = item.rarity_name() {
+                // Should be one of the valid rarity names
+                let valid = ["Common", "Uncommon", "Rare", "Epic", "Legendary"];
+                assert!(valid.contains(&rarity));
+            }
+        }
+
+        #[test]
+        fn test_weapon_info_for_weapon() {
+            // Known weapon serial
+            let item = ItemSerial::decode("@Ugr$ZCm/&tH!t{KgK/Shxu>k").unwrap();
+            if let Some((mfg, wtype)) = item.weapon_info() {
+                assert!(!mfg.is_empty());
+                assert!(!wtype.is_empty());
+            }
+        }
+
+        #[test]
+        fn test_weapon_info_for_equipment() {
+            // Equipment doesn't have weapon info
+            let item = ItemSerial::decode("@Uge98>m/)}}!c5JeNWCvCXc7").unwrap();
+            // May or may not return info depending on format detection
+            // Just verify it doesn't panic
+            let _ = item.weapon_info();
+        }
+
+        #[test]
+        fn test_parts_category() {
+            // Weapon serial - should have parts category
+            let item = ItemSerial::decode("@Ugr$ZCm/&tH!t{KgK/Shxu>k").unwrap();
+            let category = item.parts_category();
+            assert!(category.is_some());
+        }
+
+        #[test]
+        fn test_detailed_dump() {
+            let item = ItemSerial::decode("@Ugr$ZCm/&tH!t{KgK/Shxu>k").unwrap();
+            let dump = item.detailed_dump();
+
+            // Should contain serial info
+            assert!(dump.contains("Serial:"));
+            assert!(dump.contains("Item type:"));
+            assert!(dump.contains("Bytes:"));
+            assert!(dump.contains("Tokens:"));
+            assert!(dump.contains("Raw bytes:"));
+        }
+    }
+
+    // Tests for BitReader and BitWriter
+    mod bitstream_tests {
+        use super::*;
+
+        #[test]
+        fn test_varint_roundtrip() {
+            // Test various values
+            for value in [0u64, 1, 15, 16, 255, 1000, 65535] {
+                let mut writer = BitWriter::new();
+                writer.write_varint(value);
+                let bytes = writer.finish();
+
+                let mut reader = BitReader::new(bytes);
+                let read_value = reader.read_varint().unwrap();
+                assert_eq!(read_value, value, "VarInt roundtrip failed for {}", value);
+            }
+        }
+
+        #[test]
+        fn test_varbit_roundtrip() {
+            // Test various values
+            for value in [0u64, 1, 7, 8, 31, 32, 127, 1000] {
+                let mut writer = BitWriter::new();
+                writer.write_varbit(value);
+                let bytes = writer.finish();
+
+                let mut reader = BitReader::new(bytes);
+                let read_value = reader.read_varbit().unwrap();
+                assert_eq!(read_value, value, "VarBit roundtrip failed for {}", value);
+            }
+        }
+
+        #[test]
+        fn test_bits_roundtrip() {
+            // Test fixed-width bit values
+            let mut writer = BitWriter::new();
+            writer.write_bits(0b1010, 4);
+            writer.write_bits(0b11111111, 8);
+            writer.write_bits(0b101, 3);
+            let bytes = writer.finish();
+
+            let mut reader = BitReader::new(bytes);
+            assert_eq!(reader.read_bits(4), Some(0b1010));
+            assert_eq!(reader.read_bits(8), Some(0b11111111));
+            assert_eq!(reader.read_bits(3), Some(0b101));
+        }
+
+        #[test]
+        fn test_remaining_bits() {
+            let reader = BitReader::new(vec![0xFF, 0xFF]);
+            assert_eq!(reader.remaining_bits(), 16);
+        }
     }
 }

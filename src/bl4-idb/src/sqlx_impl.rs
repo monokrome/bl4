@@ -260,6 +260,7 @@ pub mod sqlite {
     }
 
     impl AsyncItemsRepository for SqlxSqliteDb {
+        #[allow(clippy::too_many_lines)] // SQL schema definition
         async fn init(&self) -> AsyncRepoResult<()> {
             sqlx::query(
                 r#"
@@ -455,6 +456,7 @@ pub mod sqlite {
             Ok(())
         }
 
+        #[allow(clippy::too_many_lines)] // Item struct has 24 fields to map
         async fn list_items(&self, filter: &ItemFilter) -> AsyncRepoResult<Vec<Item>> {
             let mut sql = String::from(
                 r#"SELECT serial, name, prefix, manufacturer, weapon_type, item_type, rarity, level, element,
@@ -972,6 +974,7 @@ pub mod postgres {
         }
 
         /// Run pending database migrations
+        #[allow(clippy::too_many_lines)] // SQL migration definitions
         async fn run_migrations(&self) -> AsyncRepoResult<()> {
             // Create migrations tracking table
             sqlx::query(
@@ -1171,6 +1174,7 @@ pub mod postgres {
     }
 
     impl AsyncItemsRepository for SqlxPgDb {
+        #[allow(clippy::too_many_lines)] // SQL schema definition
         async fn init(&self) -> AsyncRepoResult<()> {
             // PostgreSQL uses SERIAL instead of AUTOINCREMENT, and slightly different syntax
             sqlx::query(
@@ -1370,6 +1374,7 @@ pub mod postgres {
             Ok(())
         }
 
+        #[allow(clippy::too_many_lines)] // Item struct has 24 fields to map
         async fn list_items(&self, filter: &ItemFilter) -> AsyncRepoResult<Vec<Item>> {
             let mut sql = String::from(
                 r#"SELECT serial, name, prefix, manufacturer, weapon_type, item_type, rarity, level, element,
@@ -1659,6 +1664,7 @@ pub mod postgres {
 
     #[cfg(feature = "attachments")]
     impl AsyncAttachmentsRepository for SqlxPgDb {
+        #[allow(clippy::too_many_lines)] // conditional logic for content-addressed storage
         async fn add_attachment(
             &self,
             serial: &str,

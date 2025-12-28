@@ -49,13 +49,34 @@ impl Content {
             return None;
         }
 
-        // Find type name (starts after header, null-terminated)
-        let type_start = find_type_start(data)?;
-        let type_end = find_null(data, type_start)?;
-        let type_name = std::str::from_utf8(&data[type_start..type_end]).ok()?.to_string();
+        // Try each potential type start position
+        for type_start in find_type_starts(data) {
+            if let Some(content) = Self::try_parse_at(data, type_start) {
+                return Some(content);
+            }
+        }
+        None
+    }
 
-        // Validate type name (should be printable ASCII)
-        if !type_name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
+    /// Try to parse content starting from a specific offset
+    fn try_parse_at(data: &[u8], type_start: usize) -> Option<Self> {
+        let type_end = find_null(data, type_start)?;
+
+        // Type name must be at least 2 chars
+        if type_end <= type_start + 1 {
+            return None;
+        }
+
+        let type_name = std::str::from_utf8(&data[type_start..type_end])
+            .ok()?
+            .to_string();
+
+        // Validate type name (should be alphanumeric with underscores, min 2 chars)
+        if type_name.len() < 2
+            || !type_name
+                .chars()
+                .all(|c| c.is_ascii_alphanumeric() || c == '_')
+        {
             return None;
         }
 
@@ -67,6 +88,11 @@ impl Content {
         let format_code = std::str::from_utf8(&data[format_start..format_start + 4])
             .ok()?
             .to_string();
+
+        // Validate format code starts with "ab"
+        if !format_code.starts_with("ab") {
+            return None;
+        }
 
         // Extract strings from the content
         let strings = extract_strings(data, format_start + 4);
@@ -130,7 +156,10 @@ impl Content {
     /// Get strings that look like asset paths
     pub fn asset_paths(&self) -> impl Iterator<Item = &str> {
         self.strings.iter().filter_map(|s| {
-            if s.starts_with("/Script/") || s.starts_with("/Game/") || s.contains('.') && s.contains('_') {
+            if s.starts_with("/Script/")
+                || s.starts_with("/Game/")
+                || s.contains('.') && s.contains('_')
+            {
                 Some(s.as_str())
             } else {
                 None
@@ -140,9 +169,9 @@ impl Content {
 
     /// Get strings that look like numeric values
     pub fn numeric_values(&self) -> impl Iterator<Item = (&str, f64)> {
-        self.strings.iter().filter_map(|s| {
-            s.parse::<f64>().ok().map(|v| (s.as_str(), v))
-        })
+        self.strings
+            .iter()
+            .filter_map(|s| s.parse::<f64>().ok().map(|v| (s.as_str(), v)))
     }
 
     /// Get entry names (strings that look like identifiers)
@@ -150,9 +179,14 @@ impl Content {
         self.strings.iter().filter_map(|s| {
             // Entry names are typically CamelCase or snake_case, start with letter/underscore
             if s.len() >= 3
-                && (s.chars().next().map(|c| c.is_ascii_alphabetic() || c == '_').unwrap_or(false))
+                && (s
+                    .chars()
+                    .next()
+                    .map(|c| c.is_ascii_alphabetic() || c == '_')
+                    .unwrap_or(false))
                 && s.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
-                && !s.chars().all(|c| c.is_ascii_lowercase())  // Not all lowercase (those are keywords)
+                && !s.chars().all(|c| c.is_ascii_lowercase())
+            // Not all lowercase (those are keywords)
             {
                 Some(s.as_str())
             } else {
@@ -162,24 +196,37 @@ impl Content {
     }
 }
 
-/// Find where the type name starts (after header zeros)
-fn find_type_start(data: &[u8]) -> Option<usize> {
-    // Header is typically 5 zeros followed by 2-4 bytes, then null
-    // Type name starts at first printable char after initial header
-    for i in 5..data.len().min(20) {
+/// Find candidate positions where the type name might start
+fn find_type_starts(data: &[u8]) -> Vec<usize> {
+    let mut candidates = Vec::new();
+
+    // Check for 1-zero header format (type name at byte 1)
+    if data.len() > 1 && data[0] == 0 {
+        let first_char = data[1];
+        if first_char.is_ascii_alphabetic() || first_char == b'_' {
+            candidates.push(1);
+        }
+    }
+
+    // Check for header format with null followed by type name (up to byte 32)
+    for i in 5..data.len().min(32) {
         if data[i] == 0 && i + 1 < data.len() {
             let next = data[i + 1];
             if next.is_ascii_alphabetic() || next == b'_' {
-                return Some(i + 1);
+                candidates.push(i + 1);
             }
         }
     }
-    None
+
+    candidates
 }
 
 /// Find null terminator from offset
 fn find_null(data: &[u8], start: usize) -> Option<usize> {
-    data[start..].iter().position(|&b| b == 0).map(|p| start + p)
+    data[start..]
+        .iter()
+        .position(|&b| b == 0)
+        .map(|p| start + p)
 }
 
 /// Extract all readable strings from data
@@ -286,7 +333,7 @@ mod tests {
         data.extend_from_slice(&[0x03, 0x05, 0x00]); // Format info
         data.extend_from_slice(format_code.as_bytes());
         data.extend_from_slice(&[0x1d, 0x06, 0x01]); // Entry info
-        // Add some test strings
+                                                     // Add some test strings
         data.extend_from_slice(b"test_entry\0");
         data.extend_from_slice(b"12.000000\0");
         data.extend_from_slice(b"none\0");
