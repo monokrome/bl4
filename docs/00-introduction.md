@@ -18,7 +18,7 @@ You're about to learn reverse engineering by doing it. We won't just explain con
 
 **Decode item serials.** Those cryptic strings that encode weapons use a custom Base85 alphabet, bit mirroring, and a token-based format. We'll parse them byte by byte until they make perfect sense.
 
-**Extract data from game files.** Unreal Engine 5 packs everything into `.pak` containers with a proprietary format. We'll build tools to crack them open and pull out the good stuff—weapon definitions, part databases, drop tables.
+**Extract data from game files.** Unreal Engine 5 packs everything into `.pak` containers with a custom format. We'll build tools to crack them open and pull out the good stuff—weapon definitions, part databases, drop tables.
 
 **Understand memory analysis.** Sometimes the only way to find what you need is to take a snapshot of the running game. We'll learn to navigate gigabytes of process memory to locate specific structures.
 

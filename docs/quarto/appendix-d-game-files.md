@@ -436,4 +436,197 @@ BOR, TOR, VLA, COV, MAL, TED, DAD, JAK, ORD
 
 ---
 
+## NCS Format (Nexus Config Store)
+
+NCS is Gearbox's format for storing item pool definitions, part data, and other game configuration that isn't in standard PAK assets.
+
+### Why NCS Matters
+
+Standard PAK extraction returns 0 results for key classes:
+- `ItemPoolDef` - Item pool definitions
+- `ItemPoolListDef` - Item pool lists
+- `loot_config` - Loot configuration
+
+These are stored in **NCS format**, not as standard uasset files. The class definitions exist in `scriptobjects.json`, but the actual data lives in NCS.
+
+### File Types in NCS Format
+
+| Type | Description |
+|------|-------------|
+| `gbx_ue_data_table` | Gearbox UE data tables with item definitions |
+| `gbxactor` | Actor definitions with loot references |
+| `itempool` | Item pool definitions (what can drop) |
+| `ItemPoolList` | Item pool list configurations |
+| `loot_config` | Loot configuration with drop rates |
+| `Mission` + `rewards` | Mission reward definitions |
+| `vending_machine` | Vending machine inventory |
+
+### gBx Header Format
+
+NCS files use the "gBx" magic header:
+
+```
+Offset  Size  Description
+------  ----  -----------
+0x00    3     Magic bytes: "gBx" (0x67 0x42 0x78)
+0x03    1     Variant byte: '9', '6', 'r', 0xEF, or 0xE0
+0x04    ?     Oodle-compressed payload
+```
+
+**Variant bytes observed:**
+- `0x39` ('9') - Most common
+- `0x36` ('6')
+- `0x72` ('r')
+- `0xEF`
+- `0xE0`
+
+Example locations in pakchunk0-Windows_0_P.pak:
+- Offset 18327014: `67 42 78 39...` (gBx9)
+- Offset 60169283: `67 42 78 ef...`
+- Offset 78874017: `67 42 78 72...` (gBxr)
+
+### Compression
+
+NCS uses **Oodle** compression (version 9):
+- DLL: `oo2core_9_win64.dll`
+- Primary function: `OodleLZ_Decompress`
+- Additional: `OodleLZ_Compress`, `Oodle_GetConfigValues`
+
+### Decompressed Content Format
+
+After decompression, NCS content uses a typed hierarchical format with `field|type` notation:
+
+#### Type Notation
+
+| Suffix | Meaning | Example |
+|--------|---------|---------|
+| `\|map` | Nested map/object | `children\|map` |
+| `\|leaf:` | String leaf value | `tags\|leaf:` |
+| `\|leaf:typename` | Typed leaf | `damagesource\|leaf:damagesource` |
+| `\|empty` | Boolean/empty flag | `newobjective\|empty` |
+
+#### Known Field Names (71 total)
+
+**Top-level Structure:**
+- `gbx_sections|map` - Gearbox sections mapping
+- `children|map` - Nested child objects
+- `dependencies|map` - Asset dependencies
+- `generateddependencies|map` - Generated dependencies
+- `sections|map` - General sections
+- `configs|map` - Configuration data
+- `attributes|map` - Attribute data
+
+**Damage System:**
+- `damagesource|leaf:damagesource` - Damage source reference
+- `damagesource|map` - Damage source mapping
+- `damagetags|leaf:` - Damage tags
+- `hitdamagesource|leaf:damagesource` - Hit damage source
+- `damagesourceoverride|leaf:damagesource` - Override
+- `reflecteddamagetags|leaf:` - Reflected damage tags
+- `reflectedprojectiledamagetags|leaf:` - Projectile reflection
+- `maxchargedamagetags|leaf:` - Max charge damage
+- `overheatdamagetags|leaf:` - Overheat damage
+- `repairkitdamagetags|leaf:` - Repair kit damage
+- `lessthanthresholddamagetags|leaf:` - Threshold damage
+- `playerdamagetags|leaf:` - Player damage
+
+**Activity/Area System:**
+- `activityareaactortags|leaf:` - Activity area actor tags
+- `activityareatags|leaf:` - Activity area tags
+- `areatags|leaf:` - Area tags
+- `requiredactivityareatags|leaf:` - Required activity area
+- `requiredactivitytags|leaf:` - Required activity
+- `excludedactivityareaactortags|leaf:` - Excluded activity area actors
+- `excludedactivitytags|leaf:` - Excluded activity
+
+**Tag System:**
+- `tags|leaf:` / `tags|map` - Tag data
+- `excludetags|leaf:` / `excludetags|map` - Exclusion tags
+- `excludeaddtags|leaf:` - Add to exclusion
+- `require_tags|leaf:` - Required tags
+- `reject_tags|leaf:` - Rejected tags
+- `requiredbasetags|leaf:` - Required base tags
+- `requiredtags|leaf:` - Required tags
+- `excludedbasetags|leaf:` - Excluded base tags
+- `excludedplayerdamagetags|leaf:` - Excluded player damage
+
+**Weapon/Combat:**
+- `weaponfire|map` - Weapon fire config
+- `effectparameters|map` - Effect parameters
+- `effectparametersbysurface|map` - Surface effects
+- `effectoverrides|map` - Effect overrides
+- `ampedtag|leaf:` - Amped tag
+- `tedioreemptytags|leaf:` - Tediore empty
+- `tediorehalffullormoretags|leaf:` - Tediore half+
+
+**Mission System:**
+- `invisiblemissiontypes|leaf:` - Invisible missions
+- `poamissiontypes|leaf:` - POA missions
+- `primarytrackedmissiontypes|leaf:` - Primary tracked
+- `temporarytrackedmissiontypes|leaf:` - Temporary tracked
+- `worldeventmissiontypes|leaf:` - World events
+- `missionfailsafetimerpickuptypes|leaf:` - Failsafe timer
+
+**UI/Display:**
+- `display_items|map` - Display items
+- `pips|map` - Pip display
+- `wheelsetups|map` - Wheel UI setups
+- `loaded_input_actions|map` - Input actions
+- `mat26_augersight|map` - Auger sight material
+
+**Other:**
+- `stats|leaf:` - Statistics data
+- `apply|leaf:` - Apply action
+- `remove|leaf:` - Remove action
+- `remove_states|leaf:` - Remove states
+- `criteria|map` - Criteria conditions
+- `entry_points|map` - Entry points
+- `exit_points|map` - Exit points
+- `exclusive|leaf:` - Exclusive flag
+- `alias_nodes|map` - Alias nodes
+- `factdependencies|map` - Fact dependencies
+- `data|leaf:damagesource` - Data reference
+- `newobjective|empty` - New objective flag
+- `momentsuegarden|empty` - Moments UE garden
+- `checkleavenoescaperoom01|empty` - Escape room check
+
+### Hash Function
+
+Field names are hashed using **FNV-1a 64-bit**:
+- Offset basis: `0xcbf29ce484222325`
+- Prime: `0x100000001b3`
+
+### SerialIndex in NCS
+
+The SerialIndex structure maps parts to their serialization indices:
+
+```
+Offset  Size  Description
+------  ----  -----------
+0x00    1     Category (weapon platform)
+0x01    1     Scope/Status flags
+0x02    2     Index (little-endian)
+```
+
+**Important:** NCS indices are runtime slot positions, NOT the serial encoding indices used in item serials. The manifest's alphabetical indices are used for serial encoding.
+
+### NCS Parser Tool
+
+A community parser exists (Cr4nkSt4r's NcsParser.exe):
+- Loads Oodle DLL dynamically
+- Decodes function names from XOR-encoded strings (key: 0xA7)
+- Outputs JSON using nlohmann JSON v3.12.0
+- Requires `oo2core_9_win64.dll` from game files
+
+### Implementation Notes
+
+To parse NCS files in Rust:
+1. Use `oodle-safe` crate with game's Oodle DLL
+2. Read gBx header to get compressed/decompressed sizes
+3. Call `OodleLZ_Decompress` on payload
+4. Parse decompressed content using field|type notation
+5. Use FNV-1a hash for field name lookups
+
+---
+
 *Extracted from BL4 game files using retoc and uextract tools.*

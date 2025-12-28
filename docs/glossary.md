@@ -74,6 +74,9 @@ Quick reference for terms used throughout this guide. Page references indicate t
 **FName**
 : Unreal's string identifier. 8 bytes containing index and instance number. See [Chapter 2](02-unreal-architecture.md).
 
+**FNV-1a**
+: Fowler-Noll-Vo hash function (variant 1a). Used by NCS format for field name lookups. 64-bit version with offset basis 0xcbf29ce484222325 and prime 0x100000001b3. See [Appendix D](appendix-d-game-files.md).
+
 **FNamePool**
 : Global string pool containing all FName strings. Also called GNames. See [Chapter 2](02-unreal-architecture.md).
 
@@ -92,6 +95,9 @@ Quick reference for terms used throughout this guide. Page references indicate t
 ---
 
 ## G
+
+**gBx**
+: Magic header for NCS files (0x67 0x42 0x78). Followed by variant byte and Oodle-compressed payload. See [Appendix D](appendix-d-game-files.md).
 
 **GNames**
 : Global FName string pool. Located at offset 0x112a1c80 from PE base. See [Chapter 2](02-unreal-architecture.md).
@@ -152,6 +158,9 @@ Quick reference for terms used throughout this guide. Page references indicate t
 
 ## N
 
+**NCS (Nexus Config Store)**
+: Gearbox's format for storing item pools, part data, and game configuration. Uses gBx header with Oodle compression. Contains data not found in standard PAK assets. See [Appendix D](appendix-d-game-files.md).
+
 **NamePrivate**
 : UObject field at offset 0x18 containing the object's FName. See [Chapter 2](02-unreal-architecture.md).
 
@@ -166,7 +175,7 @@ Quick reference for terms used throughout this guide. Page references indicate t
 : UObject field at offset 0x08 containing RF_* state flags. See [Chapter 2](02-unreal-architecture.md).
 
 **Oodle**
-: Compression algorithm used in UE5 IoStore containers. See [Chapter 6](06-data-extraction.md).
+: Compression algorithm used in UE5 IoStore containers and NCS files. BL4 uses version 9 (oo2core_9_win64.dll). See [Chapter 6](06-data-extraction.md) and [Appendix D](appendix-d-game-files.md).
 
 **OuterPrivate**
 : UObject field at offset 0x20 pointing to parent/container object. See [Chapter 2](02-unreal-architecture.md).
