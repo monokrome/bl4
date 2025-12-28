@@ -304,22 +304,6 @@ fn extract_metadata(strings: &[String]) -> HashMap<String, String> {
     metadata
 }
 
-/// Scan a directory of NCS files and extract type information
-pub fn scan_types(data_files: &[(&[u8], &str)]) -> HashMap<String, Vec<String>> {
-    let mut types: HashMap<String, Vec<String>> = HashMap::new();
-
-    for (data, filename) in data_files {
-        if let Some(content) = Content::parse(data) {
-            types
-                .entry(content.header.type_name.clone())
-                .or_default()
-                .push(filename.to_string());
-        }
-    }
-
-    types
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

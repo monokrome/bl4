@@ -85,6 +85,7 @@ pub trait ItemsRepository {
     // === Multi-source values ===
 
     /// Set a field value with source attribution
+    #[allow(clippy::too_many_arguments)] // Trait method with distinct semantic params
     fn set_value(
         &self,
         serial: &str,
@@ -125,6 +126,7 @@ pub trait ItemsRepository {
 #[cfg(feature = "attachments")]
 pub trait AttachmentsRepository {
     /// Add an image attachment
+    #[allow(clippy::too_many_arguments)] // Trait method with distinct semantic params
     fn add_attachment(
         &self,
         serial: &str,

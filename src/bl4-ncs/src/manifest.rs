@@ -84,7 +84,7 @@ fn extract_entry_at(data: &[u8]) -> Option<Entry> {
         Some(pos) => pos,
         None => data
             .iter()
-            .position(|&b| b < 0x20 || b > 0x7e)
+            .position(|&b| !(0x20..=0x7e).contains(&b))
             .unwrap_or(data.len()),
     };
 
@@ -93,7 +93,7 @@ fn extract_entry_at(data: &[u8]) -> Option<Entry> {
     }
 
     // Validate printable ASCII range for the portion before null
-    if data[..end].iter().any(|&b| b < 0x20 || b > 0x7e) {
+    if data[..end].iter().any(|&b| !(0x20..=0x7e).contains(&b)) {
         return None;
     }
 

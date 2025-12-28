@@ -60,6 +60,7 @@ pub trait AsyncItemsRepository {
     // === Multi-source values ===
 
     /// Set a field value with source attribution
+    #[allow(clippy::too_many_arguments)] // Trait method with distinct semantic params
     async fn set_value(
         &self,
         serial: &str,
@@ -94,6 +95,7 @@ pub trait AsyncItemsRepository {
 #[allow(async_fn_in_trait)]
 pub trait AsyncAttachmentsRepository {
     /// Add an image attachment
+    #[allow(clippy::too_many_arguments)] // Trait method with distinct semantic params
     async fn add_attachment(
         &self,
         serial: &str,

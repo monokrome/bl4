@@ -242,10 +242,10 @@ fn matches_filter(path: &str) -> bool {
         return true;
     }
     patterns.iter().any(|pat| {
-        if pat.starts_with('*') {
-            path.ends_with(&pat[1..])
-        } else if pat.ends_with('*') {
-            path.starts_with(&pat[..pat.len() - 1])
+        if let Some(suffix) = pat.strip_prefix('*') {
+            path.ends_with(suffix)
+        } else if let Some(prefix) = pat.strip_suffix('*') {
+            path.starts_with(prefix)
         } else {
             path.contains(pat)
         }
@@ -279,6 +279,9 @@ fn is_interesting_path(path: &str) -> bool {
 }
 
 /// Hook for open()
+///
+/// # Safety
+/// Caller must provide a valid null-terminated C string for `pathname`.
 #[no_mangle]
 pub unsafe extern "C" fn open(pathname: *const c_char, flags: c_int, mode: mode_t) -> c_int {
     let fd = REAL_OPEN(pathname, flags, mode);
@@ -323,6 +326,9 @@ pub unsafe extern "C" fn open(pathname: *const c_char, flags: c_int, mode: mode_
 }
 
 /// Hook for openat()
+///
+/// # Safety
+/// Caller must provide a valid null-terminated C string for `pathname`.
 #[no_mangle]
 pub unsafe extern "C" fn openat(
     dirfd: c_int,
@@ -371,6 +377,9 @@ pub unsafe extern "C" fn openat(
 }
 
 /// Hook for write()
+///
+/// # Safety
+/// Caller must provide a valid buffer of at least `count` bytes.
 #[no_mangle]
 pub unsafe extern "C" fn write(fd: c_int, buf: *const c_void, count: size_t) -> ssize_t {
     let result = REAL_WRITE(fd, buf, count);
@@ -401,6 +410,9 @@ pub unsafe extern "C" fn write(fd: c_int, buf: *const c_void, count: size_t) -> 
 }
 
 /// Hook for read()
+///
+/// # Safety
+/// Caller must provide a valid writable buffer of at least `count` bytes.
 #[no_mangle]
 pub unsafe extern "C" fn read(fd: c_int, buf: *mut c_void, count: size_t) -> ssize_t {
     let result = REAL_READ(fd, buf, count);
@@ -426,6 +438,9 @@ pub unsafe extern "C" fn read(fd: c_int, buf: *mut c_void, count: size_t) -> ssi
 }
 
 /// Hook for pread() - positioned read (common for PAK files)
+///
+/// # Safety
+/// Caller must provide a valid writable buffer of at least `count` bytes.
 #[no_mangle]
 pub unsafe extern "C" fn pread(
     fd: c_int,
@@ -456,6 +471,9 @@ pub unsafe extern "C" fn pread(
 }
 
 /// Hook for pread64() - 64-bit positioned read
+///
+/// # Safety
+/// Caller must provide a valid writable buffer of at least `count` bytes.
 #[no_mangle]
 pub unsafe extern "C" fn pread64(
     fd: c_int,
@@ -486,6 +504,9 @@ pub unsafe extern "C" fn pread64(
 }
 
 /// Hook for close()
+///
+/// # Safety
+/// Caller must provide a valid file descriptor.
 #[no_mangle]
 pub unsafe extern "C" fn close(fd: c_int) -> c_int {
     // Always call real close first
@@ -532,12 +553,19 @@ pub unsafe extern "C" fn close(fd: c_int) -> c_int {
 }
 
 /// Hook for lseek() - just pass through, but log for interesting files
+///
+/// # Safety
+/// Caller must provide a valid file descriptor.
 #[no_mangle]
 pub unsafe extern "C" fn lseek(fd: c_int, offset: off_t, whence: c_int) -> off_t {
     REAL_LSEEK(fd, offset, whence)
 }
 
 /// Hook for mmap() - memory-mapped file access (common for PAK files)
+///
+/// # Safety
+/// Caller must follow mmap(2) contract: valid fd (if not MAP_ANONYMOUS),
+/// valid addr hint, and valid prot/flags combination.
 #[no_mangle]
 pub unsafe extern "C" fn mmap(
     addr: *mut c_void,
@@ -574,6 +602,10 @@ pub unsafe extern "C" fn mmap(
 }
 
 /// Hook for mmap64() - 64-bit offset version
+///
+/// # Safety
+/// Caller must follow mmap(2) contract: valid fd (if not MAP_ANONYMOUS),
+/// valid addr hint, and valid prot/flags combination.
 #[no_mangle]
 pub unsafe extern "C" fn mmap64(
     addr: *mut c_void,
@@ -610,6 +642,9 @@ pub unsafe extern "C" fn mmap64(
 }
 
 /// Hook for fopen() - stdio file open
+///
+/// # Safety
+/// Caller must provide valid null-terminated C strings for `pathname` and `mode`.
 #[no_mangle]
 pub unsafe extern "C" fn fopen(pathname: *const c_char, mode: *const c_char) -> *mut c_void {
     let fp = REAL_FOPEN(pathname, mode);
@@ -654,6 +689,10 @@ pub unsafe extern "C" fn fopen(pathname: *const c_char, mode: *const c_char) -> 
 }
 
 /// Hook for fread() - stdio file read
+///
+/// # Safety
+/// Caller must provide a valid writable buffer of at least `size * nmemb` bytes
+/// and a valid FILE stream pointer.
 #[no_mangle]
 pub unsafe extern "C" fn fread(
     ptr: *mut c_void,
@@ -690,6 +729,10 @@ pub unsafe extern "C" fn fread(
 }
 
 /// Hook for fwrite() - stdio file write
+///
+/// # Safety
+/// Caller must provide a valid buffer of at least `size * nmemb` bytes
+/// and a valid FILE stream pointer.
 #[no_mangle]
 pub unsafe extern "C" fn fwrite(
     ptr: *const c_void,
@@ -728,6 +771,9 @@ pub unsafe extern "C" fn fwrite(
 }
 
 /// Hook for fclose() - stdio file close
+///
+/// # Safety
+/// Caller must provide a valid FILE stream pointer.
 #[no_mangle]
 pub unsafe extern "C" fn fclose(stream: *mut c_void) -> c_int {
     let result = REAL_FCLOSE(stream);
