@@ -702,10 +702,19 @@ The binary section contains string table indices, not raw numeric values.
 | Code | Description | Examples |
 |------|-------------|----------|
 | `abjx` | Extended entries with dependents | achievement, preferredparts |
-| `abij` | Indexed entries | itempoollist |
+| `abij` | Indexed entries | itempoollist, aim_assist_parameters |
 | `abjl` | Labeled entries | inv_name_part |
 | `abhj` | Hash-indexed entries | - |
 | `abpe` | Property-based entries | audio_event |
+
+**String Table Format:**
+
+Entry names are null-terminated, but values following them are **packed without separators**:
+```
+"AAAssaultRifle\0" + "0.6000007900.01.5..." + "Heavy\0" + ...
+```
+
+The binary section contains structure data (lengths/offsets) needed to decode the packed values. Field names appear at the end of the string table (e.g., "stickiness", "zoomreduceinput").
 
 ### SerialIndex in NCS
 
