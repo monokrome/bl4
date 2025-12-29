@@ -1690,51 +1690,36 @@ fn parse_export_properties_with_schema(
     }
 
     // For DataTables and other assets without usmap struct:
-    // Extract property info from name table
+    // Extract property info from name table (sorted by schema index)
     let prop_info = extract_property_info_from_names(names);
 
     if prop_info.is_empty() {
         return parse_export_properties(data, offset, size, names);
     }
 
-    // Try to parse using unversioned header with name-table derived properties
-    if let Some((fragments, zero_mask, header_size)) = parse_unversioned_header(export_data) {
-        let serialized_indices = get_serialized_property_indices(&fragments, &zero_mask);
+    // UserDefinedStruct assets have embedded schema - the values are at the END of the data
+    // Calculate expected data size and find values from the end
+    let value_size = if has_double { 8 } else if has_float { 4 } else { 8 };
+    let expected_data_size = prop_info.len() * value_size;
 
-        if !serialized_indices.is_empty() {
-            // Build index -> prop_info mapping
-            let index_to_name: HashMap<usize, &str> = prop_info
-                .iter()
-                .map(|(name, idx, _)| (*idx as usize, name.as_str()))
-                .collect();
+    // The values should be at the end of the export data
+    if export_data.len() >= expected_data_size {
+        let values_start = export_data.len() - expected_data_size;
+        let mut properties = Vec::new();
+        let mut pos = values_start;
 
-            let mut properties = Vec::new();
-            let mut pos = header_size;
+        for (prop_name, _, _) in &prop_info {
+            if pos + value_size > export_data.len() {
+                break;
+            }
 
-            // Determine value size based on property types in names
-            let value_size = if has_double {
-                8
-            } else if has_float {
-                4
-            } else {
-                8
-            };
-
-            for prop_index in serialized_indices {
-                if pos + value_size > export_data.len() {
-                    break;
-                }
-
-                let prop_name = index_to_name
-                    .get(&prop_index)
-                    .map(|s| s.to_string())
-                    .unwrap_or_else(|| format!("prop_{}", prop_index));
-
-                if value_size == 8 {
-                    let val = f64::from_le_bytes(export_data[pos..pos + 8].try_into().ok()?);
+            if value_size == 8 {
+                if let Ok(bytes) = export_data[pos..pos + 8].try_into() {
+                    let val: f64 = f64::from_le_bytes(bytes);
+                    // Only include if value looks reasonable
                     if val.is_finite() {
                         properties.push(ParsedProperty {
-                            name: prop_name,
+                            name: prop_name.clone(),
                             value_type: Some("Double".to_string()),
                             float_value: Some(val),
                             int_value: None,
@@ -1746,30 +1731,31 @@ fn parse_export_properties_with_schema(
                             map_values: None,
                         });
                     }
-                } else {
-                    let val = f32::from_le_bytes(export_data[pos..pos + 4].try_into().ok()?);
-                    if val.is_finite() {
-                        properties.push(ParsedProperty {
-                            name: prop_name,
-                            value_type: Some("Float".to_string()),
-                            float_value: Some(val as f64),
-                            int_value: None,
-                            string_value: None,
-                            object_path: None,
-                            array_values: None,
-                            struct_values: None,
-                            enum_value: None,
-                            map_values: None,
-                        });
-                    }
                 }
-
-                pos += value_size;
+            } else if let Ok(bytes) = export_data[pos..pos + 4].try_into() {
+                let val: f32 = f32::from_le_bytes(bytes);
+                // Only include if value looks reasonable
+                if val.is_finite() {
+                    properties.push(ParsedProperty {
+                        name: prop_name.clone(),
+                        value_type: Some("Float".to_string()),
+                        float_value: Some(val as f64),
+                        int_value: None,
+                        string_value: None,
+                        object_path: None,
+                        array_values: None,
+                        struct_values: None,
+                        enum_value: None,
+                        map_values: None,
+                    });
+                }
             }
 
-            if !properties.is_empty() {
-                return Some(properties);
-            }
+            pos += value_size;
+        }
+
+        if properties.len() == prop_info.len() {
+            return Some(properties);
         }
     }
 
