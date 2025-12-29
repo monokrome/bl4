@@ -1,6 +1,6 @@
 project:
   type: book
-  output-dir: ../rendered/quarto
+  output-dir: rendered/quarto
 
 book:
   title: "Borderlands 4 Reverse Engineering Guide"
@@ -11,6 +11,7 @@ book:
     - epub
   chapters:
     - index.md
+    - 00-introduction.md
     - part: "Core Concepts"
       chapters:
         - 01-binary-basics.md
@@ -42,7 +43,7 @@ format:
     number-sections: true
     colorlinks: true
     mainfont: "DejaVu Serif"
-    sansfont: "DejaVu Sans"  
+    sansfont: "DejaVu Sans"
     monofont: "DejaVu Sans Mono"
   epub:
     toc: true
