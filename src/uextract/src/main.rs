@@ -473,7 +473,7 @@ struct ZenExportInfo {
     properties: Option<Vec<ParsedProperty>>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 struct ParsedProperty {
     name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -484,6 +484,30 @@ struct ParsedProperty {
     int_value: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     string_value: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    object_path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    array_values: Option<Vec<ParsedPropertyValue>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    struct_values: Option<Vec<ParsedProperty>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    enum_value: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    map_values: Option<Vec<(ParsedPropertyValue, ParsedPropertyValue)>>,
+}
+
+/// Simplified property value for arrays and maps (no name needed)
+#[derive(Debug, Serialize, Clone)]
+#[serde(untagged)]
+enum ParsedPropertyValue {
+    Null,
+    Bool(bool),
+    Int(i64),
+    Float(f64),
+    String(String),
+    Object(String),
+    Array(Vec<ParsedPropertyValue>),
+    Struct(Vec<ParsedProperty>),
 }
 
 /// Parse property values from export serialized data
@@ -575,6 +599,11 @@ fn parse_export_properties(
                     float_value: Some(double_values[val_idx]),
                     int_value: None,
                     string_value: None,
+                    object_path: None,
+                    array_values: None,
+                    struct_values: None,
+                    enum_value: None,
+                    map_values: None,
                 });
             }
         }
@@ -616,6 +645,11 @@ fn parse_export_properties(
                     float_value: Some(float_values[val_idx] as f64),
                     int_value: None,
                     string_value: None,
+                    object_path: None,
+                    array_values: None,
+                    struct_values: None,
+                    enum_value: None,
+                    map_values: None,
                 });
             }
         }
@@ -770,92 +804,768 @@ fn get_all_struct_properties<'a>(
     all_props
 }
 
-/// Calculate the serialized size of a property value
-fn get_property_size(inner: &usmap::PropertyInner) -> Option<usize> {
-    match inner {
-        usmap::PropertyInner::Bool => Some(0), // Bools are encoded in the header
-        usmap::PropertyInner::Byte => Some(1),
-        usmap::PropertyInner::Int8 => Some(1),
-        usmap::PropertyInner::Int16 => Some(2),
-        usmap::PropertyInner::UInt16 => Some(2),
-        usmap::PropertyInner::Int => Some(4),
-        usmap::PropertyInner::UInt32 => Some(4),
-        usmap::PropertyInner::Int64 => Some(8),
-        usmap::PropertyInner::UInt64 => Some(8),
-        usmap::PropertyInner::Float => Some(4),
-        usmap::PropertyInner::Double => Some(8),
-        // Complex types - we can't determine size without more context
-        _ => None,
+// ============================================================================
+// Complex Property Type Parsing Helpers
+// ============================================================================
+
+/// Context for property parsing - holds names and struct definitions
+struct PropertyParseContext<'a> {
+    names: &'a [String],
+    struct_lookup: &'a HashMap<String, &'a usmap::Struct>,
+}
+
+/// Read a serialized FName index and resolve to string
+fn read_fname(data: &[u8], pos: usize, names: &[String]) -> Option<(String, usize)> {
+    if pos + 8 > data.len() {
+        return None;
+    }
+    // FName is stored as 32-bit index + 32-bit number (usually 0)
+    let name_index = u32::from_le_bytes([data[pos], data[pos + 1], data[pos + 2], data[pos + 3]]);
+    let name = names.get(name_index as usize)?.clone();
+    Some((name, 8))
+}
+
+/// Read a serialized string (length-prefixed)
+fn read_fstring(data: &[u8], pos: usize) -> Option<(String, usize)> {
+    if pos + 4 > data.len() {
+        return None;
+    }
+    let len = i32::from_le_bytes([data[pos], data[pos + 1], data[pos + 2], data[pos + 3]]);
+
+    if len == 0 {
+        return Some((String::new(), 4));
+    }
+
+    // Negative length means UTF-16
+    let (str_len, is_utf16) = if len < 0 {
+        ((-len) as usize, true)
+    } else {
+        (len as usize, false)
+    };
+
+    let start = pos + 4;
+    if is_utf16 {
+        let byte_len = str_len * 2;
+        if start + byte_len > data.len() {
+            return None;
+        }
+        let utf16: Vec<u16> = (0..str_len)
+            .map(|i| u16::from_le_bytes([data[start + i * 2], data[start + i * 2 + 1]]))
+            .collect();
+        let s = String::from_utf16_lossy(&utf16).trim_end_matches('\0').to_string();
+        Some((s, 4 + byte_len))
+    } else {
+        if start + str_len > data.len() {
+            return None;
+        }
+        let s = String::from_utf8_lossy(&data[start..start + str_len])
+            .trim_end_matches('\0')
+            .to_string();
+        Some((s, 4 + str_len))
     }
 }
 
-/// Parse a single property value from data
-#[allow(clippy::too_many_lines)] // UE5 property type handling
-fn parse_property_value(
-    data: &[u8],
-    pos: usize,
-    inner: &usmap::PropertyInner,
-) -> Option<(ParsedProperty, usize)> {
-    let size = get_property_size(inner)?;
-
-    if pos + size > data.len() {
+/// Read a soft/asset object path reference
+fn read_object_path(data: &[u8], pos: usize, names: &[String]) -> Option<(String, usize)> {
+    // Object references are stored as package index (FPackageIndex)
+    // In cooked assets, this is typically FName-based
+    if pos + 8 > data.len() {
         return None;
     }
 
-    let slice = &data[pos..pos + size];
-
-    let (value_type, float_value, int_value) = match inner {
-        usmap::PropertyInner::Bool => {
-            // Bools are handled separately in zero mask
-            return None;
+    // Try reading as FName first (asset path)
+    if let Some((path, consumed)) = read_fname(data, pos, names) {
+        if !path.is_empty() && (path.starts_with('/') || path.contains('.')) {
+            return Some((path, consumed));
         }
-        usmap::PropertyInner::Byte => ("Byte", None, Some(slice[0] as i64)),
-        usmap::PropertyInner::Int8 => ("Int8", None, Some(slice[0] as i8 as i64)),
+    }
+
+    // Fall back to reading as FSoftObjectPath (asset name + subpath)
+    let mut total_consumed = 0;
+
+    // Asset path name (FName or FTopLevelAssetPath in UE5.1+)
+    let (asset_path, consumed) = read_fname(data, pos, names)?;
+    total_consumed += consumed;
+
+    // SubPath string (FString)
+    if pos + total_consumed + 4 <= data.len() {
+        let (subpath, consumed) = read_fstring(data, pos + total_consumed)?;
+        total_consumed += consumed;
+
+        if subpath.is_empty() {
+            return Some((asset_path, total_consumed));
+        }
+        return Some((format!("{}:{}", asset_path, subpath), total_consumed));
+    }
+
+    Some((asset_path, total_consumed))
+}
+
+/// Parse a property value, returning the value and bytes consumed
+/// This is the extended version that handles complex types
+#[allow(clippy::too_many_lines)]
+fn parse_property_value_extended(
+    data: &[u8],
+    pos: usize,
+    inner: &usmap::PropertyInner,
+    ctx: &PropertyParseContext<'_>,
+) -> Option<(ParsedProperty, usize)> {
+    match inner {
+        // Simple fixed-size types
+        usmap::PropertyInner::Bool => {
+            // Bools in unversioned are in the zero mask, but standalone bool is 1 byte
+            if pos >= data.len() {
+                return None;
+            }
+            Some((
+                ParsedProperty {
+                    name: String::new(),
+                    value_type: Some("Bool".to_string()),
+                    float_value: None,
+                    int_value: Some(if data[pos] != 0 { 1 } else { 0 }),
+                    string_value: None,
+                    object_path: None,
+                    array_values: None,
+                    struct_values: None,
+                    enum_value: None,
+                    map_values: None,
+                },
+                1,
+            ))
+        }
+        usmap::PropertyInner::Byte => {
+            if pos >= data.len() {
+                return None;
+            }
+            Some((
+                ParsedProperty {
+                    name: String::new(),
+                    value_type: Some("Byte".to_string()),
+                    float_value: None,
+                    int_value: Some(data[pos] as i64),
+                    string_value: None,
+                    object_path: None,
+                    array_values: None,
+                    struct_values: None,
+                    enum_value: None,
+                    map_values: None,
+                },
+                1,
+            ))
+        }
+        usmap::PropertyInner::Int8 => {
+            if pos >= data.len() {
+                return None;
+            }
+            Some((
+                ParsedProperty {
+                    name: String::new(),
+                    value_type: Some("Int8".to_string()),
+                    float_value: None,
+                    int_value: Some(data[pos] as i8 as i64),
+                    string_value: None,
+                    object_path: None,
+                    array_values: None,
+                    struct_values: None,
+                    enum_value: None,
+                    map_values: None,
+                },
+                1,
+            ))
+        }
         usmap::PropertyInner::Int16 => {
-            let val = i16::from_le_bytes([slice[0], slice[1]]);
-            ("Int16", None, Some(val as i64))
+            if pos + 2 > data.len() {
+                return None;
+            }
+            let val = i16::from_le_bytes([data[pos], data[pos + 1]]);
+            Some((
+                ParsedProperty {
+                    name: String::new(),
+                    value_type: Some("Int16".to_string()),
+                    float_value: None,
+                    int_value: Some(val as i64),
+                    string_value: None,
+                    object_path: None,
+                    array_values: None,
+                    struct_values: None,
+                    enum_value: None,
+                    map_values: None,
+                },
+                2,
+            ))
         }
         usmap::PropertyInner::UInt16 => {
-            let val = u16::from_le_bytes([slice[0], slice[1]]);
-            ("UInt16", None, Some(val as i64))
+            if pos + 2 > data.len() {
+                return None;
+            }
+            let val = u16::from_le_bytes([data[pos], data[pos + 1]]);
+            Some((
+                ParsedProperty {
+                    name: String::new(),
+                    value_type: Some("UInt16".to_string()),
+                    float_value: None,
+                    int_value: Some(val as i64),
+                    string_value: None,
+                    object_path: None,
+                    array_values: None,
+                    struct_values: None,
+                    enum_value: None,
+                    map_values: None,
+                },
+                2,
+            ))
         }
         usmap::PropertyInner::Int => {
-            let val = i32::from_le_bytes([slice[0], slice[1], slice[2], slice[3]]);
-            ("Int", None, Some(val as i64))
+            if pos + 4 > data.len() {
+                return None;
+            }
+            let val = i32::from_le_bytes([data[pos], data[pos + 1], data[pos + 2], data[pos + 3]]);
+            Some((
+                ParsedProperty {
+                    name: String::new(),
+                    value_type: Some("Int".to_string()),
+                    float_value: None,
+                    int_value: Some(val as i64),
+                    string_value: None,
+                    object_path: None,
+                    array_values: None,
+                    struct_values: None,
+                    enum_value: None,
+                    map_values: None,
+                },
+                4,
+            ))
         }
         usmap::PropertyInner::UInt32 => {
-            let val = u32::from_le_bytes([slice[0], slice[1], slice[2], slice[3]]);
-            ("UInt32", None, Some(val as i64))
+            if pos + 4 > data.len() {
+                return None;
+            }
+            let val = u32::from_le_bytes([data[pos], data[pos + 1], data[pos + 2], data[pos + 3]]);
+            Some((
+                ParsedProperty {
+                    name: String::new(),
+                    value_type: Some("UInt32".to_string()),
+                    float_value: None,
+                    int_value: Some(val as i64),
+                    string_value: None,
+                    object_path: None,
+                    array_values: None,
+                    struct_values: None,
+                    enum_value: None,
+                    map_values: None,
+                },
+                4,
+            ))
         }
         usmap::PropertyInner::Int64 => {
-            let val = i64::from_le_bytes(slice.try_into().ok()?);
-            ("Int64", None, Some(val))
+            if pos + 8 > data.len() {
+                return None;
+            }
+            let val = i64::from_le_bytes(data[pos..pos + 8].try_into().ok()?);
+            Some((
+                ParsedProperty {
+                    name: String::new(),
+                    value_type: Some("Int64".to_string()),
+                    float_value: None,
+                    int_value: Some(val),
+                    string_value: None,
+                    object_path: None,
+                    array_values: None,
+                    struct_values: None,
+                    enum_value: None,
+                    map_values: None,
+                },
+                8,
+            ))
         }
         usmap::PropertyInner::UInt64 => {
-            let val = u64::from_le_bytes(slice.try_into().ok()?);
-            ("UInt64", None, Some(val as i64))
+            if pos + 8 > data.len() {
+                return None;
+            }
+            let val = u64::from_le_bytes(data[pos..pos + 8].try_into().ok()?);
+            Some((
+                ParsedProperty {
+                    name: String::new(),
+                    value_type: Some("UInt64".to_string()),
+                    float_value: None,
+                    int_value: Some(val as i64),
+                    string_value: None,
+                    object_path: None,
+                    array_values: None,
+                    struct_values: None,
+                    enum_value: None,
+                    map_values: None,
+                },
+                8,
+            ))
         }
         usmap::PropertyInner::Float => {
-            let val = f32::from_le_bytes([slice[0], slice[1], slice[2], slice[3]]);
-            ("Float", Some(val as f64), None)
+            if pos + 4 > data.len() {
+                return None;
+            }
+            let val = f32::from_le_bytes([data[pos], data[pos + 1], data[pos + 2], data[pos + 3]]);
+            Some((
+                ParsedProperty {
+                    name: String::new(),
+                    value_type: Some("Float".to_string()),
+                    float_value: Some(val as f64),
+                    int_value: None,
+                    string_value: None,
+                    object_path: None,
+                    array_values: None,
+                    struct_values: None,
+                    enum_value: None,
+                    map_values: None,
+                },
+                4,
+            ))
         }
         usmap::PropertyInner::Double => {
-            let val = f64::from_le_bytes(slice.try_into().ok()?);
-            ("Double", Some(val), None)
+            if pos + 8 > data.len() {
+                return None;
+            }
+            let val = f64::from_le_bytes(data[pos..pos + 8].try_into().ok()?);
+            Some((
+                ParsedProperty {
+                    name: String::new(),
+                    value_type: Some("Double".to_string()),
+                    float_value: Some(val),
+                    int_value: None,
+                    string_value: None,
+                    object_path: None,
+                    array_values: None,
+                    struct_values: None,
+                    enum_value: None,
+                    map_values: None,
+                },
+                8,
+            ))
         }
-        _ => return None,
-    };
 
-    Some((
-        ParsedProperty {
-            name: String::new(), // Will be filled in by caller
-            value_type: Some(value_type.to_string()),
-            float_value,
-            int_value,
-            string_value: None,
-        },
-        size,
-    ))
+        // FName - string reference into name table
+        usmap::PropertyInner::Name => {
+            let (name, consumed) = read_fname(data, pos, ctx.names)?;
+            Some((
+                ParsedProperty {
+                    name: String::new(),
+                    value_type: Some("Name".to_string()),
+                    float_value: None,
+                    int_value: None,
+                    string_value: Some(name),
+                    object_path: None,
+                    array_values: None,
+                    struct_values: None,
+                    enum_value: None,
+                    map_values: None,
+                },
+                consumed,
+            ))
+        }
+
+        // FString - inline string
+        usmap::PropertyInner::Str | usmap::PropertyInner::Utf8Str | usmap::PropertyInner::AnsiStr => {
+            let (s, consumed) = read_fstring(data, pos)?;
+            Some((
+                ParsedProperty {
+                    name: String::new(),
+                    value_type: Some("String".to_string()),
+                    float_value: None,
+                    int_value: None,
+                    string_value: Some(s),
+                    object_path: None,
+                    array_values: None,
+                    struct_values: None,
+                    enum_value: None,
+                    map_values: None,
+                },
+                consumed,
+            ))
+        }
+
+        // FText - localized text (complex, just read basic string)
+        usmap::PropertyInner::Text => {
+            // FText has flags, history type, etc. Just try to read a string
+            if pos + 4 > data.len() {
+                return None;
+            }
+            // Skip flags (4 bytes) then try to read string
+            let (s, consumed) = read_fstring(data, pos + 4).unwrap_or((String::new(), 0));
+            Some((
+                ParsedProperty {
+                    name: String::new(),
+                    value_type: Some("Text".to_string()),
+                    float_value: None,
+                    int_value: None,
+                    string_value: Some(s),
+                    object_path: None,
+                    array_values: None,
+                    struct_values: None,
+                    enum_value: None,
+                    map_values: None,
+                },
+                4 + consumed,
+            ))
+        }
+
+        // Object reference - path to another asset
+        usmap::PropertyInner::Object
+        | usmap::PropertyInner::WeakObject
+        | usmap::PropertyInner::LazyObject
+        | usmap::PropertyInner::Interface => {
+            // Object reference is a FPackageIndex (4 bytes in cooked assets)
+            if pos + 4 > data.len() {
+                return None;
+            }
+            let index = i32::from_le_bytes([data[pos], data[pos + 1], data[pos + 2], data[pos + 3]]);
+
+            // Resolve to path if possible
+            let path = if index == 0 {
+                "None".to_string()
+            } else if index > 0 {
+                // Export reference (positive index)
+                format!("Export:{}", index - 1)
+            } else {
+                // Import reference (negative index)
+                format!("Import:{}", -index - 1)
+            };
+
+            Some((
+                ParsedProperty {
+                    name: String::new(),
+                    value_type: Some("Object".to_string()),
+                    float_value: None,
+                    int_value: None,
+                    string_value: None,
+                    object_path: Some(path),
+                    array_values: None,
+                    struct_values: None,
+                    enum_value: None,
+                    map_values: None,
+                },
+                4,
+            ))
+        }
+
+        // Soft object path - string-based asset reference
+        usmap::PropertyInner::SoftObject | usmap::PropertyInner::AssetObject => {
+            let (path, consumed) = read_object_path(data, pos, ctx.names)?;
+            Some((
+                ParsedProperty {
+                    name: String::new(),
+                    value_type: Some("SoftObject".to_string()),
+                    float_value: None,
+                    int_value: None,
+                    string_value: None,
+                    object_path: Some(path),
+                    array_values: None,
+                    struct_values: None,
+                    enum_value: None,
+                    map_values: None,
+                },
+                consumed,
+            ))
+        }
+
+        // Enum - stored as FName
+        usmap::PropertyInner::Enum { inner: _, name: enum_name } => {
+            let (value, consumed) = read_fname(data, pos, ctx.names)?;
+            Some((
+                ParsedProperty {
+                    name: String::new(),
+                    value_type: Some(format!("Enum:{}", enum_name)),
+                    float_value: None,
+                    int_value: None,
+                    string_value: None,
+                    object_path: None,
+                    array_values: None,
+                    struct_values: None,
+                    enum_value: Some(value),
+                    map_values: None,
+                },
+                consumed,
+            ))
+        }
+
+        // Array - count followed by elements
+        usmap::PropertyInner::Array { inner } => {
+            if pos + 4 > data.len() {
+                return None;
+            }
+            let count = i32::from_le_bytes([data[pos], data[pos + 1], data[pos + 2], data[pos + 3]]);
+            let mut current_pos = pos + 4;
+            let mut values = Vec::new();
+
+            for _ in 0..count {
+                if let Some((elem, consumed)) = parse_property_value_extended(data, current_pos, inner, ctx) {
+                    values.push(property_to_value(&elem));
+                    current_pos += consumed;
+                } else {
+                    break;
+                }
+            }
+
+            Some((
+                ParsedProperty {
+                    name: String::new(),
+                    value_type: Some("Array".to_string()),
+                    float_value: None,
+                    int_value: Some(count as i64),
+                    string_value: None,
+                    object_path: None,
+                    array_values: Some(values),
+                    struct_values: None,
+                    enum_value: None,
+                    map_values: None,
+                },
+                current_pos - pos,
+            ))
+        }
+
+        // Struct - inline struct properties
+        usmap::PropertyInner::Struct { name: struct_name } => {
+            // Look up struct definition
+            if let Some(struct_def) = ctx.struct_lookup.get(struct_name) {
+                // Try to parse with unversioned header
+                if let Some((fragments, zero_mask, header_size)) = parse_unversioned_header(&data[pos..]) {
+                    let indices = get_serialized_property_indices(&fragments, &zero_mask);
+                    let all_props = get_all_struct_properties(struct_name, ctx.struct_lookup);
+                    let index_to_prop: HashMap<usize, &usmap::Property> =
+                        all_props.iter().map(|p| (p.index as usize, *p)).collect();
+
+                    let mut struct_props = Vec::new();
+                    let mut current_pos = pos + header_size;
+
+                    for prop_index in indices {
+                        if let Some(prop_def) = index_to_prop.get(&prop_index) {
+                            if let Some((mut parsed, consumed)) =
+                                parse_property_value_extended(data, current_pos, &prop_def.inner, ctx)
+                            {
+                                parsed.name = prop_def.name.clone();
+                                struct_props.push(parsed);
+                                current_pos += consumed;
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+
+                    if !struct_props.is_empty() {
+                        return Some((
+                            ParsedProperty {
+                                name: String::new(),
+                                value_type: Some(format!("Struct:{}", struct_name)),
+                                float_value: None,
+                                int_value: None,
+                                string_value: None,
+                                object_path: None,
+                                array_values: None,
+                                struct_values: Some(struct_props),
+                                enum_value: None,
+                                map_values: None,
+                            },
+                            current_pos - pos,
+                        ));
+                    }
+                }
+
+                // If no properties found but struct is empty, still return success
+                if struct_def.properties.is_empty() {
+                    return Some((
+                        ParsedProperty {
+                            name: String::new(),
+                            value_type: Some(format!("Struct:{}", struct_name)),
+                            float_value: None,
+                            int_value: None,
+                            string_value: None,
+                            object_path: None,
+                            array_values: None,
+                            struct_values: Some(Vec::new()),
+                            enum_value: None,
+                            map_values: None,
+                        },
+                        0,
+                    ));
+                }
+            }
+
+            // Unknown struct - can't parse
+            None
+        }
+
+        // Map - count followed by key-value pairs
+        usmap::PropertyInner::Map { key, value } => {
+            if pos + 4 > data.len() {
+                return None;
+            }
+            let count = i32::from_le_bytes([data[pos], data[pos + 1], data[pos + 2], data[pos + 3]]);
+            let mut current_pos = pos + 4;
+            let mut pairs = Vec::new();
+
+            for _ in 0..count {
+                let (key_prop, key_consumed) = parse_property_value_extended(data, current_pos, key, ctx)?;
+                current_pos += key_consumed;
+
+                let (val_prop, val_consumed) = parse_property_value_extended(data, current_pos, value, ctx)?;
+                current_pos += val_consumed;
+
+                pairs.push((property_to_value(&key_prop), property_to_value(&val_prop)));
+            }
+
+            Some((
+                ParsedProperty {
+                    name: String::new(),
+                    value_type: Some("Map".to_string()),
+                    float_value: None,
+                    int_value: Some(count as i64),
+                    string_value: None,
+                    object_path: None,
+                    array_values: None,
+                    struct_values: None,
+                    enum_value: None,
+                    map_values: Some(pairs),
+                },
+                current_pos - pos,
+            ))
+        }
+
+        // Set - like array but with unique values
+        usmap::PropertyInner::Set { key } => {
+            if pos + 4 > data.len() {
+                return None;
+            }
+            let count = i32::from_le_bytes([data[pos], data[pos + 1], data[pos + 2], data[pos + 3]]);
+            let mut current_pos = pos + 4;
+            let mut values = Vec::new();
+
+            for _ in 0..count {
+                if let Some((elem, consumed)) = parse_property_value_extended(data, current_pos, key, ctx) {
+                    values.push(property_to_value(&elem));
+                    current_pos += consumed;
+                } else {
+                    break;
+                }
+            }
+
+            Some((
+                ParsedProperty {
+                    name: String::new(),
+                    value_type: Some("Set".to_string()),
+                    float_value: None,
+                    int_value: Some(count as i64),
+                    string_value: None,
+                    object_path: None,
+                    array_values: Some(values),
+                    struct_values: None,
+                    enum_value: None,
+                    map_values: None,
+                },
+                current_pos - pos,
+            ))
+        }
+
+        // Optional - bool flag followed by optional value
+        usmap::PropertyInner::Optional { inner } => {
+            if pos >= data.len() {
+                return None;
+            }
+            let has_value = data[pos] != 0;
+            if has_value {
+                let (mut prop, consumed) = parse_property_value_extended(data, pos + 1, inner, ctx)?;
+                prop.value_type = Some(format!("Optional<{}>", prop.value_type.as_deref().unwrap_or("?")));
+                Some((prop, 1 + consumed))
+            } else {
+                Some((
+                    ParsedProperty {
+                        name: String::new(),
+                        value_type: Some("Optional:None".to_string()),
+                        float_value: None,
+                        int_value: None,
+                        string_value: None,
+                        object_path: None,
+                        array_values: None,
+                        struct_values: None,
+                        enum_value: None,
+                        map_values: None,
+                    },
+                    1,
+                ))
+            }
+        }
+
+        // Delegate types - skip for now
+        usmap::PropertyInner::Delegate | usmap::PropertyInner::MulticastDelegate => {
+            // Delegates are complex, just skip with minimal size
+            None
+        }
+
+        // FieldPath - asset field reference
+        usmap::PropertyInner::FieldPath => {
+            // FieldPath is an array of FNames
+            if pos + 4 > data.len() {
+                return None;
+            }
+            let count = i32::from_le_bytes([data[pos], data[pos + 1], data[pos + 2], data[pos + 3]]);
+            let mut current_pos = pos + 4;
+            let mut path_parts = Vec::new();
+
+            for _ in 0..count {
+                let (name, consumed) = read_fname(data, current_pos, ctx.names)?;
+                path_parts.push(name);
+                current_pos += consumed;
+            }
+
+            // Also read the resolved owner
+            let (_, owner_consumed) = read_fname(data, current_pos, ctx.names).unwrap_or((String::new(), 8));
+            current_pos += owner_consumed;
+
+            Some((
+                ParsedProperty {
+                    name: String::new(),
+                    value_type: Some("FieldPath".to_string()),
+                    float_value: None,
+                    int_value: None,
+                    string_value: Some(path_parts.join(".")),
+                    object_path: None,
+                    array_values: None,
+                    struct_values: None,
+                    enum_value: None,
+                    map_values: None,
+                },
+                current_pos - pos,
+            ))
+        }
+
+        usmap::PropertyInner::Unknown => None,
+    }
+}
+
+/// Convert a ParsedProperty to a ParsedPropertyValue for array/map storage
+fn property_to_value(prop: &ParsedProperty) -> ParsedPropertyValue {
+    if let Some(b) = prop.int_value {
+        if prop.value_type.as_deref() == Some("Bool") {
+            return ParsedPropertyValue::Bool(b != 0);
+        }
+        return ParsedPropertyValue::Int(b);
+    }
+    if let Some(f) = prop.float_value {
+        return ParsedPropertyValue::Float(f);
+    }
+    if let Some(ref s) = prop.string_value {
+        return ParsedPropertyValue::String(s.clone());
+    }
+    if let Some(ref s) = prop.enum_value {
+        return ParsedPropertyValue::String(s.clone());
+    }
+    if let Some(ref p) = prop.object_path {
+        return ParsedPropertyValue::Object(p.clone());
+    }
+    if let Some(ref arr) = prop.array_values {
+        return ParsedPropertyValue::Array(arr.clone());
+    }
+    if let Some(ref st) = prop.struct_values {
+        return ParsedPropertyValue::Struct(st.clone());
+    }
+    ParsedPropertyValue::Null
 }
 
 /// Extract property info from asset name table
@@ -935,6 +1645,12 @@ fn parse_export_properties_with_schema(
                 .map(|n| format!("F{}", n))
         });
 
+    // Create context for extended property parsing
+    let ctx = PropertyParseContext {
+        names,
+        struct_lookup,
+    };
+
     // If we have a usmap struct definition, use it
     if let Some(ref type_name) = struct_type {
         if struct_lookup.contains_key(type_name) {
@@ -954,7 +1670,7 @@ fn parse_export_properties_with_schema(
                     for prop_index in serialized_indices {
                         if let Some(prop_def) = index_to_prop.get(&prop_index) {
                             if let Some((mut parsed, consumed)) =
-                                parse_property_value(export_data, pos, &prop_def.inner)
+                                parse_property_value_extended(export_data, pos, &prop_def.inner, &ctx)
                             {
                                 parsed.name = prop_def.name.clone();
                                 properties.push(parsed);
@@ -1023,6 +1739,11 @@ fn parse_export_properties_with_schema(
                             float_value: Some(val),
                             int_value: None,
                             string_value: None,
+                            object_path: None,
+                            array_values: None,
+                            struct_values: None,
+                            enum_value: None,
+                            map_values: None,
                         });
                     }
                 } else {
@@ -1034,6 +1755,11 @@ fn parse_export_properties_with_schema(
                             float_value: Some(val as f64),
                             int_value: None,
                             string_value: None,
+                            object_path: None,
+                            array_values: None,
+                            struct_values: None,
+                            enum_value: None,
+                            map_values: None,
                         });
                     }
                 }
