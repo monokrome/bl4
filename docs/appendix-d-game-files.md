@@ -673,6 +673,40 @@ Field names are hashed using **FNV-1a 64-bit**:
 - Offset basis: `0xcbf29ce484222325`
 - Prime: `0x100000001b3`
 
+### NCS and DataTable Relationship
+
+NCS files contain **serialized DataTable rows** that reference schemas defined in uasset files.
+
+**Example: `itempoollist.bin`**
+
+The NCS file contains:
+- Reference: `Table_DedicatedDropProbability`
+- Column GUIDs: `Prim2_A7EABE6349CCFEA454C199BC8C113D94`, etc.
+
+These match the schema in `Struct_DedicatedDropProbability.uasset`:
+```json
+{
+  "name": "Primary_2_A7EABE6349CCFEA454C199BC8C113D94",
+  "value_type": "Double",
+  "float_value": 0.0
+}
+```
+
+**Key Insight:** Numeric values (weights, probabilities) are stored as **strings** in the NCS string table:
+- `"0.200000"` - weight value
+- `"1.500000"` - numeric value
+
+The binary section contains string table indices, not raw numeric values.
+
+**Format Codes:**
+| Code | Description | Examples |
+|------|-------------|----------|
+| `abjx` | Extended entries with dependents | achievement, preferredparts |
+| `abij` | Indexed entries | itempoollist |
+| `abjl` | Labeled entries | inv_name_part |
+| `abhj` | Hash-indexed entries | - |
+| `abpe` | Property-based entries | audio_event |
+
 ### SerialIndex in NCS
 
 The SerialIndex structure maps parts to their serialization indices:
