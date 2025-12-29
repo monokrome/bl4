@@ -1,7 +1,8 @@
 //! NCS command handlers
 
 use anyhow::{Context, Result};
-use bl4_ncs::{decompress_ncs, is_ncs, NcsContent};
+use bl4_ncs::oodle::{self, OodleDecompressor};
+use bl4_ncs::{decompress_ncs, decompress_ncs_with, is_ncs, parse_document, NcsContent};
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fs;
@@ -69,11 +70,22 @@ pub fn handle_ncs_command(command: NcsCommand) -> Result<()> {
 
         NcsCommand::Stats { path, formats } => show_stats(&path, formats),
 
+        #[cfg(target_os = "windows")]
         NcsCommand::Decompress {
             input,
             output,
             offset,
-        } => decompress_file(&input, output.as_deref(), offset),
+            oodle_dll,
+            oodle_exec,
+        } => decompress_file(&input, output.as_deref(), offset, oodle_dll.as_deref(), oodle_exec.as_deref()),
+
+        #[cfg(not(target_os = "windows"))]
+        NcsCommand::Decompress {
+            input,
+            output,
+            offset,
+            oodle_exec,
+        } => decompress_file(&input, output.as_deref(), offset, oodle_exec.as_deref()),
     }
 }
 
@@ -183,6 +195,15 @@ fn show_file(path: &Path, all_strings: bool, hex: bool, json: bool) -> Result<()
     } else {
         data
     };
+
+    // For JSON output, use the structured parser
+    if json {
+        if let Some(doc) = parse_document(&decompressed) {
+            println!("{}", serde_json::to_string_pretty(&doc)?);
+            return Ok(());
+        }
+        // Fall back to basic info if structured parse fails
+    }
 
     let content = NcsContent::parse(&decompressed).context("Failed to parse NCS content")?;
 
@@ -423,7 +444,55 @@ fn show_stats(path: &Path, show_formats: bool) -> Result<()> {
     Ok(())
 }
 
-fn decompress_file(input: &Path, output: Option<&Path>, offset: Option<usize>) -> Result<()> {
+#[cfg(target_os = "windows")]
+fn decompress_file(
+    input: &Path,
+    output: Option<&Path>,
+    offset: Option<usize>,
+    oodle_dll: Option<&Path>,
+    oodle_exec: Option<&str>,
+) -> Result<()> {
+    use bl4_ncs::scan_for_ncs;
+
+    // Create the appropriate decompressor backend
+    let decompressor: Box<dyn OodleDecompressor> = if let Some(dll_path) = oodle_dll {
+        println!("Using native Oodle backend from: {}", dll_path.display());
+        oodle::native_backend(dll_path)
+            .map_err(|e| anyhow::anyhow!("Failed to load Oodle DLL: {}", e))?
+    } else if let Some(cmd) = oodle_exec {
+        println!("Using exec Oodle backend: {}", cmd);
+        oodle::exec_backend(cmd)
+    } else {
+        oodle::default_backend()
+    };
+
+    decompress_file_impl(input, output, offset, decompressor)
+}
+
+#[cfg(not(target_os = "windows"))]
+fn decompress_file(
+    input: &Path,
+    output: Option<&Path>,
+    offset: Option<usize>,
+    oodle_exec: Option<&str>,
+) -> Result<()> {
+    // Create the appropriate decompressor backend
+    let decompressor: Box<dyn OodleDecompressor> = if let Some(cmd) = oodle_exec {
+        println!("Using exec Oodle backend: {}", cmd);
+        oodle::exec_backend(cmd)
+    } else {
+        oodle::default_backend()
+    };
+
+    decompress_file_impl(input, output, offset, decompressor)
+}
+
+fn decompress_file_impl(
+    input: &Path,
+    output: Option<&Path>,
+    offset: Option<usize>,
+    decompressor: Box<dyn OodleDecompressor>,
+) -> Result<()> {
     use bl4_ncs::scan_for_ncs;
 
     let data = fs::read(input).context("Failed to read input file")?;
@@ -431,8 +500,8 @@ fn decompress_file(input: &Path, output: Option<&Path>, offset: Option<usize>) -
     // If offset specified, decompress single chunk
     if let Some(off) = offset {
         let ncs_data = &data[off..];
-        let decompressed =
-            bl4_ncs::decompress_ncs(ncs_data).context("Failed to decompress NCS data")?;
+        let decompressed = decompress_ncs_with(ncs_data, decompressor.as_ref())
+            .map_err(|e| anyhow::anyhow!("Failed to decompress NCS data: {}", e))?;
 
         if let Some(output_path) = output {
             fs::write(output_path, &decompressed)?;
@@ -450,8 +519,8 @@ fn decompress_file(input: &Path, output: Option<&Path>, offset: Option<usize>) -
 
     // If this is a single NCS file, decompress it
     if is_ncs(&data) {
-        let decompressed =
-            bl4_ncs::decompress_ncs(&data).context("Failed to decompress NCS data")?;
+        let decompressed = decompress_ncs_with(&data, decompressor.as_ref())
+            .map_err(|e| anyhow::anyhow!("Failed to decompress NCS data: {}", e))?;
         if let Some(output_path) = output {
             fs::write(output_path, &decompressed)?;
             println!(
@@ -472,7 +541,11 @@ fn decompress_file(input: &Path, output: Option<&Path>, offset: Option<usize>) -
         anyhow::bail!("No NCS chunks found in file");
     }
 
-    println!("Found {} NCS chunks", chunks.len());
+    println!(
+        "Found {} NCS chunks (using {} backend)",
+        chunks.len(),
+        decompressor.name()
+    );
 
     let output_dir = output.map(Path::to_path_buf).unwrap_or_else(|| {
         let stem = input.file_stem().unwrap_or_default().to_string_lossy();
@@ -482,10 +555,11 @@ fn decompress_file(input: &Path, output: Option<&Path>, offset: Option<usize>) -
 
     let mut success = 0;
     let mut failed = 0;
+    let mut failed_types: Vec<String> = Vec::new();
 
     for (offset, header) in &chunks {
         let chunk_data = &data[*offset..*offset + header.total_size()];
-        match bl4_ncs::decompress_ncs(chunk_data) {
+        match decompress_ncs_with(chunk_data, decompressor.as_ref()) {
             Ok(decompressed) => {
                 // Try to get type name for filename
                 let filename = if let Some(content) = NcsContent::parse(&decompressed) {
@@ -498,18 +572,38 @@ fn decompress_file(input: &Path, output: Option<&Path>, offset: Option<usize>) -
                 fs::write(&out_path, &decompressed)?;
                 success += 1;
             }
-            Err(_) => {
+            Err(e) => {
+                // Try to identify the type from the raw data if possible
+                let type_hint = format!("offset 0x{:08x}", offset);
+                eprintln!("  Failed {}: {}", type_hint, e);
+                failed_types.push(type_hint);
                 failed += 1;
             }
         }
     }
 
     println!(
-        "Extracted {} chunks to {} ({} failed)",
+        "\nExtracted {} chunks to {} ({} failed)",
         success,
         output_dir.display(),
         failed
     );
+
+    // Show warning about failed files when using oozextract
+    if failed > 0 && !decompressor.is_full_support() {
+        eprintln!("\nWarning: {} files failed to decompress.", failed);
+        eprintln!(
+            "The oozextract backend does not support all Oodle compression variants."
+        );
+        #[cfg(target_os = "windows")]
+        eprintln!("To decompress all files, use --oodle-dll <path-to-oo2core_9_win64.dll>");
+        #[cfg(not(target_os = "windows"))]
+        eprintln!("To decompress all files, use --oodle-exec <decompression-command>");
+        eprintln!("\nFailed files:");
+        for t in &failed_types {
+            eprintln!("  - {}", t);
+        }
+    }
 
     Ok(())
 }

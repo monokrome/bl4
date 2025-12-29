@@ -17,6 +17,8 @@ const NEXUS_DATA_PREFIX: &[u8] = b"Nexus-Data-";
 pub struct Entry {
     /// The NCS filename (e.g., "Nexus-Data-attribute6.ncs")
     pub filename: String,
+    /// Index value from manifest (purpose unknown - may be lookup table offset)
+    pub index: u32,
 }
 
 /// NCS manifest file header and entries
@@ -27,6 +29,9 @@ pub struct Manifest {
     /// Parsed manifest entries
     pub entries: Vec<Entry>,
 }
+
+/// Full header size including unknown bytes
+const FULL_HEADER_SIZE: usize = 10;
 
 impl Manifest {
     /// Parse an NCS manifest from data
@@ -45,7 +50,14 @@ impl Manifest {
         }
 
         let entry_count = u16::from_le_bytes([data[6], data[7]]);
-        let entries = extract_entries(data, entry_count as usize);
+
+        // Try structured parsing first, fall back to SIMD search if format unexpected
+        let entries = if data.len() >= FULL_HEADER_SIZE {
+            parse_structured_entries(&data[FULL_HEADER_SIZE..], entry_count as usize)
+                .unwrap_or_else(|| extract_entries_fallback(data, entry_count as usize))
+        } else {
+            extract_entries_fallback(data, entry_count as usize)
+        };
 
         Ok(Self {
             entry_count,
@@ -60,8 +72,67 @@ impl Manifest {
     }
 }
 
-/// Extract NCS filename entries using SIMD-accelerated pattern matching
-fn extract_entries(data: &[u8], capacity_hint: usize) -> Vec<Entry> {
+/// Parse entries using the structured format: u32 length + string + null + u32 index
+fn parse_structured_entries(data: &[u8], entry_count: usize) -> Option<Vec<Entry>> {
+    let mut entries = Vec::with_capacity(entry_count);
+    let mut offset = 0;
+
+    for _ in 0..entry_count {
+        // Need at least 4 bytes for length field
+        if offset + 4 > data.len() {
+            return None;
+        }
+
+        // Read string length (includes null terminator)
+        let length = u32::from_le_bytes([
+            data[offset],
+            data[offset + 1],
+            data[offset + 2],
+            data[offset + 3],
+        ]) as usize;
+        offset += 4;
+
+        // Sanity check: length should be reasonable (< 256 for NCS filenames)
+        if length == 0 || length > 256 || offset + length > data.len() {
+            return None;
+        }
+
+        // Read filename (excluding null terminator)
+        let filename_bytes = &data[offset..offset + length - 1];
+        let filename = std::str::from_utf8(filename_bytes).ok()?;
+
+        // Validate it looks like an NCS filename
+        if !filename.starts_with("Nexus-Data-") || !filename.ends_with(".ncs") {
+            return None;
+        }
+
+        offset += length; // Skip past string + null
+
+        // Need 4 more bytes for index
+        if offset + 4 > data.len() {
+            return None;
+        }
+
+        // Read index value
+        let index = u32::from_le_bytes([
+            data[offset],
+            data[offset + 1],
+            data[offset + 2],
+            data[offset + 3],
+        ]);
+        offset += 4;
+
+        entries.push(Entry {
+            filename: filename.to_string(),
+            index,
+        });
+    }
+
+    Some(entries)
+}
+
+/// Fallback: Extract entries using SIMD pattern matching (no index values)
+fn extract_entries_fallback(data: &[u8], capacity_hint: usize) -> Vec<Entry> {
     let finder = memmem::Finder::new(NEXUS_DATA_PREFIX);
     let mut entries = Vec::with_capacity(capacity_hint);
 
@@ -74,7 +145,7 @@ fn extract_entries(data: &[u8], capacity_hint: usize) -> Vec<Entry> {
     entries
 }
 
-/// Extract a single entry starting at the given position
+/// Extract a single entry starting at the given position (fallback, no index)
 #[inline]
 fn extract_entry_at(data: &[u8]) -> Option<Entry> {
     // Find end of string: null byte or non-printable ASCII
@@ -105,6 +176,7 @@ fn extract_entry_at(data: &[u8]) -> Option<Entry> {
 
     Some(Entry {
         filename: filename.to_string(),
+        index: 0, // Unknown when using fallback parsing
     })
 }
 
@@ -299,12 +371,15 @@ mod tests {
     fn test_entry_equality() {
         let entry1 = Entry {
             filename: "test.ncs".to_string(),
+            index: 100,
         };
         let entry2 = Entry {
             filename: "test.ncs".to_string(),
+            index: 100,
         };
         let entry3 = Entry {
             filename: "other.ncs".to_string(),
+            index: 200,
         };
 
         assert_eq!(entry1, entry2);
@@ -315,9 +390,45 @@ mod tests {
     fn test_entry_debug() {
         let entry = Entry {
             filename: "Nexus-Data-test.ncs".to_string(),
+            index: 368,
         };
         let debug = format!("{:?}", entry);
         assert!(debug.contains("Entry"));
         assert!(debug.contains("Nexus-Data-test.ncs"));
+        assert!(debug.contains("368"));
+    }
+
+    /// Helper to create a proper structured manifest entry
+    fn make_structured_entry(filename: &str, index: u32) -> Vec<u8> {
+        let mut data = Vec::new();
+        let len = (filename.len() + 1) as u32; // +1 for null terminator
+        data.extend_from_slice(&len.to_le_bytes());
+        data.extend_from_slice(filename.as_bytes());
+        data.push(0); // null terminator
+        data.extend_from_slice(&index.to_le_bytes());
+        data
+    }
+
+    #[test]
+    fn test_structured_entry_parsing() {
+        let mut data = make_manifest_header(2);
+        data.extend_from_slice(&[0, 0]); // Padding to reach FULL_HEADER_SIZE (10 bytes)
+        data.extend_from_slice(&make_structured_entry("Nexus-Data-weapons.ncs", 368));
+        data.extend_from_slice(&make_structured_entry("Nexus-Data-shields.ncs", 380));
+
+        let manifest = Manifest::parse(&data).unwrap();
+        assert_eq!(manifest.entry_count, 2);
+        assert_eq!(manifest.entries.len(), 2);
+        assert_eq!(manifest.entries[0].filename, "Nexus-Data-weapons.ncs");
+        assert_eq!(manifest.entries[0].index, 368);
+        assert_eq!(manifest.entries[1].filename, "Nexus-Data-shields.ncs");
+        assert_eq!(manifest.entries[1].index, 380);
+    }
+
+    #[test]
+    fn test_fallback_entry_has_zero_index() {
+        let data = b"Nexus-Data-test.ncs\0";
+        let entry = extract_entry_at(data).unwrap();
+        assert_eq!(entry.index, 0);
     }
 }

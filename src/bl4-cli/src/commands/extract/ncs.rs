@@ -3,6 +3,7 @@
 //! Handlers for checking, decompressing, and extracting NCS files.
 
 use anyhow::Result;
+use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
@@ -237,50 +238,141 @@ pub fn handle_scan(input: &Path, _all: bool) -> Result<()> {
 
 /// Handle the ExtractCommand::NcsExtract command
 ///
-/// Extracts NCS chunks from a file.
+/// Extracts NCS chunks from a file using manifest for proper naming.
 pub fn handle_extract(input: &Path, output: &Path, decompress: bool) -> Result<()> {
-    println!("Scanning {:?} for NCS chunks...", input);
+    println!("Extracting NCS from {:?}...", input);
     let data = fs::read(input)?;
 
-    let chunks = bl4_ncs::scan_for_ncs(&data);
-    println!("Found {} NCS chunks", chunks.len());
+    // Use manifest-based extraction for proper correlation
+    let result = bl4_ncs::extract_from_pak(&data);
+
+    if result.files.is_empty() && result.orphan_chunks.is_empty() {
+        println!("No NCS data found in this file");
+        return Ok(());
+    }
+
+    println!(
+        "Found {} NCS files, {} missing entries, {} orphan chunks",
+        result.files.len(),
+        result.missing_chunks.len(),
+        result.orphan_chunks.len()
+    );
 
     fs::create_dir_all(output)?;
 
     let mut extracted = 0;
     let mut failed = 0;
 
-    for (i, (offset, header)) in chunks.iter().enumerate() {
-        let chunk_end = offset + header.total_size();
-        let chunk_data = &data[*offset..chunk_end];
-
-        let filename = format!("chunk_{:05}.ncs", i);
-        let out_path = output.join(&filename);
-
-        let write_data = if decompress {
-            match bl4_ncs::decompress_ncs(chunk_data) {
-                Ok(decompressed) => decompressed,
-                Err(e) => {
-                    eprintln!("Failed to decompress chunk {}: {}", i, e);
-                    failed += 1;
-                    continue;
-                }
+    for (i, file) in result.files.iter().enumerate() {
+        // Decompress the chunk
+        let decompressed = match file.decompress(&data) {
+            Ok(d) => d,
+            Err(e) => {
+                eprintln!(
+                    "Failed to decompress {}: {}",
+                    file.filename, e
+                );
+                failed += 1;
+                continue;
             }
+        };
+
+        // Use manifest filename (strip Nexus-Data- prefix for cleaner output)
+        let clean_name = file.filename
+            .strip_prefix("Nexus-Data-")
+            .unwrap_or(&file.filename);
+
+        let out_path = if decompress {
+            output.join(format!("{}.bin", clean_name.strip_suffix(".ncs").unwrap_or(clean_name)))
         } else {
-            chunk_data.to_vec()
+            output.join(clean_name)
+        };
+
+        // Write decompressed or raw
+        let chunk_end = file.offset + file.header.total_size();
+        let write_data = if decompress {
+            decompressed
+        } else {
+            data[file.offset..chunk_end].to_vec()
         };
 
         fs::write(&out_path, &write_data)?;
         extracted += 1;
 
+        if extracted <= 10 {
+            println!("  {} -> {:?}", file.type_name, out_path.file_name().unwrap());
+        }
+
         if (i + 1) % 100 == 0 {
-            println!("  Extracted {}/{} chunks...", i + 1, chunks.len());
+            println!("  Extracted {}/{}...", i + 1, result.files.len());
         }
     }
 
-    println!("\nExtracted: {}, Failed: {}", extracted, failed);
+    println!();
+    println!("Extracted: {}", extracted);
+    println!("Failed: {}", failed);
+
+    if !result.missing_chunks.is_empty() {
+        println!("\nMissing (manifest entries without data):");
+        for entry in result.missing_chunks.iter().take(10) {
+            println!("  - {}", entry.filename);
+        }
+        if result.missing_chunks.len() > 10 {
+            println!("  ... and {} more", result.missing_chunks.len() - 10);
+        }
+    }
+
+    if !result.orphan_chunks.is_empty() {
+        println!(
+            "\nWarning: {} orphan chunks (no manifest) - likely false positives",
+            result.orphan_chunks.len()
+        );
+    }
 
     Ok(())
+}
+
+/// Build a map from lowercase type_name to clean manifest filename
+///
+/// Manifest entries like "Nexus-Data-achievement0.ncs" become:
+/// - Key: "achievement" (lowercase type_name)
+/// - Value: "achievement" (clean name for output file)
+fn build_manifest_map(
+    manifests: &[(usize, bl4_ncs::NcsManifest)],
+) -> HashMap<String, String> {
+    let mut map = HashMap::new();
+
+    for (_offset, manifest) in manifests {
+        for entry in &manifest.entries {
+            // Parse "Nexus-Data-{type_name}{N}.ncs" -> type_name
+            if let Some(clean_name) = parse_manifest_filename(&entry.filename) {
+                map.insert(clean_name.to_lowercase(), clean_name);
+            }
+        }
+    }
+
+    map
+}
+
+/// Parse manifest filename to extract clean type name
+///
+/// "Nexus-Data-achievement0.ncs" -> "achievement"
+/// "Nexus-Data-ItemPoolList0.ncs" -> "ItemPoolList"
+fn parse_manifest_filename(filename: &str) -> Option<String> {
+    // Strip "Nexus-Data-" prefix
+    let without_prefix = filename.strip_prefix("Nexus-Data-")?;
+
+    // Strip ".ncs" suffix
+    let without_ext = without_prefix.strip_suffix(".ncs")?;
+
+    // Strip trailing digit(s) (pak number)
+    let name = without_ext.trim_end_matches(|c: char| c.is_ascii_digit());
+
+    if name.is_empty() {
+        return None;
+    }
+
+    Some(name.to_string())
 }
 
 #[cfg(test)]
@@ -325,5 +417,60 @@ mod tests {
             false,
         );
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_manifest_filename_basic() {
+        assert_eq!(
+            parse_manifest_filename("Nexus-Data-achievement0.ncs"),
+            Some("achievement".to_string())
+        );
+    }
+
+    #[test]
+    fn test_parse_manifest_filename_mixed_case() {
+        assert_eq!(
+            parse_manifest_filename("Nexus-Data-ItemPoolList0.ncs"),
+            Some("ItemPoolList".to_string())
+        );
+    }
+
+    #[test]
+    fn test_parse_manifest_filename_multi_digit() {
+        assert_eq!(
+            parse_manifest_filename("Nexus-Data-gbxactor123.ncs"),
+            Some("gbxactor".to_string())
+        );
+    }
+
+    #[test]
+    fn test_parse_manifest_filename_underscore() {
+        assert_eq!(
+            parse_manifest_filename("Nexus-Data-damage_modifier0.ncs"),
+            Some("damage_modifier".to_string())
+        );
+    }
+
+    #[test]
+    fn test_parse_manifest_filename_no_prefix() {
+        assert_eq!(parse_manifest_filename("achievement0.ncs"), None);
+    }
+
+    #[test]
+    fn test_parse_manifest_filename_no_suffix() {
+        assert_eq!(parse_manifest_filename("Nexus-Data-achievement0"), None);
+    }
+
+    #[test]
+    fn test_parse_manifest_filename_only_digits() {
+        // "Nexus-Data-0.ncs" -> name would be empty after stripping digits
+        assert_eq!(parse_manifest_filename("Nexus-Data-0.ncs"), None);
+    }
+
+    #[test]
+    fn test_build_manifest_map_empty() {
+        let manifests: Vec<(usize, bl4_ncs::NcsManifest)> = vec![];
+        let map = build_manifest_map(&manifests);
+        assert!(map.is_empty());
     }
 }

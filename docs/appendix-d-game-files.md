@@ -460,37 +460,114 @@ These are stored in **NCS format**, not as standard uasset files. The class defi
 | `loot_config` | Loot configuration with drop rates |
 | `Mission` + `rewards` | Mission reward definitions |
 | `vending_machine` | Vending machine inventory |
+| `attribute` | Game attribute definitions |
+| `achievement` | Achievement definitions |
+| `Manufacturer` | Manufacturer data |
 
-### gBx Header Format
+### NCS Data Format
 
-NCS files use the "gBx" magic header:
+NCS data chunks have a 16-byte outer header followed by multi-block Oodle-compressed data.
+
+#### Outer Header (16 bytes)
 
 ```
-Offset  Size  Description
-------  ----  -----------
-0x00    3     Magic bytes: "gBx" (0x67 0x42 0x78)
-0x03    1     Variant byte: '9', '6', 'r', 0xEF, or 0xE0
-0x04    ?     Oodle-compressed payload
+Offset  Size  Type   Description
+------  ----  ----   -----------
+0x00    1     u8     Version (always 0x01 for valid NCS)
+0x01    3     bytes  Magic: "NCS" (0x4e 0x43 0x53)
+0x04    4     u32    Compression flag (0 = uncompressed, non-zero = Oodle)
+0x08    4     u32    Decompressed size (little-endian)
+0x0c    4     u32    Compressed size (little-endian)
 ```
 
-**Variant bytes observed:**
-- `0x39` ('9') - Most common
-- `0x36` ('6')
-- `0x72` ('r')
-- `0xEF`
-- `0xE0`
+#### Inner Format
 
-Example locations in pakchunk0-Windows_0_P.pak:
-- Offset 18327014: `67 42 78 39...` (gBx9)
-- Offset 60169283: `67 42 78 ef...`
-- Offset 78874017: `67 42 78 72...` (gBxr)
+The inner format has two variants, determined by the format flags at offset 0x08:
 
-### Compression
+**Common Header (first 16 bytes):**
+```
+Offset  Size  Type   Description
+------  ----  ----   -----------
+0x00    4     u32    Oodle magic: 0xb7756362 (big-endian)
+0x04    4     bytes  Hash/checksum
+0x08    4     u32    Format flags (big-endian)
+0x0c    4     u32    Block count (big-endian)
+```
 
-NCS uses **Oodle** compression (version 9):
-- DLL: `oo2core_9_win64.dll`
-- Primary function: `OodleLZ_Decompress`
-- Additional: `OodleLZ_Compress`, `Oodle_GetConfigValues`
+##### Multi-Block Format (format flags = 0x03030812)
+
+Used for larger files. Block sizes are stored in a table at offset 0x40:
+
+```
+Offset  Size       Type   Description
+------  ----       ----   -----------
+0x10    48         bytes  Additional header data
+0x40    count×4    u32[]  Block size table (each big-endian)
+...     variable   bytes  Concatenated Oodle-compressed blocks
+```
+
+Each block decompresses to up to **256KB (0x40000 bytes)**, except the last block.
+
+##### Single-Block Format (format flags = 0x00000000)
+
+Used for smaller files. Two sub-variants:
+
+1. **Uncompressed**: If `compressed_size - 64 == decompressed_size`, data at offset 0x40 is raw (not compressed)
+2. **Compressed**: Otherwise, data at 0x40 is a single Oodle block
+
+#### Example
+
+For `attribute0.ncs` with decompressed size 325,292 bytes:
+- Block count: 2
+- Block 0 size: 47,568 bytes → decompresses to 262,144 bytes (256KB)
+- Block 1 size: 18,414 bytes → decompresses to 63,148 bytes
+- Total: 325,292 bytes ✓
+
+### Decompression Process
+
+1. Parse outer header (16 bytes)
+2. Validate Oodle magic at inner offset 0x00
+3. Check format flags at offset 0x08:
+   - If `0x00000000`: Single-block format
+   - If `0x03030812`: Multi-block format
+4. For single-block: Check if data is raw (size match) or compressed
+5. For multi-block: Read block count from 0x0c, block sizes from 0x40
+6. Decompress blocks using oozextract/Oodle
+7. Concatenate decompressed blocks (for multi-block)
+
+### Known Issues
+
+Some NCS files use Oodle compression parameters not supported by open-source decompressors (oozextract). These files fail with "OozError" and require the official Oodle SDK:
+
+| Type | Size | Notes |
+|------|------|-------|
+| audio_event0 | ~18MB | Large audio event mappings |
+| coordinated_effect_filter0 | ~300KB | Effect filters |
+| DialogQuietTime0 | ~20MB | Dialog timing data |
+| DialogStyle0 | ~370KB | Dialog styling |
+
+These represent ~2.4% of NCS files (4/164 in pakchunk0).
+
+### NCS Manifest Format (`_NCS/`)
+
+Each pak file contains a manifest listing all NCS data stores:
+
+```
+Offset  Size  Type   Description
+------  ----  ----   -----------
+0x00    5     bytes  Magic: "_NCS/" (0x5f 0x4e 0x43 0x53 0x2f)
+0x05    1     u8     Null terminator
+0x06    2     u16    Entry count (little-endian)
+0x08    2     u16    Unknown (typically 0x0000)
+0x0a    var   Entry  Entry records (see below)
+```
+
+Each entry:
+```
+length (u32) | filename (length-1 bytes) | null (u8) | index (u32)
+```
+
+Sorting manifest entries by index gives the correct order matching NCS chunk file offsets.
 
 ### Decompressed Content Format
 
@@ -610,22 +687,60 @@ Offset  Size  Description
 
 **Important:** NCS indices are runtime slot positions, NOT the serial encoding indices used in item serials. The manifest's alphabetical indices are used for serial encoding.
 
-### NCS Parser Tool
+### bl4-ncs Library
 
-A community NCS parser exists:
-- Loads Oodle DLL dynamically
-- Decodes function names from XOR-encoded strings (key: 0xA7)
-- Outputs JSON using nlohmann JSON v3.12.0
+The `bl4-ncs` crate provides native Rust NCS parsing:
+
+```rust
+use bl4_ncs::{decompress_ncs, scan_for_ncs, NcsContent};
+
+// Scan pak file for NCS chunks
+let chunks = scan_for_ncs(&pak_data);
+
+// Decompress a chunk
+let decompressed = decompress_ncs(&chunk_data)?;
+
+// Parse content
+if let Some(content) = NcsContent::parse(&decompressed) {
+    println!("Type: {}", content.type_name());
+}
+```
+
+#### Oodle Backend Selection
+
+By default, `bl4-ncs` uses the open-source `oozextract` library which supports ~97.6% of files. For full compatibility, use the native Oodle DLL:
+
+```rust
+use bl4_ncs::oodle::{native_backend, OodleDecompressor};
+use bl4_ncs::decompress_ncs_with;
+
+// Load native Oodle (requires oo2core_9_win64.dll)
+let backend = native_backend("path/to/oo2core_9_win64.dll")?;
+
+// Decompress with native backend
+let decompressed = decompress_ncs_with(&chunk_data, backend.as_ref())?;
+```
+
+CLI usage:
+```bash
+# Default (oozextract backend, ~97% compatibility)
+bl4 ncs decompress pakchunk0.pak -o output/
+
+# Native Oodle DLL (Windows only, 100% compatibility)
+bl4 ncs decompress pakchunk0.pak -o output/ --oodle-dll /path/to/oo2core_9_win64.dll
+
+# External command (cross-platform, 100% compatibility)
+bl4 ncs decompress pakchunk0.pak -o output/ --oodle-exec ./oodle_wrapper.sh
+```
+
+The `--oodle-exec` protocol: command receives `decompress <size>` args, compressed data via stdin, outputs decompressed to stdout.
+
+### Community Tools
+
+**Community NCS parser**:
+- Windows tool that outputs JSON
 - Requires `oo2core_9_win64.dll` from game files
-
-### Implementation Notes
-
-To parse NCS files in Rust:
-1. Use `oodle-safe` crate with game's Oodle DLL
-2. Read gBx header to get compressed/decompressed sizes
-3. Call `OodleLZ_Decompress` on payload
-4. Parse decompressed content using field|type notation
-5. Use FNV-1a hash for field name lookups
+- Uses nlohmann JSON v3.12.0
 
 ---
 

@@ -44,6 +44,7 @@ Commands:
   serial     Item serial operations (decode, encode, compare, modify)
   parts      Query parts database
   memory     Read/analyze game memory (live process or dump file)
+  ncs        NCS format operations (decompress, scan, show, search)
   idb        Manage the verified items database
   launch     Launch Borderlands 4 with instrumentation
 ```
@@ -241,6 +242,73 @@ bl4 memory --dump game.dmp scan-string "DAD_AR.part_body" -B 128 -A 128
 
 ---
 
+## NCS Operations
+
+NCS (Nexus Config Store) contains item pools, loot config, and other game data not in standard PAK assets.
+
+### Decompress from Pak
+
+```bash
+# Extract all NCS chunks from a pak file
+bl4 ncs decompress pakchunk0.pak -o ./ncs_output/
+
+# Extract from specific offset
+bl4 ncs decompress pakchunk0.pak --offset 0x15835
+
+# Use native Oodle DLL for 100% compatibility (Windows only)
+bl4 ncs decompress pakchunk0.pak -o ./ncs_output/ --oodle-dll /path/to/oo2core_9_win64.dll
+
+# Use external command for Oodle decompression (cross-platform)
+bl4 ncs decompress pakchunk0.pak -o ./ncs_output/ --oodle-exec ./oodle_wrapper.sh
+```
+
+The `--oodle-exec` command receives `decompress <size>` arguments, compressed data via stdin, and outputs decompressed data to stdout.
+
+### Scan Decompressed Files
+
+```bash
+# List all NCS types in a directory
+bl4 ncs scan ./ncs_output/
+
+# Filter by type
+bl4 ncs scan ./ncs_output/ -t itempool
+
+# Show detailed info
+bl4 ncs scan ./ncs_output/ --verbose
+```
+
+### Show File Contents
+
+```bash
+# Display parsed content
+bl4 ncs show ./ncs_output/itempool0.bin
+
+# Show all strings
+bl4 ncs show ./ncs_output/itempool0.bin --all-strings
+
+# Output as JSON
+bl4 ncs show ./ncs_output/itempool0.bin --json
+```
+
+### Search
+
+```bash
+# Search for pattern in entry names
+bl4 ncs search ./ncs_output/ "legendary"
+
+# Search all strings
+bl4 ncs search ./ncs_output/ "damage" --all
+```
+
+### Statistics
+
+```bash
+bl4 ncs stats ./ncs_output/
+bl4 ncs stats ./ncs_output/ --formats  # Show format code breakdown
+```
+
+---
+
 ## Configuration
 
 Set defaults to avoid repetition:
@@ -367,6 +435,9 @@ Verify the dump covers the target address.
 | `bl4 save set <FILE> <PATH> <VAL>` | Set value |
 | `bl4 serial decode <SERIAL>` | Decode item serial |
 | `bl4 serial compare <S1> <S2>` | Compare serials |
+| `bl4 ncs decompress <PAK> -o <DIR>` | Extract NCS from pak (use `--oodle-exec` for full compat) |
+| `bl4 ncs scan <DIR>` | List NCS types |
+| `bl4 ncs show <FILE>` | Show NCS contents |
 | `bl4 idb stats` | Database statistics |
 | `bl4 idb import-save <FILE>` | Import from save |
 | `bl4 memory --dump <F> <CMD>` | Memory analysis |

@@ -98,5 +98,21 @@ pub enum NcsCommand {
         /// Offset in file (for pak files)
         #[arg(long)]
         offset: Option<usize>,
+
+        /// Path to Oodle DLL for native decompression (Windows only)
+        ///
+        /// Load the official Oodle DLL (e.g., oo2core_9_win64.dll) for full
+        /// compatibility. Only works on Windows.
+        #[cfg(target_os = "windows")]
+        #[arg(long, value_name = "DLL_PATH")]
+        oodle_dll: Option<PathBuf>,
+
+        /// External command for Oodle decompression (cross-platform)
+        ///
+        /// Execute an external program for decompression. The command is invoked as:
+        ///   <command> decompress <decompressed_size>
+        /// Compressed data is sent to stdin, decompressed data is read from stdout.
+        #[arg(long, value_name = "COMMAND")]
+        oodle_exec: Option<String>,
     },
 }
