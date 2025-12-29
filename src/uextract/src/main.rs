@@ -1570,6 +1570,111 @@ fn property_to_value(prop: &ParsedProperty) -> ParsedPropertyValue {
 
 /// Extract property info from asset name table
 /// Property names in DataTables follow the pattern: PropertyName_Index_GUID
+/// Property type info extracted from embedded schema
+#[derive(Debug, Clone)]
+struct PropertyTypeInfo {
+    name: String,
+    type_name: String,
+    size: usize,
+    schema_index: u32,
+}
+
+/// Parse embedded UserDefinedStruct schema to extract per-property type info
+fn parse_embedded_schema(_data: &[u8], names: &[String]) -> Option<Vec<PropertyTypeInfo>> {
+    // Build name index lookup
+    let name_to_idx: HashMap<&str, usize> = names
+        .iter()
+        .enumerate()
+        .map(|(i, n)| (n.as_str(), i))
+        .collect();
+
+    // Find type name indices
+    let double_idx = name_to_idx.get("DoubleProperty").copied();
+    let float_idx = name_to_idx.get("FloatProperty").copied();
+    let int_idx = name_to_idx.get("IntProperty").copied();
+
+    // Property names with their schema indices
+    let prop_names: Vec<(usize, String, u32)> = names
+        .iter()
+        .enumerate()
+        .filter_map(|(idx, name)| {
+            if name.starts_with('/') || name.contains("Property") || name == "None" {
+                return None;
+            }
+            // Parse PropertyName_Index_GUID
+            let parts: Vec<&str> = name.split('_').collect();
+            if parts.len() >= 3 {
+                if let Some(guid_pos) = parts
+                    .iter()
+                    .position(|p| p.len() == 32 && p.chars().all(|c| c.is_ascii_hexdigit()))
+                {
+                    if guid_pos >= 2 {
+                        if let Ok(schema_idx) = parts[guid_pos - 1].parse::<u32>() {
+                            let prop_name = parts[..guid_pos - 1].join("_");
+                            return Some((idx, prop_name, schema_idx));
+                        }
+                    }
+                }
+            }
+            None
+        })
+        .collect();
+
+    if prop_names.is_empty() {
+        return None;
+    }
+
+    // For UserDefinedStruct, all properties typically have the same type
+    // Determine the predominant type from what's in the name table
+    let has_double = double_idx.is_some();
+    let has_float = float_idx.is_some();
+    let has_int = int_idx.is_some();
+
+    // Determine default type and size based on what types are present
+    let (default_type, default_size) = if has_double && !has_float && !has_int {
+        // Only Double - all properties are doubles
+        ("Double", 8)
+    } else if has_float && !has_double && !has_int {
+        // Only Float - all properties are floats
+        ("Float", 4)
+    } else if has_int && !has_double && !has_float {
+        // Only Int - all properties are ints
+        ("Int", 4)
+    } else if has_float && !has_double {
+        // Float and possibly Int
+        ("Float", 4)
+    } else {
+        // Default to Double for mixed or Double-only cases
+        ("Double", 8)
+    };
+
+    // Build prop_types with uniform type (safest approach for UserDefinedStruct)
+    let prop_types: HashMap<usize, (String, usize)> = prop_names
+        .iter()
+        .map(|(idx, _, _)| (*idx, (default_type.to_string(), default_size)))
+        .collect();
+
+    // Build result sorted by schema index
+    let mut result: Vec<PropertyTypeInfo> = prop_names
+        .into_iter()
+        .map(|(name_idx, prop_name, schema_idx)| {
+            let (type_name, size) = prop_types
+                .get(&name_idx)
+                .cloned()
+                .unwrap_or_else(|| ("Double".to_string(), 8)); // Default to double
+            PropertyTypeInfo {
+                name: prop_name,
+                type_name,
+                size,
+                schema_index: schema_idx,
+            }
+        })
+        .collect();
+
+    result.sort_by_key(|p| p.schema_index);
+    Some(result)
+}
+
 fn extract_property_info_from_names(names: &[String]) -> Vec<(String, u32, String)> {
     let mut props = Vec::new();
 
@@ -1690,19 +1795,112 @@ fn parse_export_properties_with_schema(
     }
 
     // For DataTables and other assets without usmap struct:
-    // Extract property info from name table (sorted by schema index)
-    let prop_info = extract_property_info_from_names(names);
+    // Parse embedded schema to get per-property type info
+    if let Some(prop_info) = parse_embedded_schema(export_data, names) {
+        // Calculate total data size based on per-property types
+        let expected_data_size: usize = prop_info.iter().map(|p| p.size).sum();
 
+        // The values should be at the end of the export data
+        if export_data.len() >= expected_data_size {
+            let values_start = export_data.len() - expected_data_size;
+            let mut properties = Vec::new();
+            let mut pos = values_start;
+            let mut garbage_count = 0;
+
+            for prop in &prop_info {
+                if pos + prop.size > export_data.len() {
+                    break;
+                }
+
+                match prop.type_name.as_str() {
+                    "Double" => {
+                        if let Ok(bytes) = export_data[pos..pos + 8].try_into() {
+                            let val: f64 = f64::from_le_bytes(bytes);
+                            // Check for reasonable value range (not denormals/garbage)
+                            let is_reasonable = val.is_finite()
+                                && (val == 0.0 || val.abs() > 1e-100 && val.abs() < 1e100);
+                            if is_reasonable {
+                                properties.push(ParsedProperty {
+                                    name: prop.name.clone(),
+                                    value_type: Some("Double".to_string()),
+                                    float_value: Some(val),
+                                    int_value: None,
+                                    string_value: None,
+                                    object_path: None,
+                                    array_values: None,
+                                    struct_values: None,
+                                    enum_value: None,
+                                    map_values: None,
+                                });
+                            } else {
+                                garbage_count += 1;
+                            }
+                        }
+                    }
+                    "Float" => {
+                        if let Ok(bytes) = export_data[pos..pos + 4].try_into() {
+                            let val: f32 = f32::from_le_bytes(bytes);
+                            let is_reasonable = val.is_finite()
+                                && (val == 0.0 || val.abs() > 1e-30 && val.abs() < 1e30);
+                            if is_reasonable {
+                                properties.push(ParsedProperty {
+                                    name: prop.name.clone(),
+                                    value_type: Some("Float".to_string()),
+                                    float_value: Some(val as f64),
+                                    int_value: None,
+                                    string_value: None,
+                                    object_path: None,
+                                    array_values: None,
+                                    struct_values: None,
+                                    enum_value: None,
+                                    map_values: None,
+                                });
+                            } else {
+                                garbage_count += 1;
+                            }
+                        }
+                    }
+                    "Int" => {
+                        if let Ok(bytes) = export_data[pos..pos + 4].try_into() {
+                            let val: i32 = i32::from_le_bytes(bytes);
+                            properties.push(ParsedProperty {
+                                name: prop.name.clone(),
+                                value_type: Some("Int".to_string()),
+                                float_value: None,
+                                int_value: Some(val as i64),
+                                string_value: None,
+                                object_path: None,
+                                array_values: None,
+                                struct_values: None,
+                                enum_value: None,
+                                map_values: None,
+                            });
+                        }
+                    }
+                    _ => {}
+                }
+
+                pos += prop.size;
+            }
+
+            // If we got reasonable values for most properties, use them
+            // (Allow some garbage for properties that might use default values)
+            if !properties.is_empty() && garbage_count < prop_info.len() / 2 {
+                return Some(properties);
+            }
+        }
+    }
+
+    // Fall back to simple name-based extraction (for assets without embedded schema)
+    let prop_info = extract_property_info_from_names(names);
     if prop_info.is_empty() {
         return parse_export_properties(data, offset, size, names);
     }
 
-    // UserDefinedStruct assets have embedded schema - the values are at the END of the data
-    // Calculate expected data size and find values from the end
+    // Try uniform size approach for simpler structs
     let value_size = if has_double { 8 } else if has_float { 4 } else { 8 };
     let expected_data_size = prop_info.len() * value_size;
 
-    // The values should be at the end of the export data
     if export_data.len() >= expected_data_size {
         let values_start = export_data.len() - expected_data_size;
         let mut properties = Vec::new();
@@ -1716,7 +1914,6 @@ fn parse_export_properties_with_schema(
             if value_size == 8 {
                 if let Ok(bytes) = export_data[pos..pos + 8].try_into() {
                     let val: f64 = f64::from_le_bytes(bytes);
-                    // Only include if value looks reasonable
                     if val.is_finite() {
                         properties.push(ParsedProperty {
                             name: prop_name.clone(),
@@ -1734,7 +1931,6 @@ fn parse_export_properties_with_schema(
                 }
             } else if let Ok(bytes) = export_data[pos..pos + 4].try_into() {
                 let val: f32 = f32::from_le_bytes(bytes);
-                // Only include if value looks reasonable
                 if val.is_finite() {
                     properties.push(ParsedProperty {
                         name: prop_name.clone(),
