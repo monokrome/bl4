@@ -711,10 +711,54 @@ The binary section contains string table indices, not raw numeric values.
 
 Entry names are null-terminated, but values following them are **packed without separators**:
 ```
-"AAAssaultRifle\0" + "0.6000007900.01.5..." + "Heavy\0" + ...
+"AssaultRifle\0" + "0.6000007900.01.5..." + "Heavy\0" + ...
 ```
 
 The binary section contains structure data (lengths/offsets) needed to decode the packed values. Field names appear at the end of the string table (e.g., "stickiness", "zoomreduceinput").
+
+**Type Prefixes:**
+
+Some values in the string table have single-letter type prefixes:
+- `'T'` = Text/String type (e.g., `Tnone` = string value "none")
+- Other type prefixes likely exist for integers, floats, booleans
+
+Example from `se_severity_channel.bin`:
+```
+... 01 00 07 54 6e 6f 6e 65 00 ...
+          ^^ ^^^^^^^^^^^^
+          07 "Tnone\0"
+```
+The `07` is a field index/count, and `54` ('T') is the type prefix.
+
+**Format Code Structure:**
+
+The 3-byte prefix before the format code determines the inner structure:
+
+| Prefix | Structure |
+|--------|-----------|
+| `04 xx 00` | Extended: 4-byte GUID + entry count + 2-byte entry prefix |
+| `03 xx 00` | Compact: entry count + 2-byte entry prefix |
+
+For extended format (e.g., `abij`):
+```
+[format code (4)] [GUID (4)] [entry_count (1)] [prefix (2)] [entry_name\0] ...
+```
+
+For compact format (e.g., `abjx`):
+```
+[format code (4)] [entry_count (1)] [prefix (2)] [entry_name\0] ...
+```
+
+**Binary Section (Index Pairs):**
+
+The binary section contains field index pairs that map values to schema fields:
+```
+01 16 03 1a 05 1e 05 22 07 26 ...
+^^ ^^ ^^ ^^ ^^ ^^ ^^ ^^ ^^ ^^
+ 1  22  3  26  5  30  5  34  7  38
+```
+
+Each pair is `(field_index, value_offset)`. The +4 offset increment indicates 4-byte aligned values. Field indices are odd numbers (1, 3, 5, 7...) suggesting a 0-indexed field list where indices are `2*field_num + 1`.
 
 ### SerialIndex in NCS
 
