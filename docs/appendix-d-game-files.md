@@ -760,6 +760,40 @@ The binary section contains field index pairs that map values to schema fields:
 
 Each pair is `(field_index, value_offset)`. The +4 offset increment indicates 4-byte aligned values. Field indices are odd numbers (1, 3, 5, 7...) suggesting a 0-indexed field list where indices are `2*field_num + 1`.
 
+**Entry Encoding (Differential):**
+
+NCS uses differential encoding for multiple entries:
+- First entry: Full entry name + null + value fields
+- Subsequent entries: Partial/differential entry name + null + value fields
+
+Example from `achievement.bin`:
+```
+[Entry 1] ID_A_10_worldevents_colosseum\0 + "10\0"  (full name)
+[Entry 2] 1airship\0 + "11\0"                        (partial: "1" + diff)
+[Entry 3] 2meteor\0 + "12\0"                         (partial: "2" + diff)
+```
+
+The parser reconstructs full names by applying the differential to the previous entry's base pattern.
+
+**Parsed Output Example:**
+
+```json
+{
+  "achievement": {
+    "records": [{
+      "entries": [{
+        "id_achievement_10_worldevents_colosseum": {
+          "achievement": "ID_Achievement_10_worldevents_colosseum",
+          "achievementid": "10"
+        }
+      }]
+    }]
+  }
+}
+```
+
+Note: Entry keys are lowercased, values preserve original case.
+
 ### SerialIndex in NCS
 
 The SerialIndex structure maps parts to their serialization indices:
@@ -821,13 +855,6 @@ bl4 ncs decompress pakchunk0.pak -o output/ --oodle-exec ./oodle_wrapper.sh
 ```
 
 The `--oodle-exec` protocol: command receives `decompress <size>` args, compressed data via stdin, outputs decompressed to stdout.
-
-### Community Tools
-
-**Community NCS parser**:
-- Windows tool that outputs JSON
-- Requires `oo2core_9_win64.dll` from game files
-- Uses nlohmann JSON v3.12.0
 
 ---
 
