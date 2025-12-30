@@ -5,7 +5,6 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::io::{Cursor, Read};
 
 /// Parsed NCS document with structured content
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -400,14 +399,14 @@ fn parse_abpe(data: &[u8], header: &Header, strings: &StringTable) -> Vec<Record
 
 /// Parse abqr format
 /// Structure: quiet/reference format (used by DialogQuietTime)
-fn parse_abqr(data: &[u8], header: &Header, strings: &StringTable) -> Vec<Record> {
+fn parse_abqr(_data: &[u8], _header: &Header, strings: &StringTable) -> Vec<Record> {
     // abqr has offset tables at the start - different structure
     // For now, extract what we can from strings
     parse_strings_as_records(strings)
 }
 
 /// Generic fallback parser
-fn parse_generic(data: &[u8], header: &Header, strings: &StringTable) -> Vec<Record> {
+fn parse_generic(_data: &[u8], _header: &Header, strings: &StringTable) -> Vec<Record> {
     parse_strings_as_records(strings)
 }
 

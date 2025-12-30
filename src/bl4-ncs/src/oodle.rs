@@ -97,11 +97,11 @@ impl OodleDecompressor for OozextractBackend {
 /// This backend supports all Oodle compression variants.
 #[cfg(target_os = "windows")]
 pub struct NativeBackend {
-    decompress_fn: OodleLZ_Decompress,
+    decompress_fn: OodleLzDecompress,
 }
 
 #[cfg(target_os = "windows")]
-type OodleLZ_Decompress = unsafe extern "C" fn(
+type OodleLzDecompress = unsafe extern "C" fn(
     comp_buf: *const u8,
     comp_len: isize,
     raw_buf: *mut u8,

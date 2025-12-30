@@ -1,0 +1,5 @@
+#!/bin/sh
+
+ghidra-headless /home/polar/Documents/Projects/github.com/monokrome/bl4/share/ghidra bl4 \
+    -import "share/dumps/Borderlands4.exe" \
+    -analysisTimeoutPerFile 86400

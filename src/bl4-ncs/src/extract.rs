@@ -4,7 +4,7 @@
 //! type names and ensure we only extract valid NCS data.
 
 use crate::data::{decompress, scan as scan_chunks, Header};
-use crate::manifest::{scan as scan_manifests, Entry, Manifest};
+use crate::manifest::{scan as scan_manifests, Entry};
 use crate::Result;
 
 /// A fully identified NCS file with manifest metadata
