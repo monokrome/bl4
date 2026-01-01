@@ -8,7 +8,6 @@ members = [
     "src/bl4-community",
     "src/bl4-save-editor",
     "src/uextract",
-    "src/linewise",
     "tools/bl4-preload",
 ]
 

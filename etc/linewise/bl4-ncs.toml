@@ -1,0 +1,41 @@
+# Borderlands 4 NCS Files Preset
+# For exploring NCS binary data with linewise
+
+[preset]
+name = "bl4-ncs"
+description = "Borderlands 4 NCS binary format"
+
+# NCS files use length-prefixed records
+[records]
+format = "length16"
+
+# Auto-detect by file extension or magic bytes
+[[detect]]
+type = "byte_equals"
+position = 0
+value = 33  # 0x21 - common NCS header byte
+
+# Decode NCS using bl4 CLI
+[gloss]
+command = ["bl4", "ncs", "show", "--json"]
+
+# Coloring for NCS types
+[[color]]
+match = "itempool"
+style = "green"
+
+[[color]]
+match = "inv_stat"
+style = "cyan"
+
+[[color]]
+match = "damagedata"
+style = "red"
+
+[[color]]
+match = "attribute"
+style = "yellow"
+
+[[color]]
+match = "map"
+style = "blue"

@@ -1,0 +1,80 @@
+# Borderlands 4 Item Serials Preset
+# Install to ~/.config/linewise/presets/ or /etc/linewise/presets/
+
+[preset]
+name = "bl4-items"
+description = "Borderlands 4 item serials (Base85 encoded)"
+
+[records]
+format = "lines"
+
+# Auto-detect BL4 item serials
+[[detect]]
+type = "starts_with"
+value = "@Ug"
+
+[[detect]]
+type = "min_length"
+value = 20
+
+# Decode serials using bl4 CLI
+[gloss]
+command = ["bl4", "serial", "decode"]
+
+# Coloring for rarity
+[[color]]
+match = "Legendary"
+style = "yellow bold"
+
+[[color]]
+match = "Epic"
+style = "magenta"
+
+[[color]]
+match = "Rare"
+style = "blue"
+
+[[color]]
+match = "Common"
+style = "white"
+
+# Coloring for elements
+[[color]]
+match = "Fire"
+style = "red"
+
+[[color]]
+match = "Shock"
+style = "cyan"
+
+[[color]]
+match = "Cryo"
+style = "blue bold"
+
+[[color]]
+match = "Corrosive"
+style = "green"
+
+[[color]]
+match = "Radiation"
+style = "yellow"
+
+# Field extraction
+[[fields]]
+name = "serial"
+pattern = "^(@[A-Za-z0-9+/=~!@#$%^&*|<>?]+)"
+
+[[fields]]
+name = "weapon_type"
+from_gloss = true
+pattern = "Weapon: (\\w+ \\w+)"
+
+[[fields]]
+name = "rarity"
+from_gloss = true
+pattern = "Rarity: (\\w+)"
+
+[[fields]]
+name = "element"
+from_gloss = true
+pattern = "Element: ([\\w, ]+)"

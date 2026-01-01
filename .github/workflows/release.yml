@@ -86,28 +86,16 @@ jobs:
         env:
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: ${{ matrix.cross && 'aarch64-linux-gnu-gcc' || '' }}
 
-      - name: Build linewise
-        run: cargo build --release -p linewise --target ${{ matrix.target }}
-        env:
-          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: ${{ matrix.cross && 'aarch64-linux-gnu-gcc' || '' }}
-
       - name: Rename binaries
         run: |
           cd target/${{ matrix.target }}/release
           mv bl4 bl4-${{ matrix.name }} || true
-          mv linewise linewise-${{ matrix.name }} || true
 
       - name: Upload bl4-cli binary
         uses: actions/upload-artifact@v4
         with:
           name: bl4-${{ matrix.name }}
           path: target/${{ matrix.target }}/release/bl4-${{ matrix.name }}
-
-      - name: Upload linewise binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: linewise-${{ matrix.name }}
-          path: target/${{ matrix.target }}/release/linewise-${{ matrix.name }}
 
   build-books:
     name: Build Guide Books
