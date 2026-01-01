@@ -901,6 +901,9 @@ async fn create_items_bulk(
     }
 
     // Phase 2: Bulk insert items (1 query)
+    // Note: add_items_bulk uses ON CONFLICT DO NOTHING, so duplicates are silently ignored
+    // For publish operations, we count all valid items as "succeeded" since the goal is
+    // to have the item in the database (whether newly inserted or already present)
     let serials: Vec<&str> = valid_items.iter().map(|i| i.serial.as_str()).collect();
     let bulk_result = state
         .db
@@ -908,8 +911,10 @@ async fn create_items_bulk(
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    let succeeded = bulk_result.succeeded;
-    failed += bulk_result.failed;
+    // Count all valid items as succeeded - duplicates are expected in sync operations
+    let succeeded = valid_items.len();
+    let new_items = bulk_result.succeeded;
+    let duplicates = bulk_result.failed;
 
     // Phase 3: Bulk update sources (1 query)
     let source_updates: Vec<(&str, &str)> = valid_items
@@ -980,14 +985,23 @@ async fn create_items_bulk(
         let _ = state.db.set_values_bulk(&all_values).await;
     }
 
-    // Build results
+    // Build results - all valid items are considered successful
     for item in valid_items {
         results.push(CreateItemResponse {
             serial: item.serial,
             created: true,
-            message: format!("Item created with uuid {}", item.uuid),
+            message: format!("Item synced with uuid {}", item.uuid),
         });
     }
+
+    // Log stats for debugging
+    tracing::info!(
+        batch_id = %batch_id,
+        total = succeeded,
+        new_items = new_items,
+        duplicates = duplicates,
+        "Bulk publish completed"
+    );
 
     Ok(Json(BulkCreateResponse {
         batch_id,
