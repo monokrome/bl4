@@ -64,15 +64,11 @@ style = "green"
 match = "Radiation"
 style = "yellow"
 
-# Field extraction
+# Field extraction (order matters - output is TSV in this order)
 [[fields]]
-name = "serial"
-pattern = "^(@[A-Za-z0-9+/=~!@#$%^&*|<>?]+)"
-
-[[fields]]
-name = "weapon_type"
+name = "item"
 from_gloss = true
-pattern = "Weapon: (\\w+ \\w+)"
+pattern = "(?:Weapon|Category): (.+)"
 
 [[fields]]
 name = "rarity"
