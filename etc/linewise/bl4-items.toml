@@ -22,6 +22,9 @@ value = 20
 command = ["bl4", "serial", "decode"]
 # Extract serial segment from input (handles lines with extra content)
 segment = "@[A-Za-z0-9!#$%&()*+,-./:;<=>?@^_`{|}~]+"
+# Show hex if decode fails
+fallback = "hex"
+base85_charset = "bl4"
 
 # Coloring for rarity
 [[color]]
