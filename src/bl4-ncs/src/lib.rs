@@ -26,6 +26,7 @@ mod data;
 mod extract;
 mod field;
 mod hash;
+mod header;
 mod manifest;
 pub mod oodle;
 mod parser;

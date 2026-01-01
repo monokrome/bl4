@@ -20,6 +20,8 @@
 
 use std::collections::HashMap;
 
+use crate::header::{find_type_starts, parse_basic_header_with_config, ParseConfig};
+
 /// NCS content header
 #[derive(Debug, Clone)]
 pub struct Header {
@@ -49,7 +51,12 @@ impl Content {
             return None;
         }
 
-        // Try each potential type start position
+        // Try standard header parsing first (most common case)
+        if let Some(content) = Self::try_parse_standard(data) {
+            return Some(content);
+        }
+
+        // Fall back to trying each potential type start position
         for type_start in find_type_starts(data) {
             if let Some(content) = Self::try_parse_at(data, type_start) {
                 return Some(content);
@@ -58,8 +65,29 @@ impl Content {
         None
     }
 
-    /// Try to parse content starting from a specific offset
+    /// Try to parse using standard header parsing
+    fn try_parse_standard(data: &[u8]) -> Option<Self> {
+        let config = ParseConfig::default();
+        let basic = parse_basic_header_with_config(data, &config)?;
+
+        let strings = extract_strings(data, basic.format_offset + 4);
+        let metadata = extract_metadata(&strings);
+
+        Some(Self {
+            header: Header {
+                type_name: basic.type_name,
+                format_code: basic.format_code,
+                raw_header: basic.prefix_bytes,
+            },
+            strings,
+            metadata,
+        })
+    }
+
+    /// Try to parse content starting from a specific offset (legacy fallback)
     fn try_parse_at(data: &[u8], type_start: usize) -> Option<Self> {
+        use crate::header::find_null;
+
         let type_end = find_null(data, type_start)?;
 
         // Type name must be at least 2 chars
@@ -71,7 +99,7 @@ impl Content {
             .ok()?
             .to_string();
 
-        // Validate type name (should be alphanumeric with underscores, min 2 chars)
+        // Validate type name
         if type_name.len() < 2
             || !type_name
                 .chars()
@@ -80,34 +108,21 @@ impl Content {
             return None;
         }
 
-        // Find format code (4 chars starting with "ab")
-        // May be up to 600 bytes after type name (inv files have huge headers)
-        let mut format_start = None;
-        let search_end = (type_end + 600).min(data.len());
-        for pos in type_end + 3..search_end {
-            if pos + 4 <= data.len() {
-                if data[pos] == b'a' && data[pos + 1] == b'b' {
-                    // Verify it's a valid format code (4 letters, can include uppercase)
-                    if data[pos..pos + 4].iter().all(|&b| b.is_ascii_alphabetic()) {
-                        // Additional check: should be preceded by a null or control byte
-                        if pos > 0 && data[pos - 1] <= 3 {
-                            format_start = Some(pos);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        let format_start = format_start?;
+        // Find format code using shared logic
+        let config = ParseConfig {
+            type_search_start: type_start,
+            type_search_end: type_start + 1,
+            format_search_range: 600,
+        };
+
+        // Use memmem for format code search
+        let format_start = find_format_code_after(data, type_end)?;
 
         let format_code = std::str::from_utf8(&data[format_start..format_start + 4])
             .ok()?
             .to_string();
 
-        // Extract strings from the content
         let strings = extract_strings(data, format_start + 4);
-
-        // Build metadata from known patterns
         let metadata = extract_metadata(&strings);
 
         Some(Self {
@@ -196,7 +211,6 @@ impl Content {
                     .unwrap_or(false))
                 && s.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
                 && !s.chars().all(|c| c.is_ascii_lowercase())
-            // Not all lowercase (those are keywords)
             {
                 Some(s.as_str())
             } else {
@@ -206,37 +220,40 @@ impl Content {
     }
 }
 
-/// Find candidate positions where the type name might start
-fn find_type_starts(data: &[u8]) -> Vec<usize> {
-    let mut candidates = Vec::new();
+/// Find format code after a given offset using memmem
+fn find_format_code_after(data: &[u8], after: usize) -> Option<usize> {
+    use memchr::memmem;
 
-    // Check for 1-zero header format (type name at byte 1)
-    if data.len() > 1 && data[0] == 0 {
-        let first_char = data[1];
-        if first_char.is_ascii_alphabetic() || first_char == b'_' {
-            candidates.push(1);
-        }
+    let search_start = after + 3;
+    let search_end = (after + 600).min(data.len());
+
+    if search_start >= search_end {
+        return None;
     }
 
-    // Check for header format with null followed by type name (up to byte 32)
-    for i in 5..data.len().min(32) {
-        if data[i] == 0 && i + 1 < data.len() {
-            let next = data[i + 1];
-            if next.is_ascii_alphabetic() || next == b'_' {
-                candidates.push(i + 1);
+    let finder = memmem::Finder::new(b"ab");
+    let search_slice = &data[search_start..search_end];
+
+    let mut offset = 0;
+    while let Some(rel_pos) = finder.find(&search_slice[offset..]) {
+        let abs_pos = search_start + offset + rel_pos;
+
+        if abs_pos + 4 <= data.len() {
+            let code_bytes = &data[abs_pos..abs_pos + 4];
+            if code_bytes.iter().all(|&b| b.is_ascii_alphabetic()) {
+                if abs_pos > 0 && data[abs_pos - 1] <= 3 {
+                    return Some(abs_pos);
+                }
             }
         }
+
+        offset += rel_pos + 1;
+        if offset >= search_slice.len() {
+            break;
+        }
     }
 
-    candidates
-}
-
-/// Find null terminator from offset
-fn find_null(data: &[u8], start: usize) -> Option<usize> {
-    data[start..]
-        .iter()
-        .position(|&b| b == 0)
-        .map(|p| start + p)
+    None
 }
 
 /// Extract all readable strings from data
@@ -260,7 +277,6 @@ fn extract_strings(data: &[u8], start: usize) -> Vec<String> {
             current.push(byte);
             in_string = true;
         } else if in_string && current.len() >= 3 {
-            // Non-printable byte ends string
             if let Ok(s) = std::str::from_utf8(&current) {
                 if is_valid_string(s) {
                     strings.push(s.to_string());
@@ -291,7 +307,6 @@ fn is_valid_string(s: &str) -> bool {
     if s.len() < 2 {
         return false;
     }
-    // Must have at least some letters
     let letter_count = s.chars().filter(|c| c.is_ascii_alphabetic()).count();
     letter_count >= s.len() / 3
 }
@@ -301,7 +316,6 @@ fn extract_metadata(strings: &[String]) -> HashMap<String, String> {
     let mut metadata = HashMap::new();
 
     for s in strings {
-        // Look for known patterns
         if s == "none" || s == "basegame" || s == "base" {
             metadata.insert("namespace".to_string(), s.clone());
         } else if s.starts_with("cor") && s.len() > 3 {
@@ -327,7 +341,6 @@ mod tests {
         data.extend_from_slice(&[0x03, 0x05, 0x00]); // Format info
         data.extend_from_slice(format_code.as_bytes());
         data.extend_from_slice(&[0x1d, 0x06, 0x01]); // Entry info
-                                                     // Add some test strings
         data.extend_from_slice(b"test_entry\0");
         data.extend_from_slice(b"12.000000\0");
         data.extend_from_slice(b"none\0");
@@ -395,17 +408,15 @@ mod tests {
 
     #[test]
     fn test_variable_null_padding() {
-        // Test that format code is found even with extra null padding
-        // Format: header + type_name + NULL + NULL + format_bytes + "abjx"
-        let mut data = vec![0u8; 8]; // 8-byte header
-        data.push(0); // Null before type name
-        data.extend_from_slice(b"test_type"); // Type name
-        data.push(0); // Null after type name
-        data.push(0); // Extra null (variable padding)
-        data.extend_from_slice(&[0x03, 0x03, 0x00]); // Format bytes
-        data.extend_from_slice(b"abjx"); // Format code
-        data.extend_from_slice(b"\x01\x06\x01"); // Entry info
-        data.extend_from_slice(b"entry\0"); // Test entry
+        let mut data = vec![0u8; 8];
+        data.push(0);
+        data.extend_from_slice(b"test_type");
+        data.push(0);
+        data.push(0);
+        data.extend_from_slice(&[0x03, 0x03, 0x00]);
+        data.extend_from_slice(b"abjx");
+        data.extend_from_slice(b"\x01\x06\x01");
+        data.extend_from_slice(b"entry\0");
 
         let content = Content::parse(&data).expect("Should parse with extra null");
         assert_eq!(content.type_name(), "test_type");

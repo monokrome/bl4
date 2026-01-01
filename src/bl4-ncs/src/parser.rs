@@ -288,55 +288,20 @@ pub enum TagValue {
 
 /// Parse NCS content header
 pub fn parse_header(data: &[u8]) -> Option<Header> {
+    use crate::header::{parse_basic_header_with_config, ParseConfig};
+
     if data.len() < 20 {
         return None;
     }
 
-    // Find type name start - look for first alphabetic byte after zeros
-    // Skip first 8 bytes (header prefix: 4 zero bytes + 2-byte size/offset + 1 byte + null)
-    // Type name always starts at byte 9 or later in valid NCS files
-    let mut type_offset = None;
-    for i in 8..32.min(data.len()) {
-        if data[i - 1] == 0 && data[i].is_ascii_alphabetic() {
-            type_offset = Some(i);
-            break;
-        }
-    }
+    // Use shared header parsing with strict config (starts at byte 8)
+    let config = ParseConfig::strict();
+    let basic = parse_basic_header_with_config(data, &config)?;
 
-    let type_offset = type_offset?;
-
-    // Find null terminator for type name
-    let type_end = data[type_offset..]
-        .iter()
-        .position(|&b| b == 0)
-        .map(|p| type_offset + p)?;
-
-    let type_name = std::str::from_utf8(&data[type_offset..type_end])
-        .ok()?
-        .to_string();
-
-    if type_name.len() < 2 {
-        return None;
-    }
-
-    // Find format code (4 bytes starting with "ab")
-    // May be up to 600 bytes after type name (inv files have huge headers)
-    let mut format_offset = None;
-    let search_end = (type_end + 600).min(data.len());
-    for i in type_end + 1..search_end {
-        if i + 4 <= data.len() && &data[i..i + 2] == b"ab" {
-            // Verify all 4 bytes are lowercase letters
-            if data[i..i + 4].iter().all(|&b| b.is_ascii_lowercase()) {
-                format_offset = Some(i);
-                break;
-            }
-        }
-    }
-
-    let format_offset = format_offset?;
-    let format_code = std::str::from_utf8(&data[format_offset..format_offset + 4])
-        .ok()?
-        .to_string();
+    let type_offset = basic.type_offset;
+    let type_name = basic.type_name;
+    let format_offset = basic.format_offset;
+    let format_code = basic.format_code;
 
     // Entry section starts after format code (4 bytes)
     let entry_section_offset = format_offset + 4;
@@ -528,32 +493,34 @@ fn find_control_section(data: &[u8], after: usize) -> Option<usize> {
     None
 }
 
-/// Find the position of "none" category name in data
+/// Find the position of "none" category name in data using SIMD-accelerated search
 fn find_none_string(data: &[u8], after: usize) -> Option<usize> {
-    let pattern = b"none\x00";
-    for pos in after..data.len().saturating_sub(pattern.len()) {
-        if data[pos..].starts_with(pattern) {
-            return Some(pos);
-        }
+    use memchr::memmem;
+
+    if after >= data.len() {
+        return None;
     }
-    None
+
+    let finder = memmem::Finder::new(b"none\x00");
+    finder.find(&data[after..]).map(|pos| after + pos)
 }
 
-/// Find where binary section begins (after string table)
+/// Find where binary section begins (after string table) using SIMD-accelerated search
 fn find_binary_section(data: &[u8], string_start: usize) -> Option<usize> {
+    use memchr::memmem;
+
+    if string_start >= data.len() {
+        return Some(data.len());
+    }
+
     // Look for the 0x7a section divider pattern: 7a 00 00 00 00 00
     // This marks the end of the tags section and start of binary data
-    for pos in string_start..data.len().saturating_sub(5) {
-        if data[pos] == 0x7a
-            && data[pos + 1] == 0x00
-            && data[pos + 2] == 0x00
-            && data[pos + 3] == 0x00
-            && data[pos + 4] == 0x00
-            && data[pos + 5] == 0x00
-        {
-            // Binary section starts right after the 6-byte divider
-            return Some(pos + 6);
-        }
+    let divider = &[0x7a, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let finder = memmem::Finder::new(divider);
+
+    if let Some(pos) = finder.find(&data[string_start..]) {
+        // Binary section starts right after the 6-byte divider
+        return Some(string_start + pos + 6);
     }
 
     // Fallback: scan through strings until we find non-printable pattern
