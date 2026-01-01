@@ -81,18 +81,28 @@ impl Content {
         }
 
         // Find format code (4 chars starting with "ab")
-        let format_start = type_end + 4; // Skip null + 3 format bytes
-        if format_start + 4 > data.len() {
-            return None;
+        // May be up to 600 bytes after type name (inv files have huge headers)
+        let mut format_start = None;
+        let search_end = (type_end + 600).min(data.len());
+        for pos in type_end + 3..search_end {
+            if pos + 4 <= data.len() {
+                if data[pos] == b'a' && data[pos + 1] == b'b' {
+                    // Verify it's a valid format code (4 letters, can include uppercase)
+                    if data[pos..pos + 4].iter().all(|&b| b.is_ascii_alphabetic()) {
+                        // Additional check: should be preceded by a null or control byte
+                        if pos > 0 && data[pos - 1] <= 3 {
+                            format_start = Some(pos);
+                            break;
+                        }
+                    }
+                }
+            }
         }
+        let format_start = format_start?;
+
         let format_code = std::str::from_utf8(&data[format_start..format_start + 4])
             .ok()?
             .to_string();
-
-        // Validate format code starts with "ab"
-        if !format_code.starts_with("ab") {
-            return None;
-        }
 
         // Extract strings from the content
         let strings = extract_strings(data, format_start + 4);
@@ -381,5 +391,24 @@ mod tests {
         let content = Content::parse(&data).unwrap();
         let cloned = content.clone();
         assert_eq!(content.type_name(), cloned.type_name());
+    }
+
+    #[test]
+    fn test_variable_null_padding() {
+        // Test that format code is found even with extra null padding
+        // Format: header + type_name + NULL + NULL + format_bytes + "abjx"
+        let mut data = vec![0u8; 8]; // 8-byte header
+        data.push(0); // Null before type name
+        data.extend_from_slice(b"test_type"); // Type name
+        data.push(0); // Null after type name
+        data.push(0); // Extra null (variable padding)
+        data.extend_from_slice(&[0x03, 0x03, 0x00]); // Format bytes
+        data.extend_from_slice(b"abjx"); // Format code
+        data.extend_from_slice(b"\x01\x06\x01"); // Entry info
+        data.extend_from_slice(b"entry\0"); // Test entry
+
+        let content = Content::parse(&data).expect("Should parse with extra null");
+        assert_eq!(content.type_name(), "test_type");
+        assert_eq!(content.format_code(), "abjx");
     }
 }

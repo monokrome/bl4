@@ -208,7 +208,34 @@ The string `'1224_missions_side'` is a **packed value** containing:
 6. Read `'24'` as Entry 3's achievementid
 
 This packed encoding occurs when the achievementid and next entry name share numeric prefixes,
-allowing concatenation without an explicit separator
+allowing concatenation without an explicit separator.
+
+### Value Packing Patterns
+
+NCS files use aggressive value packing to minimize storage. Common patterns:
+
+**1. Numeric Prefix + String Suffix:**
+```
+"1airship"   -> (1, "airship")     # achievement ID + name
+"9main"      -> (9, "main")        # achievement ID + name
+"5true"      -> (5, true)          # count + boolean
+```
+
+**2. Float + String:**
+```
+"0.175128Session" -> (0.175128, "Session")  # float value + identifier
+```
+
+**3. Multiple Numeric Values:**
+```
+"1224_missions_side" -> (12, "24_missions_side")  # ID + remaining string
+```
+
+**Unpacking Rules:**
+- Identify packed strings by: digit prefix + alpha/special suffix
+- Split at first non-numeric character (or after float pattern)
+- Field abbreviations in binary section indicate expected types
+- Context from field definitions determines interpretation
 
 ### Control Section (4 bytes)
 
@@ -574,6 +601,206 @@ Some NCS files use Oodle compression parameters not supported by open-source dec
 | DialogStyle0 | ~370KB | Dialog styling |
 
 These (~2.4% of files) require the official Oodle SDK for decompression.
+
+---
+
+## Parsing Implementation Notes
+
+This section documents implementation details discovered during parser development.
+
+### Entry Section Format Variations
+
+The entry section after the format code has multiple encoding patterns based on format code and content type:
+
+**1. Simple Format** (`01 XX c?`) - abjx:
+```
+[0x01] [string_count] [0xc0 | field_count]
+```
+- Example: achievement `01 0a c2` = 10 strings, 2 fields per entry
+- Field count encoded as `0xc0 | count` (0xc2 = 2 fields)
+- Control section: `01 00 XX YY` before category names
+
+**2. Extended Format** (`XX XX 01`) - abjx:
+```
+[string_count] [field_count] [0x01]
+```
+- Example: itempoollist `1d 06 01` = 29 strings, 6 fields
+- String count in first byte (typically > 0x10)
+- Field count directly in second byte (2-10)
+
+**3. Direct Format** (`01 XX YY`) - abjx:
+```
+[0x01] [field_count] [marker]
+```
+- Example: hit_region `01 03 30` = 3 fields, marker 0x30 ('0')
+- Field count directly in second byte
+- Third byte varies (0x30, 0x7f, etc.) - meaning unclear
+
+**4. Variable Format** (`01 XX 7f`) - abjx:
+```
+[0x01] [count] [0x7f]
+```
+- Example: rarity `01 0b 7f` = 11 entries?
+- 0x7f (127) appears to be a special marker
+- Different control section pattern (not `01 00`)
+
+**5. Legacy Format** - abjl:
+```
+[varies significantly]
+```
+- Example: manufacturer uses completely different structure
+- No standard entry section pattern
+- Requires format-specific parsing
+
+### String Table Boundaries
+
+The string table is bounded by:
+- **Start**: First printable string after entry section
+- **End**: Control section marker (`01 00 XX YY`)
+
+Important: The control section marks the TRUE end of the string table. Category names
+(none, base, basegame) come AFTER the control section and should be tracked separately.
+
+### Control Section Detection
+
+Pattern: `01 00 XX YY` where:
+- `0x01` = marker byte
+- `0x00` = separator
+- `XX` = entry/index count
+- `YY` = type/mode byte (0xe9, 0x62, 0x06, etc.)
+
+Detection heuristic: Look for `01 00` followed by valid count byte, then verify
+the next bytes contain category names like "none" or "base".
+
+### Category Names vs Field Abbreviations
+
+After the control section:
+
+**Category Names** (DLC identifiers):
+- Simple lowercase strings: `none`, `base`, `basegame`
+- No underscores, periods, or special characters
+- Part of the combined string table for binary section indexing
+
+**Field Abbreviations**:
+- Contain `.` or `!` characters: `corid_aid.a!`
+- Encode field names compactly (e.g., `cor` = correlation, `id` = id, `aid` = achievementid)
+- The trailing `!` is stripped when adding to string table
+- Appear between category names and binary data markers
+- ARE part of the combined string table (required for correct table_id indexing)
+- May be terminated by control byte rather than null
+
+### Binary Section Structure
+
+The section divider `7a 00 00 00 00 00` marks a transition point:
+- Before: Entry data markers (`XX XX 00 00` patterns)
+- After: Bit-packed binary data
+
+The binary section after the divider has two main parts:
+
+#### Part 1: Bit-Packed String Indices
+
+The first ~32 bytes contain bit-packed indices into the combined string table.
+The bit width is determined by the size of the combined string table:
+- 14 strings → 4 bits per index
+- 6 strings → 3 bits per index
+- 18 strings → 5 bits per index
+
+Example from `achievement.bin` (4-bit indices):
+```
+1d 15 d7 55 e3 fb 2d fb...
+```
+Decoded: 13, 1, 5, 1, 7, 13, 5, 5, 3, 14, 11, 15...
+- Index 13 → "achievement" (table_id)
+- Index 1 → "10"
+- Index 5 → "1224_missions_side"
+- etc.
+
+#### Part 2: Structured Metadata Section
+
+Following the bit-packed indices is a byte-based metadata section with:
+- Values mostly in 0x08-0x30 range
+- 0x28 (or 0x20) separators between entry groups
+- 0x00 0x00 terminator
+
+**Entry Groups:**
+Each group of values between separators corresponds to one entry in the string table.
+The number of entry groups matches the number of entries.
+
+Example from `achievement.bin` (5 entries):
+```
+15 11 13 14 14 14 12 25 08 08 | 28 | 13 0a 19 | 28 | 13 | 28 | 13 | 28 | 12 | 28 28 | 00 00
+Entry 0: [21, 17, 19, 20, 20, 20, 18, 37, 8, 8]
+Entry 1: [19, 10, 25]
+Entry 2: [19]
+Entry 3: [19]
+Entry 4: [18]
+```
+
+The values may represent:
+- Bit offsets into the packed section
+- Field widths or character counts
+- Position/length metadata for string reconstruction
+
+#### Combined String Table Structure
+
+For `abjx` format files, the combined string table contains:
+1. **Primary strings** - from the string table section (indices 0 to N-1)
+2. **Category names** - DLC identifiers like "none", "base", "basegame" (indices N to N+K-1)
+3. **Field abbreviation** - if present, like "corid_aid.a" (next index)
+4. **Type name** - the schema/type identifier like "achievement" (final index)
+
+The `table_id` (first value in binary section) indexes into this combined table:
+- `hit_region`: table_id=0 → "HitR_AI_Crit" (first primary string)
+- `achievement`: table_id=13 → "achievement" (type name)
+
+The table_id appears to point to either the first data entry name or the schema type name,
+depending on the file's structure.
+
+#### Compact Binary Format
+
+Some NCS files (e.g., `rarity`) use a compact format instead of the separator-based format.
+This format is detected by the absence of 0x28 separators and the presence of a `0x80 0x80` header.
+
+**Structure:**
+```
+[Bit-packed indices] [0x80 0x80] [fixed-width records] [00 00] [tail data]
+```
+
+**Fixed-Width Records:**
+Each entry has a fixed number of bytes (typically 2) without separators:
+```
+Example from rarity.bin (10 entries, 2 bytes each):
+0x80 0x80 | 13 0f | 08 11 | 0d 0d | 23 08 | 08 24 | 27 11 | 0e 22 | 13 0d | 1c 1b | 26 27 | 00 00
+           Entry0  Entry1  Entry2  Entry3  Entry4  Entry5  Entry6  Entry7  Entry8  Entry9  Term
+```
+
+The `0x80 0x80` header distinguishes this from the separator format, where values are in the 0x08-0x40 range.
+
+#### Tag-Based Format (Advanced)
+
+Some NCS files use a tag-based format with type bytes:
+- 0x61 ('a') = TagType::Pair (string reference)
+- 0x62 ('b') = TagType::U32 (32-bit unsigned)
+- 0x63 ('c') = TagType::U32F32 (u32 and f32 interpretation)
+- 0x64-0x66 = TagType::List (list terminated by "none")
+- 0x70 ('p') = TagType::Variant (2-bit subtype)
+- 0x7a ('z') = TagType::End
+
+This format uses remap tables and variable-length encoding for complex data structures.
+
+### String Validation Heuristics
+
+Valid strings should:
+- Be at least 2 characters long
+- Not contain garbage characters (`!`, `@`, `#`, etc.) unless field abbreviations
+- Pure numeric strings (like "10", "24") ARE valid
+- Short strings (2-3 chars) should be all lowercase or known keywords
+
+Invalid patterns:
+- Mixed case short strings (like "zR", "D3") - likely binary garbage
+- Trailing/leading spaces
+- Multiple consecutive spaces
+- Strings with high underscore-to-letter ratio
 
 ---
 

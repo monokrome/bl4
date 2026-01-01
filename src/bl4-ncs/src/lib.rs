@@ -43,8 +43,11 @@ pub use manifest::{
     scan as scan_for_ncs_manifests, Entry as NcsManifestEntry, Manifest as NcsManifest,
 };
 pub use parser::{
-    parse_document, parse_header, parse_string_table, BitReader, Document, Header as ParsedHeader,
-    Record, StringTable, Value,
+    bit_width, create_combined_string_table, debug_binary_section, extract_field_abbreviation,
+    extract_inline_strings, find_packed_strings, parse_binary_section, parse_document,
+    parse_header, parse_string_table, unpack_string, BinaryEntry, BinaryParseResult, BinaryRecord,
+    BitReader, Document, EntryGroup, FieldInfo, Header as ParsedHeader, Record, StringTable,
+    TagType, TagValue, UnpackedString, UnpackedValue, Value,
 };
 
 /// Magic bytes for NCS format: "NCS" (bytes 1-3 of header)

@@ -39,6 +39,10 @@ pub enum NcsCommand {
         /// Output as JSON
         #[arg(long)]
         json: bool,
+
+        /// Output as TSV (tab-separated values)
+        #[arg(long)]
+        tsv: bool,
     },
 
     /// Search for NCS files containing a pattern
@@ -99,6 +103,10 @@ pub enum NcsCommand {
         #[arg(long)]
         offset: Option<usize>,
 
+        /// Output raw binary instead of parsed TSV
+        #[arg(long)]
+        raw: bool,
+
         /// Path to Oodle DLL for native decompression (Windows only)
         ///
         /// Load the official Oodle DLL (e.g., oo2core_9_win64.dll) for full
@@ -114,5 +122,23 @@ pub enum NcsCommand {
         /// Compressed data is sent to stdin, decompressed data is read from stdout.
         #[arg(long, value_name = "COMMAND")]
         oodle_exec: Option<String>,
+    },
+
+    /// Debug binary structure of an NCS file
+    Debug {
+        /// Path to decompressed NCS file
+        path: PathBuf,
+
+        /// Show hex dump of binary section
+        #[arg(long)]
+        hex: bool,
+
+        /// Try to parse binary section with bit reader
+        #[arg(long)]
+        parse: bool,
+
+        /// Show all section offsets
+        #[arg(long)]
+        offsets: bool,
     },
 }
