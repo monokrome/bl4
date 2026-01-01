@@ -1029,6 +1029,79 @@ impl ItemSerial {
             .collect()
     }
 
+    /// Get all parts with their resolved names
+    /// Returns (index, name, is_flagged, values) tuples where:
+    /// - index is the raw part index
+    /// - name is the part name from the manifest (or None if not found)
+    /// - is_flagged indicates if the high bit (0x80) was set
+    /// - values are any associated values
+    ///
+    /// Note: Indices >= 128 may be:
+    /// - Element markers (128-142 = elements 0-14)
+    /// - Flagged parts (index & 0x7F gives the base part index)
+    pub fn parts_with_names(&self) -> Vec<(u64, Option<&'static str>, bool, Vec<u64>)> {
+        let category = self.parts_category().unwrap_or(-1);
+        self.parts()
+            .into_iter()
+            .map(|(index, values)| {
+                // Check if high bit is set (flagged part)
+                let is_flagged = index >= 128;
+                let lookup_index = if is_flagged {
+                    (index & 0x7F) as i64
+                } else {
+                    index as i64
+                };
+
+                // First try direct lookup, then try base index for flagged parts
+                let name = crate::manifest::part_name(category, lookup_index);
+                (index, name, is_flagged, values)
+            })
+            .collect()
+    }
+
+    /// Get a summary of resolved part names
+    /// Returns a formatted string with part names, or indices for unknown parts
+    pub fn parts_summary(&self) -> String {
+        let parts = self.parts_with_names();
+        if parts.is_empty() {
+            return String::new();
+        }
+
+        let mut output = Vec::new();
+        for (index, name, is_flagged, values) in parts {
+            // Skip element markers (128-142) as they're shown separately
+            if index >= 128 && index <= 142 {
+                continue;
+            }
+
+            let flag_marker = if is_flagged { "+" } else { "" };
+            let part_str = match name {
+                Some(n) => {
+                    // Extract just the part name after the prefix (e.g., "part_barrel_01" from "DAD_PS.part_barrel_01")
+                    let short_name = n.split('.').last().unwrap_or(n);
+                    if values.is_empty() {
+                        format!("{}{}", flag_marker, short_name)
+                    } else if values.len() == 1 {
+                        format!("{}{}:{}", flag_marker, short_name, values[0])
+                    } else {
+                        format!("{}{}:{:?}", flag_marker, short_name, values)
+                    }
+                }
+                None => {
+                    if values.is_empty() {
+                        format!("[{}]", index)
+                    } else if values.len() == 1 {
+                        format!("[{}]:{}", index, values[0])
+                    } else {
+                        format!("[{}]:{:?}", index, values)
+                    }
+                }
+            };
+            output.push(part_str);
+        }
+        output.join(", ")
+    }
+
     /// Display detailed byte-by-byte breakdown
     pub fn detailed_dump(&self) -> String {
         let mut output = String::new();

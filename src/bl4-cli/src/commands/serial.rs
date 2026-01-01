@@ -1,7 +1,6 @@
 //! Item serial command handlers
 
 use anyhow::{bail, Context, Result};
-use serde::Deserialize;
 use std::collections::HashMap;
 use std::fs;
 use std::io::Write;
@@ -76,62 +75,49 @@ pub fn decode(
     println!("Hex: {}", item.hex_dump());
     println!("Tokens: {}", item.format_tokens());
 
-    // Try to resolve part names from database
-    let category: Option<i64> = item.parts_category();
+    // Show resolved parts using compiled-in manifest data
+    let parts_summary = item.parts_summary();
+    if !parts_summary.is_empty() {
+        println!("\nParts: {}", parts_summary);
+    }
 
-    // Resolve part names if we have a category and parts database
-    let parts = item.parts();
-    if let (Some(category), false) = (category, parts.is_empty()) {
-        #[derive(Debug, Deserialize)]
-        struct PartsDb {
-            parts: Vec<PartDbEntry>,
-        }
-        #[derive(Debug, Deserialize)]
-        struct PartDbEntry {
-            name: String,
-            category: i64,
-            index: i64,
-        }
+    // Show detailed parts with full names if verbose
+    let parts = item.parts_with_names();
+    if !parts.is_empty() && verbose {
+        println!("\nResolved parts ({}):", item.parts_category().unwrap_or(-1));
+        for (index, name, is_flagged, values) in &parts {
+            let flag_str = if *is_flagged { " [+]" } else { "" };
+            let extra = if values.is_empty() {
+                String::new()
+            } else if values.len() == 1 {
+                format!(" (value: {})", values[0])
+            } else {
+                format!(" (values: {:?})", values)
+            };
 
-        if let Ok(db_content) = fs::read_to_string(parts_db) {
-            if let Ok(db) = serde_json::from_str::<PartsDb>(&db_content) {
-                let lookup: HashMap<(i64, i64), &str> = db
-                    .parts
-                    .iter()
-                    .map(|p| ((p.category, p.index), p.name.as_str()))
-                    .collect();
-
-                println!("\nResolved parts:");
-                for (part_index, values) in &parts {
-                    let has_flag = *part_index >= 128;
-                    let actual_index = if has_flag {
-                        (*part_index & 0x7F) as i64
-                    } else {
-                        *part_index as i64
-                    };
-                    let flag_str = if has_flag { " [+]" } else { "" };
-                    let extra = if values.is_empty() {
-                        String::new()
-                    } else {
-                        format!(" (values: {:?})", values)
-                    };
-                    if let Some(name) = lookup.get(&(category, actual_index)) {
-                        println!("  {}{}{}", name, flag_str, extra);
-                    } else {
-                        let idx_display = if has_flag {
-                            format!(
-                                "{} (0x{:02x} = flag + {})",
-                                part_index, part_index, actual_index
-                            )
-                        } else {
-                            format!("{}", part_index)
-                        };
-                        println!("  [unknown part index {}]{}", idx_display, extra);
-                    }
-                }
+            // Check if this is an element marker first (128-142 range)
+            if *index >= 128 && *index <= 142 {
+                let elem_id = index - 128;
+                let elem_name = match elem_id {
+                    0 => "Kinetic",
+                    5 => "Corrosive",
+                    8 => "Shock",
+                    9 => "Radiation",
+                    13 => "Cryo",
+                    14 => "Fire",
+                    _ => "Unknown Element",
+                };
+                println!("  [{:3}] <element: {}>{}", index, elem_name, extra);
+            } else if let Some(n) = name {
+                println!("  [{:3}] {}{}{}", index, n, flag_str, extra);
+            } else {
+                println!("  [{:3}] <unknown>{}{}", index, flag_str, extra);
             }
         }
     }
+
+    // For backwards compatibility, also check parts_db file for additional parts
+    let _ = parts_db; // Suppress unused warning - kept for API compatibility
 
     if verbose {
         println!("\n{}", item.detailed_dump());
