@@ -17,9 +17,12 @@ value = "@Ug"
 type = "min_length"
 value = 20
 
-# Decode serials using bl4 CLI
+# Decode serials using bl4 CLI (or use built-in base85 with BL4 charset)
 [gloss]
 command = ["bl4", "serial", "decode"]
+# Alternative: use built-in decoder
+# transform = "base85"
+# base85_charset = "bl4"
 
 # Coloring for rarity
 [[color]]
