@@ -549,82 +549,96 @@ fn find_binary_section(data: &[u8], string_start: usize) -> Option<usize> {
 
 /// Parse string table from NCS content
 pub fn parse_string_table(data: &[u8], header: &Header) -> StringTable {
-    let mut strings = Vec::new();
-    let mut index_map = HashMap::new();
-    let mut current = Vec::new();
-    let mut in_string = false;
-
-    // String table ends at control section (if found), otherwise at binary offset
-    // Ensure end is >= start to avoid slice panics
+    // Calculate bounds for string table
     let end = header
         .control_section_offset
         .unwrap_or(header.binary_offset)
         .min(data.len())
         .max(header.string_table_offset);
 
-    // Maximum strings to parse (from header if known, otherwise no limit)
     let max_strings = header.string_count.map(|c| c as usize);
 
-    // First pass: extract raw null-terminated strings
-    let mut raw_strings = Vec::new();
+    // Extract raw strings
+    let raw_strings = extract_raw_strings(
+        &data[header.string_table_offset..end],
+        max_strings,
+    );
 
-    for &byte in &data[header.string_table_offset..end] {
-        // Stop if we've reached the maximum string count
-        if let Some(max) = max_strings {
-            if raw_strings.len() >= max {
+    // Build final string table with packed string splitting
+    build_string_table(raw_strings)
+}
+
+/// Extract null-terminated strings from raw bytes
+fn extract_raw_strings(data: &[u8], max_count: Option<usize>) -> Vec<String> {
+    let mut strings = Vec::new();
+    let mut current = Vec::new();
+    let mut in_string = false;
+
+    for &byte in data {
+        if let Some(max) = max_count {
+            if strings.len() >= max {
                 break;
             }
         }
 
-        if byte == 0 {
-            if !current.is_empty() {
-                if let Ok(s) = std::str::from_utf8(&current) {
-                    if is_valid_string(s) {
-                        raw_strings.push(s.to_string());
+        match byte {
+            0 => {
+                if !current.is_empty() {
+                    if let Some(s) = try_extract_string(&current) {
+                        strings.push(s);
                     }
+                    current.clear();
+                }
+                in_string = false;
+            }
+            b if b.is_ascii_graphic() || b == b' ' => {
+                current.push(b);
+                in_string = true;
+            }
+            _ if in_string && current.len() >= 2 => {
+                if let Some(s) = try_extract_string(&current) {
+                    strings.push(s);
                 }
                 current.clear();
+                in_string = false;
             }
-            in_string = false;
-        } else if byte.is_ascii_graphic() || byte == b' ' {
-            current.push(byte);
-            in_string = true;
-        } else if in_string && current.len() >= 2 {
-            // Non-printable ends string
-            if let Ok(s) = std::str::from_utf8(&current) {
-                if is_valid_string(s) {
-                    raw_strings.push(s.to_string());
-                }
+            _ => {
+                current.clear();
+                in_string = false;
             }
-            current.clear();
-            in_string = false;
-        } else {
-            current.clear();
-            in_string = false;
         }
     }
 
-    // Handle trailing string (only if we haven't hit the limit)
+    // Handle trailing string
     if !current.is_empty() {
-        let at_limit = max_strings.map(|m| raw_strings.len() >= m).unwrap_or(false);
+        let at_limit = max_count.map(|m| strings.len() >= m).unwrap_or(false);
         if !at_limit {
-            if let Ok(s) = std::str::from_utf8(&current) {
-                if is_valid_string(s) {
-                    raw_strings.push(s.to_string());
-                }
+            if let Some(s) = try_extract_string(&current) {
+                strings.push(s);
             }
         }
     }
 
-    // Second pass: split packed strings if they contain known markers
-    for raw in raw_strings {
-        // Check if this string might be multiple entries packed together
-        let needs_split = raw.len() > 20
-            && (raw.contains("IPL") || raw.contains("/Script/") || raw.contains("Table_"));
+    strings
+}
 
-        if needs_split {
-            let split_strings = split_packed_string(&raw);
-            for s in split_strings {
+/// Try to extract a valid string from bytes
+#[inline]
+fn try_extract_string(bytes: &[u8]) -> Option<String> {
+    std::str::from_utf8(bytes)
+        .ok()
+        .filter(|s| is_valid_string(s))
+        .map(|s| s.to_string())
+}
+
+/// Build StringTable from raw strings, splitting packed strings as needed
+fn build_string_table(raw_strings: Vec<String>) -> StringTable {
+    let mut strings = Vec::with_capacity(raw_strings.len());
+    let mut index_map = HashMap::with_capacity(raw_strings.len());
+
+    for raw in raw_strings {
+        if should_split_string(&raw) {
+            for s in split_packed_string(&raw) {
                 index_map.insert(s.clone(), strings.len());
                 strings.push(s);
             }
@@ -635,6 +649,12 @@ pub fn parse_string_table(data: &[u8], header: &Header) -> StringTable {
     }
 
     StringTable { strings, index_map }
+}
+
+/// Check if a string contains markers indicating it's packed
+#[inline]
+fn should_split_string(s: &str) -> bool {
+    s.len() > 20 && (s.contains("IPL") || s.contains("/Script/") || s.contains("Table_"))
 }
 
 /// Extract category names that appear after the control section
