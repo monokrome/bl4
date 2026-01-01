@@ -17,12 +17,11 @@ value = "@Ug"
 type = "min_length"
 value = 20
 
-# Decode serials using bl4 CLI (or use built-in base85 with BL4 charset)
+# Decode serials using bl4 CLI
 [gloss]
 command = ["bl4", "serial", "decode"]
-# Alternative: use built-in decoder
-# transform = "base85"
-# base85_charset = "bl4"
+# Extract serial segment from input (handles lines with extra content)
+segment = "@[A-Za-z0-9!#$%&()*+,-./:;<=>?@^_`{|}~]+"
 
 # Coloring for rarity
 [[color]]
@@ -81,3 +80,8 @@ pattern = "Rarity: (\\w+)"
 name = "element"
 from_gloss = true
 pattern = "Element: ([\\w, ]+)"
+
+[[fields]]
+name = "parts"
+from_gloss = true
+pattern = "Parts: (.+)"
