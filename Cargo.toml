@@ -13,7 +13,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.5.19"
+version = "0.5.20"
 edition = "2021"
 authors = ["bl4 Contributors"]
 license = "BSD-2-Clause"
