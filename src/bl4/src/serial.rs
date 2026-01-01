@@ -1033,12 +1033,12 @@ impl ItemSerial {
     /// Returns (index, name, is_flagged, values) tuples where:
     /// - index is the raw part index
     /// - name is the part name from the manifest (or None if not found)
-    /// - is_flagged indicates if the high bit (0x80) was set
+    /// - is_flagged indicates if the high bit (0x80) was set (purpose TBD)
     /// - values are any associated values
     ///
     /// Note: Indices >= 128 may be:
     /// - Element markers (128-142 = elements 0-14)
-    /// - Flagged parts (index & 0x7F gives the base part index)
+    /// - Modified parts (index & 0x7F gives the base part index, flag meaning unknown)
     pub fn parts_with_names(&self) -> Vec<(u64, Option<&'static str>, bool, Vec<u64>)> {
         let category = self.parts_category().unwrap_or(-1);
         self.parts()
