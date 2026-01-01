@@ -1030,31 +1030,22 @@ impl ItemSerial {
     }
 
     /// Get all parts with their resolved names
-    /// Returns (index, name, is_flagged, values) tuples where:
-    /// - index is the raw part index
+    /// Returns (index, name, values) tuples where:
+    /// - index is the raw part index from the serial
     /// - name is the part name from the manifest (or None if not found)
-    /// - is_flagged indicates if the high bit (0x80) was set (purpose TBD)
     /// - values are any associated values
     ///
-    /// Note: Indices >= 128 may be:
-    /// - Element markers (128-142 = elements 0-14)
-    /// - Modified parts (index & 0x7F gives the base part index, flag meaning unknown)
-    pub fn parts_with_names(&self) -> Vec<(u64, Option<&'static str>, bool, Vec<u64>)> {
+    /// Note: Many indices won't resolve because:
+    /// - The parts database was extracted from memory and may be incomplete
+    /// - Serials may use a different indexing system than memory structures
+    /// - Indices 128-142 are element markers (shown separately via element_names())
+    pub fn parts_with_names(&self) -> Vec<(u64, Option<&'static str>, Vec<u64>)> {
         let category = self.parts_category().unwrap_or(-1);
         self.parts()
             .into_iter()
             .map(|(index, values)| {
-                // Check if high bit is set (flagged part)
-                let is_flagged = index >= 128;
-                let lookup_index = if is_flagged {
-                    (index & 0x7F) as i64
-                } else {
-                    index as i64
-                };
-
-                // First try direct lookup, then try base index for flagged parts
-                let name = crate::manifest::part_name(category, lookup_index);
-                (index, name, is_flagged, values)
+                let name = crate::manifest::part_name(category, index as i64);
+                (index, name, values)
             })
             .collect()
     }
@@ -1068,23 +1059,22 @@ impl ItemSerial {
         }
 
         let mut output = Vec::new();
-        for (index, name, is_flagged, values) in parts {
+        for (index, name, values) in parts {
             // Skip element markers (128-142) as they're shown separately
             if index >= 128 && index <= 142 {
                 continue;
             }
 
-            let flag_marker = if is_flagged { "+" } else { "" };
             let part_str = match name {
                 Some(n) => {
                     // Extract just the part name after the prefix (e.g., "part_barrel_01" from "DAD_PS.part_barrel_01")
                     let short_name = n.split('.').last().unwrap_or(n);
                     if values.is_empty() {
-                        format!("{}{}", flag_marker, short_name)
+                        short_name.to_string()
                     } else if values.len() == 1 {
-                        format!("{}{}:{}", flag_marker, short_name, values[0])
+                        format!("{}:{}", short_name, values[0])
                     } else {
-                        format!("{}{}:{:?}", flag_marker, short_name, values)
+                        format!("{}:{:?}", short_name, values)
                     }
                 }
                 None => {

@@ -85,8 +85,7 @@ pub fn decode(
     let parts = item.parts_with_names();
     if !parts.is_empty() && verbose {
         println!("\nResolved parts ({}):", item.parts_category().unwrap_or(-1));
-        for (index, name, is_flagged, values) in &parts {
-            let flag_str = if *is_flagged { " [+]" } else { "" };
+        for (index, name, values) in &parts {
             let extra = if values.is_empty() {
                 String::new()
             } else if values.len() == 1 {
@@ -109,9 +108,9 @@ pub fn decode(
                 };
                 println!("  [{:3}] <element: {}>{}", index, elem_name, extra);
             } else if let Some(n) = name {
-                println!("  [{:3}] {}{}{}", index, n, flag_str, extra);
+                println!("  [{:3}] {}{}", index, n, extra);
             } else {
-                println!("  [{:3}] <unknown>{}{}", index, flag_str, extra);
+                println!("  [{:3}] <unknown>{}", index, extra);
             }
         }
     }
