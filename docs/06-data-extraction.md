@@ -323,21 +323,55 @@ Current NCS extraction yields 806 files with 232 unique types:
 
 | NCS Type | Contents | Part Data |
 |----------|----------|-----------|
-| `inv.bin` | 13,860 inventory entries | Part attributes, stats |
+| `inv.bin` | 13,860 inventory entries | Part attributes, stats, **serial indices** |
 | `inv_name_part.bin` | 946 part naming entries | Display names |
-| `GbxActorPart.bin` | 2,167 actor parts | Cosmetic/mesh parts |
+| `GbxActorPart.bin` | 2,167 actor parts | Cosmetic/mesh parts with indices |
 | `itempool.bin` | Item pool definitions | Loot tables |
 
-**Important limitation**: NCS contains part NAMES and ATTRIBUTES but not serial INDEX mappings. The indices are embedded in UObject instances at runtime, not in static game files.
+### NCS Serial Index Discovery
+
+**Breakthrough**: NCS `inv.bin` DOES contain serial indices for weapon parts! The indices are stored in the `value_0` field of part definition records.
+
+**Format**: Part names in NCS use a different format than memory:
+
+| NCS Format | Memory Format | Index |
+|------------|---------------|-------|
+| `BOR_SG_Grip_01` | `BOR_SG.part_grip_01` | 42 |
+| `BOR_SG_Foregrip_02` | `BOR_SG.part_foregrip_02` | 81 |
+| `BOR_SG_Barrel_02_B` | `BOR_SG.part_barrel_02_b` | 71 |
+
+**Verified matches** between NCS `value_0` and memory-extracted indices:
+
+- `BOR_SG_Grip_01` = 42 ✓
+- `BOR_SG_Grip_02` = 43 ✓
+- `BOR_SG_Foregrip_01` = 50 ✓
+- `BOR_SG_Foregrip_02` = 81 ✓
+- `BOR_SG_Barrel_02_B` = 71 ✓
+- `BOR_SG_Barrel_02_D` = 73 ✓
+
+**Important caveats**:
+
+1. Not all records with `value_0` are indices (some are attribute values)
+2. Only records matching weapon part naming patterns (e.g., `XXX_YY_Part_Type`) contain indices
+3. Some mismatches exist (e.g., `BOR_SG_Barrel_01` shows 4 in NCS but 7 in memory)
+4. NCS may contain MORE parts than memory extraction captures
+
+**Extraction approach**: Filter for records where the name matches weapon part patterns, then extract `value_0` as the serial index. Cross-reference with memory-extracted indices where available.
 
 ### Strategies for Complete Index Coverage
 
-1. **Multiple memory dumps** — Capture game state with different loadouts to instantiate more parts
-2. **Runtime hooking** — Use preload injection to log part registrations at startup
-3. **Pattern analysis** — Infer indices from known patterns (risky - may produce wrong mappings)
-4. **Empirical validation** — Verify unknown indices by testing serials in-game
+1. **NCS extraction (preferred)** — Extract indices from `inv.bin` `value_0` fields. This is static game data that doesn't require memory dumps.
+2. **Memory dumps (validation)** — Use memory-extracted indices to validate NCS data and capture parts with mismatched formats.
+3. **Multiple memory dumps** — Capture game state with different loadouts to instantiate more parts.
+4. **Empirical validation** — Verify unknown indices by testing serials in-game.
 
-The safest approach is accumulating multiple memory dumps over time. Each dump adds previously-missing parts.
+**Recommended workflow**:
+
+1. Extract all potential indices from NCS `inv.bin`
+2. Cross-reference with memory-extracted indices
+3. For matches, trust the data
+4. For mismatches, investigate (NCS format may differ from memory format)
+5. For NCS-only parts, treat indices as provisional until validated
 
 ---
 
