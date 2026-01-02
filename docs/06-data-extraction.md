@@ -265,34 +265,79 @@ By scanning for the 0xFFFFFFFF sentinel pattern that marks entry boundaries, we 
 !!! tip "Practical Implication"
     Memory dumps contain **authoritative** part-to-index mappings. Extract them directly—no empirical testing required for known parts. Empirical validation is only needed for new parts added in patches.
 
-### Extraction Results
+### Extraction Results and Limitations
 
 Running the extraction on a Dec 2025 memory dump yields:
 
 | Metric | Value |
 |--------|-------|
-| Total parts extracted | 1,070 |
-| FNames scanned | 1,399 |
-| Categories covered | 49 |
-| Match rate vs reference | 84.3% |
-| Core weapons (cat 2-29) | **100% accurate** |
+| Total parts extracted | ~1,041 |
+| Categories covered | 47 |
+| Expected parts (estimated) | ~2,600+ |
 
-**Distribution by type:**
+!!! warning "Incomplete Coverage"
+    Memory extraction only captures parts that were **instantiated in memory** at the time of the dump. This means:
 
-| Type | Categories | Parts |
-|------|------------|-------|
-| Pistols | 2-7 | 207 |
-| Shotguns | 8-13 | 190 |
-| Assault Rifles | 14-19 | 169 |
-| SMGs | 20-23 | 135 |
-| Snipers | 25-29 | 176 |
-| Heavy Weapons | 244-247 | 37 |
-| Shields | 279-287 | 44 |
-| Gadgets | 300-330 | 146 |
-| Enhancements | 400-409 | 23 |
+    - **Significant gaps exist** in index sequences (e.g., category 2 has indices 2, 3, 5-8, 10-11... but missing 0, 1, 4, 9, etc.)
+    - **Only ~40% of parts** have authoritative indices
+    - Parts not spawned during the capture session are missing
+    - Static part pool definitions aren't available through this method
 
-!!! success "Core Weapon Accuracy"
-    The extraction achieves **zero mismatches** for core weapon categories (2-29). Mismatches only occur in heavy weapons, shields, gadgets, and enhancements—likely due to different UObject layouts or reference data issues for those categories.
+**What we have:**
+- Accurate indices for parts that WERE instantiated
+- Complete category-to-prefix mappings
+- Manufacturer associations
+
+**What we're missing:**
+- Complete part lists per category
+- Parts from DLC/content not loaded during capture
+- Static part pool definitions (which would give complete part sets)
+
+### Data Pipeline: Current State
+
+The part mapping workflow uses multiple data sources:
+
+**1. Part Names (Complete)**
+
+`share/manifest/part_pools.json` contains the complete list of 2,566 part names, organized by category. Source: memory dump FName extraction.
+
+```bash
+# Part names are complete - we know ALL parts that exist
+bl4 memory --dump game.dmp dump-parts -o parts_dump.json
+```
+
+**2. Part Indices (Incomplete)**
+
+`share/manifest/parts_database.json` contains ~1,041 parts with authoritative indices (40% coverage). Source: memory dump UObject scanning.
+
+```bash
+# Extract indices from memory - only gets instantiated parts
+bl4 memory --dump game.dmp extract-parts -o parts_with_categories.json
+```
+
+**The Gap**: We have all part names but only 40% of indices. Missing indices are for parts not instantiated during the memory capture.
+
+### What NCS/UASSET Data Provides
+
+Current NCS extraction yields 806 files with 232 unique types:
+
+| NCS Type | Contents | Part Data |
+|----------|----------|-----------|
+| `inv.bin` | 13,860 inventory entries | Part attributes, stats |
+| `inv_name_part.bin` | 946 part naming entries | Display names |
+| `GbxActorPart.bin` | 2,167 actor parts | Cosmetic/mesh parts |
+| `itempool.bin` | Item pool definitions | Loot tables |
+
+**Important limitation**: NCS contains part NAMES and ATTRIBUTES but not serial INDEX mappings. The indices are embedded in UObject instances at runtime, not in static game files.
+
+### Strategies for Complete Index Coverage
+
+1. **Multiple memory dumps** — Capture game state with different loadouts to instantiate more parts
+2. **Runtime hooking** — Use preload injection to log part registrations at startup
+3. **Pattern analysis** — Infer indices from known patterns (risky - may produce wrong mappings)
+4. **Empirical validation** — Verify unknown indices by testing serials in-game
+
+The safest approach is accumulating multiple memory dumps over time. Each dump adds previously-missing parts.
 
 ---
 
@@ -527,16 +572,21 @@ retoc unpack "$GAME_DIR/OakGame/Content/Paks/pakchunk0-Windows_0_P.utoc" "$OUTPU
 
 ## Summary: Data Sources
 
-| Data | Source | Extractable? |
-|------|--------|--------------|
-| Balance/stats | Pak files | Yes |
-| Naming strategies | Pak files | Yes |
-| Loot pools | Pak files | Yes |
-| Body definitions | Pak files | Yes |
-| Part definitions | Memory dump | **Yes** (via UObject array scan) |
-| Category mappings | Memory dump | **Yes** (embedded in part UObjects) |
+| Data | Source | Extractable? | Status |
+|------|--------|--------------|--------|
+| Balance/stats | Pak files | Yes | Complete |
+| Naming strategies | Pak files / NCS | Yes | Complete |
+| Loot pools | Pak files / NCS | Yes | Complete |
+| Body definitions | Pak files | Yes | Complete |
+| Part names | NCS (`inv.bin`) | Yes | Complete (~13,860 entries) |
+| Part serial indices | Memory dump | Partial | ~40% coverage (1,041/~2,600) |
+| Category mappings | Code analysis | Yes | Complete |
 
-While parts don't exist as pak file assets, memory dumps capture the complete runtime state including all part definitions with their authoritative serial indices. The 0xFFFFFFFF sentinel pattern and UObject offset +0x20 provide reliable extraction paths.
+!!! important "Current State"
+    **Part names** are available from NCS data (complete list).
+    **Part indices** are only available from memory dumps (incomplete).
+
+    Serial decoding works for the ~1,041 parts we have indices for. Unknown indices display as `[category:index]` placeholders until we can extract complete mappings from static game data or multiple memory dumps.
 
 ---
 

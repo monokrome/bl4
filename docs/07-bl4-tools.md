@@ -128,6 +128,9 @@ Level: 50
 Tokens: 180928 | 50 | {0:1} 21 {4} , 2 , , 105 102 41
 ```
 
+!!! note "Part Name Resolution"
+    Part names are resolved from `share/manifest/parts_database.json`. Currently ~40% of parts have known mappings from memory extraction. Unknown parts display as `[category:index]` placeholders (e.g., `[22:5]`). See [Chapter 6](06-data-extraction.md) for details on part data coverage.
+
 Options:
 
 ```bash
