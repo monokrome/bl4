@@ -210,7 +210,7 @@ fn main() -> Result<()> {
     });
 
     // Load scriptobjects if provided (for class resolution)
-    let _class_lookup: Option<Arc<HashMap<String, String>>> =
+    let class_lookup: Option<Arc<HashMap<String, String>>> =
         if let Some(so_path) = &args.scriptobjects {
             let so_data = std::fs::read_to_string(so_path)
                 .with_context(|| format!("Failed to read scriptobjects file {:?}", so_path))?;
@@ -319,6 +319,7 @@ fn main() -> Result<()> {
                 toc_version,
                 container_header_version,
                 usmap_schema.as_ref(),
+                class_lookup.as_ref(),
             );
             pb.inc(1);
             if let Err(ref e) = result {
@@ -384,6 +385,7 @@ fn extract_entry(
     toc_version: EIoStoreTocVersion,
     container_header_version: EIoContainerHeaderVersion,
     usmap_schema: Option<&Arc<Usmap>>,
+    class_lookup: Option<&Arc<HashMap<String, String>>>,
 ) -> Result<()> {
     let data = chunk.read()?;
 
@@ -416,6 +418,7 @@ fn extract_entry(
             toc_version,
             container_header_version,
             usmap_schema,
+            class_lookup,
             args.verbose,
         ) {
             Ok(json) => {
@@ -1718,6 +1721,7 @@ fn parse_export_properties_with_schema(
     size: usize,
     names: &[String],
     struct_lookup: &HashMap<String, &usmap::Struct>,
+    resolved_class_name: Option<&str>,
     _verbose: bool,
 ) -> Option<Vec<ParsedProperty>> {
     if offset >= data.len() || size == 0 {
@@ -1735,19 +1739,35 @@ fn parse_export_properties_with_schema(
     let has_double = names.iter().any(|n| n == "DoubleProperty");
     let has_float = names.iter().any(|n| n == "FloatProperty");
 
-    // Try to find the struct type from usmap
-    let struct_type = names
-        .iter()
-        .find(|n| struct_lookup.contains_key(*n))
-        .cloned()
+    // Try to find the struct type - prefer resolved class name from class_lookup
+    let struct_type = resolved_class_name
+        .and_then(|name| {
+            // Try exact match first
+            if struct_lookup.contains_key(name) {
+                return Some(name.to_string());
+            }
+            // Try with F prefix (for struct types)
+            let prefixed = format!("F{}", name);
+            if struct_lookup.contains_key(&prefixed) {
+                return Some(prefixed);
+            }
+            None
+        })
         .or_else(|| {
+            // Fall back to scanning names array
             names
                 .iter()
-                .find(|n| {
-                    let prefixed = format!("F{}", n);
-                    struct_lookup.contains_key(&prefixed)
+                .find(|n| struct_lookup.contains_key(*n))
+                .cloned()
+                .or_else(|| {
+                    names
+                        .iter()
+                        .find(|n| {
+                            let prefixed = format!("F{}", n);
+                            struct_lookup.contains_key(&prefixed)
+                        })
+                        .map(|n| format!("F{}", n))
                 })
-                .map(|n| format!("F{}", n))
         });
 
     // Create context for extended property parsing
@@ -1966,6 +1986,7 @@ fn parse_zen_to_json(
     toc_version: EIoStoreTocVersion,
     container_header_version: EIoContainerHeaderVersion,
     usmap_schema: Option<&Arc<Usmap>>,
+    class_lookup: Option<&Arc<HashMap<String, String>>>,
     verbose: bool,
 ) -> Result<String> {
     let mut cursor = Cursor::new(data);
@@ -2013,6 +2034,20 @@ fn parse_zen_to_json(
             // which comes after the header
             let absolute_offset = header_end + export.cooked_serial_offset as usize;
 
+            // Resolve class name from hash if available
+            let resolved_class_name: Option<String> =
+                if export.class_index.kind() == retoc::script_objects::FPackageObjectIndexType::ScriptImport {
+                    let class_hash = format!("{:X}", export.class_index.raw_index());
+                    class_lookup
+                        .and_then(|lookup| lookup.get(&class_hash))
+                        .map(|path| {
+                            // Extract class name from path like "/Script/GbxGame.InventoryBodyData"
+                            path.rsplit('.').next().unwrap_or(path).to_string()
+                        })
+                } else {
+                    None
+                };
+
             // Try schema-based parsing first if usmap available
             let properties = if usmap_schema.is_some() {
                 parse_export_properties_with_schema(
@@ -2021,6 +2056,7 @@ fn parse_zen_to_json(
                     export.cooked_serial_size as usize,
                     &names,
                     &struct_lookup,
+                    resolved_class_name.as_deref(),
                     verbose,
                 )
             } else {
