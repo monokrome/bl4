@@ -319,20 +319,15 @@ fn extract_strings(data: &[u8]) -> Vec<String> {
 }
 
 /// Parse a single NameData line
-/// Format: "NameData_<Type>, <UUID>, <DisplayName>"
+/// Formats:
+/// - "NameData_<Type>, <UUID>, <DisplayName>" - enemy/entity variants
+/// - "discovery_ui_data, <UUID>, <DisplayName>" - boss discovery names
 fn parse_namedata_line(line: &str) -> Option<NameDataEntry> {
-    if !line.starts_with("NameData_") {
-        return None;
-    }
-
     // Split by ", " to get parts
     let parts: Vec<&str> = line.splitn(3, ", ").collect();
     if parts.len() != 3 {
         return None;
     }
-
-    // Extract internal type from "NameData_<Type>"
-    let internal_type = parts[0].strip_prefix("NameData_")?.to_string();
 
     // UUID should be 32 hex characters
     let uuid = parts[1].to_string();
@@ -346,11 +341,61 @@ fn parse_namedata_line(line: &str) -> Option<NameDataEntry> {
         return None;
     }
 
+    // Determine internal type based on format
+    let internal_type = if let Some(type_name) = parts[0].strip_prefix("NameData_") {
+        // Standard NameData entry: NameData_<Type> -> use Type as internal type
+        type_name.to_string()
+    } else if parts[0] == "discovery_ui_data" {
+        // Discovery entry: use display name as internal type (for boss lookup)
+        // Convert display name to internal format for matching
+        // "The Backhive" -> "Backhive", "Meathead Riders" -> "Meathead"
+        extract_boss_internal_name(&display_name)
+    } else {
+        return None;
+    };
+
     Some(NameDataEntry {
         internal_type,
         uuid,
         display_name,
     })
+}
+
+/// Extract internal boss name from display name for discovery_ui_data entries
+/// "The Backhive" -> "Backhive"
+/// "Meathead Riders" -> "MeatheadRider"
+/// "Primordial Guardian Inceptus" -> "Grasslands_Commander" (can't infer, use base)
+/// "Callis, the Ripper Queen" -> "Callis"
+fn extract_boss_internal_name(display_name: &str) -> String {
+    let name = display_name.trim();
+
+    // Remove common prefixes
+    let name = name.strip_prefix("The ").unwrap_or(name);
+
+    // Handle comma-separated names (e.g., "Callis, the Ripper Queen" -> "Callis")
+    let name = name.split(',').next().unwrap_or(name).trim();
+
+    // Handle "Primordial Guardian X" -> "X"
+    let name = name.strip_prefix("Primordial Guardian ").unwrap_or(name);
+
+    // Remove spaces and convert to PascalCase-ish for matching
+    // "Meathead Riders" should become something we can match to "MeatheadRider"
+    let words: Vec<&str> = name.split_whitespace().collect();
+    if words.len() == 1 {
+        words[0].to_string()
+    } else {
+        // Join words, handling plurals
+        let mut result = String::new();
+        for (i, word) in words.iter().enumerate() {
+            if i == words.len() - 1 && word.ends_with('s') && word.len() > 3 {
+                // Remove trailing 's' from last word (Riders -> Rider)
+                result.push_str(&word[..word.len() - 1]);
+            } else {
+                result.push_str(word);
+            }
+        }
+        result
+    }
 }
 
 /// Extract NameData from all NCS files in a directory
