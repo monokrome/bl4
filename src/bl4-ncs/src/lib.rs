@@ -34,6 +34,7 @@ pub mod name_data;
 pub mod oodle;
 pub mod pak;
 mod parser;
+mod string_table;
 mod types;
 
 // Re-export main types
@@ -61,9 +62,12 @@ pub use pak::{
 };
 pub use bit_reader::{bit_width, BitReader};
 pub use parser::{
-    create_combined_string_table, debug_binary_section, extract_field_abbreviation,
-    extract_inline_strings, find_packed_strings, parse_binary_section, parse_document,
-    parse_header, parse_string_table, unpack_string,
+    debug_binary_section, find_packed_strings, parse_binary_section, parse_document, parse_header,
+    unpack_string,
+};
+pub use string_table::{
+    create_combined_string_table, extract_field_abbreviation, extract_inline_strings,
+    parse_string_table,
 };
 pub use types::{
     BinaryEntry, BinaryParseResult, BinaryRecord, Document, EntryGroup, FieldInfo,
