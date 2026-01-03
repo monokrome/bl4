@@ -38,6 +38,7 @@
 //! ```
 
 pub mod repository;
+pub mod shared;
 pub mod types;
 
 #[cfg(feature = "sqlite-sync")]

@@ -4,6 +4,9 @@
 
 use crate::repository::RepoError;
 use crate::types::*;
+
+#[cfg(feature = "sqlx-sqlite")]
+use crate::shared::{self, ITEM_SELECT_COLUMNS};
 use sqlx::Row;
 use std::collections::HashMap;
 
@@ -395,12 +398,9 @@ pub mod sqlite {
         }
 
         async fn get_item(&self, serial: &str) -> AsyncRepoResult<Option<Item>> {
-            let row = sqlx::query(
-                r#"SELECT serial, name, prefix, manufacturer, weapon_type, item_type, rarity, level, element,
-                        dps, damage, accuracy, fire_rate, reload_time, mag_size, value, red_text,
-                        notes, verification_status, verification_notes, verified_at, legal, source, created_at
-                   FROM items WHERE serial = ?"#,
-            )
+            let sql = format!("SELECT {} FROM items WHERE serial = ?", ITEM_SELECT_COLUMNS);
+            let sql: &'static str = Box::leak(sql.into_boxed_str());
+            let row = sqlx::query(sql)
             .bind(serial)
             .fetch_optional(&self.pool)
             .await
@@ -458,39 +458,8 @@ pub mod sqlite {
             Ok(())
         }
 
-        #[allow(clippy::too_many_lines)] // Item struct has 24 fields to map
         async fn list_items(&self, filter: &ItemFilter) -> AsyncRepoResult<Vec<Item>> {
-            let mut sql = String::from(
-                r#"SELECT serial, name, prefix, manufacturer, weapon_type, item_type, rarity, level, element,
-                        dps, damage, accuracy, fire_rate, reload_time, mag_size, value, red_text,
-                        notes, verification_status, verification_notes, verified_at, legal, source, created_at
-                   FROM items WHERE 1=1"#,
-            );
-
-            // Build dynamic query - SQLx doesn't support truly dynamic queries well,
-            // so we'll build a string query
-            if filter.manufacturer.is_some() {
-                sql.push_str(" AND manufacturer = ?");
-            }
-            if filter.weapon_type.is_some() {
-                sql.push_str(" AND weapon_type = ?");
-            }
-            if filter.element.is_some() {
-                sql.push_str(" AND element = ?");
-            }
-            if filter.rarity.is_some() {
-                sql.push_str(" AND rarity = ?");
-            }
-
-            sql.push_str(" ORDER BY created_at DESC");
-
-            if let Some(limit) = filter.limit {
-                sql.push_str(&format!(" LIMIT {}", limit));
-            }
-            if let Some(offset) = filter.offset {
-                sql.push_str(&format!(" OFFSET {}", offset));
-            }
-
+            let (sql, _) = shared::build_list_query(filter, false);
             let sql: &'static str = Box::leak(sql.into_boxed_str());
             let mut query = sqlx::query(sql);
 
@@ -527,21 +496,7 @@ pub mod sqlite {
         }
 
         async fn count_items(&self, filter: &ItemFilter) -> AsyncRepoResult<i64> {
-            let mut sql = String::from("SELECT COUNT(*) as count FROM items WHERE 1=1");
-
-            if filter.manufacturer.is_some() {
-                sql.push_str(" AND manufacturer = ?");
-            }
-            if filter.weapon_type.is_some() {
-                sql.push_str(" AND weapon_type = ?");
-            }
-            if filter.element.is_some() {
-                sql.push_str(" AND element = ?");
-            }
-            if filter.rarity.is_some() {
-                sql.push_str(" AND rarity = ?");
-            }
-
+            let (sql, _) = shared::build_count_query(filter, false);
             let sql: &'static str = Box::leak(sql.into_boxed_str());
             let mut query = sqlx::query(sql);
 

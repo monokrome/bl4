@@ -3,6 +3,7 @@
 //! This implementation is used by the CLI tool.
 
 use crate::repository::*;
+use crate::shared::{self, ITEM_SELECT_COLUMNS};
 use crate::types::*;
 use rusqlite::{params, Connection, OptionalExtension};
 use std::collections::HashMap;
@@ -15,10 +16,6 @@ pub const DEFAULT_DB_PATH: &str = "share/items.db";
 pub struct SqliteDb {
     conn: Connection,
 }
-
-const ITEM_SELECT_COLUMNS: &str = "serial, name, prefix, manufacturer, weapon_type, item_type, rarity, level, element,
-                    dps, damage, accuracy, fire_rate, reload_time, mag_size, value, red_text,
-                    notes, verification_status, verification_notes, verified_at, legal, source, created_at";
 
 fn row_to_item(row: &rusqlite::Row<'_>) -> rusqlite::Result<Item> {
     let status_str: String = row
@@ -52,36 +49,22 @@ fn row_to_item(row: &rusqlite::Row<'_>) -> rusqlite::Result<Item> {
     })
 }
 
-fn build_list_query(filter: &ItemFilter) -> (String, Vec<Box<dyn rusqlite::ToSql>>) {
-    let mut sql = format!("SELECT {} FROM items WHERE 1=1", ITEM_SELECT_COLUMNS);
+/// Build parameter vector from filter for rusqlite queries
+fn build_filter_params(filter: &ItemFilter) -> Vec<Box<dyn rusqlite::ToSql>> {
     let mut params: Vec<Box<dyn rusqlite::ToSql>> = Vec::new();
-
     if let Some(m) = &filter.manufacturer {
-        sql.push_str(" AND manufacturer = ?");
         params.push(Box::new(m.clone()));
     }
     if let Some(w) = &filter.weapon_type {
-        sql.push_str(" AND weapon_type = ?");
         params.push(Box::new(w.clone()));
     }
     if let Some(e) = &filter.element {
-        sql.push_str(" AND element = ?");
         params.push(Box::new(e.clone()));
     }
     if let Some(r) = &filter.rarity {
-        sql.push_str(" AND rarity = ?");
         params.push(Box::new(r.clone()));
     }
-
-    sql.push_str(" ORDER BY created_at DESC");
-    if let Some(limit) = filter.limit {
-        sql.push_str(&format!(" LIMIT {}", limit));
-    }
-    if let Some(offset) = filter.offset {
-        sql.push_str(&format!(" OFFSET {}", offset));
-    }
-
-    (sql, params)
+    params
 }
 
 impl SqliteDb {
@@ -507,7 +490,8 @@ impl ItemsRepository for SqliteDb {
     }
 
     fn list_items(&self, filter: &ItemFilter) -> RepoResult<Vec<Item>> {
-        let (sql, params_vec) = build_list_query(filter);
+        let (sql, _) = shared::build_list_query(filter, false);
+        let params_vec = build_filter_params(filter);
         let mut stmt = self
             .conn
             .prepare(&sql)
@@ -835,25 +819,6 @@ impl ItemsRepository for SqliteDb {
     fn migrate_column_values(&self, dry_run: bool) -> RepoResult<MigrationStats> {
         let mut stats = MigrationStats::default();
 
-        let fields_to_migrate = [
-            ("name", "name"),
-            ("prefix", "prefix"),
-            ("manufacturer", "manufacturer"),
-            ("weapon_type", "weapon_type"),
-            ("item_type", "item_type"),
-            ("rarity", "rarity"),
-            ("level", "level"),
-            ("element", "element"),
-            ("dps", "dps"),
-            ("damage", "damage"),
-            ("accuracy", "accuracy"),
-            ("fire_rate", "fire_rate"),
-            ("reload_time", "reload_time"),
-            ("mag_size", "mag_size"),
-            ("value", "value"),
-            ("red_text", "red_text"),
-        ];
-
         let mut stmt = self
             .conn
             .prepare(
@@ -890,7 +855,7 @@ impl ItemsRepository for SqliteDb {
         for (serial, values) in items {
             stats.items_processed += 1;
 
-            for (i, (_, field_name)) in fields_to_migrate.iter().enumerate() {
+            for (i, (_, field_name)) in shared::FIELDS_TO_MIGRATE.iter().enumerate() {
                 if let Some(value) = &values[i] {
                     if value.is_empty() {
                         continue;
