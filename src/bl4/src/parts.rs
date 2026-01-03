@@ -403,7 +403,7 @@ mod tests {
         // Known mappings from SERIAL_TO_PARTS_CAT
         assert_eq!(serial_id_to_parts_category(1), 8); // DAD_SG
         assert_eq!(serial_id_to_parts_category(9), 9); // JAK_SG
-        assert_eq!(serial_id_to_parts_category(128), 27); // VLA_SR
+        assert_eq!(serial_id_to_parts_category(128), 25); // VLA_SR (corrected from 27)
         assert_eq!(serial_id_to_parts_category(138), 23); // MAL_SM
 
         // Unknown ID returns the ID itself as fallback

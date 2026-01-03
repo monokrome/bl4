@@ -50,7 +50,10 @@ struct CategoryNamesFile {
 #[derive(Debug, Deserialize)]
 struct PartsDatabase {
     version: u32,
+    #[serde(default)]
+    source: Option<String>,
     parts: Vec<PartEntry>,
+    #[serde(default)]
     categories: HashMap<String, CategoryInfo>,
 }
 
@@ -60,7 +63,8 @@ struct PartEntry {
     category: i64,
     index: i64,
     name: String,
-    group: String,
+    #[serde(default)]
+    group: Option<String>,
 }
 
 #[allow(dead_code)]
