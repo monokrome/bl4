@@ -840,6 +840,7 @@ dependencies = [
  "byteorder",
  "memchr",
  "oozextract",
+ "repak",
  "serde",
  "serde_json",
  "thiserror 2.0.17",
