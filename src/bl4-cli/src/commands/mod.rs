@@ -3,6 +3,7 @@
 //! Each subcommand has its own module with handler functions.
 
 pub mod configure;
+pub mod drops;
 pub mod items_db;
 pub mod launch;
 pub mod memory;

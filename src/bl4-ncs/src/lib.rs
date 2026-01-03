@@ -23,16 +23,22 @@
 
 mod content;
 mod data;
+pub mod drops;
 mod extract;
 mod field;
 mod hash;
 mod header;
 mod manifest;
+pub mod name_data;
 pub mod oodle;
 mod parser;
 
 // Re-export main types
 pub use content::{Content as NcsContent, Header as NcsContentHeader};
+pub use drops::{
+    extract_drops_from_itempool, extract_drops_from_itempoollist, generate_drops_manifest,
+    DropEntry, DropLocation, DropProbabilities, DropSource, DropsDb, DropsManifest,
+};
 pub use data::{
     decompress as decompress_ncs, decompress_with as decompress_ncs_with, scan as scan_for_ncs,
     Header as NcsHeader,
@@ -42,6 +48,9 @@ pub use field::{known as fields, Field, Type as FieldType};
 pub use hash::fnv1a_hash;
 pub use manifest::{
     scan as scan_for_ncs_manifests, Entry as NcsManifestEntry, Manifest as NcsManifest,
+};
+pub use name_data::{
+    extract_from_directory as extract_name_data, NameDataEntry, NameDataMap,
 };
 pub use parser::{
     bit_width, create_combined_string_table, debug_binary_section, extract_field_abbreviation,

@@ -3,6 +3,7 @@
 //! This module contains all clap-derived structs and enums for CLI parsing.
 
 mod core;
+mod drops;
 mod idb;
 mod memory;
 mod ncs;
@@ -12,6 +13,7 @@ mod save;
 mod serial;
 
 pub use core::{Cli, Commands};
+pub use drops::DropsCommand;
 pub use idb::{ItemsDbCommand, OutputFormat};
 pub use memory::{MemoryAction, PreloadAction};
 pub use ncs::NcsCommand;

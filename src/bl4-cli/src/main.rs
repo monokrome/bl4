@@ -65,6 +65,8 @@ fn main() -> Result<()> {
 
         Commands::Ncs { command } => commands::ncs::handle_ncs_command(command)?,
 
+        Commands::Drops { command } => commands::drops::handle(command)?,
+
         #[cfg(feature = "research")]
         Commands::Manifest {
             dump,

@@ -3,6 +3,7 @@
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 
+use super::drops::DropsCommand;
 use super::idb::ItemsDbCommand;
 use super::memory::MemoryAction;
 use super::ncs::NcsCommand;
@@ -139,6 +140,13 @@ pub enum Commands {
     Ncs {
         #[command(subcommand)]
         command: NcsCommand,
+    },
+
+    /// Query drop rates and locations for legendary items
+    #[command(visible_alias = "d")]
+    Drops {
+        #[command(subcommand)]
+        command: DropsCommand,
     },
 
     /// Generate manifest files from game data (requires 'research' feature)
