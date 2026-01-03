@@ -378,42 +378,106 @@ impl DropsDb {
 
 /// Extract drops from itempoollist NCS data
 ///
-/// Parses itempoollist.bin content and extracts boss → legendary mappings
+/// Parses itempoollist.bin content and extracts boss → legendary mappings.
+///
+/// Items appear in multiple locations:
+/// 1. As field values in boss records: `ItemPoolList_Backhive { value_0: "item..." }`
+/// 2. As record names: `MANU_TYPE.comp_05_legendary_<name>`
+/// 3. As nested field values in item records: `hellfire { value_0: "other_item..." }`
+/// 4. As field values in tier records: `Secondary_4_... { value_0: "item..." }` - these have tiers
 pub fn extract_drops_from_itempoollist(data: &[u8]) -> Vec<DropEntry> {
     let doc = match crate::parser::parse_document(data) {
         Some(d) => d,
         None => return Vec::new(),
     };
 
-    // Find boss→legendary mappings in the record names
     let mut drops = Vec::new();
     let mut current_boss: Option<String> = None;
+    let mut is_true_boss = false;
 
     for record in &doc.records {
         let name = &record.name;
 
         // Boss pool pattern: ItemPoolList_<BossName>
-        if name.starts_with("ItemPoolList_")
-            && !name.contains("Enemy_BaseLoot")
-            && !name.ends_with("_TrueBoss")
-        {
-            current_boss = Some(name.replace("ItemPoolList_", ""));
+        if name.starts_with("ItemPoolList_") && !name.contains("Enemy_BaseLoot") {
+            if name.ends_with("_TrueBoss") {
+                is_true_boss = true;
+            } else {
+                current_boss = Some(name.replace("ItemPoolList_", ""));
+                is_true_boss = false;
+            }
+
+            // Extract items from boss record fields (case 1)
+            // Tier is unknown unless explicitly specified elsewhere
+            let boss = current_boss.as_ref().unwrap();
+            for value in record.fields.values() {
+                if let crate::parser::Value::String(s) = value {
+                    if s.to_lowercase().contains(".comp_05_legendary_")
+                        && !s.starts_with("itempool_")
+                    {
+                        if let Some(mut entry) =
+                            parse_legendary_item_id(boss, s, DropSource::Boss)
+                        {
+                            if is_true_boss {
+                                entry.drop_tier = "TrueBoss".to_string();
+                            }
+                            // Leave tier empty if not explicitly specified
+                            drops.push(entry);
+                        }
+                    }
+                }
+            }
+            continue;
         }
-        // Legendary item ID pattern: MANU_TYPE.comp_05_legendary_<name> (case-insensitive)
-        else if name.to_lowercase().contains(".comp_05_legendary_") {
-            if let Some(ref boss) = current_boss {
-                if let Some(entry) = parse_legendary_item_id(boss, name, DropSource::Boss) {
-                    drops.push(entry);
+
+        // Skip if no current boss
+        let boss = match &current_boss {
+            Some(b) => b.clone(),
+            None => continue,
+        };
+
+        // Check if this is a tier record with items in its fields (case 4)
+        if let Some(tier) = extract_tier_name(name) {
+            for value in record.fields.values() {
+                if let crate::parser::Value::String(s) = value {
+                    if s.to_lowercase().contains(".comp_05_legendary_")
+                        && !s.starts_with("itempool_")
+                    {
+                        if let Some(mut entry) = parse_legendary_item_id(&boss, s, DropSource::Boss)
+                        {
+                            entry.drop_tier = if is_true_boss && !tier.is_empty() {
+                                format!("TrueBoss{}", tier)
+                            } else if is_true_boss {
+                                "TrueBoss".to_string()
+                            } else {
+                                tier.clone()
+                            };
+                            drops.push(entry);
+                        }
+                    }
                 }
             }
         }
+        // Check if record name itself is a legendary item (case 2)
+        else if name.to_lowercase().contains(".comp_05_legendary_") {
+            if let Some(mut entry) = parse_legendary_item_id(&boss, name, DropSource::Boss) {
+                if is_true_boss {
+                    entry.drop_tier = "TrueBoss".to_string();
+                }
+                drops.push(entry);
+            }
 
-        // Also check field values for legendary items (shields, gear, etc.)
-        if let Some(ref boss) = current_boss {
+            // Also extract nested items from this record's fields (case 3)
             for value in record.fields.values() {
                 if let crate::parser::Value::String(s) = value {
-                    if s.to_lowercase().contains(".comp_05_legendary_") {
-                        if let Some(entry) = parse_legendary_item_id(boss, s, DropSource::Boss) {
+                    if s.to_lowercase().contains(".comp_05_legendary_")
+                        && !s.starts_with("itempool_")
+                    {
+                        if let Some(mut entry) = parse_legendary_item_id(&boss, s, DropSource::Boss)
+                        {
+                            if is_true_boss {
+                                entry.drop_tier = "TrueBoss".to_string();
+                            }
                             drops.push(entry);
                         }
                     }
@@ -422,25 +486,34 @@ pub fn extract_drops_from_itempoollist(data: &[u8]) -> Vec<DropEntry> {
         }
     }
 
-    // Assign drop tiers based on order per boss
-    let mut by_source: std::collections::HashMap<String, Vec<usize>> =
-        std::collections::HashMap::new();
-    for (i, entry) in drops.iter().enumerate() {
-        by_source.entry(entry.source.clone()).or_default().push(i);
-    }
+    drops
+}
 
-    let tiers = ["Primary", "Secondary", "Tertiary"];
-    let probs = [0.20, 0.08, 0.03];
+/// Extract tier name from a tier reference string
+/// e.g., "Primary_2_A7EABE..." -> "Primary"
+///       "Secondary_4_396F8C..." -> "Secondary"
+///       "TrueBoss_12_..." -> ""
+fn extract_tier_name(s: &str) -> Option<String> {
+    let tier_prefixes = [
+        ("Primary_", "Primary"),
+        ("Secondary_", "Secondary"),
+        ("Tertiary_", "Tertiary"),
+        ("Quaternary_", "Quaternary"),
+        ("Shiny_", "Shiny"),
+        ("TrueBoss_", ""),
+        ("TrueBossShiny_", "Shiny"),
+    ];
 
-    for indices in by_source.values() {
-        for (i, &idx) in indices.iter().enumerate() {
-            let tier_idx = i.min(2);
-            drops[idx].drop_tier = tiers[tier_idx].to_string();
-            drops[idx].drop_chance = probs[tier_idx];
+    for (prefix, tier) in tier_prefixes {
+        if s.starts_with(prefix) {
+            let rest = &s[prefix.len()..];
+            // Verify it has a GUID-like suffix (number followed by underscore and hex)
+            if rest.contains('_') && rest.chars().next().map_or(false, |c| c.is_ascii_digit()) {
+                return Some(tier.to_string());
+            }
         }
     }
-
-    drops
+    None
 }
 
 /// Extract drops from itempool NCS data
