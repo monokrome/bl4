@@ -21,6 +21,7 @@
 //! - Bytes 6-7: Entry count
 //! - Remaining: Metadata and string table
 
+mod bit_reader;
 mod content;
 mod data;
 pub mod drops;
@@ -33,6 +34,7 @@ pub mod name_data;
 pub mod oodle;
 pub mod pak;
 mod parser;
+mod types;
 
 // Re-export main types
 pub use content::{Content as NcsContent, Header as NcsContentHeader};
@@ -57,12 +59,16 @@ pub use pak::{
     extract_all as extract_all_ncs, type_from_filename, DirectoryReader, ExtractedNcs,
     MemoryPakReader, NcsReader, PakReader,
 };
+pub use bit_reader::{bit_width, BitReader};
 pub use parser::{
-    bit_width, create_combined_string_table, debug_binary_section, extract_field_abbreviation,
+    create_combined_string_table, debug_binary_section, extract_field_abbreviation,
     extract_inline_strings, find_packed_strings, parse_binary_section, parse_document,
-    parse_header, parse_string_table, unpack_string, BinaryEntry, BinaryParseResult, BinaryRecord,
-    BitReader, Document, EntryGroup, FieldInfo, Header as ParsedHeader, Record, StringTable,
-    TagType, TagValue, UnpackedString, UnpackedValue, Value,
+    parse_header, parse_string_table, unpack_string,
+};
+pub use types::{
+    BinaryEntry, BinaryParseResult, BinaryRecord, Document, EntryGroup, FieldInfo,
+    Header as ParsedHeader, Record, StringTable, TagType, TagValue, UnpackedString, UnpackedValue,
+    Value,
 };
 
 /// Magic bytes for NCS format: "NCS" (bytes 1-3 of header)

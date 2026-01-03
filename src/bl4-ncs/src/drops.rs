@@ -533,7 +533,7 @@ pub fn extract_drops_from_itempoollist(data: &[u8]) -> Vec<DropEntry> {
             // Tier is unknown unless explicitly specified elsewhere
             let boss = current_boss.as_ref().unwrap();
             for value in record.fields.values() {
-                if let crate::parser::Value::String(s) = value {
+                if let crate::types::Value::String(s) = value {
                     if s.to_lowercase().contains(".comp_05_legendary_")
                         && !s.starts_with("itempool_")
                     {
@@ -561,7 +561,7 @@ pub fn extract_drops_from_itempoollist(data: &[u8]) -> Vec<DropEntry> {
         // Check if this is a tier record with items in its fields (case 4)
         if let Some(tier) = extract_tier_name(name) {
             for value in record.fields.values() {
-                if let crate::parser::Value::String(s) = value {
+                if let crate::types::Value::String(s) = value {
                     if s.to_lowercase().contains(".comp_05_legendary_")
                         && !s.starts_with("itempool_")
                     {
@@ -591,7 +591,7 @@ pub fn extract_drops_from_itempoollist(data: &[u8]) -> Vec<DropEntry> {
 
             // Also extract nested items from this record's fields (case 3)
             for value in record.fields.values() {
-                if let crate::parser::Value::String(s) = value {
+                if let crate::types::Value::String(s) = value {
                     if s.to_lowercase().contains(".comp_05_legendary_")
                         && !s.starts_with("itempool_")
                     {
@@ -667,7 +667,7 @@ pub fn extract_drops_from_itempool(data: &[u8]) -> Vec<DropEntry> {
             let tier = name.replace("ItemPool_FishCollector_Reward_", "");
             // Check field values for legendary items
             for value in record.fields.values() {
-                if let crate::parser::Value::String(s) = value {
+                if let crate::types::Value::String(s) = value {
                     if s.to_lowercase().contains(".comp_05_legendary_") {
                         if let Some(mut entry) =
                             parse_legendary_item_id("Fish Collector", s, DropSource::Special)
@@ -687,7 +687,7 @@ pub fn extract_drops_from_itempool(data: &[u8]) -> Vec<DropEntry> {
                 .replace('_', " ");
             // Check field values for legendary items
             for value in record.fields.values() {
-                if let crate::parser::Value::String(s) = value {
+                if let crate::types::Value::String(s) = value {
                     if s.to_lowercase().contains(".comp_05_legendary_") {
                         if let Some(entry) =
                             parse_legendary_item_id(&mission_name, s, DropSource::Mission)
@@ -706,7 +706,7 @@ pub fn extract_drops_from_itempool(data: &[u8]) -> Vec<DropEntry> {
                 .replace('_', " ");
             // Check field values for legendary items
             for value in record.fields.values() {
-                if let crate::parser::Value::String(s) = value {
+                if let crate::types::Value::String(s) = value {
                     if s.to_lowercase().contains(".comp_05_legendary_") {
                         if let Some(entry) =
                             parse_legendary_item_id(&mission_name, s, DropSource::Mission)
