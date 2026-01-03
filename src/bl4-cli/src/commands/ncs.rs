@@ -799,14 +799,19 @@ fn decompress_file_impl(
         return Ok(());
     }
 
-    // Scan for NCS chunks in the file (e.g., pak file)
+    // Try PAK index-based extraction first for .pak files (finds all NCS files)
+    if input.extension().map(|e| e == "pak").unwrap_or(false) {
+        return decompress_pak_index(input, output, raw, decompressor);
+    }
+
+    // Fallback: Scan for NCS chunks via magic bytes (for non-PAK files)
     let chunks = scan_for_ncs(&data);
     if chunks.is_empty() {
         anyhow::bail!("No NCS chunks found in file");
     }
 
     println!(
-        "Found {} NCS chunks (using {} backend)",
+        "Found {} NCS chunks via magic scan (using {} backend)",
         chunks.len(),
         decompressor.name()
     );
@@ -885,6 +890,91 @@ fn decompress_file_impl(
         eprintln!("To decompress all files, use --oodle-dll <path-to-oo2core_9_win64.dll>");
         #[cfg(not(target_os = "windows"))]
         eprintln!("To decompress all files, use --oodle-exec <decompression-command>");
+        eprintln!("\nFailed files:");
+        for t in &failed_types {
+            eprintln!("  - {}", t);
+        }
+    }
+
+    Ok(())
+}
+
+/// Extract NCS files from PAK using proper index (finds all files including previously missing ones)
+fn decompress_pak_index(
+    input: &Path,
+    output: Option<&Path>,
+    raw: bool,
+    _decompressor: Box<dyn OodleDecompressor>,
+) -> Result<()> {
+    use bl4_ncs::{NcsReader, PakReader, type_from_filename};
+
+    let mut reader = PakReader::open(input)
+        .map_err(|e| anyhow::anyhow!("Failed to open PAK file: {}", e))?;
+
+    let ncs_files = reader.list_ncs_files()
+        .map_err(|e| anyhow::anyhow!("Failed to list NCS files: {}", e))?;
+
+    println!(
+        "Found {} NCS files in PAK index (repak with oodle support)",
+        ncs_files.len()
+    );
+
+    let output_dir = output.map(Path::to_path_buf).unwrap_or_else(|| {
+        let stem = input.file_stem().unwrap_or_default().to_string_lossy();
+        PathBuf::from(format!("{}_ncs", stem))
+    });
+    fs::create_dir_all(&output_dir)?;
+
+    let mut success = 0;
+    let mut failed = 0;
+    let mut failed_types: Vec<String> = Vec::new();
+
+    for filename in &ncs_files {
+        let type_name = type_from_filename(filename);
+
+        // Read and decompress using repak (which handles Oodle internally)
+        let decompressed = match reader.read_ncs_decompressed(filename) {
+            Ok(d) => d,
+            Err(e) => {
+                eprintln!("  Failed {}: {}", type_name, e);
+                failed_types.push(type_name);
+                failed += 1;
+                continue;
+            }
+        };
+
+        if raw {
+            // Raw mode: save binary
+            let out_path = output_dir.join(format!("{}.bin", type_name));
+            fs::write(&out_path, &decompressed)?;
+            success += 1;
+        } else if let Some(doc) = parse_document(&decompressed) {
+            // Parse and output as TSV
+            let out_path = output_dir.join(format!("{}.tsv", doc.type_name));
+            let tsv_content = format_tsv(&doc);
+            fs::write(&out_path, &tsv_content)?;
+            success += 1;
+        } else if let Some(content) = NcsContent::parse(&decompressed) {
+            // Fallback: couldn't parse structure, save raw
+            let out_path = output_dir.join(format!("{}.bin", content.type_name()));
+            fs::write(&out_path, &decompressed)?;
+            success += 1;
+        } else {
+            // Fallback: save raw binary with type from filename
+            let out_path = output_dir.join(format!("{}.bin", type_name));
+            fs::write(&out_path, &decompressed)?;
+            success += 1;
+        }
+    }
+
+    println!(
+        "\nExtracted {} files to {} ({} failed)",
+        success,
+        output_dir.display(),
+        failed
+    );
+
+    if !failed_types.is_empty() {
         eprintln!("\nFailed files:");
         for t in &failed_types {
             eprintln!("  - {}", t);

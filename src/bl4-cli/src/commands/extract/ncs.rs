@@ -195,6 +195,72 @@ fn check_file(path: &Path, found: &mut usize) -> Result<()> {
     Ok(())
 }
 
+/// Extract NCS files using proper PAK index (finds all files including previously missing ones)
+fn handle_extract_pak_index(input: &Path, output: &Path, decompress: bool) -> Result<()> {
+    use bl4_ncs::{NcsReader, PakReader, type_from_filename};
+
+    let mut reader = PakReader::open(input)?;
+    let ncs_files = reader.list_ncs_files()?;
+
+    println!("Found {} NCS files in PAK index", ncs_files.len());
+
+    fs::create_dir_all(output)?;
+
+    let mut extracted = 0;
+    let mut failed = 0;
+
+    for (i, filename) in ncs_files.iter().enumerate() {
+        let type_name = type_from_filename(filename);
+
+        // Read and optionally decompress
+        let data_result = if decompress {
+            reader.read_ncs_decompressed(filename)
+        } else {
+            reader.read_ncs(filename)
+        };
+
+        let data = match data_result {
+            Ok(d) => d,
+            Err(e) => {
+                eprintln!("Failed to read {}: {}", filename, e);
+                failed += 1;
+                continue;
+            }
+        };
+
+        // Output filename based on type
+        let out_path = if decompress {
+            output.join(format!("{}.bin", type_name))
+        } else {
+            output.join(format!("{}.ncs", type_name))
+        };
+
+        fs::write(&out_path, &data)?;
+        extracted += 1;
+
+        if extracted <= 10 {
+            println!(
+                "  {} -> {:?} ({} bytes)",
+                type_name,
+                out_path.file_name().unwrap(),
+                data.len()
+            );
+        }
+
+        if (i + 1) % 100 == 0 {
+            println!("  Extracted {}/{}...", i + 1, ncs_files.len());
+        }
+    }
+
+    println!();
+    println!("Extracted: {} (from PAK index)", extracted);
+    if failed > 0 {
+        println!("Failed: {}", failed);
+    }
+
+    Ok(())
+}
+
 /// Handle the ExtractCommand::NcsScan command
 ///
 /// Scans a file for embedded NCS chunks.
@@ -238,9 +304,18 @@ pub fn handle_scan(input: &Path, _all: bool) -> Result<()> {
 
 /// Handle the ExtractCommand::NcsExtract command
 ///
-/// Extracts NCS chunks from a file using manifest for proper naming.
+/// Extracts NCS chunks from a file using proper PAK index.
 pub fn handle_extract(input: &Path, output: &Path, decompress: bool) -> Result<()> {
     println!("Extracting NCS from {:?}...", input);
+
+    // Try new PAK index-based extraction first (finds all files)
+    if let Some(ext) = input.extension() {
+        if ext == "pak" {
+            return handle_extract_pak_index(input, output, decompress);
+        }
+    }
+
+    // Fallback to magic byte scanning for non-PAK files
     let data = fs::read(input)?;
 
     // Use manifest-based extraction for proper correlation

@@ -31,6 +31,7 @@ mod header;
 mod manifest;
 pub mod name_data;
 pub mod oodle;
+pub mod pak;
 mod parser;
 
 // Re-export main types
@@ -51,6 +52,10 @@ pub use manifest::{
 };
 pub use name_data::{
     extract_from_directory as extract_name_data, NameDataEntry, NameDataMap,
+};
+pub use pak::{
+    extract_all as extract_all_ncs, type_from_filename, DirectoryReader, ExtractedNcs,
+    MemoryPakReader, NcsReader, PakReader,
 };
 pub use parser::{
     bit_width, create_combined_string_table, debug_binary_section, extract_field_abbreviation,
