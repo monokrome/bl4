@@ -14,6 +14,7 @@ use byteorder::{ByteOrder, LE};
 
 /// PE executable section information
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct PeSection {
     pub name: String,
     pub virtual_address: usize,

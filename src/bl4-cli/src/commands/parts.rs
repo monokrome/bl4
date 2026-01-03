@@ -41,6 +41,7 @@ pub struct PartEntry {
 }
 
 /// Result of querying the parts database
+#[allow(dead_code)]
 pub struct PartsQueryResult {
     pub categories: BTreeMap<i64, Vec<PartEntry>>,
     pub total_parts: usize,

@@ -6,6 +6,8 @@
 //! - GNamesPool - Discovered GNames pool information
 //! - Ue5Offsets - UE5 structure offsets
 
+#![allow(dead_code)]
+
 use super::constants::*;
 use super::source::MemorySource;
 

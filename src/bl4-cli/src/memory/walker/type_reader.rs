@@ -2,6 +2,8 @@
 //!
 //! Functions for reading property type names from FFieldClass.
 
+#![allow(dead_code)]
+
 use crate::memory::fname::FNameReader;
 use crate::memory::source::MemorySource;
 

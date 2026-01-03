@@ -160,6 +160,7 @@ impl FNamePool {
     }
 
     /// Discover FNamePool using the known GNames pool address
+    #[allow(dead_code)]
     pub fn discover_with_gnames(source: &dyn MemorySource, gnames_addr: usize) -> Result<Self> {
         eprintln!(
             "Searching for FNamePool header with Block0 = {:#x}...",

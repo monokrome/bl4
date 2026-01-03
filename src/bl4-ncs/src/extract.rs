@@ -116,14 +116,6 @@ pub fn extract_from_pak(pak_data: &[u8]) -> ExtractionResult {
     }
 }
 
-/// Extract NCS files from multiple pak files
-pub fn extract_from_paks<'a>(
-    paks: impl Iterator<Item = (&'a str, &'a [u8])>,
-) -> Vec<(String, ExtractionResult)> {
-    paks.map(|(name, data)| (name.to_string(), extract_from_pak(data)))
-        .collect()
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

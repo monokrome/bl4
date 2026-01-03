@@ -9,6 +9,7 @@ use std::collections::{BTreeMap, HashSet};
 use std::path::Path;
 
 /// Result of building a parts database
+#[allow(dead_code)]
 pub struct BuildResult {
     pub entries_count: usize,
     pub categories_count: usize,

@@ -109,7 +109,7 @@ impl Content {
         }
 
         // Find format code using shared logic
-        let config = ParseConfig {
+        let _config = ParseConfig {
             type_search_start: type_start,
             type_search_end: type_start + 1,
             format_search_range: 600,

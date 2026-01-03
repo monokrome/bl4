@@ -4,8 +4,12 @@ mod core;
 
 pub use core::{
     escape_csv, extract_serials_from_yaml, field_display_width, filter_item_fields_with_overrides,
-    get_item_field_value, get_item_field_value_with_override, merge_databases,
+    get_item_field_value_with_override, merge_databases,
 };
+
+// Re-export for potential future use
+#[allow(unused_imports)]
+pub use core::get_item_field_value;
 
 #[cfg(test)]
 mod tests {

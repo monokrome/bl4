@@ -1,5 +1,7 @@
 //! USMAP file format constants and types
 
+#![allow(dead_code)]
+
 /// Magic number for usmap files
 pub const MAGIC: u16 = 0x30C4;
 

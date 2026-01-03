@@ -17,7 +17,11 @@ mod traits;
 pub use dump::DumpFile;
 #[cfg(test)]
 pub use mock::MockMemorySource;
-pub use process::{find_bl4_process, Bl4Process};
+pub use process::Bl4Process;
+
+// Re-export for API completeness
+#[allow(unused_imports)]
+pub use process::find_bl4_process;
 pub use region::MemoryRegion;
 pub use traits::MemorySource;
 

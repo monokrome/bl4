@@ -1,6 +1,6 @@
 //! CLI definitions for the drops command
 
-use clap::{Args, Subcommand};
+use clap::Subcommand;
 use std::path::PathBuf;
 
 #[derive(Subcommand)]

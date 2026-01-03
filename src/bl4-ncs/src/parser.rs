@@ -1132,7 +1132,6 @@ fn split_packed_string(s: &str) -> Vec<String> {
     ];
 
     let mut remaining = s;
-    let mut current_start = 0;
 
     while !remaining.is_empty() {
         // Find the earliest split marker
@@ -1148,7 +1147,7 @@ fn split_packed_string(s: &str) -> Vec<String> {
             }
         }
 
-        if let Some((split_pos, marker)) = best_split {
+        if let Some((split_pos, _marker)) = best_split {
             // Extract the part before the marker
             let part = &remaining[..split_pos];
             if !part.is_empty() && is_valid_string(part) {
@@ -1161,7 +1160,6 @@ fn split_packed_string(s: &str) -> Vec<String> {
 
             // Continue with the part starting at the marker
             remaining = &remaining[split_pos..];
-            current_start += split_pos;
         } else {
             // No more split markers - add remaining as final entry
             if !remaining.is_empty() && is_valid_string(remaining) {
@@ -1789,6 +1787,7 @@ fn find_first_numeric_segment(s: &str) -> Option<(usize, usize)> {
 
 /// Find the last numeric segment in a string
 /// Returns (start_index, end_index) of the numeric segment
+#[allow(dead_code)]
 fn find_last_numeric_segment(s: &str) -> Option<(usize, usize)> {
     let chars: Vec<char> = s.chars().collect();
     let mut end = None;
@@ -1867,6 +1866,7 @@ fn split_packed_value(s: &str) -> Option<(&str, &str)> {
 }
 
 /// Try to parse a packed value string, returning just the value portion
+#[allow(dead_code)]
 fn try_parse_packed_value(s: &str, _field_index: usize, _field_count: u8) -> Option<Value> {
     if let Some((value_part, _name_part)) = split_packed_value(s) {
         if let Ok(n) = value_part.parse::<i64>() {

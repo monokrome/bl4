@@ -242,7 +242,8 @@ pub struct DropsDb {
     manifest: DropsManifest,
     /// Index: lowercase item name → entries
     by_name: HashMap<String, Vec<usize>>,
-    /// Index: item_id → entries
+    /// Index: item_id → entries (reserved for future use)
+    #[allow(dead_code)]
     by_id: HashMap<String, Vec<usize>>,
     /// Index: source name (internal) → entries
     by_source: HashMap<String, Vec<usize>>,

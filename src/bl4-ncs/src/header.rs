@@ -11,6 +11,7 @@ pub struct BasicHeader {
     /// Offset where type name starts
     pub type_offset: usize,
     /// Offset where type name ends (null terminator)
+    #[allow(dead_code)]
     pub type_end: usize,
     /// Type name (e.g., "itempoollist", "achievement")
     pub type_name: String,
@@ -57,6 +58,7 @@ impl ParseConfig {
 /// Parse basic header information from NCS data
 ///
 /// Uses SIMD-accelerated memchr for efficient pattern matching.
+#[allow(dead_code)]
 pub fn parse_basic_header(data: &[u8]) -> Option<BasicHeader> {
     parse_basic_header_with_config(data, &ParseConfig::default())
 }

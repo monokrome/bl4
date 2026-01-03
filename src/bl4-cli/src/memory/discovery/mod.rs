@@ -12,7 +12,11 @@ mod guobject;
 
 pub use class_uclass::discover_class_uclass;
 pub use gnames::discover_gnames;
-pub use guobject::{discover_guobject_array, is_valid_pointer};
+pub use guobject::discover_guobject_array;
+
+// Re-export for API completeness
+#[allow(unused_imports)]
+pub use guobject::is_valid_pointer;
 
 use super::source::MemorySource;
 use super::ue5::Ue5Offsets;
@@ -20,6 +24,7 @@ use super::ue5::Ue5Offsets;
 use anyhow::{bail, Result};
 
 /// Read an FName string from the GNames pool (legacy direct reading)
+#[allow(dead_code)]
 pub fn read_fname(source: &dyn MemorySource, gnames_addr: usize, index: u32) -> Result<String> {
     // UE5 FName entries are stored in a chunked array
     // Entry format varies, but typically:
@@ -63,6 +68,7 @@ pub fn read_fname(source: &dyn MemorySource, gnames_addr: usize, index: u32) -> 
 }
 
 /// Find UE5 global structures by pattern scanning
+#[allow(dead_code)]
 pub fn find_ue5_offsets(source: &dyn MemorySource) -> Result<Ue5Offsets> {
     let gnames = discover_gnames(source)?;
 

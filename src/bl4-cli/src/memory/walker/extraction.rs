@@ -2,6 +2,8 @@
 //!
 //! Functions for extracting FProperty data from UE5 memory.
 
+#![allow(unused_comparisons)]
+
 use crate::memory::constants::*;
 use crate::memory::fname::FNameReader;
 use crate::memory::reflection::{EPropertyType, PropertyInfo};

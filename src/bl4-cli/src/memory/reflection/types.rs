@@ -5,9 +5,12 @@
 //! - Property types
 //! - Struct/Property/Enum info structures
 
+#![allow(dead_code)]
+
 use super::super::constants::*;
 
 /// Basic UObject information
+#[allow(dead_code)]
 pub struct UObjectInfo {
     pub address: usize,
     pub class_ptr: usize,
