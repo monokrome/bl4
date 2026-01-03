@@ -2,11 +2,10 @@
 //!
 //! Extracts authoritative manufacturer data from pak_manifest.json.
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::fs;
 use std::path::Path;
 
 use crate::manifest::PakManifest;
@@ -49,10 +48,7 @@ pub struct ExtractedManufacturer {
 pub fn extract_manufacturer_names_from_pak(
     pak_manifest_path: &Path,
 ) -> Result<HashMap<String, ExtractedManufacturer>> {
-    let content =
-        fs::read_to_string(pak_manifest_path).context("Failed to read pak_manifest.json")?;
-    let manifest: PakManifest =
-        serde_json::from_str(&content).context("Failed to parse pak_manifest.json")?;
+    let manifest = PakManifest::load(pak_manifest_path)?;
 
     let mut manufacturers: HashMap<String, ExtractedManufacturer> = HashMap::new();
 

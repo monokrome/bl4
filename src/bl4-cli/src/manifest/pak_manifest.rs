@@ -114,6 +114,14 @@ pub struct PakManifest {
     pub stats: HashMap<String, Vec<String>>, // stat name -> GUIDs
 }
 
+impl PakManifest {
+    /// Load manifest from a JSON file
+    pub fn load(path: &Path) -> Result<Self> {
+        let content = fs::read_to_string(path).context("Failed to read pak_manifest.json")?;
+        serde_json::from_str(&content).context("Failed to parse pak_manifest.json")
+    }
+}
+
 /// Parse a uextract JSON file
 pub fn parse_uextract_json(json_path: &Path) -> Result<UextractAsset> {
     let content = fs::read_to_string(json_path)?;

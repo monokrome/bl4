@@ -2,11 +2,10 @@
 //!
 //! Extracts authoritative element, rarity, and stat data from pak_manifest.json.
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::fs;
 use std::path::Path;
 
 use crate::manifest::PakManifest;
@@ -29,10 +28,7 @@ pub struct ExtractedElement {
 pub fn extract_elements_from_pak(
     pak_manifest_path: &Path,
 ) -> Result<HashMap<String, ExtractedElement>> {
-    let content =
-        fs::read_to_string(pak_manifest_path).context("Failed to read pak_manifest.json")?;
-    let manifest: PakManifest =
-        serde_json::from_str(&content).context("Failed to parse pak_manifest.json")?;
+    let manifest = PakManifest::load(pak_manifest_path)?;
 
     let mut elements: HashMap<String, ExtractedElement> = HashMap::new();
 
@@ -88,10 +84,7 @@ pub struct ExtractedRarity {
 /// Discovers rarity tiers from UI rarity pip assets:
 /// - rarity_pip_01_common, rarity_pip_02_uncommon, etc.
 pub fn extract_rarities_from_pak(pak_manifest_path: &Path) -> Result<Vec<ExtractedRarity>> {
-    let content =
-        fs::read_to_string(pak_manifest_path).context("Failed to read pak_manifest.json")?;
-    let manifest: PakManifest =
-        serde_json::from_str(&content).context("Failed to parse pak_manifest.json")?;
+    let manifest = PakManifest::load(pak_manifest_path)?;
 
     let mut rarities: HashMap<u8, ExtractedRarity> = HashMap::new();
 
@@ -173,10 +166,7 @@ pub struct ExtractedStat {
 /// - Pattern: StatName_ModifierType_Index_GUID
 /// - e.g., Damage_Scale_44_..., Accuracy_Value_38_...
 pub fn extract_stats_from_pak(pak_manifest_path: &Path) -> Result<Vec<ExtractedStat>> {
-    let content =
-        fs::read_to_string(pak_manifest_path).context("Failed to read pak_manifest.json")?;
-    let manifest: PakManifest =
-        serde_json::from_str(&content).context("Failed to parse pak_manifest.json")?;
+    let manifest = PakManifest::load(pak_manifest_path)?;
 
     let mut stats: HashMap<String, (std::collections::HashSet<String>, usize)> = HashMap::new();
 

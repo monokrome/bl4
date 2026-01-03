@@ -2,11 +2,10 @@
 //!
 //! Extracts authoritative weapon type and gear type data from pak_manifest.json.
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::fs;
 use std::path::Path;
 
 use crate::manifest::PakManifest;
@@ -33,10 +32,7 @@ pub struct ExtractedWeaponType {
 pub fn extract_weapon_types_from_pak(
     pak_manifest_path: &Path,
 ) -> Result<HashMap<String, ExtractedWeaponType>> {
-    let content =
-        fs::read_to_string(pak_manifest_path).context("Failed to read pak_manifest.json")?;
-    let manifest: PakManifest =
-        serde_json::from_str(&content).context("Failed to parse pak_manifest.json")?;
+    let manifest = PakManifest::load(pak_manifest_path)?;
 
     let mut weapon_types: HashMap<String, ExtractedWeaponType> = HashMap::new();
 
@@ -160,10 +156,7 @@ pub struct ExtractedGearType {
 pub fn extract_gear_types_from_pak(
     pak_manifest_path: &Path,
 ) -> Result<HashMap<String, ExtractedGearType>> {
-    let content =
-        fs::read_to_string(pak_manifest_path).context("Failed to read pak_manifest.json")?;
-    let manifest: PakManifest =
-        serde_json::from_str(&content).context("Failed to parse pak_manifest.json")?;
+    let manifest = PakManifest::load(pak_manifest_path)?;
 
     let mut gear_types: HashMap<String, ExtractedGearType> = HashMap::new();
 
