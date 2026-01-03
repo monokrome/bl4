@@ -17,6 +17,7 @@
 # Reference
 
 - [Using bl4 Tools](07-bl4-tools.md)
+- [NCS Format (Nexus Config Store)](08-ncs-format.md)
 
 # Appendices
 

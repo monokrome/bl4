@@ -579,13 +579,134 @@ Sorting by index gives the correct order matching NCS chunk offsets.
 | `audio_event` | Audio event mappings | 1 |
 | `coordinated_effect_filter` | Effect filters | 1 |
 | `gbx_ue_data_table` | Gearbox data tables | many |
+| `inv` | Inventory part definitions | 1 |
 | `itempool` | Item pool definitions | many |
-| `itempoollist` | Item pool lists | many |
+| `itempoollist` | Item pool lists (boss drops) | many |
 | `loot_config` | Loot configuration | many |
 | `Mission` | Mission data | many |
 | `preferredparts` | Part preferences | 1 |
 | `trait_pool` | Trait pool definitions | many |
 | `vending_machine` | Vending inventory | many |
+
+### Key Files for Loot Analysis
+
+| File | Purpose |
+|------|---------|
+| `itempoollist.bin` | Boss → legendary item mappings. Contains `ItemPoolList_<BossName>` records with dedicated drops. |
+| `itempool.bin` | General item pool definitions including rarity weights, world drops, Black Market items. |
+| `loot_config.bin` | Global loot configuration parameters. |
+| `preferredparts.bin` | Part preferences for weapon/gear generation. |
+| `inv.bin` | Inventory part definitions with manufacturer prefixes and categories. |
+
+### Extracting Drop Information
+
+Use the `bl4 drops` command to extract and query drop data:
+
+```bash
+# Generate drops manifest from NCS data
+bl4 drops generate "/path/to/ncs_native" -o share/manifest/drops.json
+
+# Find where an item drops
+bl4 drops find hellwalker
+
+# List drops from a specific boss
+bl4 drops source Timekeeper
+```
+
+See [Appendix C: Loot System Internals](appendix-c-loot-system.md) for detailed documentation.
+
+---
+
+## Entity Display Name Mappings (NameData)
+
+NCS files contain `NameData_*` entries that map internal entity type names to their in-game display names. These are stored as string records in the binary data.
+
+### NameData Format
+
+Each NameData entry follows this pattern:
+
+```
+NameData_<InternalType>, <UUID>, <DisplayName>
+```
+
+Where:
+- **InternalType**: The internal category/type (e.g., `Meathead`, `Thresher`, `Pangolin`)
+- **UUID**: A unique identifier (GUID) for the specific variant
+- **DisplayName**: The human-readable name shown in-game
+
+### Boss Name Examples
+
+| Internal Type | UUID | Display Name |
+|---------------|------|--------------|
+| `NameData_Meathead` | `D342D6EE47173677CE1C068BADA88F69` | Saddleback |
+| `NameData_Meathead` | `B8EAFB724DAB6362B39A5592718B54B0` | The Immortal Boneface |
+| `NameData_Meathead` | `33D8546645185A85D4575F984C7DC44B` | Saddleback & Boneface |
+| `NameData_Meathead` | `B632671F4B8F70E97E878BA8CFEEC00B` | Big Encore Saddleback |
+
+### Enemy Variant Examples
+
+Enemies have elemental and rank variants with unique UUIDs:
+
+```
+NameData_Thresher, 35D7CBFD4E844BB1624140B84DE69546, Vile Thresher
+NameData_Thresher, 7505A0A34FC98F3916DABBA70974675F, Badass Thresher
+NameData_Thresher, 4829F4F643423CB6F1F144B4F5A2F2CB, Burning Badass Thresher
+NameData_Thresher, 2A0DEEE34653F2E0BD3C8BABC4D1353D, Boreal Badass Thresher
+
+NameData_Bat, 160168F945945478127AD496A3BB0673, Badass Kratch
+NameData_Bat, 52A45B3F42B1A9480C36188401A6C801, Vile Kratch
+NameData_Bat, 05E8994641C36AF561B109ACD197D81D, Airstrike Kratch
+```
+
+### Boss Replay Table
+
+The `Table_BossReplay_Costs` entries also reference boss display names:
+
+```
+Table_BossReplay_Costs, 2DCA8E674F8F83E700B52B959C65C2D2, Meathead Riders: Saddleback, The Immortal Boneface
+```
+
+### Challenge Text References
+
+UVH (Ultra Vault Hunter) challenge strings contain boss names with location context:
+
+```
+UVH_Rankup_2_Challenges, ..., Kill Bramblesong in UVH 1 (Abandoned Auger Mine, Stoneblood Forest, Terminus Range).
+UVH_Rankup_2_Challenges, ..., Kill Bio-Thresher Omega in UVH 1 (Fades District, Dominion).
+UVH_Rankup_4_Challenges, ..., Kill Mimicron in UVH 3 (Order Bunker, Idolator's Noose, Fadefields).
+UVH_Rankup_4_Challenges, ..., Kill Skull Orchid in UVH 3 (Abandoned Auger Mine, Grindstone of the Worthy, Carcadia Burn).
+```
+
+### Extracting NameData
+
+Use `strings` to extract NameData mappings from NCS binaries:
+
+```bash
+# Get all NameData entries
+strings /path/to/ncs_native/*/*.bin | grep "^NameData_" | sort -u
+
+# Get specific boss type mappings
+strings /path/to/ncs_native/*/*.bin | grep "^NameData_Meathead"
+
+# Get challenge text with boss names
+strings /path/to/ncs_native/*/*.bin | grep "UVH.*Kill"
+```
+
+### Internal to Display Name Mapping
+
+Known boss internal → display name mappings:
+
+| Internal Name (itempoollist) | Display Name (NameData) |
+|------------------------------|-------------------------|
+| `MeatheadRider_Jockey` | Saddleback |
+| `Thresher_BioArmoredBig` | Bio-Thresher Omega |
+| `Timekeeper_Guardian` | Guardian Timekeeper |
+| `BatMatriarch` | Skyspanner Kratch |
+| `TrashThresher` | Sludgemaw |
+| `StrikerSplitter` | Mimicron |
+| `Destroyer` | Bramblesong |
+
+These mappings can be used to translate internal boss names to user-friendly display names in tools.
 
 ---
 
