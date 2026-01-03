@@ -6,6 +6,127 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::Path;
 
+/// Boss name mappings loaded from boss_names.json
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct BossNameMapping {
+    /// Main mapping from ItemPoolList suffix to display name
+    pub boss_names: HashMap<String, String>,
+    /// Alias mappings for fuzzy matching
+    #[serde(default)]
+    pub aliases: HashMap<String, String>,
+}
+
+impl BossNameMapping {
+    /// Load boss name mappings from embedded data
+    pub fn load() -> Self {
+        // Embedded mapping data - keeps binary self-contained
+        Self::default_mapping()
+    }
+
+    /// Default mapping with all known boss names
+    fn default_mapping() -> Self {
+        let mut boss_names = HashMap::new();
+        let mut aliases = HashMap::new();
+
+        // Primordial Guardians (main story bosses)
+        boss_names.insert("Grasslands_Commander".into(), "Primordial Guardian Inceptus".into());
+        boss_names.insert("MountainCommander".into(), "Primordial Guardian Radix".into());
+        boss_names.insert("ShatterlandsCommanderElpis".into(), "Primordial Guardian Origo".into());
+        boss_names.insert("ShatterlandsCommanderFortress".into(), "Primordial Guardian Origo".into());
+        boss_names.insert("Timekeeper_TKBoss".into(), "The Timekeeper".into());
+
+        // Vault Guardians
+        boss_names.insert("Grasslands_Guardian".into(), "Grasslands Guardian".into());
+        boss_names.insert("MountainGuardian".into(), "Mountain Guardian".into());
+        boss_names.insert("ShatterlandsGuardian".into(), "Shatterlands Guardian".into());
+        boss_names.insert("Timekeeper_Guardian".into(), "Timekeeper Guardian".into());
+
+        // Creature bosses
+        boss_names.insert("Backhive".into(), "The Backhive".into());
+        boss_names.insert("BattleWagon".into(), "The Battle Wagon".into());
+        boss_names.insert("Destroyer".into(), "Bramblesong".into());
+        boss_names.insert("BatMatriarch".into(), "Bat Matriarch".into());
+        boss_names.insert("CityCat".into(), "Shadowpelt".into());
+        boss_names.insert("StealthPredator".into(), "Shadowpelt".into());
+        boss_names.insert("SpiderJumbo".into(), "Sidney Pointylegs".into());
+        boss_names.insert("SurpriseAttack".into(), "Voraxis".into());
+        boss_names.insert("TrashThresher".into(), "Trash Thresher".into());
+        boss_names.insert("Thresher_BioArmoredBig".into(), "Bio-Thresher Omega".into());
+        boss_names.insert("Pango".into(), "Pango".into());
+        boss_names.insert("Bango".into(), "Bango".into());
+        boss_names.insert("SkullOrchid".into(), "Skull Orchid".into());
+
+        // Humanoid bosses
+        boss_names.insert("Arjay".into(), "Arjay".into());
+        boss_names.insert("CloningLeader".into(), "Divisioner".into());
+        boss_names.insert("Drillerhole".into(), "Drillerhole".into());
+        boss_names.insert("DroneKeeper".into(), "Drone Keeper".into());
+        boss_names.insert("FirstCorrupt".into(), "First Corrupt".into());
+        boss_names.insert("FoundryFreak_MeatheadFrackingBoss".into(), "Foundry Freaks".into());
+        boss_names.insert("GlidePackPsycho".into(), "Glide Pack Psycho".into());
+        boss_names.insert("KOTOMotherbaseBrute".into(), "Motherbase Brute".into());
+        boss_names.insert("KotoLieutenant".into(), "KOTO Lieutenant".into());
+        boss_names.insert("MeatheadRider".into(), "Saddleback".into());
+        boss_names.insert("MeatheadRider_Jockey".into(), "Jockey".into());
+        boss_names.insert("MeatPlantGunship".into(), "Meat Plant Gunship".into());
+        boss_names.insert("Redguard".into(), "Redguard".into());
+        boss_names.insert("RockAndRoll".into(), "Rock and Roll".into());
+        boss_names.insert("SoldierAncient".into(), "Ancient Soldier".into());
+        boss_names.insert("StrikerSplitter".into(), "Striker Splitter".into());
+        boss_names.insert("UpgradedElectiMole".into(), "Leader Electi".into());
+        boss_names.insert("BlasterBrute".into(), "Blaster Brute".into());
+
+        // DLC bosses
+        boss_names.insert("Donk".into(), "Donk".into());
+        boss_names.insert("MinisterScrew".into(), "Minister Screw".into());
+        boss_names.insert("Bloomreaper".into(), "Bloomreaper".into());
+
+        // Additional bosses
+        boss_names.insert("Hovercart".into(), "Splice Hovercart".into());
+        boss_names.insert("LeaderHologram".into(), "Leader Hologram".into());
+        boss_names.insert("SideCity_Psycho".into(), "Side City Psycho".into());
+        boss_names.insert("FoundryFreak_Psycho".into(), "Foundry Freak Psycho".into());
+        boss_names.insert("FoundryFreak_Splice".into(), "Foundry Freak Splice".into());
+
+        // Aliases for fuzzy matching
+        aliases.insert("Grasslands".into(), "Primordial Guardian Inceptus".into());
+        aliases.insert("Mountains".into(), "Primordial Guardian Radix".into());
+        aliases.insert("Shatterlands".into(), "Primordial Guardian Origo".into());
+        aliases.insert("Castilleia".into(), "Castilleia".into());
+        aliases.insert("Mimicron".into(), "Mimicron".into());
+        aliases.insert("Axemaul".into(), "Axemaul".into());
+        aliases.insert("Tabnak".into(), "Tabnak, the Ripper Prince".into());
+        aliases.insert("Harbinger".into(), "Callous Harbinger of Annihilating Death".into());
+
+        Self { boss_names, aliases }
+    }
+
+    /// Get display name for a boss internal name
+    pub fn get_display_name(&self, internal_name: &str) -> Option<&str> {
+        // Try exact match first
+        if let Some(name) = self.boss_names.get(internal_name) {
+            return Some(name);
+        }
+
+        // Try without underscores
+        let normalized = internal_name.replace('_', "");
+        for (key, value) in &self.boss_names {
+            if key.replace('_', "") == normalized {
+                return Some(value);
+            }
+        }
+
+        // Try aliases
+        for (alias, name) in &self.aliases {
+            if internal_name.to_lowercase().contains(&alias.to_lowercase()) {
+                return Some(name);
+            }
+        }
+
+        None
+    }
+}
+
 /// Drop source type
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum DropSource {
@@ -789,11 +910,14 @@ fn generate_world_drops(existing_drops: &[DropEntry]) -> Vec<DropEntry> {
 /// Generate drops manifest from NCS data directory
 ///
 /// Scans for itempoollist.bin and itempool.bin files and extracts all drops.
-/// Also extracts NameData to populate display names for bosses.
+/// Uses embedded boss name mappings and NameData to populate display names.
 pub fn generate_drops_manifest<P: AsRef<Path>>(ncs_dir: P) -> Result<DropsManifest, std::io::Error> {
     use std::collections::HashSet;
 
-    // First, extract NameData for display name mappings
+    // Load boss name mappings (embedded)
+    let boss_names = BossNameMapping::load();
+
+    // Also extract NameData for fallback display name mappings
     let name_data = crate::name_data::extract_from_directory(ncs_dir.as_ref());
 
     let mut all_drops = Vec::new();
@@ -823,9 +947,13 @@ pub fn generate_drops_manifest<P: AsRef<Path>>(ncs_dir: P) -> Result<DropsManife
                 if !seen.contains(&key) {
                     seen.insert(key);
 
-                    // Populate source_display from NameData for boss drops
+                    // Populate source_display from boss name mapping or NameData
                     if drop.source_type == DropSource::Boss && drop.source_display.is_none() {
-                        if let Some(display) = name_data.find_display_name(&drop.source) {
+                        // Try embedded boss name mapping first
+                        if let Some(display) = boss_names.get_display_name(&drop.source) {
+                            drop.source_display = Some(display.to_string());
+                        } else if let Some(display) = name_data.find_display_name(&drop.source) {
+                            // Fall back to NameData
                             drop.source_display = Some(display.to_string());
                         }
                     }

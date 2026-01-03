@@ -3,6 +3,7 @@
   "drops": [
     {
       "source": "Arjay",
+      "source_display": "Arjay",
       "source_type": "Boss",
       "manufacturer": "DAD",
       "gear_type": "SHIELD",
@@ -14,6 +15,7 @@
     },
     {
       "source": "Arjay",
+      "source_display": "Arjay",
       "source_type": "Boss",
       "manufacturer": "ORD",
       "gear_type": "SR",
@@ -25,6 +27,7 @@
     },
     {
       "source": "Arjay",
+      "source_display": "Arjay",
       "source_type": "Boss",
       "manufacturer": "DAD",
       "gear_type": "SG",
@@ -36,6 +39,7 @@
     },
     {
       "source": "Backhive",
+      "source_display": "The Backhive",
       "source_type": "Boss",
       "manufacturer": "ORD",
       "gear_type": "REPAIR_KIT",
@@ -47,6 +51,7 @@
     },
     {
       "source": "Backhive",
+      "source_display": "The Backhive",
       "source_type": "Boss",
       "manufacturer": "VLA",
       "gear_type": "SR",
@@ -58,6 +63,7 @@
     },
     {
       "source": "Backhive",
+      "source_display": "The Backhive",
       "source_type": "Boss",
       "manufacturer": "ORD",
       "gear_type": "SHIELD",
@@ -69,6 +75,7 @@
     },
     {
       "source": "Bango",
+      "source_display": "Bango",
       "source_type": "Boss",
       "manufacturer": "JAK",
       "gear_type": "PS",
@@ -80,6 +87,7 @@
     },
     {
       "source": "Bango",
+      "source_display": "Bango",
       "source_type": "Boss",
       "manufacturer": "BOR",
       "gear_type": "SM",
@@ -91,6 +99,7 @@
     },
     {
       "source": "BatMatriarch",
+      "source_display": "Bat Matriarch",
       "source_type": "Boss",
       "manufacturer": "TOR",
       "gear_type": "SG",
@@ -102,6 +111,7 @@
     },
     {
       "source": "BatMatriarch",
+      "source_display": "Bat Matriarch",
       "source_type": "Boss",
       "manufacturer": "BOR",
       "gear_type": "SM",
@@ -113,6 +123,7 @@
     },
     {
       "source": "BatMatriarch",
+      "source_display": "Bat Matriarch",
       "source_type": "Boss",
       "manufacturer": "VLA",
       "gear_type": "SHIELD",
@@ -124,6 +135,7 @@
     },
     {
       "source": "BattleWagon",
+      "source_display": "The Battle Wagon",
       "source_type": "Boss",
       "manufacturer": "VLA",
       "gear_type": "SR",
@@ -135,6 +147,7 @@
     },
     {
       "source": "BattleWagon",
+      "source_display": "The Battle Wagon",
       "source_type": "Boss",
       "manufacturer": "TOR",
       "gear_type": "SHIELD",
@@ -146,6 +159,7 @@
     },
     {
       "source": "BattleWagon",
+      "source_display": "The Battle Wagon",
       "source_type": "Boss",
       "manufacturer": "TOR",
       "gear_type": "AR",
@@ -157,6 +171,7 @@
     },
     {
       "source": "BlasterBrute",
+      "source_display": "Blaster Brute",
       "source_type": "Boss",
       "manufacturer": "VLA",
       "gear_type": "HW",
@@ -168,6 +183,7 @@
     },
     {
       "source": "BlasterBrute",
+      "source_display": "Blaster Brute",
       "source_type": "Boss",
       "manufacturer": "JAK",
       "gear_type": "SG",
@@ -179,6 +195,7 @@
     },
     {
       "source": "BlasterBrute",
+      "source_display": "Blaster Brute",
       "source_type": "Boss",
       "manufacturer": "MAL",
       "gear_type": "SG",
@@ -190,6 +207,7 @@
     },
     {
       "source": "CityCat",
+      "source_display": "Shadowpelt",
       "source_type": "Boss",
       "manufacturer": "TED",
       "gear_type": "REPAIR_KIT",
@@ -201,6 +219,7 @@
     },
     {
       "source": "CityCat",
+      "source_display": "Shadowpelt",
       "source_type": "Boss",
       "manufacturer": "DAD",
       "gear_type": "GRENADE_GADGET",
@@ -212,6 +231,7 @@
     },
     {
       "source": "CityCat",
+      "source_display": "Shadowpelt",
       "source_type": "Boss",
       "manufacturer": "DAD",
       "gear_type": "SG",
@@ -223,6 +243,7 @@
     },
     {
       "source": "CloningLeader",
+      "source_display": "Divisioner",
       "source_type": "Boss",
       "manufacturer": "TED",
       "gear_type": "SHIELD",
@@ -234,6 +255,7 @@
     },
     {
       "source": "CloningLeader",
+      "source_display": "Divisioner",
       "source_type": "Boss",
       "manufacturer": "TED",
       "gear_type": "PS",
@@ -245,6 +267,7 @@
     },
     {
       "source": "CloningLeader",
+      "source_display": "Divisioner",
       "source_type": "Boss",
       "manufacturer": "VLA",
       "gear_type": "HW",
@@ -256,6 +279,7 @@
     },
     {
       "source": "Destroyer",
+      "source_display": "Bramblesong",
       "source_type": "Boss",
       "manufacturer": "MAL",
       "gear_type": "GRENADE_GADGET",
@@ -267,6 +291,7 @@
     },
     {
       "source": "Destroyer",
+      "source_display": "Bramblesong",
       "source_type": "Boss",
       "manufacturer": "JAK",
       "gear_type": "SR",
@@ -278,6 +303,7 @@
     },
     {
       "source": "Destroyer",
+      "source_display": "Bramblesong",
       "source_type": "Boss",
       "manufacturer": "BOR",
       "gear_type": "SG",
@@ -289,6 +315,7 @@
     },
     {
       "source": "Drillerhole",
+      "source_display": "Drillerhole",
       "source_type": "Boss",
       "manufacturer": "DAD",
       "gear_type": "GRENADE_GADGET",
@@ -300,6 +327,7 @@
     },
     {
       "source": "Drillerhole",
+      "source_display": "Drillerhole",
       "source_type": "Boss",
       "manufacturer": "ORD",
       "gear_type": "AR",
@@ -311,6 +339,7 @@
     },
     {
       "source": "Drillerhole",
+      "source_display": "Drillerhole",
       "source_type": "Boss",
       "manufacturer": "MAL",
       "gear_type": "SR",
@@ -322,6 +351,7 @@
     },
     {
       "source": "DroneKeeper",
+      "source_display": "Drone Keeper",
       "source_type": "Boss",
       "manufacturer": "ORD",
       "gear_type": "PS",
@@ -333,6 +363,7 @@
     },
     {
       "source": "DroneKeeper",
+      "source_display": "Drone Keeper",
       "source_type": "Boss",
       "manufacturer": "TED",
       "gear_type": "AR",
@@ -344,6 +375,7 @@
     },
     {
       "source": "DroneKeeper",
+      "source_display": "Drone Keeper",
       "source_type": "Boss",
       "manufacturer": "JAK",
       "gear_type": "REPAIR_KIT",
@@ -355,6 +387,7 @@
     },
     {
       "source": "FirstCorrupt",
+      "source_display": "First Corrupt",
       "source_type": "Boss",
       "manufacturer": "VLA",
       "gear_type": "SHIELD",
@@ -366,6 +399,7 @@
     },
     {
       "source": "FirstCorrupt",
+      "source_display": "First Corrupt",
       "source_type": "Boss",
       "manufacturer": "JAK",
       "gear_type": "PS",
@@ -377,6 +411,7 @@
     },
     {
       "source": "FirstCorrupt",
+      "source_display": "First Corrupt",
       "source_type": "Boss",
       "manufacturer": "DAD",
       "gear_type": "PS",
@@ -388,6 +423,7 @@
     },
     {
       "source": "FoundryFreak_MeatheadFrackingBoss",
+      "source_display": "Foundry Freaks",
       "source_type": "Boss",
       "manufacturer": "ORD",
       "gear_type": "GRENADE_GADGET",
@@ -399,6 +435,7 @@
     },
     {
       "source": "FoundryFreak_Psycho",
+      "source_display": "Foundry Freak Psycho",
       "source_type": "Boss",
       "manufacturer": "TED",
       "gear_type": "AR",
@@ -410,6 +447,7 @@
     },
     {
       "source": "FoundryFreak_Splice",
+      "source_display": "Foundry Freak Splice",
       "source_type": "Boss",
       "manufacturer": "DAD",
       "gear_type": "AR",
@@ -421,6 +459,7 @@
     },
     {
       "source": "GlidePackPsycho",
+      "source_display": "Glide Pack Psycho",
       "source_type": "Boss",
       "manufacturer": "TOR",
       "gear_type": "SG",
@@ -432,6 +471,7 @@
     },
     {
       "source": "GlidePackPsycho",
+      "source_display": "Glide Pack Psycho",
       "source_type": "Boss",
       "manufacturer": "TOR",
       "gear_type": "SHIELD",
@@ -443,6 +483,7 @@
     },
     {
       "source": "GlidePackPsycho",
+      "source_display": "Glide Pack Psycho",
       "source_type": "Boss",
       "manufacturer": "BORG",
       "gear_type": "GRENADE_GADGET",
@@ -454,6 +495,7 @@
     },
     {
       "source": "Grasslands_Commander",
+      "source_display": "Primordial Guardian Inceptus",
       "source_type": "Boss",
       "manufacturer": "BOR",
       "gear_type": "SG",
@@ -465,6 +507,7 @@
     },
     {
       "source": "Grasslands_Commander",
+      "source_display": "Primordial Guardian Inceptus",
       "source_type": "Boss",
       "manufacturer": "BOR",
       "gear_type": "SG",
@@ -476,6 +519,7 @@
     },
     {
       "source": "Grasslands_Commander",
+      "source_display": "Primordial Guardian Inceptus",
       "source_type": "Boss",
       "manufacturer": "VLA",
       "gear_type": "SM",
@@ -487,28 +531,7 @@
     },
     {
       "source": "Grasslands_Commander",
-      "source_type": "Boss",
-      "manufacturer": "CLASSMOD",
-      "gear_type": "EXO_SOLDIER",
-      "item_name": "01",
-      "item_id": "classmod_exo_soldier.comp_05_legendary_01",
-      "pool": "itempool_classmod_exo_soldier_05_legendary_01_shiny",
-      "drop_tier": "",
-      "drop_chance": 0.0
-    },
-    {
-      "source": "Grasslands_Commander",
-      "source_type": "Boss",
-      "manufacturer": "CLASSMOD",
-      "gear_type": "PALADIN",
-      "item_name": "01",
-      "item_id": "classmod_paladin.comp_05_legendary_01",
-      "pool": "itempool_classmod_paladin_05_legendary_01_shiny",
-      "drop_tier": "",
-      "drop_chance": 0.0
-    },
-    {
-      "source": "Grasslands_Commander",
+      "source_display": "Primordial Guardian Inceptus",
       "source_type": "Boss",
       "manufacturer": "CLASSMOD",
       "gear_type": "GRAVITAR",
@@ -520,6 +543,7 @@
     },
     {
       "source": "Grasslands_Commander",
+      "source_display": "Primordial Guardian Inceptus",
       "source_type": "Boss",
       "manufacturer": "CLASSMOD",
       "gear_type": "DARK_SIREN",
@@ -530,7 +554,32 @@
       "drop_chance": 0.0
     },
     {
+      "source": "Grasslands_Commander",
+      "source_display": "Primordial Guardian Inceptus",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "PALADIN",
+      "item_name": "01",
+      "item_id": "classmod_paladin.comp_05_legendary_01",
+      "pool": "itempool_classmod_paladin_05_legendary_01_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Grasslands_Commander",
+      "source_display": "Primordial Guardian Inceptus",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "EXO_SOLDIER",
+      "item_name": "01",
+      "item_id": "classmod_exo_soldier.comp_05_legendary_01",
+      "pool": "itempool_classmod_exo_soldier_05_legendary_01_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
       "source": "Grasslands_Guardian",
+      "source_display": "Grasslands Guardian",
       "source_type": "Boss",
       "manufacturer": "TED",
       "gear_type": "SG",
@@ -542,6 +591,7 @@
     },
     {
       "source": "Grasslands_Guardian",
+      "source_display": "Grasslands Guardian",
       "source_type": "Boss",
       "manufacturer": "TOR",
       "gear_type": "HW",
@@ -553,6 +603,7 @@
     },
     {
       "source": "Grasslands_Guardian",
+      "source_display": "Grasslands Guardian",
       "source_type": "Boss",
       "manufacturer": "CLASSMOD",
       "gear_type": "DARK_SIREN",
@@ -564,17 +615,7 @@
     },
     {
       "source": "Grasslands_Guardian",
-      "source_type": "Boss",
-      "manufacturer": "CLASSMOD",
-      "gear_type": "EXO_SOLDIER",
-      "item_name": "02",
-      "item_id": "classmod_exo_soldier.comp_05_legendary_02",
-      "pool": "itempool_classmod_exo_soldier_05_legendary_02_shiny",
-      "drop_tier": "",
-      "drop_chance": 0.0
-    },
-    {
-      "source": "Grasslands_Guardian",
+      "source_display": "Grasslands Guardian",
       "source_type": "Boss",
       "manufacturer": "CLASSMOD",
       "gear_type": "PALADIN",
@@ -586,6 +627,19 @@
     },
     {
       "source": "Grasslands_Guardian",
+      "source_display": "Grasslands Guardian",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "EXO_SOLDIER",
+      "item_name": "02",
+      "item_id": "classmod_exo_soldier.comp_05_legendary_02",
+      "pool": "itempool_classmod_exo_soldier_05_legendary_02_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Grasslands_Guardian",
+      "source_display": "Grasslands Guardian",
       "source_type": "Boss",
       "manufacturer": "CLASSMOD",
       "gear_type": "GRAVITAR",
@@ -597,6 +651,7 @@
     },
     {
       "source": "Hovercart",
+      "source_display": "Splice Hovercart",
       "source_type": "Boss",
       "manufacturer": "VLA",
       "gear_type": "AR",
@@ -608,6 +663,7 @@
     },
     {
       "source": "Hovercart",
+      "source_display": "Splice Hovercart",
       "source_type": "Boss",
       "manufacturer": "TOR",
       "gear_type": "AR",
@@ -619,17 +675,7 @@
     },
     {
       "source": "KOTOMotherbaseBrute",
-      "source_type": "Boss",
-      "manufacturer": "JAK",
-      "gear_type": "GRENADE_GADGET",
-      "item_name": "ShoKunai",
-      "item_id": "jak_grenade_gadget.comp_05_legendary_ShoKunai",
-      "pool": "itempool_jak_grenade_gadget_05_legendary_ShoKunai_shiny",
-      "drop_tier": "",
-      "drop_chance": 0.0
-    },
-    {
-      "source": "KOTOMotherbaseBrute",
+      "source_display": "Motherbase Brute",
       "source_type": "Boss",
       "manufacturer": "VLA",
       "gear_type": "GRENADE_GADGET",
@@ -641,6 +687,19 @@
     },
     {
       "source": "KOTOMotherbaseBrute",
+      "source_display": "Motherbase Brute",
+      "source_type": "Boss",
+      "manufacturer": "JAK",
+      "gear_type": "GRENADE_GADGET",
+      "item_name": "ShoKunai",
+      "item_id": "jak_grenade_gadget.comp_05_legendary_ShoKunai",
+      "pool": "itempool_jak_grenade_gadget_05_legendary_ShoKunai_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "KOTOMotherbaseBrute",
+      "source_display": "Motherbase Brute",
       "source_type": "Boss",
       "manufacturer": "TED",
       "gear_type": "PS",
@@ -652,6 +711,7 @@
     },
     {
       "source": "KotoLieutenant",
+      "source_display": "KOTO Lieutenant",
       "source_type": "Boss",
       "manufacturer": "ORD",
       "gear_type": "PS",
@@ -663,6 +723,7 @@
     },
     {
       "source": "KotoLieutenant",
+      "source_display": "KOTO Lieutenant",
       "source_type": "Boss",
       "manufacturer": "DAD",
       "gear_type": "REPAIR_KIT",
@@ -674,6 +735,7 @@
     },
     {
       "source": "KotoLieutenant",
+      "source_display": "KOTO Lieutenant",
       "source_type": "Boss",
       "manufacturer": "VLA",
       "gear_type": "AR",
@@ -685,17 +747,7 @@
     },
     {
       "source": "LeaderHologram",
-      "source_type": "Boss",
-      "manufacturer": "TED",
-      "gear_type": "GRENADE_GADGET",
-      "item_name": "PredatorDrone",
-      "item_id": "ted_grenade_gadget.comp_05_legendary_PredatorDrone",
-      "pool": "itempool_ted_grenade_gadget_05_legendary_PredatorDrone_shiny",
-      "drop_tier": "",
-      "drop_chance": 0.0
-    },
-    {
-      "source": "LeaderHologram",
+      "source_display": "Leader Hologram",
       "source_type": "Boss",
       "manufacturer": "ORD",
       "gear_type": "SHIELD",
@@ -706,7 +758,20 @@
       "drop_chance": 0.0
     },
     {
+      "source": "LeaderHologram",
+      "source_display": "Leader Hologram",
+      "source_type": "Boss",
+      "manufacturer": "TED",
+      "gear_type": "GRENADE_GADGET",
+      "item_name": "PredatorDrone",
+      "item_id": "ted_grenade_gadget.comp_05_legendary_PredatorDrone",
+      "pool": "itempool_ted_grenade_gadget_05_legendary_PredatorDrone_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
       "source": "MeatPlantGunship",
+      "source_display": "Meat Plant Gunship",
       "source_type": "Boss",
       "manufacturer": "BOR",
       "gear_type": "HW",
@@ -718,6 +783,7 @@
     },
     {
       "source": "MeatPlantGunship",
+      "source_display": "Meat Plant Gunship",
       "source_type": "Boss",
       "manufacturer": "MAL",
       "gear_type": "REPAIR_KIT",
@@ -729,6 +795,7 @@
     },
     {
       "source": "MeatPlantGunship",
+      "source_display": "Meat Plant Gunship",
       "source_type": "Boss",
       "manufacturer": "MAL",
       "gear_type": "SR",
@@ -764,7 +831,7 @@
     },
     {
       "source": "MeatheadRider_Jockey",
-      "source_display": "Saddleback",
+      "source_display": "Jockey",
       "source_type": "Boss",
       "manufacturer": "JAK",
       "gear_type": "SG",
@@ -776,6 +843,7 @@
     },
     {
       "source": "MountainCommander",
+      "source_display": "Primordial Guardian Radix",
       "source_type": "Boss",
       "manufacturer": "TED",
       "gear_type": "PS",
@@ -787,50 +855,7 @@
     },
     {
       "source": "MountainCommander",
-      "source_type": "Boss",
-      "manufacturer": "CLASSMOD",
-      "gear_type": "PALADIN",
-      "item_name": "03",
-      "item_id": "classmod_paladin.comp_05_legendary_03",
-      "pool": "itempool_classmod_paladin_05_legendary_03_shiny",
-      "drop_tier": "",
-      "drop_chance": 0.0
-    },
-    {
-      "source": "MountainCommander",
-      "source_type": "Boss",
-      "manufacturer": "CLASSMOD",
-      "gear_type": "EXO_SOLDIER",
-      "item_name": "03",
-      "item_id": "classmod_exo_soldier.comp_05_legendary_03",
-      "pool": "itempool_classmod_exo_soldier_05_legendary_03_shiny",
-      "drop_tier": "",
-      "drop_chance": 0.0
-    },
-    {
-      "source": "MountainCommander",
-      "source_type": "Boss",
-      "manufacturer": "VLA",
-      "gear_type": "GRENADE_GADGET",
-      "item_name": "Blockbuster",
-      "item_id": "vla_grenade_gadget.comp_05_legendary_Blockbuster",
-      "pool": "itempool_vla_grenade_gadget_05_legendary_Blockbuster_shiny",
-      "drop_tier": "",
-      "drop_chance": 0.0
-    },
-    {
-      "source": "MountainCommander",
-      "source_type": "Boss",
-      "manufacturer": "DAD",
-      "gear_type": "SHIELD",
-      "item_name": "SuperSoldier",
-      "item_id": "dad_shield.comp_05_legendary_SuperSoldier",
-      "pool": "itempool_dad_shield_05_legendary_SuperSoldier_shiny",
-      "drop_tier": "",
-      "drop_chance": 0.0
-    },
-    {
-      "source": "MountainCommander",
+      "source_display": "Primordial Guardian Radix",
       "source_type": "Boss",
       "manufacturer": "CLASSMOD",
       "gear_type": "GRAVITAR",
@@ -842,6 +867,7 @@
     },
     {
       "source": "MountainCommander",
+      "source_display": "Primordial Guardian Radix",
       "source_type": "Boss",
       "manufacturer": "CLASSMOD",
       "gear_type": "DARK_SIREN",
@@ -852,7 +878,56 @@
       "drop_chance": 0.0
     },
     {
+      "source": "MountainCommander",
+      "source_display": "Primordial Guardian Radix",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "PALADIN",
+      "item_name": "03",
+      "item_id": "classmod_paladin.comp_05_legendary_03",
+      "pool": "itempool_classmod_paladin_05_legendary_03_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "MountainCommander",
+      "source_display": "Primordial Guardian Radix",
+      "source_type": "Boss",
+      "manufacturer": "DAD",
+      "gear_type": "SHIELD",
+      "item_name": "SuperSoldier",
+      "item_id": "dad_shield.comp_05_legendary_SuperSoldier",
+      "pool": "itempool_dad_shield_05_legendary_SuperSoldier_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "MountainCommander",
+      "source_display": "Primordial Guardian Radix",
+      "source_type": "Boss",
+      "manufacturer": "VLA",
+      "gear_type": "GRENADE_GADGET",
+      "item_name": "Blockbuster",
+      "item_id": "vla_grenade_gadget.comp_05_legendary_Blockbuster",
+      "pool": "itempool_vla_grenade_gadget_05_legendary_Blockbuster_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "MountainCommander",
+      "source_display": "Primordial Guardian Radix",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "EXO_SOLDIER",
+      "item_name": "03",
+      "item_id": "classmod_exo_soldier.comp_05_legendary_03",
+      "pool": "itempool_classmod_exo_soldier_05_legendary_03_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
       "source": "MountainGuardian",
+      "source_display": "Mountain Guardian",
       "source_type": "Boss",
       "manufacturer": "VLA",
       "gear_type": "SM",
@@ -864,6 +939,7 @@
     },
     {
       "source": "MountainGuardian",
+      "source_display": "Mountain Guardian",
       "source_type": "Boss",
       "manufacturer": "MAL",
       "gear_type": "HW",
@@ -875,28 +951,7 @@
     },
     {
       "source": "MountainGuardian",
-      "source_type": "Boss",
-      "manufacturer": "CLASSMOD",
-      "gear_type": "EXO_SOLDIER",
-      "item_name": "04",
-      "item_id": "classmod_exo_soldier.comp_05_legendary_04",
-      "pool": "itempool_classmod_exo_soldier_05_legendary_04_shiny",
-      "drop_tier": "",
-      "drop_chance": 0.0
-    },
-    {
-      "source": "MountainGuardian",
-      "source_type": "Boss",
-      "manufacturer": "CLASSMOD",
-      "gear_type": "PALADIN",
-      "item_name": "04",
-      "item_id": "classmod_paladin.comp_05_legendary_04",
-      "pool": "itempool_classmod_paladin_05_legendary_04_shiny",
-      "drop_tier": "",
-      "drop_chance": 0.0
-    },
-    {
-      "source": "MountainGuardian",
+      "source_display": "Mountain Guardian",
       "source_type": "Boss",
       "manufacturer": "BOR",
       "gear_type": "SHIELD",
@@ -908,17 +963,31 @@
     },
     {
       "source": "MountainGuardian",
+      "source_display": "Mountain Guardian",
       "source_type": "Boss",
       "manufacturer": "CLASSMOD",
-      "gear_type": "GRAVITAR",
+      "gear_type": "EXO_SOLDIER",
       "item_name": "04",
-      "item_id": "classmod_gravitar.comp_05_legendary_04",
-      "pool": "itempool_classmod_gravitar_05_legendary_04_shiny",
+      "item_id": "classmod_exo_soldier.comp_05_legendary_04",
+      "pool": "itempool_classmod_exo_soldier_05_legendary_04_shiny",
       "drop_tier": "",
       "drop_chance": 0.0
     },
     {
       "source": "MountainGuardian",
+      "source_display": "Mountain Guardian",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "PALADIN",
+      "item_name": "04",
+      "item_id": "classmod_paladin.comp_05_legendary_04",
+      "pool": "itempool_classmod_paladin_05_legendary_04_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "MountainGuardian",
+      "source_display": "Mountain Guardian",
       "source_type": "Boss",
       "manufacturer": "CLASSMOD",
       "gear_type": "DARK_SIREN",
@@ -929,7 +998,20 @@
       "drop_chance": 0.0
     },
     {
+      "source": "MountainGuardian",
+      "source_display": "Mountain Guardian",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "GRAVITAR",
+      "item_name": "04",
+      "item_id": "classmod_gravitar.comp_05_legendary_04",
+      "pool": "itempool_classmod_gravitar_05_legendary_04_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
       "source": "Pango",
+      "source_display": "Pango",
       "source_type": "Boss",
       "manufacturer": "BOR",
       "gear_type": "SR",
@@ -941,6 +1023,7 @@
     },
     {
       "source": "Redguard",
+      "source_display": "Redguard",
       "source_type": "Boss",
       "manufacturer": "VLA",
       "gear_type": "AR",
@@ -952,6 +1035,7 @@
     },
     {
       "source": "Redguard",
+      "source_display": "Redguard",
       "source_type": "Boss",
       "manufacturer": "JAK",
       "gear_type": "AR",
@@ -963,6 +1047,7 @@
     },
     {
       "source": "Redguard",
+      "source_display": "Redguard",
       "source_type": "Boss",
       "manufacturer": "JAK",
       "gear_type": "AR",
@@ -974,6 +1059,7 @@
     },
     {
       "source": "RockAndRoll",
+      "source_display": "Rock and Roll",
       "source_type": "Boss",
       "manufacturer": "BOR",
       "gear_type": "REPAIR_KIT",
@@ -985,6 +1071,7 @@
     },
     {
       "source": "RockAndRoll",
+      "source_display": "Rock and Roll",
       "source_type": "Boss",
       "manufacturer": "JAK",
       "gear_type": "PS",
@@ -996,6 +1083,7 @@
     },
     {
       "source": "RockAndRoll",
+      "source_display": "Rock and Roll",
       "source_type": "Boss",
       "manufacturer": "JAK",
       "gear_type": "SG",
@@ -1007,6 +1095,7 @@
     },
     {
       "source": "ShatterlandsCommanderElpis",
+      "source_display": "Primordial Guardian Origo",
       "source_type": "Boss",
       "manufacturer": "MAL",
       "gear_type": "HW",
@@ -1018,6 +1107,7 @@
     },
     {
       "source": "ShatterlandsCommanderElpis",
+      "source_display": "Primordial Guardian Origo",
       "source_type": "Boss",
       "manufacturer": "MAL",
       "gear_type": "SM",
@@ -1029,6 +1119,7 @@
     },
     {
       "source": "ShatterlandsCommanderFortress",
+      "source_display": "Primordial Guardian Origo",
       "source_type": "Boss",
       "manufacturer": "TOR",
       "gear_type": "PS",
@@ -1040,28 +1131,7 @@
     },
     {
       "source": "ShatterlandsCommanderFortress",
-      "source_type": "Boss",
-      "manufacturer": "CLASSMOD",
-      "gear_type": "DARK_SIREN",
-      "item_name": "05",
-      "item_id": "classmod_dark_siren.comp_05_legendary_05",
-      "pool": "itempool_classmod_dark_siren_05_legendary_05_shiny",
-      "drop_tier": "",
-      "drop_chance": 0.0
-    },
-    {
-      "source": "ShatterlandsCommanderFortress",
-      "source_type": "Boss",
-      "manufacturer": "CLASSMOD",
-      "gear_type": "GRAVITAR",
-      "item_name": "05",
-      "item_id": "classmod_gravitar.comp_05_legendary_05",
-      "pool": "itempool_classmod_gravitar_05_legendary_05_shiny",
-      "drop_tier": "",
-      "drop_chance": 0.0
-    },
-    {
-      "source": "ShatterlandsCommanderFortress",
+      "source_display": "Primordial Guardian Origo",
       "source_type": "Boss",
       "manufacturer": "CLASSMOD",
       "gear_type": "PALADIN",
@@ -1073,6 +1143,7 @@
     },
     {
       "source": "ShatterlandsCommanderFortress",
+      "source_display": "Primordial Guardian Origo",
       "source_type": "Boss",
       "manufacturer": "CLASSMOD",
       "gear_type": "EXO_SOLDIER",
@@ -1083,7 +1154,32 @@
       "drop_chance": 0.0
     },
     {
+      "source": "ShatterlandsCommanderFortress",
+      "source_display": "Primordial Guardian Origo",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "GRAVITAR",
+      "item_name": "05",
+      "item_id": "classmod_gravitar.comp_05_legendary_05",
+      "pool": "itempool_classmod_gravitar_05_legendary_05_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "ShatterlandsCommanderFortress",
+      "source_display": "Primordial Guardian Origo",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "DARK_SIREN",
+      "item_name": "05",
+      "item_id": "classmod_dark_siren.comp_05_legendary_05",
+      "pool": "itempool_classmod_dark_siren_05_legendary_05_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
       "source": "ShatterlandsGuardian",
+      "source_display": "Shatterlands Guardian",
       "source_type": "Boss",
       "manufacturer": "TED",
       "gear_type": "SG",
@@ -1095,39 +1191,19 @@
     },
     {
       "source": "ShatterlandsGuardian",
+      "source_display": "Shatterlands Guardian",
       "source_type": "Boss",
-      "manufacturer": "CLASSMOD",
-      "gear_type": "PALADIN",
-      "item_name": "06",
-      "item_id": "classmod_paladin.comp_05_legendary_06",
-      "pool": "itempool_classmod_paladin_05_legendary_06_shiny",
+      "manufacturer": "VLA",
+      "gear_type": "REPAIR_KIT",
+      "item_name": "AdrenalinePUmp",
+      "item_id": "vla_repair_kit.comp_05_legendary_AdrenalinePUmp",
+      "pool": "itempool_vla_repair_kit_05_legendary_AdrenalinePUmp_shiny",
       "drop_tier": "",
       "drop_chance": 0.0
     },
     {
       "source": "ShatterlandsGuardian",
-      "source_type": "Boss",
-      "manufacturer": "CLASSMOD",
-      "gear_type": "EXO_SOLDIER",
-      "item_name": "06",
-      "item_id": "classmod_exo_soldier.comp_05_legendary_06",
-      "pool": "itempool_classmod_exo_soldier_05_legendary_06_shiny",
-      "drop_tier": "",
-      "drop_chance": 0.0
-    },
-    {
-      "source": "ShatterlandsGuardian",
-      "source_type": "Boss",
-      "manufacturer": "CLASSMOD",
-      "gear_type": "GRAVITAR",
-      "item_name": "06",
-      "item_id": "classmod_gravitar.comp_05_legendary_06",
-      "pool": "itempool_classmod_gravitar_05_legendary_06_shiny",
-      "drop_tier": "",
-      "drop_chance": 0.0
-    },
-    {
-      "source": "ShatterlandsGuardian",
+      "source_display": "Shatterlands Guardian",
       "source_type": "Boss",
       "manufacturer": "CLASSMOD",
       "gear_type": "DARK_SIREN",
@@ -1139,17 +1215,43 @@
     },
     {
       "source": "ShatterlandsGuardian",
+      "source_display": "Shatterlands Guardian",
       "source_type": "Boss",
-      "manufacturer": "VLA",
-      "gear_type": "REPAIR_KIT",
-      "item_name": "AdrenalinePUmp",
-      "item_id": "vla_repair_kit.comp_05_legendary_AdrenalinePUmp",
-      "pool": "itempool_vla_repair_kit_05_legendary_AdrenalinePUmp_shiny",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "PALADIN",
+      "item_name": "06",
+      "item_id": "classmod_paladin.comp_05_legendary_06",
+      "pool": "itempool_classmod_paladin_05_legendary_06_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "ShatterlandsGuardian",
+      "source_display": "Shatterlands Guardian",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "GRAVITAR",
+      "item_name": "06",
+      "item_id": "classmod_gravitar.comp_05_legendary_06",
+      "pool": "itempool_classmod_gravitar_05_legendary_06_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "ShatterlandsGuardian",
+      "source_display": "Shatterlands Guardian",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "EXO_SOLDIER",
+      "item_name": "06",
+      "item_id": "classmod_exo_soldier.comp_05_legendary_06",
+      "pool": "itempool_classmod_exo_soldier_05_legendary_06_shiny",
       "drop_tier": "",
       "drop_chance": 0.0
     },
     {
       "source": "SideCity_Psycho",
+      "source_display": "Side City Psycho",
       "source_type": "Boss",
       "manufacturer": "ORD",
       "gear_type": "AR",
@@ -1161,6 +1263,7 @@
     },
     {
       "source": "SideCity_Psycho",
+      "source_display": "Side City Psycho",
       "source_type": "Boss",
       "manufacturer": "JAK",
       "gear_type": "PS",
@@ -1172,6 +1275,7 @@
     },
     {
       "source": "SkullOrchid",
+      "source_display": "Skull Orchid",
       "source_type": "Boss",
       "manufacturer": "TOR",
       "gear_type": "PS",
@@ -1183,17 +1287,7 @@
     },
     {
       "source": "SkullOrchid",
-      "source_type": "Boss",
-      "manufacturer": "JAK",
-      "gear_type": "SHIELD",
-      "item_name": "barrelAged",
-      "item_id": "jak_shield.comp_05_legendary_barrelAged",
-      "pool": "itempool_jak_shield_05_legendary_barrelAged_shiny",
-      "drop_tier": "",
-      "drop_chance": 0.0
-    },
-    {
-      "source": "SkullOrchid",
+      "source_display": "Skull Orchid",
       "source_type": "Boss",
       "manufacturer": "TED",
       "gear_type": "GRENADE_GADGET",
@@ -1204,7 +1298,20 @@
       "drop_chance": 0.0
     },
     {
+      "source": "SkullOrchid",
+      "source_display": "Skull Orchid",
+      "source_type": "Boss",
+      "manufacturer": "JAK",
+      "gear_type": "SHIELD",
+      "item_name": "barrelAged",
+      "item_id": "jak_shield.comp_05_legendary_barrelAged",
+      "pool": "itempool_jak_shield_05_legendary_barrelAged_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
       "source": "SoldierAncient",
+      "source_display": "Ancient Soldier",
       "source_type": "Boss",
       "manufacturer": "DAD",
       "gear_type": "AR",
@@ -1216,6 +1323,7 @@
     },
     {
       "source": "SoldierAncient",
+      "source_display": "Ancient Soldier",
       "source_type": "Boss",
       "manufacturer": "MAL",
       "gear_type": "GRENADE_GADGET",
@@ -1227,6 +1335,7 @@
     },
     {
       "source": "SpiderJumbo",
+      "source_display": "Sidney Pointylegs",
       "source_type": "Boss",
       "manufacturer": "ORD",
       "gear_type": "GRENADE_GADGET",
@@ -1238,6 +1347,7 @@
     },
     {
       "source": "SpiderJumbo",
+      "source_display": "Sidney Pointylegs",
       "source_type": "Boss",
       "manufacturer": "ORD",
       "gear_type": "PS",
@@ -1249,6 +1359,7 @@
     },
     {
       "source": "SpiderJumbo",
+      "source_display": "Sidney Pointylegs",
       "source_type": "Boss",
       "manufacturer": "BOR",
       "gear_type": "HW",
@@ -1260,17 +1371,7 @@
     },
     {
       "source": "StealthPredator",
-      "source_type": "Boss",
-      "manufacturer": "TOR",
-      "gear_type": "GRENADE_GADGET",
-      "item_name": "slippy",
-      "item_id": "tor_grenade_gadget.comp_05_legendary_slippy",
-      "pool": "itempool_tor_grenade_gadget_05_legendary_slippy_shiny",
-      "drop_tier": "",
-      "drop_chance": 0.0
-    },
-    {
-      "source": "StealthPredator",
+      "source_display": "Shadowpelt",
       "source_type": "Boss",
       "manufacturer": "BOR",
       "gear_type": "SR",
@@ -1282,6 +1383,19 @@
     },
     {
       "source": "StealthPredator",
+      "source_display": "Shadowpelt",
+      "source_type": "Boss",
+      "manufacturer": "TOR",
+      "gear_type": "GRENADE_GADGET",
+      "item_name": "slippy",
+      "item_id": "tor_grenade_gadget.comp_05_legendary_slippy",
+      "pool": "itempool_tor_grenade_gadget_05_legendary_slippy_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "StealthPredator",
+      "source_display": "Shadowpelt",
       "source_type": "Boss",
       "manufacturer": "BOR",
       "gear_type": "SHIELD",
@@ -1293,6 +1407,7 @@
     },
     {
       "source": "StrikerSplitter",
+      "source_display": "Striker Splitter",
       "source_type": "Boss",
       "manufacturer": "MAL",
       "gear_type": "SR",
@@ -1304,6 +1419,7 @@
     },
     {
       "source": "StrikerSplitter",
+      "source_display": "Striker Splitter",
       "source_type": "Boss",
       "manufacturer": "DAD",
       "gear_type": "SM",
@@ -1315,6 +1431,7 @@
     },
     {
       "source": "SurpriseAttack",
+      "source_display": "Voraxis",
       "source_type": "Boss",
       "manufacturer": "DAD",
       "gear_type": "SM",
@@ -1326,6 +1443,7 @@
     },
     {
       "source": "SurpriseAttack",
+      "source_display": "Voraxis",
       "source_type": "Boss",
       "manufacturer": "BORG",
       "gear_type": "GRENADE_GADGET",
@@ -1337,7 +1455,7 @@
     },
     {
       "source": "Thresher_BioArmoredBig",
-      "source_display": "Tadpole Thresher",
+      "source_display": "Bio-Thresher Omega",
       "source_type": "Boss",
       "manufacturer": "JAK",
       "gear_type": "SR",
@@ -1349,6 +1467,7 @@
     },
     {
       "source": "Timekeeper_Guardian",
+      "source_display": "Timekeeper Guardian",
       "source_type": "Boss",
       "manufacturer": "MAL",
       "gear_type": "SM",
@@ -1360,6 +1479,7 @@
     },
     {
       "source": "Timekeeper_Guardian",
+      "source_display": "Timekeeper Guardian",
       "source_type": "Boss",
       "manufacturer": "TED",
       "gear_type": "SHIELD",
@@ -1371,6 +1491,7 @@
     },
     {
       "source": "Timekeeper_Guardian",
+      "source_display": "Timekeeper Guardian",
       "source_type": "Boss",
       "manufacturer": "DAD",
       "gear_type": "AR",
@@ -1382,6 +1503,7 @@
     },
     {
       "source": "Timekeeper_TKBoss",
+      "source_display": "The Timekeeper",
       "source_type": "Boss",
       "manufacturer": "ORD",
       "gear_type": "SR",
@@ -1393,6 +1515,7 @@
     },
     {
       "source": "Timekeeper_TKBoss",
+      "source_display": "The Timekeeper",
       "source_type": "Boss",
       "manufacturer": "JAK",
       "gear_type": "SR",
@@ -1404,6 +1527,7 @@
     },
     {
       "source": "TrashThresher",
+      "source_display": "Trash Thresher",
       "source_type": "Boss",
       "manufacturer": "JAK",
       "gear_type": "SHIELD",
@@ -1415,6 +1539,7 @@
     },
     {
       "source": "TrashThresher",
+      "source_display": "Trash Thresher",
       "source_type": "Boss",
       "manufacturer": "MAL",
       "gear_type": "SG",
@@ -1426,6 +1551,7 @@
     },
     {
       "source": "TrashThresher",
+      "source_display": "Trash Thresher",
       "source_type": "Boss",
       "manufacturer": "VLA",
       "gear_type": "SM",
@@ -1437,6 +1563,7 @@
     },
     {
       "source": "UpgradedElectiMole",
+      "source_display": "Leader Electi",
       "source_type": "Boss",
       "manufacturer": "JAK",
       "gear_type": "SG",
@@ -1448,6 +1575,7 @@
     },
     {
       "source": "UpgradedElectiMole",
+      "source_display": "Leader Electi",
       "source_type": "Boss",
       "manufacturer": "DAD",
       "gear_type": "PS",
@@ -1459,6 +1587,7 @@
     },
     {
       "source": "UpgradedElectiMole",
+      "source_display": "Leader Electi",
       "source_type": "Boss",
       "manufacturer": "TOR",
       "gear_type": "GRENADE_GADGET",
