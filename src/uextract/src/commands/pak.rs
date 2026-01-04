@@ -35,13 +35,21 @@ pub fn extract_pak(
     let mut total_files = 0;
     let mut total_extracted = 0;
 
+    let mut skipped = 0;
+
     for pak_path in &pak_files {
         if verbose {
             eprintln!("\nProcessing: {:?}", pak_path);
         }
 
-        let mut reader = PakReader::open(pak_path)
-            .with_context(|| format!("Failed to open {:?}", pak_path))?;
+        let mut reader = match PakReader::open(pak_path) {
+            Ok(r) => r,
+            Err(e) => {
+                eprintln!("Warning: Skipping {:?}: {}", pak_path.file_name().unwrap_or_default(), e);
+                skipped += 1;
+                continue;
+            }
+        };
 
         // Get list of files matching filters
         let all_files = reader.files();
@@ -140,9 +148,12 @@ pub fn extract_pak(
         eprintln!(
             "Extracted {} files from {} PAK archives to {:?}",
             total_extracted,
-            pak_files.len(),
+            pak_files.len() - skipped,
             output
         );
+        if skipped > 0 {
+            eprintln!("Skipped {} invalid/encrypted PAK files", skipped);
+        }
     }
 
     Ok(())

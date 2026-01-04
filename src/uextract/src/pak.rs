@@ -6,6 +6,7 @@
 use anyhow::{Context, Result};
 use std::fs::File;
 use std::io::BufReader;
+use std::panic;
 use std::path::Path;
 
 /// Reader for traditional PAK files on disk
@@ -23,9 +24,16 @@ impl PakReader {
             .with_context(|| format!("Failed to open PAK file: {:?}", path_buf))?;
         let mut reader = BufReader::new(file);
 
-        let pak = repak::PakBuilder::new()
-            .reader(&mut reader)
-            .with_context(|| format!("Failed to parse PAK file: {:?}", path_buf))?;
+        // Catch panics from repak (it panics on invalid PAK files)
+        let pak_result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
+            repak::PakBuilder::new().reader(&mut reader)
+        }));
+
+        let pak = match pak_result {
+            Ok(Ok(pak)) => pak,
+            Ok(Err(e)) => anyhow::bail!("Failed to parse PAK file {:?}: {}", path_buf, e),
+            Err(_) => anyhow::bail!("Invalid PAK format: {:?}", path_buf),
+        };
 
         Ok(Self {
             pak,
