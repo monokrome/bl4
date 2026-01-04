@@ -267,6 +267,7 @@ mod investigate_failures {
     use crate::data::{decompress, scan};
 
     #[test]
+    #[ignore = "scans all PAK files, slow"]
     fn find_v1_failures() {
         let Some(paks_dir) = test_paths::paks_dir() else {
             println!("Paks directory not found, skipping test");
@@ -307,6 +308,7 @@ mod parse_real_ncs {
     use crate::content::Content;
 
     #[test]
+    #[ignore = "reads PAK files, slow"]
     fn parse_first_10_ncs() {
         let Some(pak_path) = test_paths::default_pak() else {
             println!("Pak file not found, skipping test");
@@ -374,6 +376,7 @@ mod correlate_manifest {
     use crate::content::Content;
 
     #[test]
+    #[ignore = "reads PAK files, slow"]
     fn find_missing_chunks() {
         let Some(pak_path) = test_paths::default_pak() else {
             return;
@@ -432,6 +435,7 @@ mod correlate_manifest {
     }
 
     #[test]
+    #[ignore = "reads PAK files, slow"]
     fn correlate_manifest_to_chunks() {
         let Some(pak_path) = test_paths::default_pak() else {
             return;
@@ -507,6 +511,7 @@ mod scan_all_paks {
     use crate::manifest::scan as scan_manifests;
 
     #[test]
+    #[ignore = "scans all PAK files, slow"]
     fn scan_all_pak_ncs() {
         let Some(paks_dir) = test_paths::paks_dir() else {
             return;
@@ -553,6 +558,7 @@ mod test_extraction {
     use crate::extract::extract_from_pak;
 
     #[test]
+    #[ignore = "reads PAK files, slow"]
     fn test_real_pak_extraction() {
         let Some(pak_path) = test_paths::default_pak() else {
             return;
@@ -607,6 +613,7 @@ mod investigate_missing {
     use crate::manifest::scan as scan_manifests;
 
     #[test]
+    #[ignore = "reads PAK files, slow"]
     fn check_missing_entries() {
         let Some(pak_path) = test_paths::default_pak() else {
             return;
@@ -669,6 +676,7 @@ mod investigate_missing2 {
     use crate::data::scan;
 
     #[test]
+    #[ignore = "reads PAK files, slow"]
     fn scan_after_last_chunk() {
         let Some(pak_path) = test_paths::default_pak() else {
             return;
@@ -725,6 +733,7 @@ mod full_mapping {
     use crate::extract::extract_from_pak;
 
     #[test]
+    #[ignore = "scans all PAK files, slow"]
     fn show_full_mapping() {
         let Some(paks_dir) = test_paths::paks_dir() else {
             return;
@@ -793,6 +802,7 @@ mod generate_csv {
     use crate::extract::extract_from_pak;
 
     #[test]
+    #[ignore = "scans all PAK files, slow"]
     fn generate_mapping_csv() {
         let Some(paks_dir) = test_paths::paks_dir() else {
             return;
@@ -930,6 +940,7 @@ mod investigate_inner_format {
     use oozextract::Extractor;
 
     #[test]
+    #[ignore = "reads PAK files, slow"]
     fn try_header_offsets() {
         let Some(pak_path) = test_paths::default_pak() else {
             return;
