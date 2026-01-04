@@ -19,6 +19,7 @@ research = ["dep:regex", "dep:unreal_asset", "dep:chrono", "dep:minidump"]
 bl4 = { version = "0.5", path = "../bl4" }
 bl4-idb = { version = "0.5", path = "../bl4-idb", features = ["sqlite-sync", "attachments"] }
 bl4-ncs = { version = "0.5", path = "../bl4-ncs" }
+uextract = { version = "0.1", path = "../uextract" }
 rusqlite = { workspace = true }  # For direct database operations (merge)
 clap.workspace = true
 anyhow.workspace = true

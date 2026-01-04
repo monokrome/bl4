@@ -16,6 +16,7 @@ use usmap::Usmap;
 mod cli;
 mod commands;
 mod filter;
+pub mod pak;
 mod property;
 pub mod texture;
 mod types;
@@ -31,6 +32,21 @@ fn main() -> Result<()> {
 
     if let Some(command) = args.command {
         return match command {
+            Commands::Pak {
+                input,
+                output,
+                extension,
+                filter,
+                list,
+                verbose,
+            } => commands::extract_pak(
+                &input,
+                &output,
+                extension.as_deref(),
+                &filter,
+                list,
+                verbose,
+            ),
             Commands::Texture {
                 ubulk,
                 width,

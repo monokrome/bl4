@@ -65,6 +65,26 @@ pub struct Args {
 
 #[derive(clap::Subcommand, Debug)]
 pub enum Commands {
+    /// Extract files from traditional .pak files (not IoStore)
+    Pak {
+        /// Path to .pak file or directory containing .pak files
+        input: PathBuf,
+        /// Output directory
+        #[arg(short, long, default_value = "extracted")]
+        output: PathBuf,
+        /// Filter by extension (e.g., "ncs", "uasset")
+        #[arg(short, long)]
+        extension: Option<String>,
+        /// Filter paths containing this string
+        #[arg(short, long)]
+        filter: Vec<String>,
+        /// List files without extracting
+        #[arg(short, long)]
+        list: bool,
+        /// Verbose output
+        #[arg(short, long)]
+        verbose: bool,
+    },
     /// Extract a texture to PNG (for testing)
     Texture {
         /// Path to the .ubulk file

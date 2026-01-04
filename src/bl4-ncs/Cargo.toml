@@ -11,9 +11,6 @@ description = "NCS (Nexus Config Store) parser for Borderlands 4"
 # Oodle decompression (pure Rust implementation)
 oozextract = "0.5"
 
-# PAK file reading (proper index-based extraction)
-repak = { git = "https://github.com/trumank/repak.git", version = "0.2.2", features = ["oodle"] }
-
 # Binary parsing
 byteorder = "1.5"
 memchr = "2.7"

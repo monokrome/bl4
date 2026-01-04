@@ -196,11 +196,12 @@ fn check_file(path: &Path, found: &mut usize) -> Result<()> {
 }
 
 /// Extract NCS files using proper PAK index (finds all files including previously missing ones)
-fn handle_extract_pak_index(input: &Path, output: &Path, decompress: bool) -> Result<()> {
-    use bl4_ncs::{NcsReader, PakReader, type_from_filename};
+fn handle_extract_pak_index(input: &Path, output: &Path, do_decompress: bool) -> Result<()> {
+    use bl4_ncs::{decompress_ncs, type_from_filename};
+    use uextract::pak::PakReader;
 
     let mut reader = PakReader::open(input)?;
-    let ncs_files = reader.list_ncs_files()?;
+    let ncs_files = reader.files_with_extension("ncs");
 
     println!("Found {} NCS files in PAK index", ncs_files.len());
 
@@ -212,14 +213,8 @@ fn handle_extract_pak_index(input: &Path, output: &Path, decompress: bool) -> Re
     for (i, filename) in ncs_files.iter().enumerate() {
         let type_name = type_from_filename(filename);
 
-        // Read and optionally decompress
-        let data_result = if decompress {
-            reader.read_ncs_decompressed(filename)
-        } else {
-            reader.read_ncs(filename)
-        };
-
-        let data = match data_result {
+        // Read raw data
+        let raw_data = match reader.read(filename) {
             Ok(d) => d,
             Err(e) => {
                 eprintln!("Failed to read {}: {}", filename, e);
@@ -228,8 +223,22 @@ fn handle_extract_pak_index(input: &Path, output: &Path, decompress: bool) -> Re
             }
         };
 
+        // Optionally decompress
+        let data = if do_decompress {
+            match decompress_ncs(&raw_data) {
+                Ok(d) => d,
+                Err(e) => {
+                    eprintln!("Failed to decompress {}: {}", filename, e);
+                    failed += 1;
+                    continue;
+                }
+            }
+        } else {
+            raw_data
+        };
+
         // Output filename based on type
-        let out_path = if decompress {
+        let out_path = if do_decompress {
             output.join(format!("{}.bin", type_name))
         } else {
             output.join(format!("{}.ncs", type_name))

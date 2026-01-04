@@ -57,8 +57,7 @@ pub use name_data::{
     extract_from_directory as extract_name_data, NameDataEntry, NameDataMap,
 };
 pub use pak::{
-    extract_all as extract_all_ncs, type_from_filename, DirectoryReader, ExtractedNcs,
-    MemoryPakReader, NcsReader, PakReader,
+    extract_from_directory, is_ncs_file, type_from_filename, DirectoryReader, ExtractedNcs,
 };
 pub use bit_reader::{bit_width, BitReader};
 pub use parser::{

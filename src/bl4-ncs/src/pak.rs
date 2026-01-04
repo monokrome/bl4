@@ -1,111 +1,11 @@
-//! PAK file reading using proper index-based extraction
+//! NCS file utilities
 //!
-//! This module uses `repak` to read PAK files properly via their file index,
-//! rather than scanning for magic bytes. This ensures all NCS files are found.
+//! This module provides utilities for working with NCS files from various sources.
+//! PAK file reading is handled by `uextract::pak` - this module focuses on NCS-specific logic.
 
 use crate::data::decompress;
 use crate::Result;
-use std::fs::File;
-use std::io::BufReader;
 use std::path::Path;
-
-/// A trait for reading files from a data source (PAK file, directory, or in-memory)
-pub trait NcsReader: Send + Sync {
-    /// List all NCS files in this source
-    fn list_ncs_files(&self) -> Result<Vec<String>>;
-
-    /// Read raw NCS data by filename
-    fn read_ncs(&mut self, filename: &str) -> Result<Vec<u8>>;
-
-    /// Read and decompress NCS data by filename
-    fn read_ncs_decompressed(&mut self, filename: &str) -> Result<Vec<u8>> {
-        let raw = self.read_ncs(filename)?;
-        decompress(&raw)
-    }
-}
-
-/// Reader for PAK files on disk using repak
-pub struct PakReader {
-    pak: repak::PakReader,
-    file: BufReader<File>,
-}
-
-impl PakReader {
-    /// Open a PAK file for reading
-    pub fn open<P: AsRef<Path>>(path: P) -> Result<Self> {
-        let file = File::open(path.as_ref()).map_err(crate::Error::Io)?;
-        let mut reader = BufReader::new(file);
-
-        let pak = repak::PakBuilder::new()
-            .reader(&mut reader)
-            .map_err(|e| crate::Error::Oodle(format!("Failed to open PAK: {}", e)))?;
-
-        Ok(Self { pak, file: reader })
-    }
-
-    /// Get the mount point for this PAK
-    pub fn mount_point(&self) -> &str {
-        self.pak.mount_point()
-    }
-
-    /// List all files in the PAK
-    pub fn list_all_files(&self) -> Vec<String> {
-        self.pak.files()
-    }
-}
-
-impl NcsReader for PakReader {
-    fn list_ncs_files(&self) -> Result<Vec<String>> {
-        Ok(self
-            .pak
-            .files()
-            .into_iter()
-            .filter(|f| f.ends_with(".ncs"))
-            .collect())
-    }
-
-    fn read_ncs(&mut self, filename: &str) -> Result<Vec<u8>> {
-        self.pak
-            .get(filename, &mut self.file)
-            .map_err(|e| crate::Error::Oodle(format!("Failed to read {}: {}", filename, e)))
-    }
-}
-
-/// Reader for in-memory PAK data
-pub struct MemoryPakReader {
-    pak: repak::PakReader,
-    data: std::io::Cursor<Vec<u8>>,
-}
-
-impl MemoryPakReader {
-    /// Create a reader from in-memory PAK data
-    pub fn new(data: Vec<u8>) -> Result<Self> {
-        let mut cursor = std::io::Cursor::new(data);
-
-        let pak = repak::PakBuilder::new()
-            .reader(&mut cursor)
-            .map_err(|e| crate::Error::Oodle(format!("Failed to parse PAK: {}", e)))?;
-
-        Ok(Self { pak, data: cursor })
-    }
-}
-
-impl NcsReader for MemoryPakReader {
-    fn list_ncs_files(&self) -> Result<Vec<String>> {
-        Ok(self
-            .pak
-            .files()
-            .into_iter()
-            .filter(|f| f.ends_with(".ncs"))
-            .collect())
-    }
-
-    fn read_ncs(&mut self, filename: &str) -> Result<Vec<u8>> {
-        self.pak
-            .get(filename, &mut self.data)
-            .map_err(|e| crate::Error::Oodle(format!("Failed to read {}: {}", filename, e)))
-    }
-}
 
 /// Reader for a directory of extracted NCS files
 pub struct DirectoryReader {
@@ -137,14 +37,14 @@ impl DirectoryReader {
 
         Ok(Self { path, files })
     }
-}
 
-impl NcsReader for DirectoryReader {
-    fn list_ncs_files(&self) -> Result<Vec<String>> {
-        Ok(self.files.clone())
+    /// List all NCS/bin files in this directory
+    pub fn list_files(&self) -> &[String] {
+        &self.files
     }
 
-    fn read_ncs(&mut self, filename: &str) -> Result<Vec<u8>> {
+    /// Read a file by name
+    pub fn read(&self, filename: &str) -> Result<Vec<u8>> {
         // Try direct path first
         let direct = self.path.join(filename);
         if direct.exists() {
@@ -171,6 +71,12 @@ impl NcsReader for DirectoryReader {
             format!("File not found: {}", filename),
         )))
     }
+
+    /// Read and decompress a file
+    pub fn read_decompressed(&self, filename: &str) -> Result<Vec<u8>> {
+        let raw = self.read(filename)?;
+        decompress(&raw)
+    }
 }
 
 /// Extract type name from NCS filename
@@ -178,10 +84,10 @@ impl NcsReader for DirectoryReader {
 /// "Nexus-Data-itempool0.ncs" -> "itempool"
 pub fn type_from_filename(filename: &str) -> String {
     // Get just the filename part (strip directory path)
-    let name = filename
-        .rsplit('/')
-        .next()
-        .unwrap_or(filename);
+    let name = filename.rsplit('/').next().unwrap_or(filename);
+
+    // Also handle Windows paths
+    let name = name.rsplit('\\').next().unwrap_or(name);
 
     name.strip_prefix("Nexus-Data-")
         .and_then(|s| {
@@ -193,10 +99,15 @@ pub fn type_from_filename(filename: &str) -> String {
         .to_string()
 }
 
+/// Check if a filename is an NCS file
+pub fn is_ncs_file(filename: &str) -> bool {
+    filename.to_lowercase().ends_with(".ncs")
+}
+
 /// Extracted NCS file metadata and data
 #[derive(Debug, Clone)]
 pub struct ExtractedNcs {
-    /// Original filename from PAK (e.g., "Nexus-Data-itempool0.ncs")
+    /// Original filename (e.g., "Nexus-Data-itempool0.ncs")
     pub filename: String,
     /// Type name extracted from filename (e.g., "itempool")
     pub type_name: String,
@@ -205,25 +116,30 @@ pub struct ExtractedNcs {
 }
 
 impl ExtractedNcs {
+    /// Create from filename and data
+    pub fn new(filename: String, raw_data: Vec<u8>) -> Self {
+        let type_name = type_from_filename(&filename);
+        Self {
+            filename,
+            type_name,
+            raw_data,
+        }
+    }
+
     /// Decompress the NCS data
     pub fn decompress(&self) -> Result<Vec<u8>> {
         decompress(&self.raw_data)
     }
 }
 
-/// Extract all NCS files from a reader
-pub fn extract_all<R: NcsReader>(reader: &mut R) -> Result<Vec<ExtractedNcs>> {
-    let files = reader.list_ncs_files()?;
-    let mut results = Vec::with_capacity(files.len());
+/// Extract all NCS files from a directory
+pub fn extract_from_directory<P: AsRef<Path>>(path: P) -> Result<Vec<ExtractedNcs>> {
+    let reader = DirectoryReader::open(path)?;
+    let mut results = Vec::with_capacity(reader.files.len());
 
-    for filename in files {
-        let raw_data = reader.read_ncs(&filename)?;
-        let type_name = type_from_filename(&filename);
-        results.push(ExtractedNcs {
-            filename,
-            type_name,
-            raw_data,
-        });
+    for filename in &reader.files {
+        let raw_data = reader.read(filename)?;
+        results.push(ExtractedNcs::new(filename.clone(), raw_data));
     }
 
     Ok(results)
@@ -232,47 +148,6 @@ pub fn extract_all<R: NcsReader>(reader: &mut R) -> Result<Vec<ExtractedNcs>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::path::PathBuf;
-
-    /// Get the default pak file path for tests
-    fn default_pak() -> Option<PathBuf> {
-        // Check environment variable first
-        if let Ok(dir) = std::env::var("BL4_PAKS_DIR") {
-            let path = PathBuf::from(dir).join("pakchunk0-Windows_0_P.pak");
-            if path.exists() {
-                return Some(path);
-            }
-        }
-
-        // Platform-specific defaults
-        #[cfg(target_os = "windows")]
-        let default = PathBuf::from(
-            r"C:\Program Files (x86)\Steam\steamapps\common\Borderlands 4\OakGame\Content\Paks\pakchunk0-Windows_0_P.pak",
-        );
-
-        #[cfg(target_os = "linux")]
-        let default = dirs::home_dir()
-            .map(|h| {
-                h.join(".local/share/Steam/steamapps/common/Borderlands 4/OakGame/Content/Paks/pakchunk0-Windows_0_P.pak")
-            })
-            .unwrap_or_default();
-
-        #[cfg(target_os = "macos")]
-        let default = dirs::home_dir()
-            .map(|h| {
-                h.join("Library/Application Support/Steam/steamapps/common/Borderlands 4/OakGame/Content/Paks/pakchunk0-Windows_0_P.pak")
-            })
-            .unwrap_or_default();
-
-        #[cfg(not(any(target_os = "windows", target_os = "linux", target_os = "macos")))]
-        let default = PathBuf::new();
-
-        if default.exists() {
-            Some(default)
-        } else {
-            None
-        }
-    }
 
     #[test]
     fn test_type_from_filename() {
@@ -285,93 +160,26 @@ mod tests {
             type_from_filename("Nexus-Data-aim_assist_parameters0.ncs"),
             "aim_assist_parameters"
         );
+        // With path prefix
+        assert_eq!(
+            type_from_filename("Engine/Content/_NCS/Nexus-Data-itempool0.ncs"),
+            "itempool"
+        );
+        // Windows path
+        assert_eq!(
+            type_from_filename("Engine\\Content\\_NCS\\Nexus-Data-itempool0.ncs"),
+            "itempool"
+        );
         // Fallback for non-standard names
         assert_eq!(type_from_filename("custom.ncs"), "custom.ncs");
     }
 
     #[test]
-    fn test_pak_reader_real() {
-        let Some(pak_path) = default_pak() else {
-            println!("PAK file not found, skipping test");
-            return;
-        };
-
-        let mut reader = PakReader::open(&pak_path).expect("open PAK");
-        let ncs_files = reader.list_ncs_files().expect("list NCS files");
-
-        println!("Found {} NCS files in PAK index", ncs_files.len());
-        for f in ncs_files.iter().take(10) {
-            println!("  {}", f);
-        }
-
-        // This should find all 170 files, not just 164
-        assert!(
-            ncs_files.len() >= 170,
-            "Expected at least 170 NCS files, found {}",
-            ncs_files.len()
-        );
-
-        // Try reading one
-        let first = &ncs_files[0];
-        let data = reader.read_ncs(first).expect("read NCS");
-        println!("Read {} bytes from {}", data.len(), first);
-
-        // Try decompressing
-        let decompressed = reader.read_ncs_decompressed(first).expect("decompress");
-        println!("Decompressed to {} bytes", decompressed.len());
-    }
-
-    #[test]
-    fn test_extract_all_real() {
-        let Some(pak_path) = default_pak() else {
-            return;
-        };
-
-        let mut reader = PakReader::open(&pak_path).expect("open PAK");
-        let extracted = extract_all(&mut reader).expect("extract all");
-
-        println!("Extracted {} NCS files", extracted.len());
-
-        // Count unique types
-        let types: std::collections::HashSet<_> =
-            extracted.iter().map(|e| &e.type_name).collect();
-        println!("Unique types: {}", types.len());
-
-        // Show first 10
-        for e in extracted.iter().take(10) {
-            println!("  {} ({}) - {} bytes", e.filename, e.type_name, e.raw_data.len());
-        }
-    }
-
-    #[test]
-    fn test_previously_missing_types() {
-        let Some(pak_path) = default_pak() else {
-            println!("PAK not found, skipping");
-            return;
-        };
-
-        let reader = PakReader::open(&pak_path).expect("open PAK");
-        let files = reader.list_ncs_files().expect("list");
-
-        // These 6 types were missing with magic byte scanning
-        let previously_missing = [
-            "wwise_auxilary_busses",
-            "wwise_soundbanks",
-            "wwise_states",
-            "wwise_switches",
-            "wwise_triggers",
-            "xp_progression",
-        ];
-
-        println!("\nChecking previously missing types:");
-        for m in &previously_missing {
-            let found = files.iter().any(|f| {
-                type_from_filename(f).to_lowercase() == *m
-            });
-            println!("  {}: {}", m, if found { "FOUND ✓" } else { "MISSING ✗" });
-            assert!(found, "Type '{}' should be found with proper PAK reading", m);
-        }
-
-        println!("\nAll 6 previously missing types are now found!");
+    fn test_is_ncs_file() {
+        assert!(is_ncs_file("test.ncs"));
+        assert!(is_ncs_file("Nexus-Data-itempool0.ncs"));
+        assert!(is_ncs_file("path/to/file.NCS"));
+        assert!(!is_ncs_file("test.bin"));
+        assert!(!is_ncs_file("test.txt"));
     }
 }

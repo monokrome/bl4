@@ -220,13 +220,11 @@ fn decompress_pak_index(
     raw: bool,
     _decompressor: Box<dyn OodleDecompressor>,
 ) -> Result<()> {
-    use bl4_ncs::{NcsReader, PakReader, type_from_filename};
+    use bl4_ncs::{decompress_ncs, type_from_filename};
+    use uextract::pak::PakReader;
 
-    let mut reader = PakReader::open(input)
-        .map_err(|e| anyhow::anyhow!("Failed to open PAK file: {}", e))?;
-
-    let ncs_files = reader.list_ncs_files()
-        .map_err(|e| anyhow::anyhow!("Failed to list NCS files: {}", e))?;
+    let mut reader = PakReader::open(input)?;
+    let ncs_files = reader.files_with_extension("ncs");
 
     println!(
         "Found {} NCS files in PAK index (repak with oodle support)",
@@ -246,11 +244,22 @@ fn decompress_pak_index(
     for filename in &ncs_files {
         let type_name = type_from_filename(filename);
 
-        // Read and decompress using repak (which handles Oodle internally)
-        let decompressed = match reader.read_ncs_decompressed(filename) {
+        // Read raw data from PAK
+        let raw_data = match reader.read(filename) {
             Ok(d) => d,
             Err(e) => {
-                eprintln!("  Failed {}: {}", type_name, e);
+                eprintln!("  Failed to read {}: {}", type_name, e);
+                failed_types.push(type_name);
+                failed += 1;
+                continue;
+            }
+        };
+
+        // Decompress NCS data
+        let decompressed = match decompress_ncs(&raw_data) {
+            Ok(d) => d,
+            Err(e) => {
+                eprintln!("  Failed to decompress {}: {}", type_name, e);
                 failed_types.push(type_name);
                 failed += 1;
                 continue;
