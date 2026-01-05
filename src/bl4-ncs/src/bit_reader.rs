@@ -137,7 +137,6 @@ impl<'a> BitReader<'a> {
 }
 
 /// Calculate minimum bits needed to index a table of `count` entries
-/// Matches the engine's decode routine
 pub fn bit_width(count: u32) -> u8 {
     if count < 2 {
         return 1;

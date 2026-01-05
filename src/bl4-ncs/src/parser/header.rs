@@ -20,10 +20,10 @@ pub fn parse_header(data: &[u8]) -> Option<Header> {
     let type_offset = basic.type_offset;
     let type_name = basic.type_name;
     let format_offset = basic.format_offset;
-    let format_code = basic.format_code;
+    let format_code = basic.format_code.clone();
 
-    // Entry section starts after format code (4 bytes)
-    let entry_section_offset = format_offset + 4;
+    // Entry section starts after format code (variable length, e.g., "abjx" or "abcefhijl")
+    let entry_section_offset = format_offset + format_code.len();
 
     // Parse entry section to get field count and string count
     // Structure: [entry_marker=0x01] [string_count] [0xc0 | field_count]
@@ -40,7 +40,7 @@ pub fn parse_header(data: &[u8]) -> Option<Header> {
     let category_names_offset = control_section_offset.map(|off| off + 4);
 
     // Binary section starts after the 7a marker
-    let binary_offset = find_binary_section(data, string_table_offset)?;
+    let binary_offset = find_binary_section_with_count(data, string_table_offset, string_count)?;
 
     Some(Header {
         type_offset,
@@ -224,44 +224,49 @@ fn find_none_string(data: &[u8], after: usize) -> Option<usize> {
     finder.find(&data[after..]).map(|pos| after + pos)
 }
 
-/// Find where binary section begins (after string table) using SIMD-accelerated search
-pub fn find_binary_section(data: &[u8], string_start: usize) -> Option<usize> {
-    use memchr::memmem;
-
+/// Find where binary section begins (after string table)
+///
+/// The binary section starts immediately after all null-terminated strings.
+/// We need to count strings using the string_count from the header.
+pub fn find_binary_section_with_count(data: &[u8], string_start: usize, expected_string_count: Option<u32>) -> Option<usize> {
     if string_start >= data.len() {
         return Some(data.len());
     }
 
-    // Look for the 0x7a section divider pattern: 7a 00 00 00 00 00
-    // This marks the end of the tags section and start of binary data
-    let divider = &[0x7a, 0x00, 0x00, 0x00, 0x00, 0x00];
-    let finder = memmem::Finder::new(divider);
-
-    if let Some(pos) = finder.find(&data[string_start..]) {
-        // Binary section starts right after the 6-byte divider
-        return Some(string_start + pos + 6);
-    }
-
-    // Fallback: scan through strings until we find non-printable pattern
+    // For now, scan through all null-terminated strings
+    // Binary section starts right after the last string's null terminator
     let mut pos = string_start;
-    let mut consecutive_non_printable = 0;
+    let mut strings_counted = 0u32;
 
+    // Count exactly the expected number of strings
     while pos < data.len() {
-        if data[pos] == 0 {
+        let start = pos;
+
+        // Find null terminator
+        while pos < data.len() && data[pos] != 0 {
             pos += 1;
-            continue;
         }
 
-        if !data[pos].is_ascii_graphic() && data[pos] != b' ' {
-            consecutive_non_printable += 1;
-            if consecutive_non_printable > 3 {
-                return Some(pos - consecutive_non_printable);
-            }
+        // Count this string (even if empty)
+        strings_counted += 1;
+
+        // Skip the null terminator
+        if pos < data.len() {
+            pos += 1;
         } else {
-            consecutive_non_printable = 0;
+            break;
         }
-        pos += 1;
+
+        // Stop when we've counted enough strings
+        if let Some(expected) = expected_string_count {
+            if strings_counted >= expected {
+                eprintln!("Binary section at 0x{:x} after {} strings", pos, strings_counted);
+                return Some(pos);
+            }
+        }
     }
 
-    Some(data.len())
+    eprintln!("End of strings at 0x{:x} after {} strings (no limit)", pos, strings_counted);
+    Some(pos)
 }
+

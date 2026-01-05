@@ -22,7 +22,7 @@ static WEAPON_INFO: phf::Map<u64, (&'static str, &'static str)> = phf_map! {
     5u64 => ("Maliwan", "Shotgun"),    // [I] MAL_SG - category 19
     9u64 => ("Jakobs", "Shotgun"),     // [V] JAK_SG - Rainbow Vomit screenshot
     13u64 => ("Tediore", "Shotgun"),   // [I] TED_SG - category 10
-    14u64 => ("Bor", "Shotgun"),        // [?] BOR_SG - needs verification
+    14u64 => ("Ripper", "Shotgun"),      // [V] BOR_SG - verified via NCS NexusSerialized
 
     // Pistols (low IDs)
     2u64 => ("Jakobs", "Pistol"),      // [V] JAK_PS - Seventh Sense screenshot
@@ -41,11 +41,11 @@ static WEAPON_INFO: phf::Map<u64, (&'static str, &'static str)> = phf_map! {
     129u64 => ("Jakobs", "Sniper"),    // [I] JAK_SR - category 26
     133u64 => ("Order", "Sniper"),     // [I] ORD_SR - category 28
     137u64 => ("Maliwan", "Sniper"),   // [I] MAL_SR - category 29
-    142u64 => ("Bor", "Sniper"),        // [?] BOR_SR - category 25, needs verification
+    142u64 => ("Ripper", "Sniper"),      // [V] BOR_SR - verified via NCS NexusSerialized
 
     // SMGs (high IDs, bit 7 set)
     130u64 => ("Daedalus", "SMG"),     // [I] DAD_SM - category 20
-    134u64 => ("Bor", "SMG"),           // [?] BOR_SM - category 21, needs verification
+    134u64 => ("Ripper", "SMG"),         // [V] BOR_SM - verified via NCS NexusSerialized
     138u64 => ("Maliwan", "SMG"),      // [I] MAL_SM - category 23
     140u64 => ("Vladof", "SMG"),       // [I] VLA_SM - category 22
 

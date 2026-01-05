@@ -129,7 +129,7 @@ Gear/
 ```text
 Gear/Weapons/
 ├── _Manufacturer/          # Manufacturer-specific data
-│   ├── BOR/                # Borg
+│   ├── BOR/                # Ripper
 │   ├── JAK/                # Jakobs
 │   └── TED/                # Tediore
 ├── Pistols/                # Pistol weapons

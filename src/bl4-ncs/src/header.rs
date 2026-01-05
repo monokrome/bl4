@@ -92,7 +92,20 @@ pub fn parse_basic_header_with_config(data: &[u8], config: &ParseConfig) -> Opti
     // Find format code using memmem for "ab" pattern
     let format_offset = find_format_code(data, type_end, config)?;
 
-    let format_code = std::str::from_utf8(&data[format_offset..format_offset + 4])
+    // Read format code - can be 4-10+ chars like "abcefhijl" or "abhX"
+    // Find the null terminator, but limit to reasonable length
+    let search_end = (format_offset + 20).min(data.len());
+    let format_end = format_offset + memchr(0, &data[format_offset..search_end]).unwrap_or(4);
+
+    // Validate format code: must be all alphabetic (allow uppercase like "abhX")
+    let format_bytes = &data[format_offset..format_end];
+    let valid_end = format_bytes
+        .iter()
+        .position(|&b| !b.is_ascii_alphabetic())
+        .map(|p| format_offset + p)
+        .unwrap_or(format_end);
+
+    let format_code = std::str::from_utf8(&data[format_offset..valid_end])
         .ok()?
         .to_string();
 

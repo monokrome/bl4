@@ -13,7 +13,7 @@ pub struct Manufacturer {
 pub const MANUFACTURERS: &[Manufacturer] = &[
     Manufacturer {
         code: "BOR",
-        name: "Borg",
+        name: "Ripper",
         weapon_types: &["SM", "SG", "HW", "SR"],
         style: "Cult/organic aesthetics",
     },
@@ -40,12 +40,6 @@ pub const MANUFACTURERS: &[Manufacturer] = &[
         name: "Order",
         weapon_types: &["AR", "PS", "SR"],
         style: "Military precision",
-    },
-    Manufacturer {
-        code: "RIP",
-        name: "Ripper",
-        weapon_types: &["SG", "SR"],
-        style: "Aggressive, high-damage",
     },
     Manufacturer {
         code: "TED",

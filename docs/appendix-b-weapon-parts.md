@@ -27,7 +27,7 @@ Parts follow this pattern:
 
 | Code | Name | Serial ID | Weapon Types |
 |------|------|-----------|--------------|
-| BOR | Borg | - | SM, SG, HW, SR |
+| BOR | Ripper | - | SM, SG, HW, SR |
 | COV | Children of the Vault | - | Various |
 | DAD | Daedalus | 4 | AR, SM, PS, SG |
 | DPL | Dahl | - | Turrets/Gadgets only |
@@ -74,7 +74,7 @@ Internal weapon type enumeration (from usmap):
 
 ## Scope Parts by Manufacturer
 
-### BOR (Borg)
+### BOR (Ripper)
 
 **Heavy Weapons:**
 

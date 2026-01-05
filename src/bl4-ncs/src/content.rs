@@ -70,7 +70,9 @@ impl Content {
         let config = ParseConfig::default();
         let basic = parse_basic_header_with_config(data, &config)?;
 
-        let strings = extract_strings(data, basic.format_offset + 4);
+        // String table starts after format code + null terminator
+        let strings_start = basic.format_offset + basic.format_code.len() + 1;
+        let strings = extract_strings(data, strings_start);
         let metadata = extract_metadata(&strings);
 
         Some(Self {
@@ -118,11 +120,23 @@ impl Content {
         // Use memmem for format code search
         let format_start = find_format_code_after(data, type_end)?;
 
-        let format_code = std::str::from_utf8(&data[format_start..format_start + 4])
+        // Read format code - can be 4-10+ chars like "abcefhijl" or "abhX"
+        let search_end = (format_start + 20).min(data.len());
+        let format_end = format_start + memchr::memchr(0, &data[format_start..search_end]).unwrap_or(4);
+
+        // Validate format code: must be all alphabetic
+        let format_bytes = &data[format_start..format_end];
+        let valid_end = format_bytes
+            .iter()
+            .position(|&b| !b.is_ascii_alphabetic())
+            .map(|p| format_start + p)
+            .unwrap_or(format_end);
+
+        let format_code = std::str::from_utf8(&data[format_start..valid_end])
             .ok()?
             .to_string();
 
-        let strings = extract_strings(data, format_start + 4);
+        let strings = extract_strings(data, valid_end + 1);
         let metadata = extract_metadata(&strings);
 
         Some(Self {

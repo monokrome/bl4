@@ -943,6 +943,368 @@ let decompressed = decompress_ncs(&chunk_data)?;
 
 ---
 
+## Inventory Part Definitions (inv.bin)
+
+The `inv.bin` file is the **authoritative source** for valid weapon and gear parts. Unlike BL3's explicit PartSet/PartPool assets, BL4 defines part validity entirely through NCS.
+
+**IMPORTANT:** INV files use a **tag-based binary format** different from other NCS files. The file contains:
+
+```
+[Header (magic + metadata)]
+[Type name: "inv"]
+[Dependencies (39 null-terminated strings)]
+[Format code: "abcefhijl"]
+[String table (18,393 null-terminated strings)]
+[Binary data section (976,718 bytes, tag-based encoding)]
+```
+
+The format code "abcefhijl" describes the tag system used in the binary section. Each letter represents a different tag type used to encode property structures.
+
+### Binary Section: Tag-Based Encoding
+
+The binary section uses tag bytes to mark different property types. Each tag (a-l) appears at specific offsets before the actual data values.
+
+**Tag Bytes:**
+- 'a' = 0x61
+- 'b' = 0x62
+- 'c' = 0x63
+- 'e' = 0x65
+- 'f' = 0x66
+- 'h' = 0x68
+- 'i' = 0x69
+- 'j' = 0x6a
+- 'l' = 0x6c
+
+**Serial Index Extraction:**
+
+Serial indices are encoded at various offsets after tag markers:
+- Tag 'f' + 27 bytes: Extracts ~3,471 indices (primary source)
+- Tag 'a' + 5 bytes: Extracts ~2,921 indices (secondary source)
+- Combined extraction: ~5,972 total serial index occurrences
+
+Values are stored as:
+- u8 (single byte) for indices < 256
+- u16 little-endian for indices >= 256
+
+**Current Parser Status:**
+
+The `bl4 ncs extract` command with `--extract-type serial-indices` extracts ~5,972 serial index occurrences (target: 5,513). The 8.3% over-extraction suggests some false positives in the heuristic approach, but provides near-complete coverage of serial indices.
+
+### File Structure
+
+```
+Offset  Content
+------  -------
+0x00    Header (8 bytes)
+0x08    Type name ("inv")
+0x0d    Dependencies (39 null-terminated strings):
+        - inv_comp
+        - primary_augment
+        - secondary_augment
+        - core_augment
+        - barrel
+        - barrel_acc
+        - body
+        - body_acc
+        - foregrip
+        - grip
+        ... (total 39 deps)
+0x1fb   Format code ("abcefhijl")
+0x225   String table (18,393 null-terminated strings)
+0x169e7c END OF FILE
+```
+
+### Header: Part Slot Types
+
+The header defines valid part slot categories:
+
+```
+inv_comp
+primary_augment
+secondary_augment
+core_augment
+barrel
+barrel_acc
+body
+body_acc
+foregrip
+grip
+magazine
+magazine_ted_thrown
+magazine_acc
+scope
+scope_acc
+secondary_ammo
+hyperion_secondary_acc
+payload_augment
+payload
+class_mod_body
+passive_points
+action_skill_mod
+body_bolt
+body_mag
+element
+firmware
+stat_augment
+body_ele
+unique
+turret_weapon
+tediore_acc
+tediore_secondary_acc
+endgame
+enemy_augment
+active_augment
+underbarrel
+underbarrel_acc_vis
+underbarrel_acc
+barrel_licensed
+```
+
+### Weapon Type Definitions
+
+Weapon types are defined by `{MANUFACTURER}_{WEAPONTYPE}` entries:
+
+| Pattern | Example | Description |
+|---------|---------|-------------|
+| `DAD_PS` | Daedalus Pistol | 56 valid parts |
+| `JAK_SG` | Jakobs Shotgun | Shotgun parts |
+| `VLA_AR` | Vladof AR | Assault rifle parts |
+| `TOR_HW` | Torgue Heavy Weapon | Heavy parts |
+
+**Manufacturers:** BOR, DAD, JAK, MAL, ORD, TED, TOR, VLA
+
+**Weapon Types:** PS (Pistol), SG (Shotgun), AR (Assault Rifle), SM (SMG), SR (Sniper), HW (Heavy)
+
+### Weapon Type → Part Hierarchy
+
+Parts are listed sequentially after their weapon type definition until the next weapon type:
+
+```
+DAD_PS                          <- Weapon type entry (line 4188)
+  NexusSerialized, ..., Daedalus Pistol
+  Weapon_PS
+  /Game/Gear/Weapons/Pistols/DAD/Body_DAD_PS.Body_DAD_PS
+  ...
+  DAD_PS_Barrel_01              <- Valid parts start
+  DAD_PS_Barrel_01_A
+  DAD_PS_Barrel_01_B
+  DAD_PS_Barrel_01_C
+  DAD_PS_Barrel_01_D
+  DAD_PS_Body
+  DAD_PS_Body_A
+  DAD_PS_Body_B
+  ...
+  DAD_PS_Underbarrel_06         <- Last part (line 4516)
+DAD_SG                          <- Next weapon type (line 4517)
+```
+
+**Part Naming Convention:**
+```
+{MANUFACTURER}_{WEAPONTYPE}_{SLOT}_{VARIANT}
+```
+
+Examples:
+- `DAD_PS_Barrel_01` - Daedalus Pistol, Barrel slot, base variant
+- `DAD_PS_Barrel_01_A` - Daedalus Pistol, Barrel slot, A variant
+- `JAK_SG_Grip_03` - Jakobs Shotgun, Grip slot, variant 3
+
+### Part Count by Weapon Type
+
+Extracted from NCS:
+
+| Weapon Type | Part Count |
+|-------------|------------|
+| DAD_PS | 56 |
+| JAK_PS | ~50 |
+| TED_PS | ~45 |
+| ... | ... |
+
+### Legendary Compositions
+
+Legendary weapons are defined by `comp_05_legendary_*` entries with mandatory parts:
+
+```
+comp_05_legendary_Zipgun        <- Legendary composition
+  uni_zipper                    <- Unique naming part (red text)
+  part_barrel_01_Zipgun         <- Mandatory unique barrel
+
+comp_05_legendary_DiscJockey
+  uni_discjockey
+  part_barrel_02_DiscJockey
+
+comp_05_legendary_OM            <- Oscar Mike
+  part_barrel_unique_OM
+
+comp_05_legendary_GoreMaster
+  part_barrel_02_GoreMaster
+```
+
+**Structure:**
+1. `comp_05_legendary_{name}` - Composition identifier
+2. `uni_{name}` - Unique naming part for display name/red text
+3. `part_barrel_*_{name}` or `part_unique_*` - Mandatory unique part(s)
+
+### Extracting Valid Parts
+
+To get all valid parts for a weapon type:
+
+```bash
+# Find weapon type line numbers
+bl4 ncs show inv4.bin --all-strings | grep -n "^  - DAD_PS$"
+
+# Extract parts between weapon types (lines 4188-4516)
+bl4 ncs show inv4.bin --all-strings | sed -n '4188,4516p' | grep "DAD_PS_"
+```
+
+### Part Validation Logic
+
+```rust
+/// Check if a part is valid for a weapon type
+fn is_valid_part(weapon_type: &str, part_name: &str, inv_data: &NcsDocument) -> bool {
+    // Find weapon type entry index
+    let type_idx = inv_data.find_entry(weapon_type)?;
+
+    // Find next weapon type entry
+    let next_type_idx = inv_data.find_next_weapon_type(type_idx)?;
+
+    // Part is valid if it appears between type and next type
+    inv_data.entries[type_idx..next_type_idx]
+        .iter()
+        .any(|e| e.name == part_name)
+}
+```
+
+### Serial Index Structure
+
+Each part in inv.bin has a `serialindex` field that provides a unique identifier for serialization.
+
+**Structure:**
+```
+serialindex: {
+  status: "Active" | "Inactive"
+  index: u32              // The actual serial index number
+  _category: "inv_type"   // Always "inv_type" for inventory parts
+  _scope: "Root" | "Sub"  // "Root" for item types, "Sub" for parts
+}
+```
+
+**Item Types (Root scope):**
+- Each weapon type (e.g., `DAD_PS`, `BOR_SG`) has a Root serialindex
+- Used to identify the base item type in serialized data
+
+**Parts (Sub scope):**
+- Each part within an item type has a Sub serialindex
+- Indices are unique within each item type but may repeat across types
+- The slot type (barrel, grip, etc.) determines which part pool the index references
+```
+
+### Memory vs NCS Part Names
+
+Part names differ between memory extraction and NCS:
+
+| NCS Name | Memory Name |
+|----------|-------------|
+| `DAD_PS_Barrel_01` | `DAD_PS.part_barrel_01` |
+| `DAD_PS_Body_A` | `DAD_PS.part_body_a` |
+| `DAD_PS_Grip_04` | `DAD_PS.part_grip_04_hyp` |
+
+The NCS has more parts (56 for DAD_PS) than memory extraction captured (34).
+**Always use NCS as the authoritative source.**
+
+### Extracting Item Parts
+
+Use the CLI to extract complete item-to-parts mappings:
+
+```bash
+# Extract all item parts (weapons + shields) to JSON
+bl4 ncs extract inv4.bin -t item-parts --json -o item_parts.json
+
+# View weapon parts for a specific directory
+bl4 ncs extract /path/to/ncsdata/pakchunk4-Windows_0_P -t item-parts
+```
+
+Output structure:
+```json
+[
+  {
+    "item_id": "DAD_PS",
+    "parts": ["DAD_PS_Barrel_01", "DAD_PS_Barrel_01_A", ...],
+    "legendary_compositions": [...]
+  },
+  {
+    "item_id": "Armor_Shield",
+    "parts": ["part_core_atl_protractor", "part_ra_armor_segment_primary", ...],
+    "legendary_compositions": []
+  }
+]
+```
+
+---
+
+## Actor Definitions (gbxactor.bin)
+
+The `gbxactor.bin` file contains definitions for game actors including characters, AI, abilities, and entities.
+
+### File Structure
+
+```
+Type: gbxactor
+Format: abef
+Entry count: ~1740 entries
+```
+
+### Entry Categories
+
+| Category | Pattern | Description |
+|----------|---------|-------------|
+| `Actor_*` | `Actor_PLD_AS_Scourge_*` | Player abilities, projectiles |
+| `Char_AI` | `Char_AI` | Base AI character definition |
+| `Char_Enemy` | `Char_Enemy` | Base enemy character |
+| `Char_NPC` | `Char_NPC` | Base NPC character |
+| `Char_{Type}` | `Char_Paladin`, `Char_ExoSoldier` | Player character types |
+| `Char_{Enemy}` | `Char_ArmyBandit_*`, `Char_Psycho*` | Enemy types |
+| `Char_Gadget_*` | `Char_Gadget_AutoTurret_Base` | Gadget/turret actors |
+| `Team_*` | `Team_Player`, `Team_Bandit` | Team definitions |
+| `MPart_*` | `MPartRand_Skin_Human` | Mesh part randomizers |
+
+### Character Inheritance
+
+Characters inherit from base types in a hierarchy:
+
+```
+Char_AI
+├── Char_Enemy
+│   ├── Char_ArmyBandit_SHARED
+│   ├── Char_PsychoBasic
+│   └── ...
+├── Char_NPC
+└── Char_Gadget_AutoTurret_Base
+```
+
+### Properties
+
+gbxactor entries define behavior properties:
+
+```
+PatrolPauseTime: NumericRange
+bUsePatrolFidgets: Bool
+FidgetCooldown: Float
+bCanEngagePlayers: Bool
+Element: NoElement | Corrosive | Cryo | Fire | Shock | Radiation
+SpawnPattern_Enemies_Default
+```
+
+### Actor vs Inventory
+
+| File | Contains |
+|------|----------|
+| `gbxactor.bin` | Characters, AI, abilities, teams, spawn patterns |
+| `inv.bin` | Weapons, shields, gear, parts, compositions |
+
+gbxactor does NOT contain weapon parts - those are exclusively in inv.bin.
+
+---
+
 ## Future Work
 
 Areas requiring further analysis:

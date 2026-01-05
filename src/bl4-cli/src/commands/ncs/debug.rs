@@ -8,7 +8,7 @@ use super::util::print_hex;
 
 pub fn debug_file(path: &Path, show_hex: bool, do_parse: bool, show_offsets: bool) -> Result<()> {
     use bl4_ncs::{
-        parse_header, parse_string_table, parse_binary_section, bit_width, BitReader,
+        parse_header, parse_ncs_string_table, parse_binary_section, bit_width, BitReader,
         extract_inline_strings, extract_field_abbreviation, create_combined_string_table,
         find_packed_strings, UnpackedValue,
     };
@@ -43,7 +43,7 @@ pub fn debug_file(path: &Path, show_hex: bool, do_parse: bool, show_offsets: boo
     }
 
     // Parse string table
-    let strings = parse_string_table(&data, &header);
+    let strings = parse_ncs_string_table(&data, &header);
     println!("\n=== String Table ({} strings) ===", strings.len());
     for (i, s) in strings.strings.iter().enumerate().take(20) {
         println!("  {:3}: {}", i, s);

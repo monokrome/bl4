@@ -21,6 +21,7 @@
 //! - Bytes 6-7: Entry count
 //! - Remaining: Metadata and string table
 
+mod binary_parser;
 mod bit_reader;
 mod content;
 mod data;
@@ -29,8 +30,10 @@ mod extract;
 mod field;
 mod hash;
 mod header;
+pub mod inventory;
 mod manifest;
 pub mod name_data;
+pub mod ncs_parser;
 pub mod oodle;
 pub mod pak;
 mod parser;
@@ -56,17 +59,31 @@ pub use manifest::{
 pub use name_data::{
     extract_from_directory as extract_name_data, NameDataEntry, NameDataMap,
 };
+pub use inventory::{
+    extract_raw_strings, extract_serial_indices, extract_string_numeric_pairs, get_parts,
+    get_parts_by_slot, is_valid_part, parse_inventory, raw_strings_to_tsv, serial_indices_to_tsv,
+    string_numeric_pairs_to_tsv, Inventory, ItemCategory, ItemParts, LegendaryComposition,
+    PartIndices, RawStringEntry, SerialIndex, StringNumericPair,
+};
 pub use pak::{
     extract_from_directory, is_ncs_file, type_from_filename, DirectoryReader, ExtractedNcs,
+};
+pub use binary_parser::{
+    extract_serial_indices as extract_serial_indices_native, serial_indices_to_tsv as serial_indices_to_tsv_native,
+    BinaryParser, FieldType as BinaryFieldType, FieldValue, ParsedRecord, RecordSchema, SerialIndexEntry as BinarySerialIndexEntry,
+};
+pub use ncs_parser::{
+    parse_document as parse_ncs_document, extract_serial_indices as extract_ncs_serial_indices,
+    Document as NcsDocument, Record as NcsRecord, DepEntry, SerialIndexEntry as NcsSerialIndexEntry,
 };
 pub use bit_reader::{bit_width, BitReader};
 pub use parser::{
     debug_binary_section, find_packed_strings, parse_binary_section, parse_document, parse_header,
-    unpack_string,
+    unpack_string, find_binary_section_with_count,
 };
 pub use string_table::{
     create_combined_string_table, extract_field_abbreviation, extract_inline_strings,
-    parse_string_table,
+    parse_string_table as parse_ncs_string_table,
 };
 pub use types::{
     BinaryEntry, BinaryParseResult, BinaryRecord, Document, EntryGroup, FieldInfo,
