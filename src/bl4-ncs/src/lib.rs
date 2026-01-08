@@ -38,6 +38,7 @@ pub mod oodle;
 pub mod pak;
 mod parser;
 mod string_table;
+mod tag_value_parser;
 mod types;
 
 // Re-export main types
@@ -71,6 +72,9 @@ pub use pak::{
 pub use binary_parser::{
     extract_serial_indices as extract_serial_indices_native, serial_indices_to_tsv as serial_indices_to_tsv_native,
     BinaryParser, FieldType as BinaryFieldType, FieldValue, ParsedRecord, RecordSchema, SerialIndexEntry as BinarySerialIndexEntry,
+};
+pub use tag_value_parser::{
+    TagByte, TagValue as TagValueEnum, TagValueParser, TagValueRecord,
 };
 pub use ncs_parser::{
     parse_document as parse_ncs_document, extract_serial_indices as extract_ncs_serial_indices,
