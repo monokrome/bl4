@@ -1,1 +1,14 @@
-[]
+{
+  "JAK": {
+    "code": "JAK",
+    "name": "Jakobs"
+  },
+  "TOR": {
+    "code": "TOR",
+    "name": "Torgue"
+  },
+  "BOR": {
+    "code": "BOR",
+    "name": "Ripper"
+  }
+}

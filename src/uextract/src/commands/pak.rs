@@ -1,6 +1,6 @@
 //! PAK extraction command implementation
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::path::Path;
 

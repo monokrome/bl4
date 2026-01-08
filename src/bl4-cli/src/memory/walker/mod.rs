@@ -16,7 +16,3 @@ pub use analyze::analyze_dump;
 pub use extraction::extract_property;
 pub use walk::walk_guobject_array;
 
-#[cfg(test)]
-pub mod tests {
-    pub use super::property::tests::{create_mock_property, create_mock_uobject};
-}

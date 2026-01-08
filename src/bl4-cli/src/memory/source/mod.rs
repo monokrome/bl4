@@ -15,8 +15,6 @@ mod region;
 mod traits;
 
 pub use dump::DumpFile;
-#[cfg(test)]
-pub use mock::MockMemorySource;
 pub use process::Bl4Process;
 
 // Re-export for API completeness
