@@ -373,7 +373,7 @@ mod tests {
         }
 
         // Create source with two regions
-        let source = MockMemorySource::with_regions(
+        let _source = MockMemorySource::with_regions(
             data,
             objects_ptr,
             vec![crate::memory::source::MemoryRegion {

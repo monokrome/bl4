@@ -240,7 +240,7 @@ pub fn find_binary_section_with_count(data: &[u8], string_start: usize, expected
 
     // Count exactly the expected number of strings
     while pos < data.len() {
-        let start = pos;
+        let _start = pos;
 
         // Find null terminator
         while pos < data.len() && data[pos] != 0 {

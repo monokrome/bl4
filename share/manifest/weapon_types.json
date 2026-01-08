@@ -1,1 +1,19 @@
-[]
+{
+  "Pistols": {
+    "name": "Pistols",
+    "manufacturers": [
+      {
+        "code": "JAK",
+        "name": "Jakobs"
+      }
+    ]
+  },
+  "SMG": {
+    "name": "SMG",
+    "manufacturers": []
+  },
+  "Shotguns": {
+    "name": "Shotguns",
+    "manufacturers": []
+  }
+}

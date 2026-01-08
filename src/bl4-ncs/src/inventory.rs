@@ -31,49 +31,6 @@ const MANUFACTURERS: &[&str] = &["BOR", "DAD", "JAK", "MAL", "ORD", "TED", "TOR"
 /// Known weapon types
 const WEAPON_TYPES: &[&str] = &["AR", "HW", "PS", "SG", "SM", "SR"];
 
-/// Known slot types from inv.bin __deps
-const SLOT_TYPES: &[&str] = &[
-    "inv_comp",
-    "primary_augment",
-    "secondary_augment",
-    "core_augment",
-    "barrel",
-    "barrel_acc",
-    "body",
-    "body_acc",
-    "foregrip",
-    "grip",
-    "magazine",
-    "magazine_ted_thrown",
-    "magazine_acc",
-    "scope",
-    "scope_acc",
-    "secondary_ammo",
-    "hyperion_secondary_acc",
-    "payload_augment",
-    "payload",
-    "class_mod_body",
-    "passive_points",
-    "action_skill_mod",
-    "body_bolt",
-    "body_mag",
-    "element",
-    "firmware",
-    "stat_augment",
-    "body_ele",
-    "unique",
-    "turret_weapon",
-    "tediore_acc",
-    "tediore_secondary_acc",
-    "endgame",
-    "enemy_augment",
-    "active_augment",
-    "underbarrel",
-    "underbarrel_acc_vis",
-    "underbarrel_acc",
-    "barrel_licensed",
-];
-
 /// Serial index entry for a part
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SerialIndex {
@@ -296,7 +253,7 @@ pub fn extract_serial_indices(data: &[u8]) -> BTreeMap<String, PartIndices> {
         None => return BTreeMap::new(),
     };
 
-    let strings = parse_string_table(data, &header);
+    let _strings = parse_string_table(data, &header);
 
     // Find binary offset
     let binary_offset = match find_binary_section_with_count(data, header.string_table_offset, Some(18393)) {
@@ -376,25 +333,6 @@ pub fn extract_serial_indices(data: &[u8]) -> BTreeMap<String, PartIndices> {
     result
 }
 
-/// Fallback: extract from string table patterns
-fn extract_serial_indices_fallback(data: &[u8]) -> BTreeMap<String, PartIndices> {
-    use crate::parser::parse_header;
-    use crate::string_table::parse_string_table;
-
-    let header = match parse_header(data) {
-        Some(h) => h,
-        None => return BTreeMap::new(),
-    };
-    let strings = parse_string_table(data, &header);
-
-    if strings.is_empty() {
-        return BTreeMap::new();
-    }
-
-    BTreeMap::new()
-}
-
-
 /// Check if string is a weapon part (MANU_TYPE_PartName pattern)
 fn is_weapon_part(s: &str) -> bool {
     let parts: Vec<&str> = s.splitn(3, '_').collect();
@@ -402,63 +340,6 @@ fn is_weapon_part(s: &str) -> bool {
         return false;
     }
     MANUFACTURERS.contains(&parts[0]) && WEAPON_TYPES.contains(&parts[1])
-}
-
-/// Check if a string is an item type identifier
-fn is_item_type(s: &str) -> bool {
-    // Reject paths
-    if s.starts_with('/') || s.contains("Script/") || s.contains(".Game/") {
-        return false;
-    }
-
-    // Must be short (item types are < 40 chars)
-    if s.len() > 40 {
-        return false;
-    }
-
-    // Must contain underscore to avoid matching single words
-    if !s.contains('_') {
-        return false;
-    }
-
-    // Known specific item types
-    if s == "Armor_Shield" {
-        return true;
-    }
-
-    // Enhancement types: MANU_Enhancement
-    if s.ends_with("_Enhancement") {
-        let prefix = s.strip_suffix("_Enhancement").unwrap();
-        // Should be 3-char manufacturer code
-        if prefix.len() == 3 && prefix.chars().all(|c| c.is_uppercase() || c == '_') {
-            return true;
-        }
-        // Or ATL_Enhancement, etc.
-        if prefix.len() <= 10 {
-            return true;
-        }
-    }
-
-    // Grenade types
-    if s.ends_with("_Grenade") {
-        let parts: Vec<&str> = s.split('_').collect();
-        // Short identifier, not a long path
-        if parts.len() <= 3 {
-            return true;
-        }
-    }
-
-    // Other gear types
-    if s.ends_with("_Artifact")
-        || s.ends_with("_ClassMod")
-        || s.ends_with("_HoverDrive")
-        || s.ends_with("_Relic")
-    {
-        return true;
-    }
-
-    // Weapon types checked separately via parse_weapon_type
-    false
 }
 
 /// Check if a string matches a part name pattern
@@ -956,7 +837,6 @@ mod tests {
     #[ignore]
     fn test_find_real_binary_offset() {
         use crate::parser::parse_header;
-        use crate::parser::find_binary_section_with_count;
 
         let inv_path = "/home/polar/Documents/Borderlands 4/ncsdata/pakchunk4-Windows_0_P/Nexus-Data-inv4.bin";
         let data = std::fs::read(inv_path).expect("Failed to read inv4.bin");
@@ -1044,7 +924,7 @@ mod tests {
         let data = std::fs::read(inv_path).expect("Failed to read inv4.bin");
 
         let header = parse_header(&data).expect("Failed to parse header");
-        let strings = parse_string_table(&data, &header);
+        let _strings = parse_string_table(&data, &header);
         let binary_offset = find_binary_section_with_count(&data, header.string_table_offset, Some(18393))
             .expect("Failed to find binary section");
 
@@ -1104,7 +984,7 @@ mod tests {
         let data = std::fs::read(inv_path).expect("Failed to read inv4.bin");
 
         let header = parse_header(&data).expect("Failed to parse header");
-        let strings = parse_string_table(&data, &header);
+        let _strings = parse_string_table(&data, &header);
         let binary_offset = find_binary_section_with_count(&data, header.string_table_offset, Some(18393))
             .expect("Failed to find binary section");
 
