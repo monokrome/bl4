@@ -178,36 +178,56 @@ impl<'a> BinaryParser<'a> {
         }
 
         let binary_data = &self.data[binary_offset..];
-        let mut reader = BitReader::new(binary_data);
 
-        // Parse records until we can't read anymore
-        while reader.has_bits(self.string_bits as usize) {
+        // Records are fixed size: 480 bits (60 bytes) each
+        const RECORD_SIZE_BITS: usize = 480;
+        const RECORD_SIZE_BYTES: usize = 60;
+
+        let total_bits = binary_data.len() * 8;
+        let max_records = total_bits / RECORD_SIZE_BITS;
+
+        eprintln!("[DEBUG] Binary section: {} bytes = {} bits", binary_data.len(), total_bits);
+        eprintln!("[DEBUG] Max possible records (480 bits each): {}", max_records);
+
+        for record_idx in 0..max_records.min(10000) {  // Safety limit
+            let bit_offset = record_idx * RECORD_SIZE_BITS;
+            let byte_offset = bit_offset / 8;
+
+            if byte_offset + RECORD_SIZE_BYTES > binary_data.len() {
+                break;
+            }
+
+            // Create reader for this specific 60-byte record
+            let record_data = &binary_data[byte_offset..byte_offset + RECORD_SIZE_BYTES];
+            let mut reader = BitReader::new(record_data);
+
             match self.parse_record(&mut reader) {
-                Some(record) => records.push(record),
-                None => break,
+                Some(record) => {
+                    if records.len() < 5 {
+                        eprintln!("[DEBUG] Record {}: {:?}", records.len() + 1, record.name);
+                    }
+                    records.push(record);
+                }
+                None => {
+                    if record_idx < 10 {
+                        eprintln!("[DEBUG] Record {} at byte {} failed to parse", record_idx, byte_offset);
+                    }
+                }
             }
         }
 
+        eprintln!("[DEBUG] Successfully parsed {} records", records.len());
         records
     }
 
     /// Parse a single record
     fn parse_record(&self, reader: &mut BitReader) -> Option<ParsedRecord> {
-        eprintln!("[DEBUG] parse_record: Starting at bit position {}", reader.position());
-
         // First field should be the record name (string pair)
         let name_index = reader.read_bits(self.string_bits)?;
-
-        eprintln!("[DEBUG] Read name_index: {} (after {} bits read, now at position {})",
-            name_index, self.string_bits, reader.position());
-
         let name = self.strings.get(name_index as usize)?.to_string();
-
-        eprintln!("[DEBUG] Record name: {:?}", name);
 
         // Skip empty/terminator names
         if name.is_empty() || name.eq_ignore_ascii_case("none") {
-            eprintln!("[DEBUG] Skipping empty/none record");
             return None;
         }
 
@@ -222,10 +242,6 @@ impl<'a> BinaryParser<'a> {
                 .get(i)
                 .cloned()
                 .unwrap_or_else(|| format!("field_{}", i));
-
-            let pos_before = reader.position();
-            eprintln!("[DEBUG] Parsing field {} ({}): {:?} at bit position {}",
-                i, field_name, field_type, pos_before);
 
             let value = match field_type {
                 FieldType::Pair => {
@@ -316,11 +332,6 @@ impl<'a> BinaryParser<'a> {
                 FieldType::Unknown(_) => FieldValue::Null,
             };
 
-            let pos_after = reader.position();
-            let bits_consumed = pos_after - pos_before;
-            eprintln!("[DEBUG] Field {} consumed {} bits, now at position {}",
-                i, bits_consumed, pos_after);
-
             fields.insert(field_name, value);
         }
 
@@ -335,42 +346,31 @@ impl<'a> BinaryParser<'a> {
     fn parse_list(&self, reader: &mut BitReader) -> Option<Vec<String>> {
         let mut list = Vec::new();
 
-        eprintln!("[DEBUG] parse_list: starting at bit position {}", reader.position());
-        eprintln!("[DEBUG] parse_list: string_bits={}, max_valid_index={}",
-            self.string_bits, self.strings.len() - 1);
-
         // Try reading a count first (some formats use count instead of terminator)
         // Try 8-bit count first
         let potential_count = reader.read_bits(8)?;
-        eprintln!("[DEBUG] parse_list: potential count (8-bit) = {}", potential_count);
 
         if potential_count == 0 {
-            eprintln!("[DEBUG] parse_list: count is 0, returning empty list");
             return Some(list);
         }
 
         // If count seems reasonable (< 1000), use it
         if potential_count < 1000 {
-            eprintln!("[DEBUG] parse_list: using count-based parsing (count={})", potential_count);
-            for i in 0..potential_count {
+            for _i in 0..potential_count {
                 let idx = reader.read_bits(self.string_bits)?;
                 if idx as usize >= self.strings.len() {
-                    eprintln!("[DEBUG] parse_list: item {} has invalid index {}", i, idx);
                     return None;
                 }
                 let s = self.strings.get(idx as usize)?.to_string();
-                eprintln!("[DEBUG] parse_list: item {}: {:?}", i, s);
                 list.push(s);
             }
             return Some(list);
         }
 
         // Otherwise, fall back to terminator-based parsing
-        eprintln!("[DEBUG] parse_list: count {} too large, trying terminator-based parsing", potential_count);
 
         // Put the "count" back as a string index
         if potential_count as usize >= self.strings.len() {
-            eprintln!("[DEBUG] parse_list: first value out of range, aborting");
             return None;
         }
 
@@ -382,39 +382,13 @@ impl<'a> BinaryParser<'a> {
 
         loop {
             if !reader.has_bits(self.string_bits as usize) {
-                eprintln!("[DEBUG] parse_list: no more bits available");
                 break;
             }
 
-            let pos_before = reader.position();
-            let idx = match reader.read_bits(self.string_bits) {
-                Some(v) => v,
-                None => {
-                    eprintln!("[DEBUG] parse_list: failed to read string index at position {}", pos_before);
-                    return None;
-                }
-            };
-
-            eprintln!("[DEBUG] parse_list: read index {} at bit position {} -> {}",
-                idx, pos_before, reader.position());
+            let idx = reader.read_bits(self.string_bits)?;
 
             // Check if index is in valid range
             if idx as usize >= self.strings.len() {
-                eprintln!("[DEBUG] parse_list: index {} out of range (max {})",
-                    idx, self.strings.len() - 1);
-                eprintln!("[DEBUG] parse_list: This suggests wrong bit alignment or wrong offset");
-                eprintln!("[DEBUG] parse_list: Bit pattern that produced {}: 0x{:04x} / 0b{:015b}",
-                    idx, idx, idx);
-                // Continue to read a few more to see the pattern
-                let mut debug_indices = vec![idx];
-                for _ in 0..5 {
-                    if let Some(next_idx) = reader.read_bits(self.string_bits) {
-                        debug_indices.push(next_idx);
-                    } else {
-                        break;
-                    }
-                }
-                eprintln!("[DEBUG] parse_list: Next few indices: {:?}", debug_indices);
                 return None;
             }
 
@@ -422,21 +396,17 @@ impl<'a> BinaryParser<'a> {
 
             // "none" is the list terminator
             if s.is_empty() || s.eq_ignore_ascii_case("none") {
-                eprintln!("[DEBUG] parse_list: found terminator '{}' at index {}", s, idx);
                 break;
             }
 
-            eprintln!("[DEBUG] parse_list: added string {:?}", s);
             list.push(s.to_string());
 
             // Safety limit
             if list.len() > 1000 {
-                eprintln!("[DEBUG] parse_list: hit safety limit of 1000 items");
                 break;
             }
         }
 
-        eprintln!("[DEBUG] parse_list: finished with {} items", list.len());
         Some(list)
     }
 
