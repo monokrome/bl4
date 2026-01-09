@@ -64,21 +64,29 @@ pub enum NcsCommand {
 
     /// Extract specific data types from NCS files
     Extract {
-        /// Directory containing decompressed NCS files
+        /// Path to PAK directory or extracted NCS files
         path: PathBuf,
 
         /// Type to extract (manufacturer, rarity, itempoollist, etc.)
-        /// If not specified, extracts all types.
+        /// If not specified, extracts all known types.
         #[arg(short = 't', long)]
         extract_type: Option<String>,
 
-        /// Output file (stdout if not specified)
+        /// Output directory for extracted data
         #[arg(short, long)]
         output: Option<PathBuf>,
+
+        /// Read directly from PAK files instead of extracted files
+        #[arg(long)]
+        pak: bool,
 
         /// Output as JSON
         #[arg(long)]
         json: bool,
+
+        /// Verbose output showing all processed files
+        #[arg(short, long)]
+        verbose: bool,
     },
 
     /// Show statistics about NCS files
