@@ -7,6 +7,7 @@ use anyhow::{bail, Context, Result};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command as ProcessCommand;
+use uextract::pak::{find_pak_files, PakReader};
 
 /// Handle the Commands::Manifest command
 ///
@@ -205,6 +206,11 @@ pub fn handle_manifest(
         extracted
     };
 
+    // Extract all files from traditional PAK archives
+    println!("=== PAK Extraction ===\n");
+    let pak_extract_dir = extract_dir.join("pak");
+    extract_from_paks(paks, &pak_extract_dir)?;
+
     // Generate manifest from extracted files
     println!("=== Manifest Generation ===\n");
     println!("Generating manifest files...");
@@ -212,7 +218,8 @@ pub fn handle_manifest(
     println!("\nManifest files written to {}", output.display());
 
     // Generate drops manifest from NCS data if available
-    let ncs_dir = output.join("ncs");
+    // NCS files are extracted to pak/Engine/Content/_NCS/ as decompressed .ncs files
+    let ncs_dir = pak_extract_dir.join("Engine/Content/_NCS");
     if ncs_dir.exists() {
         println!("\n=== Drops Manifest ===\n");
         println!("Generating drops manifest from NCS data...");
@@ -237,6 +244,106 @@ pub fn handle_manifest(
                 eprintln!("  Warning: Failed to generate drops manifest: {}", e);
             }
         }
+    }
+
+    Ok(())
+}
+
+/// Extract all files from traditional PAK archives
+///
+/// Searches for .pak files in the paks directory and extracts all files
+/// using the PAK index. NCS files are decompressed automatically.
+fn extract_from_paks(paks_dir: &Path, output: &Path) -> Result<()> {
+    let pak_files = find_pak_files(paks_dir)?;
+
+    if pak_files.is_empty() {
+        println!("No traditional PAK files found in {:?}", paks_dir);
+        return Ok(());
+    }
+
+    println!("Found {} PAK files to extract", pak_files.len());
+
+    fs::create_dir_all(output)?;
+
+    let mut total_extracted = 0;
+    let mut total_failed = 0;
+    let mut ncs_count = 0;
+
+    for pak_path in &pak_files {
+        let mut reader = match PakReader::open(pak_path) {
+            Ok(r) => r,
+            Err(e) => {
+                eprintln!(
+                    "  Warning: Skipping {:?}: {}",
+                    pak_path.file_name().unwrap_or_default(),
+                    e
+                );
+                continue;
+            }
+        };
+
+        let all_files = reader.files();
+        if all_files.is_empty() {
+            continue;
+        }
+
+        println!(
+            "  {:?}: {} files",
+            pak_path.file_name().unwrap_or_default(),
+            all_files.len()
+        );
+
+        for filename in &all_files {
+            let raw_data = match reader.read(filename) {
+                Ok(d) => d,
+                Err(e) => {
+                    eprintln!("    Failed to read {}: {}", filename, e);
+                    total_failed += 1;
+                    continue;
+                }
+            };
+
+            // Clean up the path
+            let clean_name = filename
+                .trim_start_matches(reader.mount_point())
+                .trim_start_matches('/')
+                .trim_start_matches("../");
+
+            let out_path = output.join(clean_name);
+
+            // Handle NCS files specially - decompress them
+            let is_ncs = filename.to_lowercase().ends_with(".ncs");
+            let write_data = if is_ncs {
+                ncs_count += 1;
+                match bl4_ncs::decompress_ncs(&raw_data) {
+                    Ok(d) => d,
+                    Err(e) => {
+                        eprintln!("    Failed to decompress {}: {}", filename, e);
+                        total_failed += 1;
+                        continue;
+                    }
+                }
+            } else {
+                raw_data
+            };
+
+            if let Some(parent) = out_path.parent() {
+                fs::create_dir_all(parent)?;
+            }
+
+            fs::write(&out_path, &write_data)?;
+            total_extracted += 1;
+        }
+    }
+
+    println!();
+    println!(
+        "Extracted {} files ({} NCS decompressed) to {:?}",
+        total_extracted, ncs_count, output
+    );
+
+    if total_failed > 0 {
+        eprintln!("Failed to extract {} files", total_failed);
     }
 
     Ok(())

@@ -47,7 +47,7 @@ pub fn handle_ncs_command(command: NcsCommand) -> Result<()> {
             extract_type,
             output,
             json,
-        } => extract::extract_by_type(&path, &extract_type, output.as_deref(), json),
+        } => extract::extract_by_type(&path, extract_type.as_deref(), output.as_deref(), json),
 
         NcsCommand::Stats { path, formats } => scan::show_stats(&path, formats),
 

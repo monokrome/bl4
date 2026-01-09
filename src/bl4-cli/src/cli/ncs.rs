@@ -68,8 +68,9 @@ pub enum NcsCommand {
         path: PathBuf,
 
         /// Type to extract (manufacturer, rarity, itempoollist, etc.)
+        /// If not specified, extracts all types.
         #[arg(short = 't', long)]
-        extract_type: String,
+        extract_type: Option<String>,
 
         /// Output file (stdout if not specified)
         #[arg(short, long)]

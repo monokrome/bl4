@@ -20,6 +20,9 @@ retoc = { git = "https://github.com/trumank/retoc" }
 # Use repak for traditional PAK file reading
 repak = { git = "https://github.com/trumank/repak.git", version = "0.2.2", features = ["oodle"] }
 
+# NCS decompression
+bl4-ncs = { path = "../bl4-ncs" }
+
 # Use usmap for property schema parsing (submodule in lib/jmap)
 usmap = { git = "https://github.com/trumank/jmap" }
 

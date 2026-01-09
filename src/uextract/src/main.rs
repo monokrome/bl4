@@ -217,6 +217,118 @@ fn main() -> Result<()> {
     let failed = results.len() - success;
     eprintln!("Extracted: {}, Failed: {}", success, failed);
 
+    // Also extract from traditional PAK files in the same directory
+    if !args.list {
+        eprintln!();
+        extract_from_paks(&input, &args.output, args.verbose)?;
+    }
+
+    Ok(())
+}
+
+/// Extract all files from traditional PAK archives in a directory
+fn extract_from_paks(paks_dir: &std::path::Path, output: &std::path::Path, verbose: bool) -> Result<()> {
+    use pak::{find_pak_files, PakReader};
+
+    let pak_files = find_pak_files(paks_dir)?;
+
+    if pak_files.is_empty() {
+        if verbose {
+            eprintln!("No traditional PAK files found");
+        }
+        return Ok(());
+    }
+
+    eprintln!("Extracting from {} traditional PAK files...", pak_files.len());
+
+    let mut total_extracted = 0;
+    let mut total_failed = 0;
+    let mut ncs_count = 0;
+
+    for pak_path in &pak_files {
+        let mut reader = match PakReader::open(pak_path) {
+            Ok(r) => r,
+            Err(e) => {
+                eprintln!(
+                    "  Warning: Skipping {:?}: {}",
+                    pak_path.file_name().unwrap_or_default(),
+                    e
+                );
+                continue;
+            }
+        };
+
+        let all_files = reader.files();
+        if all_files.is_empty() {
+            continue;
+        }
+
+        if verbose {
+            eprintln!(
+                "  {:?}: {} files",
+                pak_path.file_name().unwrap_or_default(),
+                all_files.len()
+            );
+        }
+
+        for filename in &all_files {
+            let raw_data = match reader.read(filename) {
+                Ok(d) => d,
+                Err(e) => {
+                    if verbose {
+                        eprintln!("    Failed to read {}: {}", filename, e);
+                    }
+                    total_failed += 1;
+                    continue;
+                }
+            };
+
+            // Clean up the path
+            let clean_name = filename
+                .trim_start_matches(reader.mount_point())
+                .trim_start_matches('/')
+                .trim_start_matches("../");
+
+            let out_path = output.join(clean_name);
+
+            // Handle NCS files specially - decompress them
+            let is_ncs = filename.to_lowercase().ends_with(".ncs");
+            let write_data = if is_ncs {
+                ncs_count += 1;
+                match bl4_ncs::decompress_ncs(&raw_data) {
+                    Ok(d) => d,
+                    Err(e) => {
+                        if verbose {
+                            eprintln!("    Failed to decompress {}: {}", filename, e);
+                        }
+                        total_failed += 1;
+                        continue;
+                    }
+                }
+            } else {
+                raw_data
+            };
+
+            if let Some(parent) = out_path.parent() {
+                std::fs::create_dir_all(parent)?;
+            }
+
+            std::fs::write(&out_path, &write_data)?;
+            total_extracted += 1;
+        }
+    }
+
+    if total_extracted > 0 {
+        eprintln!(
+            "PAK: Extracted {} files ({} NCS decompressed)",
+            total_extracted, ncs_count
+        );
+    }
+
+    if total_failed > 0 {
+        eprintln!("PAK: Failed to extract {} files", total_failed);
+    }
+
     Ok(())
 }
 

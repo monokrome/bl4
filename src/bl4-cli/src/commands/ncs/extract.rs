@@ -16,50 +16,54 @@ const WEAPON_TYPES: &[&str] = &["AR", "HW", "PS", "SG", "SM", "SR"];
 
 pub fn extract_by_type(
     path: &Path,
-    extract_type: &str,
+    extract_type: Option<&str>,
     output: Option<&Path>,
     json: bool,
 ) -> Result<()> {
-    // Special handling for "parts" extraction (legacy: parts with serial indices)
-    if extract_type == "parts" {
-        return extract_part_indices(path, output, json);
+    // If a specific type is requested, use specialized extractors
+    if let Some(etype) = extract_type {
+        // Special handling for "parts" extraction (legacy: parts with serial indices)
+        if etype == "parts" {
+            return extract_part_indices(path, output, json);
+        }
+
+        // Extract item-to-parts mapping from inv.bin
+        if etype == "item-parts" {
+            return extract_item_parts(path, output, json);
+        }
+
+        // Extract NexusSerialized display name mappings
+        if etype == "names" || etype == "nexus-serialized" {
+            return extract_nexus_serialized(path, output, json);
+        }
+
+        // Extract manufacturer mappings from NexusSerialized
+        if etype == "manufacturers" {
+            return extract_manufacturers(path, output, json);
+        }
+
+        // Extract raw string table from NCS file
+        if etype == "strings" || etype == "raw-strings" {
+            return extract_raw_strings_cmd(path, output, json);
+        }
+
+        // Extract string-numeric pairs from NCS file
+        if etype == "pairs" || etype == "string-numeric" {
+            return extract_string_numeric_pairs_cmd(path, output, json);
+        }
+
+        // Extract serial indices with item type context
+        if etype == "serial-indices" || etype == "serialindex" {
+            return extract_serial_indices_ncs_cmd(path, output, json);
+        }
+
+        // Native binary parser extraction
+        if etype == "binary" || etype == "native" {
+            return extract_binary_native(path, output, json);
+        }
     }
 
-    // Extract item-to-parts mapping from inv.bin
-    if extract_type == "item-parts" {
-        return extract_item_parts(path, output, json);
-    }
-
-    // Extract NexusSerialized display name mappings
-    if extract_type == "names" || extract_type == "nexus-serialized" {
-        return extract_nexus_serialized(path, output, json);
-    }
-
-    // Extract manufacturer mappings from NexusSerialized
-    if extract_type == "manufacturers" {
-        return extract_manufacturers(path, output, json);
-    }
-
-    // Extract raw string table from NCS file
-    if extract_type == "strings" || extract_type == "raw-strings" {
-        return extract_raw_strings_cmd(path, output, json);
-    }
-
-    // Extract string-numeric pairs from NCS file
-    if extract_type == "pairs" || extract_type == "string-numeric" {
-        return extract_string_numeric_pairs_cmd(path, output, json);
-    }
-
-    // Extract serial indices with item type context
-    if extract_type == "serial-indices" || extract_type == "serialindex" {
-        return extract_serial_indices_ncs_cmd(path, output, json);
-    }
-
-    // Native binary parser extraction
-    if extract_type == "binary" || extract_type == "native" {
-        return extract_binary_native(path, output, json);
-    }
-
+    // Extract all types (or filter by specific type if provided)
     let mut extracted = Vec::new();
 
     for entry in walkdir::WalkDir::new(path)
@@ -68,13 +72,23 @@ pub fn extract_by_type(
         .filter(|e| e.file_type().is_file())
     {
         let file_path = entry.path();
-        if !file_path.extension().map(|e| e == "bin").unwrap_or(false) {
+        // Accept .bin (decompressed) or .ncs (raw from PAK) files
+        let valid_ext = file_path
+            .extension()
+            .map(|e| e == "bin" || e == "ncs")
+            .unwrap_or(false);
+        if !valid_ext {
             continue;
         }
 
         if let Ok(data) = fs::read(file_path) {
             if let Some(content) = NcsContent::parse(&data) {
-                if content.type_name() == extract_type {
+                // If no filter specified, extract all; otherwise filter by type
+                let matches = extract_type
+                    .map(|t| content.type_name() == t)
+                    .unwrap_or(true);
+
+                if matches {
                     extracted.push(FileInfo {
                         path: file_path.to_string_lossy().to_string(),
                         type_name: content.type_name().to_string(),
@@ -91,12 +105,14 @@ pub fn extract_by_type(
         }
     }
 
+    let type_desc = extract_type.unwrap_or("all");
     let output_str = if json {
         serde_json::to_string_pretty(&extracted)?
     } else {
-        let mut out = format!("=== Extracted {} entries ===\n\n", extracted.len());
+        let mut out = format!("=== Extracted {} entries (type: {}) ===\n\n", extracted.len(), type_desc);
         for info in &extracted {
             out.push_str(&format!("File: {}\n", info.path));
+            out.push_str(&format!("Type: {}\n", info.type_name));
             out.push_str(&format!("Format: {}\n", info.format_code));
             out.push_str("Entries:\n");
             for name in &info.entry_names {
