@@ -11,96 +11,104 @@ use super::types::{UClassMetaclassInfo, UObjectInfo};
 use anyhow::{bail, Result};
 use byteorder::{ByteOrder, LE};
 
-/// Find all UClass instances by scanning for objects with ClassPrivate == UCLASS_METACLASS_ADDR
+/// Find all UClass instances by scanning for objects with ClassPrivate == metaclass_addr
 /// This is more reliable than walking GUObjectArray when the array location is uncertain
-pub fn find_all_uclasses(
+///
+/// Parameters:
+/// - source: Memory source to scan
+/// - fname_reader: FName reader for resolving names
+/// - metaclass_addr: The discovered UClass metaclass address (self-referential Class UClass)
+/// - class_offset: Offset of ClassPrivate in UObject (usually 0x10 or 0x18)
+/// - name_offset: Offset of NamePrivate in UObject (usually 0x18 or 0x30)
+pub fn find_all_uclasses_dynamic(
     source: &dyn MemorySource,
     fname_reader: &mut FNameReader,
+    metaclass_addr: usize,
+    class_offset: usize,
+    name_offset: usize,
 ) -> Result<Vec<UObjectInfo>> {
     let code_bounds = find_code_bounds(source)?;
     let mut results = Vec::new();
     let mut scanned_bytes = 0usize;
 
     eprintln!(
-        "Scanning for UClass instances (ClassPrivate == {:#x})...",
-        UCLASS_METACLASS_ADDR
+        "Scanning for UClass instances (ClassPrivate == {:#x}, class@+{:#x}, name@+{:#x})...",
+        metaclass_addr, class_offset, name_offset
     );
 
-    // Scan all readable regions in the executable's data space
+    let header_size = class_offset.max(name_offset) + 8;
+
+    // Scan all readable regions
     for region in source.regions() {
         if !region.is_readable() {
             continue;
         }
 
-        // Focus on PE + heap regions where UObjects live
-        let in_pe = region.start >= 0x140000000 && region.start <= 0x175000000;
-        let in_heap = region.start >= 0x1000000 && region.start < 0x140000000;
-        if !in_pe && !in_heap {
-            continue;
-        }
+        // Scan in chunks for large regions
+        let chunk_size = 256 * 1024 * 1024; // 256MB chunks
+        let mut offset = 0usize;
 
-        // Skip very large regions (heap can be huge)
-        if region.size() > 100 * 1024 * 1024 {
-            continue;
-        }
+        while offset < region.size() {
+            let read_size = (region.size() - offset).min(chunk_size);
+            let chunk_start = region.start + offset;
 
-        let data = match source.read_bytes(region.start, region.size()) {
-            Ok(d) => d,
-            Err(_) => continue,
-        };
-
-        scanned_bytes += data.len();
-
-        // Scan for 8-byte aligned pointers to the UClass metaclass
-        for i in (0..data.len().saturating_sub(UOBJECT_HEADER_SIZE)).step_by(8) {
-            // Check ClassPrivate at offset 0x18
-            if i + UOBJECT_CLASS_OFFSET + 8 > data.len() {
-                continue;
-            }
-
-            let class_ptr =
-                LE::read_u64(&data[i + UOBJECT_CLASS_OFFSET..i + UOBJECT_CLASS_OFFSET + 8])
-                    as usize;
-
-            if class_ptr != UCLASS_METACLASS_ADDR {
-                continue;
-            }
-
-            let obj_addr = region.start + i;
-
-            // Validate vtable
-            let vtable_ptr = LE::read_u64(&data[i..i + 8]) as usize;
-            if vtable_ptr < MIN_VTABLE_ADDR || vtable_ptr > MAX_VTABLE_ADDR {
-                continue;
-            }
-
-            // Verify vtable[0] points to code
-            if let Ok(vtable_data) = source.read_bytes(vtable_ptr, 8) {
-                let first_func = LE::read_u64(&vtable_data) as usize;
-                if !code_bounds.contains(first_func) {
+            let data = match source.read_bytes(chunk_start, read_size) {
+                Ok(d) => d,
+                Err(_) => {
+                    offset += chunk_size;
                     continue;
                 }
-            } else {
-                continue;
-            }
-
-            // Read FName
-            let name_index =
-                LE::read_u32(&data[i + UOBJECT_NAME_OFFSET..i + UOBJECT_NAME_OFFSET + 4]);
-
-            // Resolve name
-            let name = match fname_reader.read_name(source, name_index) {
-                Ok(n) => n,
-                Err(_) => format!("FName_{}", name_index),
             };
 
-            results.push(UObjectInfo {
-                address: obj_addr,
-                class_ptr,
-                name_index,
-                name,
-                class_name: "Class".to_string(),
-            });
+            scanned_bytes += data.len();
+
+            // Scan for 8-byte aligned pointers to the UClass metaclass
+            for i in (0..data.len().saturating_sub(header_size)).step_by(8) {
+                // Check ClassPrivate at the discovered offset
+                let class_ptr =
+                    LE::read_u64(&data[i + class_offset..i + class_offset + 8]) as usize;
+
+                if class_ptr != metaclass_addr {
+                    continue;
+                }
+
+                let obj_addr = chunk_start + i;
+
+                // Validate vtable
+                let vtable_ptr = LE::read_u64(&data[i..i + 8]) as usize;
+                if vtable_ptr < MIN_VTABLE_ADDR || vtable_ptr > MAX_VTABLE_ADDR {
+                    continue;
+                }
+
+                // Verify vtable[0] points to code
+                if let Ok(vtable_data) = source.read_bytes(vtable_ptr, 8) {
+                    let first_func = LE::read_u64(&vtable_data) as usize;
+                    if !code_bounds.contains(first_func) {
+                        continue;
+                    }
+                } else {
+                    continue;
+                }
+
+                // Read FName at the discovered offset
+                let name_index = LE::read_u32(&data[i + name_offset..i + name_offset + 4]);
+
+                // Resolve name
+                let name = match fname_reader.read_name(source, name_index) {
+                    Ok(n) => n,
+                    Err(_) => format!("FName_{}", name_index),
+                };
+
+                results.push(UObjectInfo {
+                    address: obj_addr,
+                    class_ptr,
+                    name_index,
+                    name,
+                    class_name: "Class".to_string(),
+                });
+            }
+
+            offset += chunk_size;
         }
     }
 
@@ -114,6 +122,23 @@ pub fn find_all_uclasses(
     results.sort_by(|a, b| a.name.cmp(&b.name));
 
     Ok(results)
+}
+
+/// Find all UClass instances by scanning for objects with ClassPrivate == UCLASS_METACLASS_ADDR
+/// This is more reliable than walking GUObjectArray when the array location is uncertain
+///
+/// NOTE: This uses hardcoded SDK constants. Prefer find_all_uclasses_dynamic with discovered values.
+pub fn find_all_uclasses(
+    source: &dyn MemorySource,
+    fname_reader: &mut FNameReader,
+) -> Result<Vec<UObjectInfo>> {
+    find_all_uclasses_dynamic(
+        source,
+        fname_reader,
+        UCLASS_METACLASS_ADDR,
+        UOBJECT_CLASS_OFFSET,
+        UOBJECT_NAME_OFFSET,
+    )
 }
 
 /// Find the UClass metaclass by exhaustively searching for self-referential objects

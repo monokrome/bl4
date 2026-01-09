@@ -19,26 +19,90 @@ pub fn handle_analyze_dump(source: &dyn MemorySource) -> Result<()> {
 /// Handle the DumpUsmap command
 ///
 /// Generates a USMAP file from memory by extracting UE5 reflection data.
+/// Uses exhaustive UClass metaclass discovery instead of GUObjectArray to avoid false positives.
 pub fn handle_dump_usmap(source: &dyn MemorySource, output: &Path) -> Result<()> {
-    // Step 1: Find GNames pool
-    println!("Step 1: Finding GNames pool...");
-    let gnames = memory::discover_gnames(source).context("Failed to find GNames pool")?;
-    println!("  GNames at: {:#x}", gnames.address);
-
-    // Step 2: Find GUObjectArray
-    println!("\nStep 2: Finding GUObjectArray...");
-    let guobj_array = memory::discover_guobject_array(source, gnames.address)
-        .context("Failed to find GUObjectArray")?;
-    println!("  GUObjectArray at: {:#x}", guobj_array.address);
-    println!("  Objects ptr: {:#x}", guobj_array.objects_ptr);
-    println!("  NumElements: {}", guobj_array.num_elements);
-
-    // Step 3: Walk GUObjectArray to find reflection objects
-    println!("\nStep 3: Walking GUObjectArray to find reflection objects...");
+    // Step 1: Find FNamePool
+    println!("Step 1: Finding FNamePool...");
     let pool = memory::FNamePool::discover(source).context("Failed to discover FNamePool")?;
     let mut fname_reader = memory::FNameReader::new(pool);
-    let reflection_objects = memory::walk_guobject_array(source, &guobj_array, &mut fname_reader)
-        .context("Failed to walk GUObjectArray")?;
+    println!("  FNamePool discovered");
+
+    // Step 2: Find UClass metaclass exhaustively (self-referential object with FName "Class")
+    println!("\nStep 2: Finding UClass metaclass...");
+    let metaclass = memory::discover_uclass_metaclass_exhaustive(source, &mut fname_reader)
+        .context("Failed to find UClass metaclass")?;
+    println!("  UClass metaclass at: {:#x}", metaclass.address);
+    println!("  ClassPrivate offset: {:#x}", metaclass.class_offset);
+    println!("  NamePrivate offset: {:#x}", metaclass.name_offset);
+
+    // Step 3: Find all UClass instances using the discovered metaclass
+    println!("\nStep 3: Finding all UClass instances...");
+    let uclass_objects = memory::find_all_uclasses_dynamic(
+        source,
+        &mut fname_reader,
+        metaclass.address,
+        metaclass.class_offset,
+        metaclass.name_offset,
+    )
+    .context("Failed to find UClass instances")?;
+
+    println!("  Found {} UClass instances", uclass_objects.len());
+
+    // Step 3b: Find ScriptStruct and Enum metaclasses among UClass instances
+    let scriptstruct_metaclass = uclass_objects
+        .iter()
+        .find(|o| o.name == "ScriptStruct")
+        .map(|o| o.address);
+    let enum_metaclass = uclass_objects.iter().find(|o| o.name == "Enum").map(|o| o.address);
+
+    println!("\nStep 3b: Finding ScriptStruct and Enum instances...");
+    if let Some(ss_addr) = scriptstruct_metaclass {
+        println!("  ScriptStruct metaclass at: {:#x}", ss_addr);
+    }
+    if let Some(e_addr) = enum_metaclass {
+        println!("  Enum metaclass at: {:#x}", e_addr);
+    }
+
+    // Step 3c: Find all ScriptStruct instances
+    let mut scriptstruct_objects = Vec::new();
+    if let Some(ss_metaclass_addr) = scriptstruct_metaclass {
+        scriptstruct_objects = memory::find_all_uclasses_dynamic(
+            source,
+            &mut fname_reader,
+            ss_metaclass_addr,
+            metaclass.class_offset,
+            metaclass.name_offset,
+        )
+        .unwrap_or_default();
+        // Mark these as ScriptStruct
+        for obj in &mut scriptstruct_objects {
+            obj.class_name = "ScriptStruct".to_string();
+        }
+        println!("  Found {} UScriptStruct instances", scriptstruct_objects.len());
+    }
+
+    // Step 3d: Find all Enum instances
+    let mut enum_objects = Vec::new();
+    if let Some(e_metaclass_addr) = enum_metaclass {
+        enum_objects = memory::find_all_uclasses_dynamic(
+            source,
+            &mut fname_reader,
+            e_metaclass_addr,
+            metaclass.class_offset,
+            metaclass.name_offset,
+        )
+        .unwrap_or_default();
+        // Mark these as Enum
+        for obj in &mut enum_objects {
+            obj.class_name = "Enum".to_string();
+        }
+        println!("  Found {} UEnum instances", enum_objects.len());
+    }
+
+    // Combine all reflection objects
+    let mut reflection_objects: Vec<memory::reflection::UObjectInfo> = uclass_objects;
+    reflection_objects.extend(scriptstruct_objects);
+    reflection_objects.extend(enum_objects);
 
     // Print summary
     let class_count = reflection_objects

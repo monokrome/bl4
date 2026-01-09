@@ -157,7 +157,8 @@ pub const FPROPERTY_PROPERTYFLAGS_OFFSET: usize = 0x38;
 pub const FPROPERTY_REPINDEX_OFFSET: usize = 0x40;
 
 /// FProperty::Offset_Internal offset - offset within struct
-pub const FPROPERTY_OFFSET_OFFSET: usize = 0x4C;
+/// Note: BL4 uses 0x44, not the standard UE5 SDK 0x4C
+pub const FPROPERTY_OFFSET_OFFSET: usize = 0x44;
 
 /// FProperty total size (base, without type-specific data)
 pub const FPROPERTY_BASE_SIZE: usize = 0x78;
@@ -391,7 +392,8 @@ mod tests {
         // FProperty extends FField
         assert!(FPROPERTY_ARRAYDIM_OFFSET > FFIELD_FLAGS_OFFSET);
         assert_eq!(FPROPERTY_ARRAYDIM_OFFSET, 0x30);
-        assert_eq!(FPROPERTY_OFFSET_OFFSET, 0x4C);
+        // BL4 uses 0x44, not the standard UE5 SDK 0x4C
+        assert_eq!(FPROPERTY_OFFSET_OFFSET, 0x44);
     }
 
     #[test]

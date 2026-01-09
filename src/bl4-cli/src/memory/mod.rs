@@ -55,7 +55,10 @@ pub use usmap::{extract_reflection_data, write_usmap};
 pub use binary::{find_code_bounds, scan_pattern};
 
 // Re-export reflection types
-pub use reflection::find_all_uclasses;
+pub use reflection::{
+    discover_uclass_metaclass_exhaustive, find_all_uclasses, find_all_uclasses_dynamic,
+    UClassMetaclassInfo,
+};
 
 // Legacy module contains remaining memory functionality
 // TODO: Further split into discovery.rs, reflection.rs

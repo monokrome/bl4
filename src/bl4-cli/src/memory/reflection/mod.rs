@@ -10,7 +10,8 @@ mod types;
 mod uclass;
 
 pub use types::{EPropertyType, EnumInfo, PropertyInfo, StructInfo, UObjectInfo, UObjectOffsets};
-pub use uclass::{discover_uclass_metaclass_exhaustive, find_all_uclasses};
+pub use types::UClassMetaclassInfo;
+pub use uclass::{discover_uclass_metaclass_exhaustive, find_all_uclasses, find_all_uclasses_dynamic};
 
 #[cfg(test)]
 mod tests {

@@ -162,14 +162,18 @@ fn parse_pe_code_section(source: &dyn MemorySource, base: usize) -> Result<CodeB
             characteristics,
         };
 
-        // Check if this is an actual code section (not just executable metadata)
-        // Only include sections that actually contain code, not .pdata/.reloc/etc
-        let is_code_section = section.is_executable()
-            && (name.contains("text")
-                || name.contains("code")
-                || name == ".ecode"
-                || name.starts_with(".text")
-                || name.starts_with(".code"));
+        // Check if this is an actual code section
+        // Include sections that are:
+        // 1. Executable AND have standard code names (text/code)
+        // 2. Executable AND larger than 10MB (main game code in non-standard sections like .sdata)
+        // Exclude small executable sections like .pdata/.reloc that are just metadata
+        let has_code_name = name.contains("text")
+            || name.contains("code")
+            || name == ".ecode"
+            || name.starts_with(".text")
+            || name.starts_with(".code");
+        let is_large_executable = section.is_executable() && virtual_size > 10 * 1024 * 1024;
+        let is_code_section = section.is_executable() && (has_code_name || is_large_executable);
 
         let section_start = base + virtual_address;
         let section_end = section_start + virtual_size;

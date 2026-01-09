@@ -14,142 +14,101 @@ use byteorder::{ByteOrder, LE};
 pub fn discover_class_uclass(source: &dyn MemorySource) -> Result<usize> {
     let code_bounds = find_code_bounds(source)?;
 
-    eprintln!("Scanning for Class UClass (self-referential pattern)...");
+    eprintln!("Scanning ALL memory for Class UClass (self-referential pattern)...");
 
-    // Scan writable data sections for the pattern:
+    // Scan ALL readable regions for the pattern:
     // - Valid vtable at +0x00 (first entry points to code)
-    // - ClassPrivate at +0x10 points back to the object itself
-    // - NamePrivate at +0x18 contains an FName index for "Class"
+    // - ClassPrivate at some offset points back to the object itself
 
-    let mut candidates: Vec<usize> = Vec::new();
+    let mut candidates: Vec<(usize, usize)> = Vec::new(); // (addr, class_offset)
 
-    for region in source.regions() {
-        if !region.is_readable() || !region.is_writable() {
-            continue;
-        }
-
-        // Focus on data sections in the executable's address space
-        if region.start < 0x151000000 || region.start > 0x175000000 {
-            continue;
-        }
-
-        eprintln!(
-            "  Scanning region {:#x}-{:#x} for Class UClass...",
-            region.start, region.end
-        );
-
-        let data = match source.read_bytes(region.start, region.size()) {
-            Ok(d) => d,
-            Err(_) => continue,
-        };
-
-        // Scan for self-referential pattern at 8-byte aligned addresses
-        for i in (0..data.len().saturating_sub(0x28)).step_by(8) {
-            let obj_addr = region.start + i;
-
-            // Read potential vtable pointer
-            let vtable_ptr = LE::read_u64(&data[i..i + 8]) as usize;
-
-            // vtable should be in a valid range (not null, not too low)
-            if vtable_ptr < 0x140000000 || vtable_ptr > 0x160000000 {
+    // Try different class offsets
+    for class_offset in [0x10usize, 0x08, 0x18, 0x20] {
+        for region in source.regions() {
+            if !region.is_readable() {
                 continue;
             }
 
-            // ClassPrivate is at +0x10 - check if it's self-referential
-            let class_private = LE::read_u64(&data[i + 0x10..i + 0x18]) as usize;
+            // Read region data (limit to 64MB per region for performance)
+            let read_size = region.size().min(64 * 1024 * 1024);
+            let data = match source.read_bytes(region.start, read_size) {
+                Ok(d) => d,
+                Err(_) => continue,
+            };
 
-            if class_private != obj_addr {
-                continue; // Not self-referential
-            }
+            // Scan for self-referential pattern at 8-byte aligned addresses
+            for i in (0..data.len().saturating_sub(0x30)).step_by(8) {
+                let obj_addr = region.start + i;
 
-            // Verify vtable is valid (first entry points to code)
-            if let Ok(vtable_data) = source.read_bytes(vtable_ptr, 8) {
-                let first_func = LE::read_u64(&vtable_data) as usize;
-                if !code_bounds.contains(first_func) {
-                    continue;
-                }
-            } else {
-                continue;
-            }
+                // Read potential vtable pointer
+                let vtable_ptr = LE::read_u64(&data[i..i + 8]) as usize;
 
-            // Found a candidate!
-            eprintln!(
-                "  Found self-referential object at {:#x} (vtable={:#x})",
-                obj_addr, vtable_ptr
-            );
-            candidates.push(obj_addr);
-        }
-    }
-
-    if candidates.is_empty() {
-        // Try alternative offsets - maybe ClassPrivate is at a different offset
-        eprintln!(
-            "  No self-referential UClass found at offset 0x10, trying alternative offsets..."
-        );
-
-        for class_offset in [0x08, 0x18, 0x20, 0x28] {
-            for region in source.regions() {
-                if !region.is_readable() || !region.is_writable() {
+                // vtable should be in executable range
+                if vtable_ptr < 0x140000000 || vtable_ptr > 0x160000000 {
                     continue;
                 }
 
-                if region.start < 0x151000000 || region.start > 0x175000000 {
+                if i + class_offset + 8 > data.len() {
                     continue;
                 }
 
-                let data = match source.read_bytes(region.start, region.size()) {
-                    Ok(d) => d,
-                    Err(_) => continue,
-                };
+                // Check if ClassPrivate is self-referential
+                let class_private =
+                    LE::read_u64(&data[i + class_offset..i + class_offset + 8]) as usize;
 
-                for i in (0..data.len().saturating_sub(0x30)).step_by(8) {
-                    let obj_addr = region.start + i;
-                    let vtable_ptr = LE::read_u64(&data[i..i + 8]) as usize;
+                if class_private != obj_addr {
+                    continue;
+                }
 
-                    if vtable_ptr < 0x140000000 || vtable_ptr > 0x160000000 {
+                // Verify vtable is valid (first entry points to code)
+                if let Ok(vtable_data) = source.read_bytes(vtable_ptr, 8) {
+                    let first_func = LE::read_u64(&vtable_data) as usize;
+                    if !code_bounds.contains(first_func) {
                         continue;
                     }
+                } else {
+                    continue;
+                }
 
-                    if i + class_offset + 8 > data.len() {
-                        continue;
-                    }
+                // Found a candidate!
+                eprintln!(
+                    "  Found self-referential at {:#x} (vtable={:#x}, class@+{:#x})",
+                    obj_addr, vtable_ptr, class_offset
+                );
 
-                    let class_private =
-                        LE::read_u64(&data[i + class_offset..i + class_offset + 8]) as usize;
-
-                    if class_private != obj_addr {
-                        continue;
-                    }
-
-                    if let Ok(vtable_data) = source.read_bytes(vtable_ptr, 8) {
-                        let first_func = LE::read_u64(&vtable_data) as usize;
-                        if !code_bounds.contains(first_func) {
-                            continue;
-                        }
-                    } else {
-                        continue;
-                    }
-
-                    eprintln!(
-                        "  Found self-referential at {:#x} with class_offset={:#x}",
-                        obj_addr, class_offset
-                    );
-                    candidates.push(obj_addr);
-
-                    if candidates.len() >= 3 {
-                        break;
+                // Print hex dump for verification
+                eprintln!("    Raw bytes:");
+                for row in 0..4 {
+                    let start = i + row * 16;
+                    if start + 16 <= data.len() {
+                        let hex: String = data[start..start + 16]
+                            .iter()
+                            .map(|b| format!("{:02x}", b))
+                            .collect::<Vec<_>>()
+                            .join(" ");
+                        eprintln!("    +{:#04x}: {}", row * 16, hex);
                     }
                 }
 
-                if candidates.len() >= 3 {
+                candidates.push((obj_addr, class_offset));
+
+                if candidates.len() >= 5 {
                     break;
                 }
             }
 
-            if !candidates.is_empty() {
-                eprintln!("  Class UClass likely at offset {:#x}", class_offset);
+            if candidates.len() >= 5 {
                 break;
             }
+        }
+
+        if !candidates.is_empty() {
+            eprintln!(
+                "  Found {} candidates with class_offset={:#x}",
+                candidates.len(),
+                class_offset
+            );
+            break;
         }
     }
 
@@ -158,5 +117,5 @@ pub fn discover_class_uclass(source: &dyn MemorySource) -> Result<usize> {
     }
 
     // Return the first candidate
-    Ok(candidates[0])
+    Ok(candidates[0].0)
 }
