@@ -54,7 +54,11 @@ impl PakReader {
 
     /// List all files in the PAK
     pub fn files(&self) -> Vec<String> {
-        self.pak.files()
+        let pak_ref = &self.pak;
+        match panic::catch_unwind(panic::AssertUnwindSafe(|| pak_ref.files())) {
+            Ok(files) => files,
+            Err(_) => Vec::new(),
+        }
     }
 
     /// List files matching a filter
@@ -62,7 +66,7 @@ impl PakReader {
     where
         F: Fn(&str) -> bool,
     {
-        self.pak.files().into_iter().filter(|f| filter(f)).collect()
+        self.files().into_iter().filter(|f| filter(f)).collect()
     }
 
     /// List files with a specific extension
@@ -137,9 +141,15 @@ impl MemoryPakReader {
     pub fn new(data: Vec<u8>) -> Result<Self> {
         let mut cursor = std::io::Cursor::new(data);
 
-        let pak = repak::PakBuilder::new()
-            .reader(&mut cursor)
-            .context("Failed to parse in-memory PAK data")?;
+        let pak_result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
+            repak::PakBuilder::new().reader(&mut cursor)
+        }));
+
+        let pak = match pak_result {
+            Ok(Ok(pak)) => pak,
+            Ok(Err(e)) => anyhow::bail!("Failed to parse in-memory PAK data: {}", e),
+            Err(_) => anyhow::bail!("Invalid PAK format (panic during parse)"),
+        };
 
         Ok(Self { pak, data: cursor })
     }
@@ -151,7 +161,11 @@ impl MemoryPakReader {
 
     /// List all files in the PAK
     pub fn files(&self) -> Vec<String> {
-        self.pak.files()
+        let pak_ref = &self.pak;
+        match panic::catch_unwind(panic::AssertUnwindSafe(|| pak_ref.files())) {
+            Ok(files) => files,
+            Err(_) => Vec::new(),
+        }
     }
 
     /// List files with a specific extension
@@ -163,8 +177,7 @@ impl MemoryPakReader {
             format!(".{}", ext_lower)
         };
 
-        self.pak
-            .files()
+        self.files()
             .into_iter()
             .filter(|f| f.to_lowercase().ends_with(&with_dot))
             .collect()
