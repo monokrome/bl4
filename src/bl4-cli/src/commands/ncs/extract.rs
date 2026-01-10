@@ -11,6 +11,8 @@ use std::fs;
 use std::path::Path;
 use uextract::pak::extract_with_handler;
 
+use crate::file_utils::walk_files_with_extension;
+
 /// Known NCS types that we can fully parse
 const KNOWN_TYPES: &[&str] = &[
     "inv",
@@ -153,19 +155,7 @@ fn extract_from_directory(
 ) -> Result<()> {
     eprintln!("Scanning directory for NCS files: {}", dir.display());
 
-    for entry in walkdir::WalkDir::new(dir)
-        .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|e| e.file_type().is_file())
-    {
-        let file_path = entry.path();
-
-        // Accept .ncs or .bin files
-        let ext = file_path.extension().and_then(|e| e.to_str()).unwrap_or("");
-        if ext != "ncs" && ext != "bin" {
-            continue;
-        }
-
+    walk_files_with_extension(dir, &["ncs", "bin"], |file_path| {
         stats.total_files += 1;
 
         let data = match fs::read(file_path) {
@@ -175,7 +165,7 @@ fn extract_from_directory(
                     eprintln!("  Failed to read {:?}: {}", file_path, e);
                 }
                 stats.failed += 1;
-                continue;
+                return Ok(());
             }
         };
 
@@ -186,12 +176,13 @@ fn extract_from_directory(
         // Apply filter if specified
         if let Some(filter) = filter_type {
             if !type_name.eq_ignore_ascii_case(filter) {
-                continue;
+                return Ok(());
             }
         }
 
         process_ncs_data(&data, &type_name, stats, extracted, verbose);
-    }
+        Ok(())
+    })?;
 
     Ok(())
 }

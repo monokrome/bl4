@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
+use crate::file_utils::walk_files_with_extension;
 use super::types::ScanResult;
 
 pub fn scan_directory(path: &Path, filter_type: Option<&str>, verbose: bool, json: bool) -> Result<()> {
@@ -16,16 +17,7 @@ pub fn scan_directory(path: &Path, filter_type: Option<&str>, verbose: bool, jso
         formats: HashMap::new(),
     };
 
-    for entry in walkdir::WalkDir::new(path)
-        .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|e| e.file_type().is_file())
-    {
-        let file_path = entry.path();
-        if !file_path.extension().map(|e| e == "bin").unwrap_or(false) {
-            continue;
-        }
-
+    walk_files_with_extension(path, &["bin"], |file_path| {
         result.total_files += 1;
 
         if let Ok(data) = fs::read(file_path) {
@@ -37,7 +29,7 @@ pub fn scan_directory(path: &Path, filter_type: Option<&str>, verbose: bool, jso
             };
 
             let Some(decompressed) = decompressed else {
-                continue;
+                return Ok(());
             };
 
             if let Some(content) = NcsContent::parse(&decompressed) {
@@ -49,7 +41,7 @@ pub fn scan_directory(path: &Path, filter_type: Option<&str>, verbose: bool, jso
                 // Apply filter
                 if let Some(filter) = filter_type {
                     if !type_name.contains(filter) {
-                        continue;
+                        return Ok(());
                     }
                 }
 
@@ -71,7 +63,9 @@ pub fn scan_directory(path: &Path, filter_type: Option<&str>, verbose: bool, jso
                 }
             }
         }
-    }
+
+        Ok(())
+    })?;
 
     if json {
         println!("{}", serde_json::to_string_pretty(&result)?);
@@ -107,16 +101,7 @@ pub fn show_stats(path: &Path, show_formats: bool) -> Result<()> {
     let mut formats: HashMap<String, usize> = HashMap::new();
     let mut unparsed_samples: Vec<String> = Vec::new();
 
-    for entry in walkdir::WalkDir::new(path)
-        .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|e| e.file_type().is_file())
-    {
-        let file_path = entry.path();
-        if !file_path.extension().map(|e| e == "bin").unwrap_or(false) {
-            continue;
-        }
-
+    walk_files_with_extension(path, &["bin"], |file_path| {
         total += 1;
 
         if let Ok(data) = fs::read(file_path) {
@@ -130,7 +115,9 @@ pub fn show_stats(path: &Path, show_formats: bool) -> Result<()> {
                 unparsed_samples.push(file_path.to_string_lossy().to_string());
             }
         }
-    }
+
+        Ok(())
+    })?;
 
     println!("=== NCS Statistics ===");
     println!("Total files: {}", total);

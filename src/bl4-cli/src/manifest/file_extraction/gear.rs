@@ -5,7 +5,9 @@ use std::fs;
 use std::path::Path;
 use walkdir::WalkDir;
 
-use super::super::property_parsing::{extract_strings, parse_stat_properties, AssetInfo};
+use super::super::property_parsing::{
+    extract_raw_string_sample, extract_strings, parse_stat_properties, AssetInfo,
+};
 use super::types::{manufacturer_names, GearType, ManufacturerRef};
 
 /// Extract all gear types (shields, grenades, gadgets, etc.)
@@ -52,23 +54,7 @@ pub fn extract_gear_types(extract_dir: &Path) -> HashMap<String, GearType> {
                 })
             {
                 let asset_path = bd_entry.path();
-                let mut asset_info = AssetInfo {
-                    name: asset_path
-                        .file_stem()
-                        .map(|s| s.to_string_lossy().to_string())
-                        .unwrap_or_default(),
-                    file: asset_path
-                        .file_name()
-                        .map(|s| s.to_string_lossy().to_string())
-                        .unwrap_or_default(),
-                    path: asset_path
-                        .strip_prefix(extract_dir)
-                        .map(|p| p.to_string_lossy().to_string())
-                        .ok(),
-                    stats: None,
-                    properties: None,
-                    raw_strings: None,
-                };
+                let mut asset_info = AssetInfo::from_path(asset_path, Some(extract_dir));
 
                 if let Ok(content) = extract_strings(asset_path) {
                     let stats = parse_stat_properties(&content);
@@ -149,36 +135,11 @@ pub fn extract_rarity_data(extract_dir: &Path) -> HashMap<String, AssetInfo> {
                 .map(|s| s.to_string_lossy().to_string())
                 .unwrap_or_default();
 
-            let mut raw_strings = None;
+            let mut asset_info = AssetInfo::from_path(asset_path, Some(extract_dir));
             if let Ok(content) = extract_strings(asset_path) {
-                let strings: Vec<String> = content
-                    .lines()
-                    .filter(|s| !s.is_empty() && s.len() < 200)
-                    .take(50)
-                    .map(String::from)
-                    .collect();
-                if !strings.is_empty() {
-                    raw_strings = Some(strings);
-                }
+                asset_info.raw_strings = extract_raw_string_sample(&content);
             }
-
-            rarity_data.insert(
-                name.clone(),
-                AssetInfo {
-                    name: name.clone(),
-                    file: asset_path
-                        .file_name()
-                        .map(|s| s.to_string_lossy().to_string())
-                        .unwrap_or_default(),
-                    path: asset_path
-                        .strip_prefix(extract_dir)
-                        .map(|p| p.to_string_lossy().to_string())
-                        .ok(),
-                    stats: None,
-                    properties: None,
-                    raw_strings,
-                },
-            );
+            rarity_data.insert(name.clone(), asset_info);
         }
     }
 
@@ -211,36 +172,11 @@ pub fn extract_elemental_data(extract_dir: &Path) -> HashMap<String, AssetInfo> 
             .map(|s| s.to_string_lossy().to_string())
             .unwrap_or_default();
 
-        let mut raw_strings = None;
+        let mut asset_info = AssetInfo::from_path(asset_path, Some(extract_dir));
         if let Ok(content) = extract_strings(asset_path) {
-            let strings: Vec<String> = content
-                .lines()
-                .filter(|s| !s.is_empty() && s.len() < 200)
-                .take(50)
-                .map(String::from)
-                .collect();
-            if !strings.is_empty() {
-                raw_strings = Some(strings);
-            }
+            asset_info.raw_strings = extract_raw_string_sample(&content);
         }
-
-        elemental_data.insert(
-            name.clone(),
-            AssetInfo {
-                name: name.clone(),
-                file: asset_path
-                    .file_name()
-                    .map(|s| s.to_string_lossy().to_string())
-                    .unwrap_or_default(),
-                path: asset_path
-                    .strip_prefix(extract_dir)
-                    .map(|p| p.to_string_lossy().to_string())
-                    .ok(),
-                stats: None,
-                properties: None,
-                raw_strings,
-            },
-        );
+        elemental_data.insert(name.clone(), asset_info);
     }
 
     elemental_data

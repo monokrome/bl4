@@ -5,22 +5,16 @@ use bl4_ncs::NcsContent;
 use std::fs;
 use std::path::Path;
 
+use crate::file_utils::collect_files_with_extension;
 use super::types::SearchMatch;
 
 pub fn search_files(path: &Path, pattern: &str, all: bool, limit: usize) -> Result<()> {
     let pattern_lower = pattern.to_lowercase();
     let mut matches = Vec::new();
 
-    for entry in walkdir::WalkDir::new(path)
-        .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|e| e.file_type().is_file())
-    {
-        let file_path = entry.path();
-        if !file_path.extension().map(|e| e == "bin").unwrap_or(false) {
-            continue;
-        }
+    let files = collect_files_with_extension(path, &["bin"])?;
 
+    for file_path in &files {
         if let Ok(data) = fs::read(file_path) {
             if let Some(content) = NcsContent::parse(&data) {
                 let search_strings: Vec<&str> = if all {

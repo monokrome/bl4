@@ -44,23 +44,7 @@ pub fn extract_balance_data(extract_dir: &Path) -> Result<HashMap<String, Balanc
                     })
                 {
                     let asset_path = asset_entry.path();
-                    let mut asset_info = AssetInfo {
-                        name: asset_path
-                            .file_stem()
-                            .map(|s| s.to_string_lossy().to_string())
-                            .unwrap_or_default(),
-                        file: asset_path
-                            .file_name()
-                            .map(|s| s.to_string_lossy().to_string())
-                            .unwrap_or_default(),
-                        path: asset_path
-                            .strip_prefix(extract_dir)
-                            .map(|p| p.to_string_lossy().to_string())
-                            .ok(),
-                        stats: None,
-                        properties: None,
-                        raw_strings: None,
-                    };
+                    let mut asset_info = AssetInfo::from_path(asset_path, Some(extract_dir));
 
                     // Extract strings and parse properties
                     if let Ok(content) = extract_strings(asset_path) {
@@ -113,25 +97,7 @@ pub fn extract_naming_data(extract_dir: &Path) -> Result<HashMap<String, AssetIn
         })
     {
         let asset_path = entry.path();
-        let name = asset_path
-            .file_stem()
-            .map(|s| s.to_string_lossy().to_string())
-            .unwrap_or_default();
-
-        let mut asset_info = AssetInfo {
-            name: name.clone(),
-            file: asset_path
-                .file_name()
-                .map(|s| s.to_string_lossy().to_string())
-                .unwrap_or_default(),
-            path: asset_path
-                .strip_prefix(extract_dir)
-                .map(|p| p.to_string_lossy().to_string())
-                .ok(),
-            stats: None,
-            properties: None,
-            raw_strings: None,
-        };
+        let mut asset_info = AssetInfo::from_path(asset_path, Some(extract_dir));
 
         if let Ok(content) = extract_strings(asset_path) {
             let props = parse_property_strings(&content);
@@ -140,7 +106,7 @@ pub fn extract_naming_data(extract_dir: &Path) -> Result<HashMap<String, AssetIn
             }
         }
 
-        naming_data.insert(name, asset_info);
+        naming_data.insert(asset_info.name.clone(), asset_info);
     }
 
     Ok(naming_data)

@@ -50,6 +50,43 @@ pub struct AssetInfo {
     pub raw_strings: Option<Vec<String>>,
 }
 
+impl AssetInfo {
+    /// Create an AssetInfo from an asset path, optionally relative to an extract directory
+    pub fn from_path(asset_path: &Path, extract_dir: Option<&Path>) -> Self {
+        Self {
+            name: asset_path
+                .file_stem()
+                .map(|s| s.to_string_lossy().to_string())
+                .unwrap_or_default(),
+            file: asset_path
+                .file_name()
+                .map(|s| s.to_string_lossy().to_string())
+                .unwrap_or_default(),
+            path: extract_dir.and_then(|dir| {
+                asset_path
+                    .strip_prefix(dir)
+                    .map(|p| p.to_string_lossy().to_string())
+                    .ok()
+            }),
+            stats: None,
+            properties: None,
+            raw_strings: None,
+        }
+    }
+
+    /// Create from a name and path string (for simpler cases)
+    pub fn new(name: String, file: String) -> Self {
+        Self {
+            name,
+            file,
+            path: None,
+            stats: None,
+            properties: None,
+            raw_strings: None,
+        }
+    }
+}
+
 /// Get stat descriptions from bl4::reference
 #[deprecated(note = "Use bl4::reference::all_stat_descriptions() directly")]
 pub fn stat_descriptions() -> HashMap<&'static str, &'static str> {
@@ -64,6 +101,22 @@ pub fn extract_strings(uasset_path: &Path) -> Result<String> {
         .context("Failed to run strings command")?;
 
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
+}
+
+/// Extract a filtered sample of raw strings from content
+/// Filters out empty strings and very long lines, takes first 50
+pub fn extract_raw_string_sample(content: &str) -> Option<Vec<String>> {
+    let strings: Vec<String> = content
+        .lines()
+        .filter(|s| !s.is_empty() && s.len() < 200)
+        .take(50)
+        .map(String::from)
+        .collect();
+    if strings.is_empty() {
+        None
+    } else {
+        Some(strings)
+    }
 }
 
 /// Parse property names and GUIDs from strings output

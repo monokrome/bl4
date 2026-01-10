@@ -6,6 +6,7 @@ mod commands;
 mod config;
 mod dispatch;
 mod file_io;
+mod file_utils;
 #[cfg(feature = "research")]
 mod manifest;
 mod memory;

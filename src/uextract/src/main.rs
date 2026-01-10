@@ -262,7 +262,10 @@ fn extract_from_paks(paks_dir: &std::path::Path, output: &std::path::Path, verbo
     }
 
     if stats.files_failed > 0 {
-        eprintln!("PAK: Failed to extract {} files", stats.files_failed);
+        eprintln!("PAK: Failed to extract {} files:", stats.files_failed);
+        for (filename, error) in &stats.failed_files {
+            eprintln!("  - {}: {}", filename, error);
+        }
     }
 
     Ok(())

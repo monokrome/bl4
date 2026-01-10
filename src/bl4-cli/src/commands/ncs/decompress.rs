@@ -9,6 +9,50 @@ use std::path::{Path, PathBuf};
 use super::format::format_tsv;
 use super::util::print_hex;
 
+/// Write decompressed NCS data to a single output file
+fn write_output_file(
+    decompressed: &[u8],
+    output_path: &Path,
+    raw: bool,
+) -> Result<()> {
+    if raw {
+        fs::write(output_path, decompressed)?;
+    } else if let Some(doc) = parse_document(decompressed) {
+        fs::write(output_path, format_tsv(&doc))?;
+    } else {
+        fs::write(output_path, decompressed)?;
+    }
+    Ok(())
+}
+
+/// Write decompressed NCS data to a directory with appropriate naming
+/// Returns true on success
+fn write_to_directory(
+    decompressed: &[u8],
+    output_dir: &Path,
+    type_name: &str,
+    raw: bool,
+) -> Result<()> {
+    if raw {
+        // Raw mode: save binary
+        let out_path = output_dir.join(format!("{}.bin", type_name));
+        fs::write(&out_path, decompressed)?;
+    } else if let Some(doc) = parse_document(decompressed) {
+        // Parse and output as TSV
+        let out_path = output_dir.join(format!("{}.tsv", doc.type_name));
+        fs::write(&out_path, format_tsv(&doc))?;
+    } else if let Some(content) = NcsContent::parse(decompressed) {
+        // Fallback: couldn't parse structure, save raw with parsed type name
+        let out_path = output_dir.join(format!("{}.bin", content.type_name()));
+        fs::write(&out_path, decompressed)?;
+    } else {
+        // Fallback: save raw binary with provided type name
+        let out_path = output_dir.join(format!("{}.bin", type_name));
+        fs::write(&out_path, decompressed)?;
+    }
+    Ok(())
+}
+
 #[cfg(target_os = "windows")]
 pub fn decompress_file(
     input: &Path,
@@ -70,13 +114,7 @@ fn decompress_file_impl(
             .map_err(|e| anyhow::anyhow!("Failed to decompress NCS data: {}", e))?;
 
         if let Some(output_path) = output {
-            if raw {
-                fs::write(output_path, &decompressed)?;
-            } else if let Some(doc) = parse_document(&decompressed) {
-                fs::write(output_path, format_tsv(&doc))?;
-            } else {
-                fs::write(output_path, &decompressed)?;
-            }
+            write_output_file(&decompressed, output_path, raw)?;
             println!(
                 "Decompressed {} bytes -> {} bytes to {}",
                 ncs_data.len(),
@@ -94,13 +132,7 @@ fn decompress_file_impl(
         let decompressed = decompress_ncs_with(&data, decompressor.as_ref())
             .map_err(|e| anyhow::anyhow!("Failed to decompress NCS data: {}", e))?;
         if let Some(output_path) = output {
-            if raw {
-                fs::write(output_path, &decompressed)?;
-            } else if let Some(doc) = parse_document(&decompressed) {
-                fs::write(output_path, format_tsv(&doc))?;
-            } else {
-                fs::write(output_path, &decompressed)?;
-            }
+            write_output_file(&decompressed, output_path, raw)?;
             println!(
                 "Decompressed {} bytes -> {} bytes to {}",
                 data.len(),
@@ -144,41 +176,14 @@ fn decompress_file_impl(
         let chunk_data = &data[*offset..*offset + header.total_size()];
         match decompress_ncs_with(chunk_data, decompressor.as_ref()) {
             Ok(decompressed) => {
-                if raw {
-                    // Raw mode: save binary with type name if possible
-                    if let Some(content) = NcsContent::parse(&decompressed) {
-                        let filename = format!("{}.bin", content.type_name());
-                        let out_path = output_dir.join(&filename);
-                        fs::write(&out_path, &decompressed)?;
-                    } else {
-                        let filename = format!("0x{:08x}.bin", offset);
-                        let out_path = output_dir.join(&filename);
-                        fs::write(&out_path, &decompressed)?;
-                    }
-                    success += 1;
-                } else if let Some(doc) = parse_document(&decompressed) {
-                    // Parse and output as TSV
-                    let filename = format!("{}.tsv", doc.type_name);
-                    let out_path = output_dir.join(&filename);
-                    let tsv_content = format_tsv(&doc);
-                    fs::write(&out_path, &tsv_content)?;
-                    success += 1;
-                } else if let Some(content) = NcsContent::parse(&decompressed) {
-                    // Fallback: couldn't parse structure, save raw with type name
-                    let filename = format!("{}.bin", content.type_name());
-                    let out_path = output_dir.join(&filename);
-                    fs::write(&out_path, &decompressed)?;
-                    success += 1;
-                } else {
-                    // Fallback: save raw binary
-                    let filename = format!("0x{:08x}.bin", offset);
-                    let out_path = output_dir.join(&filename);
-                    fs::write(&out_path, &decompressed)?;
-                    success += 1;
-                }
+                // Determine type name, falling back to offset if unknown
+                let type_name = NcsContent::parse(&decompressed)
+                    .map(|c| c.type_name().to_string())
+                    .unwrap_or_else(|| format!("0x{:08x}", offset));
+                write_to_directory(&decompressed, &output_dir, &type_name, raw)?;
+                success += 1;
             }
             Err(e) => {
-                // Try to identify the type from the raw data if possible
                 let type_hint = format!("offset 0x{:08x}", offset);
                 eprintln!("  Failed {}: {}", type_hint, e);
                 failed_types.push(type_hint);
@@ -266,28 +271,8 @@ fn decompress_pak_index(
             }
         };
 
-        if raw {
-            // Raw mode: save binary
-            let out_path = output_dir.join(format!("{}.bin", type_name));
-            fs::write(&out_path, &decompressed)?;
-            success += 1;
-        } else if let Some(doc) = parse_document(&decompressed) {
-            // Parse and output as TSV
-            let out_path = output_dir.join(format!("{}.tsv", doc.type_name));
-            let tsv_content = format_tsv(&doc);
-            fs::write(&out_path, &tsv_content)?;
-            success += 1;
-        } else if let Some(content) = NcsContent::parse(&decompressed) {
-            // Fallback: couldn't parse structure, save raw
-            let out_path = output_dir.join(format!("{}.bin", content.type_name()));
-            fs::write(&out_path, &decompressed)?;
-            success += 1;
-        } else {
-            // Fallback: save raw binary with type from filename
-            let out_path = output_dir.join(format!("{}.bin", type_name));
-            fs::write(&out_path, &decompressed)?;
-            success += 1;
-        }
+        write_to_directory(&decompressed, &output_dir, &type_name, raw)?;
+        success += 1;
     }
 
     println!(

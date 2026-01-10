@@ -79,9 +79,20 @@ impl PakReader {
 
     /// Read a file from the PAK
     pub fn read(&mut self, filename: &str) -> Result<Vec<u8>> {
-        self.pak
-            .get(filename, &mut self.file)
-            .with_context(|| format!("Failed to read '{}' from PAK", filename))
+        // Catch panics from repak (it can panic on malformed entries)
+        let file_ref = &mut self.file;
+        let pak_ref = &self.pak;
+        let filename_owned = filename.to_string();
+
+        let read_result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
+            pak_ref.get(&filename_owned, file_ref)
+        }));
+
+        match read_result {
+            Ok(Ok(data)) => Ok(data),
+            Ok(Err(e)) => anyhow::bail!("Failed to read '{}' from PAK: {}", filename, e),
+            Err(_) => anyhow::bail!("PAK read panicked for '{}' (malformed entry)", filename),
+        }
     }
 
     /// Read a file, trying with and without mount point prefix
@@ -161,9 +172,20 @@ impl MemoryPakReader {
 
     /// Read a file from the PAK
     pub fn read(&mut self, filename: &str) -> Result<Vec<u8>> {
-        self.pak
-            .get(filename, &mut self.data)
-            .with_context(|| format!("Failed to read '{}' from PAK", filename))
+        // Catch panics from repak (it can panic on malformed entries)
+        let data_ref = &mut self.data;
+        let pak_ref = &self.pak;
+        let filename_owned = filename.to_string();
+
+        let read_result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
+            pak_ref.get(&filename_owned, data_ref)
+        }));
+
+        match read_result {
+            Ok(Ok(data)) => Ok(data),
+            Ok(Err(e)) => anyhow::bail!("Failed to read '{}' from PAK: {}", filename, e),
+            Err(_) => anyhow::bail!("PAK read panicked for '{}' (malformed entry)", filename),
+        }
     }
 }
 
@@ -223,6 +245,8 @@ pub struct ExtractStats {
     pub files_processed: usize,
     /// Files that failed to read
     pub files_failed: usize,
+    /// Names of files that failed (with error reason)
+    pub failed_files: Vec<(String, String)>,
 }
 
 /// Extract files from all PAK archives in a directory using a handler callback.
@@ -273,16 +297,19 @@ where
         for filename in &files {
             let data = match reader.read(filename) {
                 Ok(d) => d,
-                Err(_) => {
+                Err(e) => {
                     stats.files_failed += 1;
+                    stats.failed_files.push((filename.clone(), e.to_string()));
                     continue;
                 }
             };
 
-            if handler(filename, data).is_ok() {
-                stats.files_processed += 1;
-            } else {
-                stats.files_failed += 1;
+            match handler(filename, data) {
+                Ok(()) => stats.files_processed += 1,
+                Err(e) => {
+                    stats.files_failed += 1;
+                    stats.failed_files.push((filename.clone(), e.to_string()));
+                }
             }
         }
     }
