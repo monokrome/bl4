@@ -28,6 +28,13 @@ cargo build --release -p bl4-cli
 
 Binary location: `target/release/bl4`
 
+To install:
+
+```bash
+cargo install --path src/bl4-cli/
+```
+
+
 JavaScript/TypeScript (NPM):
 ```bash
 npm install @monokrome/bl4
