@@ -5,6 +5,7 @@
 mod analysis;
 mod build_parts_db;
 mod discover;
+mod extract_ncs_schema;
 mod extract_parts;
 mod fname;
 mod listing;
@@ -17,6 +18,7 @@ pub use analysis::{
 };
 pub use build_parts_db::handle_build_parts_db;
 pub use discover::{handle_discover, handle_find_class_uclass, handle_objects};
+pub use extract_ncs_schema::handle_extract_ncs_schema;
 pub use extract_parts::{handle_extract_parts, handle_extract_parts_raw};
 pub use fname::{handle_fname, handle_fname_search};
 pub use listing::{handle_list_objects, handle_list_uclasses};
