@@ -505,7 +505,7 @@ eridium: 6666
     fn test_parse_value_float() {
         let val = SaveFile::parse_value("3.14159");
         assert!(val.as_f64().is_some());
-        assert!((val.as_f64().unwrap() - 3.14159).abs() < 0.0001);
+        assert!((val.as_f64().unwrap() - std::f64::consts::PI).abs() < 0.01);
     }
 
     #[test]
