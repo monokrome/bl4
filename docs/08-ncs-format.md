@@ -990,6 +990,57 @@ Values are stored as:
 
 The `bl4 ncs extract` command with `--extract-type serial-indices` extracts ~5,972 serial index occurrences (target: 5,513). The 8.3% over-extraction suggests some false positives in the heuristic approach, but provides near-complete coverage of serial indices.
 
+### BinaryParserV2: Correct Bit-Packed Format (Jan 2026)
+
+**Discovery**: The inv.bin binary section uses a **3-part structure** with bit-packed and byte-packed entries:
+
+#### Structure Overview
+
+```
+[Part 1: Bit-packed first entry (~161 bytes)]
+  └─ 12-bit string indices (LSB-first)
+  └─ Can reference any of the 18,393 strings
+
+[Part 2: Byte-packed entries (~9,780 bytes)]
+  └─ Format: 00 <name_idx> <data_idx> <data_idx> ...
+  └─ 8-bit string indices (first 256 strings only)
+  └─ ~1,197 entries
+
+[Part 3: Tail sections (~74,660 bytes)]
+  └─ 51 sections of byte-packed entries
+  └─ Sections separated by 00 00 terminators
+  └─ ~7,873 entries total
+  └─ Same byte-packed format as Part 2
+```
+
+#### Serial Index Extraction (Improved)
+
+The BinaryParserV2 correctly extracts serial indices by:
+
+1. **Parsing part names**: Identifies entries with part-like names (e.g., `BOR_SG_Barrel_01_A`, `comp_01_common`)
+2. **Finding numeric values**: Locates small integers (1-1000) in the entry's data fields
+3. **Deriving categories**: For manufacturer-prefixed parts, maps prefix to category ID:
+   - `BOR_SG_*` → Category 12 (Ripper Shotgun)
+   - `JAK_SG_*` → Category 9 (Jakobs Shotgun)
+   - `DAD_PS_*` → Category 2 (Daedalus Pistol)
+   - etc.
+
+**Results**: BinaryParserV2 extracts **875 unique part names** with serial indices from inv.bin files.
+
+**Limitations**:
+- Only **38 parts** (4.3%) have manufacturer prefixes that map to categories
+- **837 parts** (95.7%) are generic (comp_*, part_firmware_*, etc.) and cannot derive categories from NCS alone
+- Categories are NOT stored in inv.bin - they must be derived from part name prefixes or obtained from memory dumps
+
+**Usage**:
+```bash
+# Extract serial indices with BinaryParserV2
+bl4 ncs extract /path/to/ncsdata --extract-type serial-indices-v2
+
+# Export as parts manifest
+bl4 ncs extract /path/to/ncsdata --extract-type manifest -o parts.json
+```
+
 ### File Structure
 
 ```
@@ -1182,7 +1233,7 @@ Each part in inv.bin has a `serialindex` field that provides a unique identifier
 ```
 serialindex: {
   status: "Active" | "Inactive"
-  index: u32              // The actual serial index number
+  index: u32              // The actual serial index number (0-127 typically)
   _category: "inv_type"   // Always "inv_type" for inventory parts
   _scope: "Root" | "Sub"  // "Root" for item types, "Sub" for parts
 }
@@ -1191,11 +1242,32 @@ serialindex: {
 **Item Types (Root scope):**
 - Each weapon type (e.g., `DAD_PS`, `BOR_SG`) has a Root serialindex
 - Used to identify the base item type in serialized data
+- In actual serials, Root parts appear with indices 0-127 (bit 7 = 0)
 
 **Parts (Sub scope):**
 - Each part within an item type has a Sub serialindex
 - Indices are unique within each item type but may repeat across types
 - The slot type (barrel, grip, etc.) determines which part pool the index references
+- **In actual serials, Sub parts appear with indices 128-255 (bit 7 = 1)**
+
+#### Bit 7 Flag in Serials (Jan 2026 Discovery)
+
+**Critical finding**: In actual serialized items, the Root vs Sub scope is encoded via **bit 7** of the Part token index:
+
+```
+For Part indices > 142 (beyond element range):
+  Bit 7 = 0 → Root scope (core parts: body, barrel, scope)
+  Bit 7 = 1 → Sub scope (attachments: grips, foregrips, underbarrel)
+
+Actual part index = serial_index & 0x7F  (strip bit 7)
+```
+
+**Examples from Rainbow Vomit (Jakobs Shotgun):**
+- Serial index 4 → part_body_b (Root: bit 7 = 0)
+- Serial index 170 → 42 → part_grip_03 (Sub: bit 7 = 1, actual index = 42)
+- Serial index 166 → 38 → part_grip_04_hyp (Sub: bit 7 = 1, actual index = 38)
+
+This means the NCS `_scope` field directly corresponds to how parts are encoded in serialized items - the game sets bit 7 based on whether the part is Root or Sub scope.
 ```
 
 ### Memory vs NCS Part Names
