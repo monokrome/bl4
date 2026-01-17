@@ -90,8 +90,14 @@ From `/crates/bl4/src/parts.rs` `category_name()` function:
 **Known gaps after bit 7 discovery:**
 
 1. **Rainbow Vomit test**: 7/10 parts resolved (70%)
-   - Missing indices: 73, 78 (genuinely absent from database)
-   - These may be legendary-specific parts not yet captured
+   - Missing indices: 73, 201, 206 (legendary-specific parts)
+   - These are special parts like `part_body_ele_RainbowVomit_Cor_Fire_Shock`
+   - Found in pak extraction (Nexus-Data-inv4.json) but not in NCS files
+   - 12 legendary-specific parts identified:
+     - `part_barrel_RainbowVomit`
+     - `part_mag_RainbowVomit`
+     - 10x `part_body_ele_RainbowVomit_*` (one per 3-element combination)
+   - Indices need to be manually mapped or extracted from memory
 
 2. **Non-prefixed parts**: Cannot derive categories from NCS
    - `comp_*` (rarity modifiers) - exist in multiple categories
