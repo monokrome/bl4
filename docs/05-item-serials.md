@@ -484,6 +484,35 @@ This matches the `GbxSerialNumberIndex.scope` field documented below (Root=1, Su
 
 **Validation**: Tested on Rainbow Vomit (Jakobs Legendary Shotgun). All 7 decoded parts with bit 7 flag correctly resolved to valid Jakobs Shotgun parts, improving resolution from 30% → 70%.
 
+### Legendary-Specific Parts
+
+Legendary weapons have unique parts not found in the standard NCS files. **Rainbow Vomit** (Jakobs Legendary Shotgun) example:
+
+**Standard legendary parts**:
+- `part_barrel_RainbowVomit`
+- `part_mag_RainbowVomit`
+
+**Element combination parts** (3-element variants):
+```text
+part_body_ele_RainbowVomit_Cor_Cryo_Fire
+part_body_ele_RainbowVomit_Cor_Cryo_Rad
+part_body_ele_RainbowVomit_Cor_Cryo_Shock
+part_body_ele_RainbowVomit_Cor_Fire_Rad
+part_body_ele_RainbowVomit_Cor_Fire_shock
+part_body_ele_RainbowVomit_Cor_Rad_shock
+part_body_ele_RainbowVomit_Cryo_Fire_Rad
+part_body_ele_RainbowVomit_Cryo_Fire_Shock
+part_body_ele_RainbowVomit_Cryo_Rad_Shock
+part_body_ele_RainbowVomit_Fire_Rad_Shock
+```
+
+These parts were found in pak extraction (`Nexus-Data-inv4.json`) but are **not present in NCS files**. Each legendary weapon with special mechanics (multi-element, unique firing patterns, etc.) likely has similar unique parts.
+
+**Issue**: The Part indices for these legendary parts (e.g., 73, 201, 206 in Rainbow Vomit serials) are not yet mapped in our database. They require either:
+1. Memory dump while the legendary is equipped/in inventory
+2. Manual testing by spawning legendaries and decoding their serials
+3. Reverse engineering the pak files to extract InventoryPartDef registration order
+
 ---
 
 ## The UE5 Part System
