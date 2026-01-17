@@ -37,6 +37,30 @@ From `/crates/bl4/src/parts.rs` `category_name()` function:
 
 ## Implementation Status
 
+### Completed (Jan 2026)
+
+**Major breakthrough**: Discovered bit 7 flag in Part token indices indicates Root vs Sub scope:
+
+1. **Bit 7 decoding implemented**:
+   - For indices > 142, bit 7 = 0 means Root scope (core parts)
+   - For indices > 142, bit 7 = 1 means Sub scope (modular attachments)
+   - Actual part index is in lower 7 bits (index & 0x7F)
+
+2. **Category derivation from NCS**:
+   - Added `category_from_prefix()` function to bl4-ncs
+   - Derives categories from manufacturer prefixes (BOR_SG → 12, JAK_SG → 9, etc.)
+   - NCS extraction yields 38 manufacturer-prefixed parts with categories
+
+3. **Improved serial decoding**:
+   - Rainbow Vomit (Jakobs Legendary Shotgun) resolution: 30% → 70%
+   - All decoded parts validated as correct Jakobs Shotgun parts
+   - Successfully resolves indices 170, 166, 174, 196 by stripping bit 7
+
+4. **Updated parts database**:
+   - Merged NCS extraction with existing database
+   - Total: 5,368 parts across multiple categories
+   - Manufacturer weapon parts now include NCS-sourced data
+
 ### Completed (Dec 2025)
 
 1. **Weapon categories filled**:
@@ -61,22 +85,28 @@ From `/crates/bl4/src/parts.rs` `category_name()` function:
 5. **CLI enhanced**:
    - `bl4 serial decode` now shows Category name and ID in output
 
-### Still Missing
+### Still Missing (Jan 2026)
 
-**Part definitions not in parts_dump.json:**
-- `classmod_dark_siren.*` - No parts extracted
-- `classmod_paladin.*` - No parts extracted
-- `classmod_exo_soldier.*` - No parts extracted
-- `firmware.*` - No parts extracted (firmware parts exist under `grenade_gadget.part_firmware_*` etc.)
+**Known gaps after bit 7 discovery:**
 
-**Validation test results** (from `cargo test -p bl4 validate`):
+1. **Rainbow Vomit test**: 7/10 parts resolved (70%)
+   - Missing indices: 73, 78 (genuinely absent from database)
+   - These may be legendary-specific parts not yet captured
 
-Weapon serials: 12/16 parts found (75%)
-- Missing high indices (241, 246, 252, 184) likely rarity/legendary variants
+2. **Non-prefixed parts**: Cannot derive categories from NCS
+   - `comp_*` (rarity modifiers) - exist in multiple categories
+   - `part_firmware_*` - no manufacturer prefix
+   - `part_ra_*` - unknown categorization
+   - Requires memory dump or other source for category mapping
 
-Equipment serials: 3/19 parts found (16%)
-- Most class mod/firmware parts not in database
-- Index 254 appears frequently (likely end-of-data marker)
+3. **Part definitions not in parts_dump.json:**
+   - `classmod_dark_siren.*` - No parts extracted
+   - `classmod_paladin.*` - No parts extracted
+   - `classmod_exo_soldier.*` - No parts extracted
+
+4. **Equipment serials**: Still low resolution
+   - Most class mod/firmware parts not in database
+   - Index 254 appears frequently (likely end-of-data marker)
 
 ## Evidence Sources
 
