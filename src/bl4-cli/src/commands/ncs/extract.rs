@@ -60,6 +60,21 @@ pub fn extract_by_type(
         return extract_binary_native(path, output, json);
     }
 
+    // V2 binary parser (correct bit-packed algorithm)
+    if extract_type == "binary-v2" || extract_type == "v2" {
+        return extract_binary_v2(path, output, json);
+    }
+
+    // Serial index decoder (scan all inv files)
+    if extract_type == "decoder" || extract_type == "serial-decoder" {
+        return build_serial_decoder(path, output, json);
+    }
+
+    // Manifest export (for parts_database.json)
+    if extract_type == "manifest" || extract_type == "parts-manifest" {
+        return export_parts_manifest(path, output, json);
+    }
+
     let mut extracted = Vec::new();
 
     for entry in walkdir::WalkDir::new(path)
@@ -1062,4 +1077,328 @@ fn find_binary_section_start(data: &[u8], _strings: &bl4_ncs::StringTable) -> us
 
     // Fallback to last null position
     last_null + 1
+}
+
+/// Extract using V2 binary parser (correct bit-packed algorithm)
+fn extract_binary_v2(path: &Path, output: Option<&Path>, json: bool) -> Result<()> {
+    use bl4_ncs::{BinaryParserV2, extract_serial_indices_v2, serial_indices_to_tsv_v2, parse_header, parse_ncs_string_table};
+
+    let inv_path = find_inv_file(path)?;
+    let data = fs::read(&inv_path).context("Failed to read inv file")?;
+
+    // Parse header to get format code and binary offset
+    let header = parse_header(&data)
+        .context("Failed to parse NCS header")?;
+
+    eprintln!("Type: {}", header.type_name);
+    eprintln!("Format code: {}", header.format_code);
+
+    // Parse string table
+    let string_table = parse_ncs_string_table(&data, &header);
+    eprintln!("String table: {} entries", string_table.len());
+
+    // Calculate binary section offset (simplified - just use the known offset)
+    let binary_offset = find_binary_section_start(&data, &string_table);
+    eprintln!("Binary section starts at: 0x{:x}", binary_offset);
+
+    // Create V2 parser and parse
+    let parser = BinaryParserV2::new(&data, &string_table);
+    let parsed = parser.parse(binary_offset);
+
+    eprintln!("Parsed {} total entries", parsed.total_entries());
+    eprintln!("  - First entry: {}", if parsed.first_entry.is_some() { "yes" } else { "no" });
+    eprintln!("  - Byte-packed entries: {}", parsed.byte_packed_entries.len());
+    eprintln!("  - Tail sections: {} ({} entries)",
+        parsed.tail_sections.len(),
+        parsed.tail_sections.iter().map(|s| s.len()).sum::<usize>()
+    );
+
+    // Extract serial indices
+    let serial_entries = extract_serial_indices_v2(&parsed);
+    eprintln!("Extracted {} serial index entries", serial_entries.len());
+
+    // Output
+    if json {
+        let output_str = serde_json::to_string_pretty(&parsed)?;
+        if let Some(output_path) = output {
+            fs::write(output_path, &output_str)?;
+            println!("Wrote parsed data to {}", output_path.display());
+        } else {
+            println!("{}", output_str);
+        }
+    } else {
+        // TSV output of serial indices
+        let tsv = serial_indices_to_tsv_v2(&serial_entries, &header.type_name);
+        if let Some(output_path) = output {
+            fs::write(output_path, &tsv)?;
+            println!("Wrote {} serial indices to {}", serial_entries.len(), output_path.display());
+        } else {
+            println!("{}", tsv);
+        }
+    }
+
+    Ok(())
+}
+
+/// Build complete serial index decoder by scanning all inv*.bin files
+fn build_serial_decoder(path: &Path, output: Option<&Path>, json: bool) -> Result<()> {
+    use bl4_ncs::{BinaryParserV2, parse_header, parse_ncs_string_table};
+    use std::collections::BTreeMap;
+
+    #[derive(Debug, serde::Serialize)]
+    struct SerialIndexData {
+        index: u32,
+        source_file: String,
+        strings: Vec<String>,
+        primary_ref: Option<String>,
+    }
+
+    let mut decoder: BTreeMap<u32, SerialIndexData> = BTreeMap::new();
+    let mut files_processed = 0;
+
+    // Find all inv*.bin files
+    eprintln!("Scanning for inv*.bin files...");
+    for entry in walkdir::WalkDir::new(path)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.file_type().is_file())
+    {
+        let file_path = entry.path();
+        let filename = file_path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+
+        // Match inv*.bin files (but not inventory_container)
+        if !filename.contains("-inv") || !filename.ends_with(".bin") || filename.contains("inventory_container") {
+            continue;
+        }
+
+        eprintln!("Processing: {}", file_path.display());
+
+        let data = match fs::read(file_path) {
+            Ok(d) => d,
+            Err(e) => {
+                eprintln!("  Warning: Failed to read file: {}", e);
+                continue;
+            }
+        };
+
+        // Parse header and string table
+        let header = match parse_header(&data) {
+            Some(h) => h,
+            None => {
+                eprintln!("  Warning: Failed to parse header");
+                continue;
+            }
+        };
+
+        let string_table = parse_ncs_string_table(&data, &header);
+
+        // Find binary section
+        let binary_offset = find_binary_section_start(&data, &string_table);
+
+        // Parse with V2 parser
+        let parser = BinaryParserV2::new(&data, &string_table);
+        let parsed = parser.parse(binary_offset);
+
+        // Extract numeric entries (serial indices)
+        let mut entries_found = 0;
+        for section in &parsed.tail_sections {
+            for entry in section {
+                // Check if entry name is a number
+                if let Ok(index) = entry.name.parse::<u32>() {
+                    entries_found += 1;
+
+                    // Determine primary reference (first non-numeric, non-decimal string)
+                    let primary_ref = entry.strings.iter()
+                        .skip(1) // Skip the index itself
+                        .find(|s| {
+                            !s.parse::<f64>().is_ok() && // Not a number
+                            !s.starts_with('/') && // Not a path
+                            !s.is_empty() &&
+                            s != &"none" &&
+                            s.len() > 2
+                        })
+                        .cloned();
+
+                    // Only add if we don't have this index yet (first file wins)
+                    decoder.entry(index).or_insert_with(|| SerialIndexData {
+                        index,
+                        source_file: filename.to_string(),
+                        strings: entry.strings.clone(),
+                        primary_ref,
+                    });
+                }
+            }
+        }
+
+        eprintln!("  Found {} serial index entries", entries_found);
+        files_processed += 1;
+    }
+
+    eprintln!("\nProcessed {} files, found {} unique serial indices",
+        files_processed, decoder.len());
+
+    // Export
+    if json {
+        let output_str = serde_json::to_string_pretty(&decoder)?;
+        if let Some(output_path) = output {
+            fs::write(output_path, &output_str)?;
+            println!("Wrote decoder to {}", output_path.display());
+        } else {
+            println!("{}", output_str);
+        }
+    } else {
+        // TSV format
+        let mut lines = vec!["serial_index\tprimary_ref\tsource_file\tall_strings".to_string()];
+        for (_, data) in &decoder {
+            lines.push(format!(
+                "{}\t{}\t{}\t{}",
+                data.index,
+                data.primary_ref.as_deref().unwrap_or("UNKNOWN"),
+                data.source_file,
+                data.strings.join("|")
+            ));
+        }
+        let output_str = lines.join("\n");
+
+        if let Some(output_path) = output {
+            fs::write(output_path, &output_str)?;
+            println!("Wrote {} serial indices to {}", decoder.len(), output_path.display());
+        } else {
+            println!("{}", output_str);
+        }
+    }
+
+    Ok(())
+}
+
+/// Export parts manifest for integration into parts_database.json
+fn export_parts_manifest(path: &Path, output: Option<&Path>, _json: bool) -> Result<()> {
+    use bl4_ncs::{extract_serial_indices_v2, BinaryParserV2, parse_header, parse_ncs_string_table};
+    use std::collections::BTreeMap;
+
+    #[derive(Debug, serde::Serialize)]
+    struct PartsManifest {
+        version: u32,
+        source: String,
+        parts: Vec<PartEntry>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        categories: Option<BTreeMap<String, CategoryInfo>>,
+    }
+
+    #[derive(Debug, serde::Serialize)]
+    struct PartEntry {
+        category: i64,
+        index: i64,
+        name: String,
+    }
+
+    #[derive(Debug, serde::Serialize)]
+    struct CategoryInfo {
+        count: usize,
+        name: String,
+    }
+
+    let mut parts_by_key: BTreeMap<(i64, i64), String> = BTreeMap::new(); // (category, index) -> name
+    let mut files_processed = 0;
+    let mut total_extracted = 0;
+    let mut parts_with_category = 0;
+    let mut parts_without_category = 0;
+
+    // Find all inv*.bin files
+    eprintln!("Scanning for inv*.bin files with BinaryParserV2...");
+    for entry in walkdir::WalkDir::new(path)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.file_type().is_file())
+    {
+        let file_path = entry.path();
+        let filename = file_path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+
+        // Match inv*.bin files (but not inventory_container)
+        if !filename.contains("-inv") || !filename.ends_with(".bin") || filename.contains("inventory_container") {
+            continue;
+        }
+
+        let data = match fs::read(file_path) {
+            Ok(d) => d,
+            Err(e) => {
+                eprintln!("  Skipping {}: {}", filename, e);
+                continue;
+            }
+        };
+
+        let header = match parse_header(&data) {
+            Some(h) => h,
+            None => {
+                eprintln!("  Skipping {}: Failed to parse header", filename);
+                continue;
+            }
+        };
+
+        let string_table = parse_ncs_string_table(&data, &header);
+        let binary_offset = find_binary_section_start(&data, &string_table);
+
+        let parser = BinaryParserV2::new(&data, &string_table);
+        let parsed = parser.parse(binary_offset);
+
+        // Use the improved extraction that includes category derivation
+        let serial_entries = extract_serial_indices_v2(&parsed);
+
+        eprintln!("Processing {} ({} parts)...", filename, serial_entries.len());
+
+        for entry in serial_entries {
+            total_extracted += 1;
+
+            if let Some(category) = entry.category {
+                // Part has a category from prefix mapping
+                let key = (category, entry.index as i64);
+                parts_by_key.entry(key).or_insert_with(|| entry.part_name.clone());
+                parts_with_category += 1;
+            } else {
+                // Part doesn't have a manufacturer prefix, skip for now
+                // These are parts like "comp_*", "part_firmware_*" etc.
+                parts_without_category += 1;
+            }
+        }
+
+        files_processed += 1;
+    }
+
+    eprintln!("\nExtraction complete:");
+    eprintln!("  Files processed: {}", files_processed);
+    eprintln!("  Total parts extracted: {}", total_extracted);
+    eprintln!("  Parts with categories: {}", parts_with_category);
+    eprintln!("  Parts without categories: {} (skipped)", parts_without_category);
+    eprintln!("  Unique (category, index) pairs: {}", parts_by_key.len());
+
+    // Build manifest
+    let mut parts: Vec<PartEntry> = parts_by_key
+        .into_iter()
+        .map(|((category, index), name)| PartEntry {
+            category,
+            index,
+            name,
+        })
+        .collect();
+
+    // Sort by category, then index
+    parts.sort_by_key(|p| (p.category, p.index));
+
+    let manifest = PartsManifest {
+        version: 1,
+        source: "NCS inv*.bin files (BinaryParserV2 with category derivation)".to_string(),
+        parts,
+        categories: None, // Could add category stats here if needed
+    };
+
+    let output_str = serde_json::to_string_pretty(&manifest)?;
+
+    if let Some(output_path) = output {
+        fs::write(output_path, &output_str)?;
+        println!("Wrote manifest with {} parts to {}", manifest.parts.len(), output_path.display());
+    } else {
+        println!("{}", output_str);
+    }
+
+    Ok(())
 }

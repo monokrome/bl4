@@ -254,4 +254,11 @@ pub enum MemoryAction {
         #[arg(short, long)]
         output: Option<PathBuf>,
     },
+
+    /// Extract NCS field schema (field hash -> name mappings) from memory
+    ExtractNcsSchema {
+        /// Output file for NCS schema mappings
+        #[arg(short, long, default_value = "share/manifests/bl4.ncsmap")]
+        output: PathBuf,
+    },
 }

@@ -244,6 +244,10 @@ fn handle_offline_memory_action(action: &MemoryAction, dump: Option<&Path>) -> R
             commands::memory::handle_generate_object_map(output.as_deref(), dump)?;
             Ok(true)
         }
+        MemoryAction::ExtractNcsSchema { output } => {
+            commands::memory::handle_extract_ncs_schema(&output, dump)?;
+            Ok(true)
+        }
         MemoryAction::Preload {
             action: preload_action,
         } => {
@@ -276,6 +280,7 @@ fn handle_live_memory_action(
         | MemoryAction::ExtractPartsRaw { .. }
         | MemoryAction::FindObjectsByPattern { .. }
         | MemoryAction::GenerateObjectMap { .. }
+        | MemoryAction::ExtractNcsSchema { .. }
         | MemoryAction::Preload { .. } => unreachable!(),
 
         MemoryAction::Info => {
