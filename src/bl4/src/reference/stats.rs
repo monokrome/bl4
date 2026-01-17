@@ -85,6 +85,6 @@ mod tests {
         assert_eq!(stats.get("DamageRadius"), Some(&"Splash damage radius"));
 
         assert_eq!(stats.len(), 21);
-        assert!(stats.get("Unknown").is_none());
+        assert!(!stats.contains_key("Unknown"));
     }
 }

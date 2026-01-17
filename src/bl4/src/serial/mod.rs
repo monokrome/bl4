@@ -840,14 +840,14 @@ impl ItemSerial {
         let mut output = Vec::new();
         for (index, name, values) in parts {
             // Skip element markers (128-142) as they're shown separately
-            if index >= 128 && index <= 142 {
+            if (128..=142).contains(&index) {
                 continue;
             }
 
             let part_str = match name {
                 Some(n) => {
                     // Extract just the part name after the prefix (e.g., "part_barrel_01" from "DAD_PS.part_barrel_01")
-                    let short_name = n.split('.').last().unwrap_or(n);
+                    let short_name = n.split('.').next_back().unwrap_or(n);
                     if values.is_empty() {
                         short_name.to_string()
                     } else if values.len() == 1 {

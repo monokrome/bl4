@@ -1,7 +1,6 @@
 //! UE5 unversioned property parsing
 
 use std::collections::HashMap;
-use usmap;
 
 use crate::types::{ParsedProperty, ParsedPropertyValue, PropertyTypeInfo};
 

@@ -50,12 +50,6 @@ pub struct AssetInfo {
     pub raw_strings: Option<Vec<String>>,
 }
 
-/// Get stat descriptions from bl4::reference
-#[deprecated(note = "Use bl4::reference::all_stat_descriptions() directly")]
-pub fn stat_descriptions() -> HashMap<&'static str, &'static str> {
-    bl4::reference::all_stat_descriptions()
-}
-
 /// Extract readable strings from a uasset file using the `strings` command
 pub fn extract_strings(uasset_path: &Path) -> Result<String> {
     let output = Command::new("strings")
@@ -91,11 +85,10 @@ pub fn parse_property_strings(content: &str) -> HashMap<String, Vec<PropertyEntr
 
 /// Parse stat modifier properties (Scale, Add, Value, Percent, etc.)
 /// Pattern: StatName_Type_Number_GUID
-#[allow(deprecated)]
 pub fn parse_stat_properties(content: &str) -> HashMap<String, StatProperty> {
     let pattern =
         Regex::new(r"([A-Za-z_]+)_(Scale|Add|Value|Percent)_(\d+)_([A-F0-9]{32})").unwrap();
-    let stat_desc = stat_descriptions();
+    let stat_desc = bl4::reference::all_stat_descriptions();
     let mut stats: HashMap<String, StatProperty> = HashMap::new();
 
     for cap in pattern.captures_iter(content) {
