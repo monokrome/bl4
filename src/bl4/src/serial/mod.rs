@@ -813,7 +813,17 @@ impl ItemSerial {
         self.parts()
             .into_iter()
             .map(|(index, values)| {
-                let name = crate::manifest::part_name(category, index as i64);
+                // For indices > 142 (beyond element range), bit 7 indicates scope:
+                //   Bit 7 = 0: Root scope (core parts like body, barrel, scope)
+                //   Bit 7 = 1: Sub scope (modular attachments like grips, foregrips)
+                // Strip bit 7 to get the actual part index
+                let lookup_index = if index > 142 {
+                    index & 0x7F  // Keep only lower 7 bits
+                } else {
+                    index
+                };
+
+                let name = crate::manifest::part_name(category, lookup_index as i64);
                 (index, name, values)
             })
             .collect()

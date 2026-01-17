@@ -22,6 +22,7 @@
 //! - Remaining: Metadata and string table
 
 mod binary_parser;
+mod binary_parser_v2;
 mod bit_reader;
 mod content;
 mod data;
@@ -72,6 +73,11 @@ pub use pak::{
 pub use binary_parser::{
     extract_serial_indices as extract_serial_indices_native, serial_indices_to_tsv as serial_indices_to_tsv_native,
     BinaryParser, FieldType as BinaryFieldType, FieldValue, ParsedRecord, RecordSchema, SerialIndexEntry as BinarySerialIndexEntry,
+};
+pub use binary_parser_v2::{
+    category_from_prefix, extract_serial_indices as extract_serial_indices_v2,
+    serial_indices_to_tsv as serial_indices_to_tsv_v2, BinaryEntryV2, BinaryParsed,
+    BinaryParserV2, SerialIndexEntry as SerialIndexEntryV2,
 };
 pub use tag_value_parser::{
     TagByte, TagValue as TagValueEnum, TagValueParser, TagValueRecord,
