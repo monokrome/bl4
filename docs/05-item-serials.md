@@ -435,6 +435,51 @@ Tokens: ... {136} {141} ...  → Shock + Cryo
 
 ---
 
+## Part Index Bit 7: Root vs Sub Scope
+
+**Major discovery (Jan 2026)**: For Part token indices **> 142** (beyond the element range), **bit 7 indicates the part's scope**:
+
+```text
+Bit 7 = 0 → Root scope (core weapon structure)
+Bit 7 = 1 → Sub scope (modular attachments)
+```
+
+The actual part index is stored in the **lower 7 bits**. To look up the part, strip bit 7:
+
+```python
+if index > 142:
+    actual_index = index & 0x7F  # Keep only bits 0-6
+```
+
+### Examples
+
+| Serial Index | Binary | Bit 7 | Actual Index | Part Name | Scope Type |
+|--------------|--------|-------|--------------|-----------|------------|
+| 4 | `00000100` | 0 | 4 | part_body_b | Root (core) |
+| 35 | `00100011` | 0 | 35 | part_scope_acc_s02_l02_b | Root (core) |
+| 170 | `10101010` | **1** | 42 | part_grip_03 | **Sub (attachment)** |
+| 166 | `10100110` | **1** | 38 | part_grip_04_hyp | **Sub (attachment)** |
+| 174 | `10101110` | **1** | 46 | part_underbarrel_02_meathook | **Sub (attachment)** |
+| 196 | `11000100` | **1** | 68 | part_foregrip_01 | **Sub (attachment)** |
+
+### Scope Types
+
+**Root parts** (bit 7 = 0): Define the weapon's fundamental structure
+- Body, barrel, magazine
+- Scope, sights
+- Shield accessories
+
+**Sub parts** (bit 7 = 1): Modular attachments that customize the weapon
+- Grips, foregrips
+- Underbarrel attachments
+- Rail accessories
+
+This matches the `GbxSerialNumberIndex.scope` field documented below (Root=1, Sub=2).
+
+**Validation**: Tested on Rainbow Vomit (Jakobs Legendary Shotgun). All 7 decoded parts with bit 7 flag correctly resolved to valid Jakobs Shotgun parts, improving resolution from 30% → 70%.
+
+---
+
 ## The UE5 Part System
 
 Behind serials, parts are defined as UE5 objects. The `GbxSerialNumberIndex` structure links parts to their encoding:

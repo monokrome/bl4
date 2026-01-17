@@ -330,7 +330,7 @@ Current NCS extraction yields 806 files with 232 unique types:
 
 ### NCS Serial Index Discovery
 
-**Breakthrough**: NCS `inv.bin` DOES contain serial indices for weapon parts! The indices are stored in the `value_0` field of part definition records.
+**Breakthrough**: NCS `inv.bin` DOES contain serial indices for weapon parts! The indices are stored in the binary section entries.
 
 **Format**: Part names in NCS use a different format than memory:
 
@@ -340,7 +340,7 @@ Current NCS extraction yields 806 files with 232 unique types:
 | `BOR_SG_Foregrip_02` | `BOR_SG.part_foregrip_02` | 81 |
 | `BOR_SG_Barrel_02_B` | `BOR_SG.part_barrel_02_b` | 71 |
 
-**Verified matches** between NCS `value_0` and memory-extracted indices:
+**Verified matches** between NCS indices and memory-extracted indices:
 
 - `BOR_SG_Grip_01` = 42 ✓
 - `BOR_SG_Grip_02` = 43 ✓
@@ -372,6 +372,37 @@ Current NCS extraction yields 806 files with 232 unique types:
 3. For matches, trust the data
 4. For mismatches, investigate (NCS format may differ from memory format)
 5. For NCS-only parts, treat indices as provisional until validated
+
+### Category Derivation from NCS (Jan 2026 Discovery)
+
+**Finding**: NCS files do NOT directly store category IDs. However, categories can be derived from part name prefixes:
+
+```rust
+// Prefix-to-category mapping
+"BOR_SG" → Category 12  (Ripper Shotgun)
+"JAK_SG" → Category 9   (Jakobs Shotgun)
+"DAD_PS" → Category 2   (Daedalus Pistol)
+"VLA_AR" → Category 17  (Vladof Assault Rifle)
+// ... etc
+```
+
+**Implementation**: The `bl4-ncs` library includes `category_from_prefix()` function that extracts the manufacturer-weapon prefix and maps it to the corresponding category ID.
+
+**Limitations**:
+
+1. **Only works for prefixed parts**: Parts like `BOR_SG_Barrel_01_A` derive categories successfully
+2. **Non-prefixed parts fail**: Generic parts (`comp_01_common`, `part_firmware_*`, `part_ra_*`) have no prefix, so category cannot be determined from NCS alone
+3. **Same part name, different categories**: Parts like `comp_01_common` exist in many categories with different indices. Without category context, these cannot be uniquely identified.
+
+**Result**: NCS extraction using BinaryParserV2 yields:
+- **875 part names** extracted from `inv*.bin` files
+- **38 parts with categories** (only manufacturer-prefixed parts like BOR_SG, ORD_AR)
+- **837 parts without categories** (generic parts like comp_*, part_firmware_*)
+
+**Conclusion**: NCS provides part indices but NOT categories. For complete part database:
+- Use NCS for manufacturer-specific weapon parts (BOR_SG, JAK_PS, etc.)
+- Requires memory dumps or other sources for non-prefixed parts
+- Categories must be derived from prefixes, not extracted from NCS data
 
 ---
 
