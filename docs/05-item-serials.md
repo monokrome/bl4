@@ -422,15 +422,21 @@ Part Index = 128 + Element ID
 | Element ID | Element | Part Token | Verified On |
 |------------|---------|------------|-------------|
 | 0 | Kinetic (None) | `{128}` | Hellhound |
+| 1 | Unknown | `{129}` | Rainbow Vomit |
+| 3 | Unknown | `{131}` | Rainbow Vomit |
 | 5 | Corrosive | `{133}` | Seventh Sense |
 | 8 | Shock | `{136}` | Armored Pre-Emptive Bod |
 | 9 | Radiation | `{137}` | (from research notes) |
+| 11 | Unknown | `{139}` | Rainbow Vomit |
 | 13 | Cryo | `{141}` | Seventh Sense |
 | 14 | Fire | `{142}` | Hellwalker |
+
+**Note**: Rainbow Vomit (Legendary Jakobs Shotgun) has three element tokens corresponding to IDs 1, 3, and 11. The legendary weapon's description mentions it can spawn with 3 random elements, explaining why these element IDs are present. Their actual element types require in-game verification.
 
 Multi-element weapons contain multiple element tokens:
 ```text
 Tokens: ... {136} {141} ...  → Shock + Cryo
+Tokens: ... {129} {131} {139} ...  → Rainbow Vomit (3 unknown elements)
 ```
 
 ---
