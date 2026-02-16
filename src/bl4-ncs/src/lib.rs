@@ -1182,4 +1182,47 @@ mod test_new_parser {
             "Expected some tags to be captured from real data"
         );
     }
+
+    #[test]
+    fn test_all_dep_entries_have_serialindex_in_inv0() {
+        let Some(dir) = ncs_test_dir() else {
+            println!("NCS test data not found, skipping");
+            return;
+        };
+
+        let data = std::fs::read(dir.join("Nexus-Data-inv0.bin")).unwrap();
+        let doc = parse::parse(&data).expect("Failed to parse inv0");
+
+        let mut with_si = 0;
+        let mut without_si = 0;
+
+        for table in doc.tables.values() {
+            for record in &table.records {
+                for entry in &record.entries {
+                    for dep in &entry.dep_entries {
+                        if has_serialindex(&dep.value) {
+                            with_si += 1;
+                        } else {
+                            without_si += 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        println!("inv0: {} dep_entries with SI, {} without", with_si, without_si);
+        assert!(with_si > 600, "Expected 600+ dep_entries with serialindex");
+        assert_eq!(without_si, 0, "inv0 dep_entries should all have serialindex");
+    }
+
+    fn has_serialindex(value: &document::Value) -> bool {
+        match value {
+            document::Value::Map(map) => {
+                if map.contains_key("serialindex") { return true; }
+                map.values().any(|v| has_serialindex(v))
+            }
+            document::Value::Array(arr) => arr.iter().any(|v| has_serialindex(v)),
+            _ => false,
+        }
+    }
 }
