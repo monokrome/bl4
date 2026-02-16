@@ -134,6 +134,18 @@ impl<'a> BitReader<'a> {
             &self.data[self.byte_pos + 1..]
         }
     }
+
+    /// Seek to a specific bit position
+    pub fn seek(&mut self, bit_pos: usize) {
+        self.byte_pos = bit_pos / 8;
+        self.bit_pos = (bit_pos % 8) as u8;
+    }
+
+    /// Skip n bits
+    pub fn skip_bits(&mut self, n: usize) {
+        let new_pos = self.position() + n;
+        self.seek(new_pos);
+    }
 }
 
 /// Calculate minimum bits needed to index a table of `count` entries

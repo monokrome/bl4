@@ -9,6 +9,7 @@ use memchr::{memchr, memmem};
 #[derive(Debug, Clone)]
 pub struct BasicHeader {
     /// Offset where type name starts
+    #[allow(dead_code)]
     pub type_offset: usize,
     /// Offset where type name ends (null terminator)
     #[allow(dead_code)]
@@ -44,16 +45,6 @@ impl Default for ParseConfig {
     }
 }
 
-impl ParseConfig {
-    /// Standard config for parser.rs (stricter, starts at byte 8)
-    pub fn strict() -> Self {
-        Self {
-            type_search_start: 8,
-            type_search_end: 32,
-            format_search_range: 600,
-        }
-    }
-}
 
 /// Parse basic header information from NCS data
 ///
@@ -125,12 +116,7 @@ fn find_type_start(data: &[u8], config: &ParseConfig) -> Option<usize> {
     let search_end = config.type_search_end.min(data.len());
 
     // Look for null byte followed by alphabetic character
-    for i in search_start..search_end {
-        if i > 0 && data[i - 1] == 0 && data[i].is_ascii_alphabetic() {
-            return Some(i);
-        }
-    }
-    None
+    (search_start..search_end).find(|&i| i > 0 && data[i - 1] == 0 && data[i].is_ascii_alphabetic())
 }
 
 /// Find format code position using memchr

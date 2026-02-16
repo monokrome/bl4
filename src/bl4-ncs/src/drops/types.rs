@@ -20,6 +20,7 @@ impl BossNameMapping {
     }
 
     /// Default mapping with all known boss names
+    #[allow(clippy::too_many_lines)]
     fn default_mapping() -> Self {
         let mut boss_names = HashMap::new();
         let mut aliases = HashMap::new();

@@ -21,11 +21,10 @@
 //! - Bytes 6-7: Entry count
 //! - Remaining: Metadata and string table
 
-mod binary_parser;
-mod binary_parser_v2;
 mod bit_reader;
 mod content;
 mod data;
+pub mod document;
 pub mod drops;
 mod extract;
 mod field;
@@ -34,13 +33,11 @@ mod header;
 pub mod inventory;
 mod manifest;
 pub mod name_data;
-pub mod ncs_parser;
 pub mod oodle;
 pub mod pak;
-mod parser;
-mod string_table;
-mod tag_value_parser;
+pub mod parse;
 mod types;
+mod unpack;
 
 // Re-export main types
 pub use content::{Content as NcsContent, Header as NcsContentHeader};
@@ -62,44 +59,26 @@ pub use name_data::{
     extract_from_directory as extract_name_data, NameDataEntry, NameDataMap,
 };
 pub use inventory::{
-    extract_raw_strings, extract_serial_indices, extract_string_numeric_pairs, get_parts,
-    get_parts_by_slot, is_valid_part, parse_inventory, raw_strings_to_tsv, serial_indices_to_tsv,
+    extract_raw_strings, extract_string_numeric_pairs, get_parts,
+    get_parts_by_slot, is_valid_part, parse_inventory, raw_strings_to_tsv,
     string_numeric_pairs_to_tsv, Inventory, ItemCategory, ItemParts, LegendaryComposition,
     PartIndices, RawStringEntry, SerialIndex, StringNumericPair,
 };
 pub use pak::{
     extract_from_directory, is_ncs_file, type_from_filename, DirectoryReader, ExtractedNcs,
 };
-pub use binary_parser::{
-    extract_serial_indices as extract_serial_indices_native, serial_indices_to_tsv as serial_indices_to_tsv_native,
-    BinaryParser, FieldType as BinaryFieldType, FieldValue, ParsedRecord, RecordSchema, SerialIndexEntry as BinarySerialIndexEntry,
-};
-pub use binary_parser_v2::{
-    category_from_prefix, extract_serial_indices as extract_serial_indices_v2,
-    serial_indices_to_tsv as serial_indices_to_tsv_v2, BinaryEntryV2, BinaryParsed,
-    BinaryParserV2, SerialIndexEntry as SerialIndexEntryV2,
-};
-pub use tag_value_parser::{
-    TagByte, TagValue as TagValueEnum, TagValueParser, TagValueRecord,
-};
-pub use ncs_parser::{
-    parse_document as parse_ncs_document, extract_serial_indices as extract_ncs_serial_indices,
-    Document as NcsDocument, Record as NcsRecord, DepEntry, SerialIndexEntry as NcsSerialIndexEntry,
-};
 pub use bit_reader::{bit_width, BitReader};
-pub use parser::{
-    debug_binary_section, find_packed_strings, parse_binary_section, parse_document, parse_header,
-    unpack_string, find_binary_section_with_count,
+pub use document::{
+    extract_serial_indices as extract_document_serial_indices,
+    extract_categorized_parts, extract_category_names,
+    Document as ParsedDocument, Table as ParsedTable, Record as ParsedRecord2,
+    Entry as ParsedEntry, DepEntry as ParsedDepEntry, Value as ParsedValue,
+    Tag as ParsedTag, SerialIndexEntry as DocumentSerialIndexEntry,
+    CategorizedPart,
 };
-pub use string_table::{
-    create_combined_string_table, extract_field_abbreviation, extract_inline_strings,
-    parse_string_table as parse_ncs_string_table,
-};
-pub use types::{
-    BinaryEntry, BinaryParseResult, BinaryRecord, Document, EntryGroup, FieldInfo,
-    Header as ParsedHeader, Record, StringTable, TagType, TagValue, UnpackedString, UnpackedValue,
-    Value,
-};
+pub use parse::parse as parse_ncs_binary;
+pub use types::{UnpackedString, UnpackedValue};
+pub use unpack::{find_packed_strings, unpack_string};
 
 /// Magic bytes for NCS format: "NCS" (bytes 1-3 of header)
 pub const NCS_MAGIC: [u8; 3] = [0x4e, 0x43, 0x53];
@@ -883,85 +862,6 @@ mod generate_csv {
 }
 
 #[cfg(test)]
-mod test_parser_real {
-    use super::test_paths;
-    use crate::parser::parse_document;
-
-    #[test]
-    fn test_parser_on_files() {
-        let test_dir = test_paths::test_output_dir();
-
-        if !test_dir.exists() {
-            println!("Test directory not found, skipping");
-            return;
-        }
-
-        let mut success = 0;
-        let mut failed = 0;
-        let mut total_records = 0;
-
-        for entry in std::fs::read_dir(test_dir).unwrap().flatten() {
-            let path = entry.path();
-            if path.extension().map_or(false, |e| e == "bin") {
-                let name = path.file_name().unwrap().to_string_lossy();
-                let data = std::fs::read(&path).unwrap();
-
-                match parse_document(&data) {
-                    Some(doc) => {
-                        success += 1;
-                        total_records += doc.records.len();
-                        if success <= 10 {
-                            println!(
-                                "{}: type={}, format={}, records={}",
-                                name, doc.type_name, doc.format_code, doc.records.len()
-                            );
-                            if !doc.records.is_empty() {
-                                println!("  First: {}", doc.records[0].name);
-                            }
-                        }
-                    }
-                    None => {
-                        failed += 1;
-                        if failed <= 10 {
-                            println!("FAILED: {}", name);
-                        }
-                    }
-                }
-            }
-        }
-
-        println!("\n=== Summary ===");
-        println!("Success: {}", success);
-        println!("Failed: {}", failed);
-        println!("Total records: {}", total_records);
-        println!(
-            "Success rate: {:.1}%",
-            100.0 * success as f64 / (success + failed) as f64
-        );
-    }
-
-    #[test]
-    fn test_parser_json_output() {
-        let test_file = test_paths::test_output_dir().join("achievement0.bin");
-
-        if !test_file.exists() {
-            println!("Test file not found, skipping");
-            return;
-        }
-
-        let data = std::fs::read(test_file).unwrap();
-        let doc = parse_document(&data).expect("Should parse achievement0");
-
-        println!("Type: {}", doc.type_name);
-        println!("Format: {}", doc.format_code);
-        println!("Records: {}", doc.records.len());
-
-        let json = serde_json::to_string_pretty(&doc).unwrap();
-        println!("\nJSON Output:\n{}", json);
-    }
-}
-
-#[cfg(test)]
 mod investigate_inner_format {
     use super::test_paths;
     use oozextract::Extractor;
@@ -1037,5 +937,249 @@ mod investigate_inner_format {
         if block_count > 0 && block_count < 100 {
             println!("Trying multi-block decompression with {} blocks...", block_count);
         }
+    }
+}
+
+#[cfg(test)]
+mod test_new_parser {
+    use crate::parse;
+    use crate::document;
+
+    fn ncs_test_dir() -> Option<std::path::PathBuf> {
+        let dir = std::path::PathBuf::from(
+            "/home/polar/Documents/Borderlands 4/ncsdata/pakchunk0-Windows_0_P",
+        );
+        if dir.exists() { Some(dir) } else { None }
+    }
+
+    #[test]
+    fn test_parse_debug_steps() {
+        let Some(dir) = ncs_test_dir() else {
+            println!("NCS test data not found, skipping");
+            return;
+        };
+
+        let data = std::fs::read(dir.join("Nexus-Data-achievement0.bin")).unwrap();
+        println!("File size: {} bytes", data.len());
+
+        // Step 1: blob header
+        let blob = parse::blob::BlobHeader::parse(&data);
+        println!("BlobHeader: {:?}", blob);
+
+        let blob = blob.expect("BlobHeader parse failed");
+        println!("  entry_count={}, flags={}, string_bytes={}, body_offset={}",
+            blob.entry_count, blob.flags, blob.string_bytes, blob.body_offset());
+
+        // Step 2: header strings
+        let header_strings = parse::blob::extract_header_strings(&data, &blob);
+        println!("Header strings ({}): {:?}", header_strings.len(), &header_strings);
+
+        // Step 3: body
+        let body_offset = blob.body_offset();
+        let body = &data[body_offset..];
+        println!("Body offset: {}, body len: {}", body_offset, body.len());
+        println!("Body first 32 bytes: {:02x?}", &body[..32.min(body.len())]);
+
+        // Step 4: type code table
+        let tct = parse::typecodes::parse_type_code_table(body);
+        println!("TypeCodeTable: {:?}", tct.is_some());
+
+        if let Some(tct) = &tct {
+            println!("  type_codes: {:?}", tct.header.type_codes);
+            println!("  type_index_count: {}", tct.header.type_index_count);
+            println!("  value_strings: {} (declared {})", tct.value_strings.len(), tct.value_strings_declared_count);
+            println!("  value_kinds: {} (declared {})", tct.value_kinds.len(), tct.value_kinds_declared_count);
+            println!("  key_strings: {} (declared {})", tct.key_strings.len(), tct.key_strings_declared_count);
+            println!("  data_offset: {}", tct.data_offset);
+            println!("  row_flags[..5]: {:?}", &tct.header.row_flags[..5.min(tct.header.row_flags.len())]);
+
+            if !tct.value_strings.is_empty() {
+                println!("  first 5 value_strings: {:?}", &tct.value_strings[..5.min(tct.value_strings.len())]);
+            }
+            if !tct.value_kinds.is_empty() {
+                println!("  first 5 value_kinds: {:?}", &tct.value_kinds[..5.min(tct.value_kinds.len())]);
+            }
+            if !tct.key_strings.is_empty() {
+                println!("  first 5 key_strings: {:?}", &tct.key_strings[..5.min(tct.key_strings.len())]);
+            }
+        }
+
+        // Step 5: try full parse
+        let doc = parse::parse(&data);
+        println!("Full parse: {:?}", doc.is_some());
+        if let Some(doc) = &doc {
+            println!("  tables: {:?}", doc.tables.keys().collect::<Vec<_>>());
+            for (name, table) in &doc.tables {
+                println!("  table '{}': {} deps, {} records", name, table.deps.len(), table.records.len());
+            }
+        }
+    }
+
+    #[test]
+    fn test_parse_achievement0() {
+        let Some(dir) = ncs_test_dir() else {
+            println!("NCS test data not found, skipping");
+            return;
+        };
+
+        let data = std::fs::read(dir.join("Nexus-Data-achievement0.bin")).unwrap();
+        let doc = parse::parse(&data).expect("Failed to parse achievement0");
+
+        // achievement0 should have one table named "achievement"
+        assert!(doc.tables.contains_key("achievement"),
+            "Expected 'achievement' table, got: {:?}", doc.tables.keys().collect::<Vec<_>>());
+
+        let table = &doc.tables["achievement"];
+        assert!(table.deps.is_empty(), "achievement0 has no deps");
+        assert!(!table.records.is_empty(), "Expected records in achievement table");
+
+        // First record should have entries with keys like "id_achievement_04_cosmetics_collect"
+        let first_record = &table.records[0];
+        assert!(!first_record.entries.is_empty(), "First record should have entries");
+
+        println!("achievement0: {} records, first record has {} entries",
+            table.records.len(), first_record.entries.len());
+
+        // Check first entry
+        let first_entry = &first_record.entries[0];
+        println!("First entry key: {:?}", first_entry.key);
+    }
+
+    #[test]
+    fn test_parse_inv0_serial_indices() {
+        let Some(dir) = ncs_test_dir() else {
+            println!("NCS test data not found, skipping");
+            return;
+        };
+
+        let data = std::fs::read(dir.join("Nexus-Data-inv0.bin")).unwrap();
+        let doc = parse::parse(&data).expect("Failed to parse inv0");
+
+        // inv0 should have an "inv" table with deps
+        assert!(doc.tables.contains_key("inv"),
+            "Expected 'inv' table, got: {:?}", doc.tables.keys().collect::<Vec<_>>());
+
+        let table = &doc.tables["inv"];
+        println!("inv0: {} deps, {} records", table.deps.len(), table.records.len());
+        println!("deps: {:?}", table.deps);
+
+        // Count serial indices
+        let indices = document::extract_serial_indices(&doc);
+        let root_count = indices.iter()
+            .filter(|e| e.dep_table.is_empty())
+            .count();
+        let sub_count = indices.iter()
+            .filter(|e| !e.dep_table.is_empty())
+            .count();
+
+        println!("Serial indices: {} total ({} Root, {} Sub)", indices.len(), root_count, sub_count);
+
+        // Target: 655 serial indices (37 Root + 618 Sub)
+        // Print first 10 for debugging
+        for entry in indices.iter().take(10) {
+            println!("  {} -> {} (dep: {})", entry.part_name, entry.index, entry.dep_table);
+        }
+
+        // This is the critical assertion
+        assert!(indices.len() >= 600,
+            "Expected ~655 serial indices, got {}", indices.len());
+    }
+
+    #[test]
+    fn test_parse_all_pakchunk0_files() {
+        let Some(dir) = ncs_test_dir() else {
+            println!("NCS test data not found, skipping");
+            return;
+        };
+
+        let mut success = 0;
+        let mut failed = 0;
+        let mut failures = Vec::new();
+
+        for entry in std::fs::read_dir(dir).unwrap().flatten() {
+            let path = entry.path();
+            if path.extension().map_or(false, |e| e == "bin") {
+                let name = path.file_name().unwrap().to_string_lossy().to_string();
+                let data = std::fs::read(&path).unwrap();
+
+                match parse::parse(&data) {
+                    Some(doc) => {
+                        let total_tables = doc.tables.len();
+                        let total_records: usize = doc.tables.values()
+                            .map(|t| t.records.len())
+                            .sum();
+                        success += 1;
+                        if success <= 5 {
+                            println!("{}: {} tables, {} records", name, total_tables, total_records);
+                        }
+                    }
+                    None => {
+                        failed += 1;
+                        failures.push(name);
+                    }
+                }
+            }
+        }
+
+        println!("\nParsed: {}, Failed: {}", success, failed);
+        if !failures.is_empty() {
+            println!("Failures: {:?}", failures);
+        }
+        assert!(success > 100, "Expected most files to parse, got {}", success);
+    }
+
+    #[test]
+    fn test_parse_tags_captured_in_real_data() {
+        let Some(dir) = ncs_test_dir() else {
+            println!("NCS test data not found, skipping");
+            return;
+        };
+
+        let mut files_with_tags = 0;
+        let mut total_tags = 0;
+        let mut tag_type_counts: std::collections::HashMap<String, usize> =
+            std::collections::HashMap::new();
+
+        for entry in std::fs::read_dir(dir).unwrap().flatten() {
+            let path = entry.path();
+            if path.extension().map_or(false, |e| e == "bin") {
+                let data = std::fs::read(&path).unwrap();
+                if let Some(doc) = parse::parse(&data) {
+                    let mut file_tags = 0;
+                    for table in doc.tables.values() {
+                        for record in &table.records {
+                            for tag in &record.tags {
+                                file_tags += 1;
+                                let kind = match tag {
+                                    document::Tag::KeyName { .. } => "a",
+                                    document::Tag::U32 { .. } => "b",
+                                    document::Tag::F32 { .. } => "c",
+                                    document::Tag::NameListD { .. } => "d",
+                                    document::Tag::NameListE { .. } => "e",
+                                    document::Tag::NameListF { .. } => "f",
+                                    document::Tag::Variant { .. } => "p",
+                                };
+                                *tag_type_counts.entry(kind.to_string()).or_default() += 1;
+                            }
+                        }
+                    }
+                    if file_tags > 0 {
+                        files_with_tags += 1;
+                    }
+                    total_tags += file_tags;
+                }
+            }
+        }
+
+        println!("Files with tags: {}", files_with_tags);
+        println!("Total tags captured: {}", total_tags);
+        for (kind, count) in &tag_type_counts {
+            println!("  tag '{}': {}", kind, count);
+        }
+
+        assert!(
+            total_tags > 0,
+            "Expected some tags to be captured from real data"
+        );
     }
 }

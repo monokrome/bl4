@@ -254,11 +254,10 @@ fn find_format_code_after(data: &[u8], after: usize) -> Option<usize> {
 
         if abs_pos + 4 <= data.len() {
             let code_bytes = &data[abs_pos..abs_pos + 4];
-            if code_bytes.iter().all(|&b| b.is_ascii_alphabetic()) {
-                if abs_pos > 0 && data[abs_pos - 1] <= 3 {
+            if code_bytes.iter().all(|&b| b.is_ascii_alphabetic())
+                && abs_pos > 0 && data[abs_pos - 1] <= 3 {
                     return Some(abs_pos);
                 }
-            }
         }
 
         offset += rel_pos + 1;

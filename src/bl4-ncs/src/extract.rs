@@ -24,7 +24,7 @@ pub struct NcsFile {
 
 impl NcsFile {
     /// Decompress this NCS file from pak data
-    pub fn decompress<'a>(&self, pak_data: &'a [u8]) -> Result<Vec<u8>> {
+    pub fn decompress(&self, pak_data: &[u8]) -> Result<Vec<u8>> {
         decompress(&pak_data[self.offset..])
     }
 

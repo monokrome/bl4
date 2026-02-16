@@ -90,7 +90,7 @@ impl DropsDb {
         }
 
         // Also check if query matches manufacturer_type pattern (e.g., "JAK_SG")
-        let query_parts: Vec<&str> = query.split(|c| c == '_' || c == ' ').collect();
+        let query_parts: Vec<&str> = query.split(['_', ' ']).collect();
         if query_parts.len() >= 2 {
             let manu = query_parts[0].to_uppercase();
             let wtype = query_parts[1].to_uppercase();
@@ -117,6 +117,7 @@ impl DropsDb {
     ///
     /// Searches both internal names and display names.
     /// Returns items sorted by drop chance (highest first)
+    #[allow(clippy::cognitive_complexity, clippy::too_many_lines)]
     pub fn find_by_source(&self, source: &str) -> Vec<&DropEntry> {
         let source_lower = source.to_lowercase();
         let source_underscore = source_lower.replace(' ', "_");
