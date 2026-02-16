@@ -1,0 +1,7 @@
+#!/bin/sh
+
+for x in share/saves/*/*.sav; do                                              
+  dir="${x%/*}"
+  sid=$(cat "$dir/steamid")                                                 
+  cargo run -p bl4-cli -- save decrypt -i "$x" -s "$sid" -o "${x%.sav}.yaml"
+done
