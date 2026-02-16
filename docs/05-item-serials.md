@@ -27,12 +27,12 @@ The encoding is compact. A 40-character serial describes an item that would need
 
 Serials transform through multiple stages. Understanding each stage reveals how the pieces fit together.
 
-```text
-"@Ugr$ZCm/&tH!..."  →  Strip "@U" prefix
-"gr$ZCm/&tH!..."    →  Base85 decode to bytes
-[0x84, 0xA5, ...]   →  Bit-mirror each byte
-[0x21, 0xA5, ...]   →  Parse as bitstream tokens
-{Category: 22, Level: 50, Parts: [...]}
+```{mermaid}
+flowchart LR
+    A["@Ugr$ZCm/&tH!..."] -->|Strip prefix| B["gr$ZCm/&tH!..."]
+    B -->|Base85 decode| C["[0x84, 0xA5, ...]"]
+    C -->|Bit-mirror| D["[0x21, 0xA5, ...]"]
+    D -->|Parse bitstream| E["Category: 22\nLevel: 50\nParts: [...]"]
 ```
 
 The prefix `@U` marks this as a BL4 serial. The third character indicates item type—`r` for a weapon, `e` for equipment, and so on. After stripping the prefix, everything else is Base85-encoded binary data.
@@ -605,10 +605,61 @@ Find two similar weapons in your inventory. Decode both serials. Which tokens di
 
 ---
 
+## Legendary Encoding Variants {#sec-legendary-variants}
+
+Legendary weapons can exhibit encoding quirks not seen in standard drops. This section documents known variations discovered through serial analysis.
+
+### Dual VarInt Encoding (Seventh Sense)
+
+The Seventh Sense (Jakobs Pistol, Legendary Perk: Prognostication) can encode with **two different VarInt values**:
+
+| VarInt | First Part | Context |
+|--------|------------|---------|
+| 2 | `{100}` | Equipped/some variants |
+| 12 | `{168}` | Bank/other variants |
+
+Both are valid Jakobs Pistols, but the different VarInts use **different part index tables**. This may indicate a structural difference: VarInt 2 could be an elemental struct (element type as a field), while VarInt 12 could be a kinetic struct (element added via explicit parts like `{73}`).
+
+### Corrosive-Specific Parts
+
+When comparing corrosive vs kinetic Seventh Senses with VarInt 12, three additional parts appear on corrosive variants:
+
+| Part Index | Actual Index | Function |
+|------------|--------------|----------|
+| `{73}` | 73 | Corrosive element body |
+| `{138}` | 10 (flagged) | Corrosive-related part |
+| `{199}` | 71 (flagged) | JAK Env Vial Launcher |
+
+The Vial Launcher (`{199}`) is a corrosive-only attachment that launches a Corrosive Vial dealing 2,340 Corrosive Damage on impact, increases Corrosive Damage by 20% for 10s, and regenerates 4 Ammo after 20s.
+
+**Verified examples** (VarInt 12):
+
+Corrosive (17 parts):
+```text
+{168} {4} {2} {10} {6} {12} {160} {194} {199} {202} {7} {138} {131} {72} {64} {73} {2}
+```
+
+Kinetic (14-16 parts):
+```text
+{168} {4} {6} {2} {10} {160} {204} {198} {202} {11} {131} {72} {64} {77} {4}
+```
+
+### Known Legendary Perks
+
+| Weapon | VarInt | First Part | Legendary | Perk |
+|--------|--------|------------|-----------|------|
+| Jakobs Pistol | 12 | `{168}` | Seventh Sense | Prognostication |
+| Jakobs Pistol | 2 | `{100}` | Seventh Sense | Prognostication |
+| Jakobs Shotgun | 9 | `{170}` | Rainbow Vomit | Color Spray |
+
+::: {.callout-tip title="VarInt Variations"}
+The same legendary can have multiple valid VarInt encodings. When decoding, don't assume a single VarInt value per weapon type. The bl4 tools handle both variants automatically.
+:::
+
+---
+
 ## What's Next
 
-Serials encode items completely—but where do the part definitions come from? The Part Group IDs we use come from analyzing game data. The mappings between indices and actual parts come from memory dumps and pak file extraction.
+Now that we understand how serials encode items, we need to understand the NCS format that stores part definitions, item pools, and loot configuration. NCS is the foundational data format that makes serial decoding meaningful.
 
-Next, we'll explore how to extract data from BL4's game files, including the investigation into whether authoritative category mappings exist anywhere we can reach them.
-
-**Next: [Chapter 6: Data Extraction](06-data-extraction.md)**
+**Next: [Chapter 6: NCS Format](06-ncs-format.md)**

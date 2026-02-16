@@ -592,9 +592,10 @@ When generating weapon serials for testing:
 
 ## Part Selection System (Theoretical)
 
-!!! note "Speculative"
-    This section describes classes found in game metadata. Actual implementation may differ.
-    The "Part Compatibility Rules" section above contains verified behavior.
+::: {.callout-note title="Speculative"}
+This section describes classes found in game metadata. Actual implementation may differ.
+The "Part Compatibility Rules" section above contains verified behavior.
+:::
 
 ### Class-Based Selection (from usmap)
 
@@ -851,6 +852,10 @@ Use `bl4 memory dump-parts` and `bl4 memory build-parts-db` to regenerate from a
 
 ---
 
-*Extracted from BL4 November 2025 patch memory dump using bl4 memory analysis tools.*
+For complete category mappings, composition system details, and licensed parts documentation, see [Chapter 8: Parts System](08-parts-system.md).
 
-*Last updated: December 2025 - Added MAL_SG (cat 19), bor_sr (cat 25), class mods (44, 55, 97, 140), firmware (151), shield variant (289).*
+---
+
+*Extracted from BL4 memory dumps and NCS data using bl4 analysis tools.*
+
+*Last updated: February 2026 — NCS extraction expanded to 5,360 parts across 120 categories. See `share/manifest/parts_database.json` for the current authoritative source.*

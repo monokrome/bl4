@@ -39,9 +39,10 @@ Download the complete Borderlands 4 Reverse Engineering Guide in your preferred 
 - **Comprehensive glossary** with 70+ terms and quick reference tables
 - **Code examples** and exercises throughout
 
-!!! note "Book Generation"
-    All book formats are automatically generated from the markdown source on each release.
-    It may take a few minutes after a push for the latest version to be available.
+::: {.callout-note title="Book Generation"}
+All book formats are automatically generated from the markdown source on each release.
+It may take a few minutes after a push for the latest version to be available.
+:::
 
 ## Source Files
 
@@ -57,8 +58,10 @@ All documentation is available as Markdown in the [GitHub repository](https://gi
 | 03 | [Memory Analysis](../03-memory-analysis.md) | Process memory techniques |
 | 04 | [Save Files](../04-save-files.md) | Encryption and structure |
 | 05 | [Item Serials](../05-item-serials.md) | Serial encoding format |
-| 06 | [Data Extraction](../06-data-extraction.md) | Pak file extraction |
-| 07 | [bl4 Tools](../07-bl4-tools.md) | CLI reference |
+| 06 | [NCS Format](../06-ncs-format.md) | Nexus Config Store format specification |
+| 07 | [Data Extraction](../07-data-extraction.md) | Pak files, NCS parsing, memory dumps |
+| 08 | [Parts System](../08-parts-system.md) | Part categories, compositions, validation |
+| 09 | [bl4 Tools](../09-bl4-tools.md) | CLI reference |
 
 ### Appendices
 
@@ -81,9 +84,10 @@ Pre-extracted game data is available in the repository under `share/manifest/`:
 | `items_database.json` | Item pools and stats |
 | `manufacturers.json` | All 10 manufacturers |
 
-!!! warning "Large Files"
-    Manifest files are stored with Git LFS. Ensure you have LFS installed:
-    ```bash
-    git lfs install
-    git lfs pull
-    ```
+::: {.callout-warning title="Large Files"}
+Manifest files are stored with Git LFS. Ensure you have LFS installed:
+```bash
+git lfs install
+git lfs pull
+```
+:::

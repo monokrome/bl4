@@ -434,8 +434,62 @@ The executable uses protection (likely Denuvo):
 - Heavy obfuscation (XOR, NOT, RCL patterns)
 - Runtime analysis more effective than static
 
-!!! warning
-    Static binary analysis is difficult. Runtime analysis via memory attachment is recommended.
+::: {.callout-warning}
+Static binary analysis is difficult. Runtime analysis via memory attachment is recommended.
+:::
+
+---
+
+## Drop Probability Research
+
+### Community Testing Results
+
+::: {.callout-note title="Community-Derived Values"}
+From player testing (~3,000 boss kills, Jan 2025):
+
+- **Dedicated drop rate**: ~5% per kill for any individual item
+- **World drop rate**: ~4% base legendary chance
+- Difficulty level does NOT affect drop rates
+:::
+
+### NCS Dedicated Drop Tiers
+
+The `Table_DedicatedDropProbability` in `itempoollist.bin` references a DataTable with the following tier rows:
+
+| Tier | Row Name | Index | Probability |
+|------|----------|:-----:|:-----------:|
+| Primary | `Primary_2_<GUID>` | 2 | 20% |
+| Secondary | `Secondary_4_<GUID>` | 4 | 8% |
+| Tertiary | `Tertiary_6_<GUID>` | 6 | 3% |
+| Shiny | `Shiny_9_<GUID>` | 9 | 1% |
+| TrueBoss | `TrueBoss_12_<GUID>` | 12 | 0% |
+| TrueBossShiny | `TrueBossShiny_14_<GUID>` | 14 | 0% |
+| Quaternary | `Quaternary_16_<GUID>` | 16 | 0% |
+
+The schema is defined in `Struct_DedicatedDropProbability.uasset` with a single `DoubleProperty` field.
+
+### Data Coverage
+
+**What NCS extraction provides:**
+
+1. Which items are dedicated drops for which bosses
+2. World drop pool membership
+3. Boss display names (via NameData entries)
+4. Tier assignment for items with explicit tier context
+
+**What NCS cannot provide:**
+
+1. Actual numeric probability values per tier (extracted from DataTable schemas, not NCS)
+2. Base legendary drop rate (runtime value)
+3. Category selection probabilities (shield vs weapon)
+4. Tier assignments for most items (only 1 of 133 boss drops has explicit tier in NCS)
+
+### Future Investigation
+
+1. Memory scan for float values 0.05, 0.04, etc. when game is running
+2. Check if tier indices correlate to probabilities (e.g., 2 → 2%, 4 → 4%)
+3. Extract actual DataTable values (not just struct schemas) from pak files
+4. Investigate if items without explicit tiers default to Primary
 
 ---
 

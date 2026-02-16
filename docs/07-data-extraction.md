@@ -1,6 +1,6 @@
-# Chapter 6: Data Extraction
+# Chapter 7: Data Extraction
 
-A save editor needs game data: weapon stats, part definitions, manufacturer information. You might assume this data lives neatly in game files, waiting to be extracted. The reality is more complicated—and more interesting.
+A save editor needs game data: weapon stats, part definitions, manufacturer information. You might assume this data lives neatly in game files, waiting to be extracted. The reality is more complicated---and more interesting.
 
 This chapter explores what data we can extract, what we can't, and why. Along the way, we'll document our investigation into authoritative category mappings, including the binary analysis that revealed why some data simply doesn't exist in extractable form.
 
@@ -12,18 +12,43 @@ BL4's data lives in Unreal Engine pak files, stored in IoStore format:
 
 ```text
 Borderlands 4/OakGame/Content/Paks/
-├── pakchunk0-Windows_0_P.utoc    ← Main game assets
-├── pakchunk0-Windows_0_P.ucas    ← Compressed data
-├── pakchunk2-Windows_0_P.utoc    ← Audio (Wwise)
-├── pakchunk3-Windows_0_P.utoc    ← Localized audio
-├── global.utoc                   ← Shared engine data
+├── pakchunk0-Windows_0_P.utoc    <- Main game assets
+├── pakchunk0-Windows_0_P.ucas    <- Compressed data
+├── pakchunk2-Windows_0_P.utoc    <- Audio (Wwise)
+├── pakchunk3-Windows_0_P.utoc    <- Localized audio
+├── global.utoc                   <- Shared engine data
 └── ...
 ```
 
 **IoStore** is UE5's container format, splitting asset indices (`.utoc`) from compressed data (`.ucas`). This differs from older PAK-only formats and requires specialized tools.
 
-!!! note
-    BL4 uses IoStore (UE5's format), not legacy PAK. Tools like `repak` won't work on `.utoc/.ucas` files. You need `retoc` or similar IoStore-aware extractors.
+::: {.callout-note}
+BL4 uses IoStore (UE5's format), not legacy PAK. Tools like `repak` won't work on `.utoc/.ucas` files. You need `retoc` or similar IoStore-aware extractors.
+:::
+
+---
+
+## Data Source Hierarchy
+
+Three distinct sources feed into the parts database, each with different strengths and limitations:
+
+```{mermaid}
+flowchart TB
+    subgraph "Static Sources"
+        PAK[PAK Files<br/>Balance, naming, bodies]
+        NCS[NCS Files<br/>Parts, pools, loot config]
+    end
+    subgraph "Runtime Sources"
+        MEM[Memory Dumps<br/>Serial indices, UObjects]
+    end
+    PAK --> DB[(Parts Database)]
+    NCS --> DB
+    MEM --> DB
+```
+
+PAK files provide balance data, naming strategies, and body definitions---the structural skeleton of the item system. NCS files contain the bulk of part data: 5,360 parts across 120 categories, complete with serial indices. Memory dumps fill in the gaps: runtime UObject data, schema information, and validation of static extractions.
+
+The rest of this chapter walks through each source in detail.
 
 ---
 
@@ -33,7 +58,7 @@ Some game data extracts cleanly from pak files:
 
 **Balance data**: Stat templates and modifiers for weapons, shields, and gear. These define base damage, fire rate, accuracy scales.
 
-**Naming strategies**: How weapons get their prefix names. "Damage → Tortuous" mappings live in extractable assets.
+**Naming strategies**: How weapons get their prefix names. "Damage -> Tortuous" mappings live in extractable assets.
 
 **Body definitions**: Weapon body assets that reference parts and mesh fragments.
 
@@ -61,11 +86,11 @@ OakGame/Content/
 
 ## What We Can't Extract
 
-Here's where it gets interesting. The mappings between serial tokens and actual game parts—the heart of what makes serial decoding work—don't exist as extractable pak file assets.
+Here's where it gets interesting. The mappings between serial tokens and actual game parts---the heart of what makes serial decoding work---don't exist as extractable pak file assets.
 
 We wanted authoritative category mappings. Serial token `{4}` on a Vladof SMG should mean a specific part, and we wanted the game's own data to tell us which one. So we investigated.
 
-### The Investigation: Binary Analysis
+::: {.callout-tip title="Investigation: Binary Analysis"}
 
 We used Rizin (a radare2 fork) to analyze the Borderlands4.exe binary directly:
 
@@ -74,6 +99,7 @@ rz-bin -S Borderlands4.exe
 ```
 
 Results:
+
 - Total size: 715 MB
 - .sdata section: 157 MB (code)
 - .rodata section: 313 MB (read-only data)
@@ -86,10 +112,11 @@ We searched for category value sequences. Serial decoding uses Part Group IDs li
 # Found sequence 2,3,4,5,6,7 as consecutive i64 values at 0x02367554
 ```
 
-But examining the context revealed it was near crypto code—specifically "Poly1305 for x86_64, CRYPTOGAMS". Those consecutive integers were coincidental, not category definitions.
+But examining the context revealed it was near crypto code---specifically "Poly1305 for x86_64, CRYPTOGAMS". Those consecutive integers were coincidental, not category definitions.
 
-!!! warning "False Positives"
-    When searching binaries for numeric patterns, verify the context. Small consecutive integers appear in many places: crypto code, lookup tables, version numbers. Always examine surrounding bytes.
+**Lesson**: When searching binaries for numeric patterns, verify the context. Small consecutive integers appear in many places: crypto code, lookup tables, version numbers. Always examine surrounding bytes.
+
+:::
 
 ### UE5 Metadata: What We Know
 
@@ -116,9 +143,9 @@ uextract /path/to/Paks find-by-class InventoryPartDef
 
 Parts aren't stored as individual pak file assets. They're:
 
-1. **Runtime UObjects** — Created when the game initializes
-2. **Code-defined** — Registrations happen in native code
-3. **Self-describing** — Each part carries its own index internally
+1. **Runtime UObjects** --- Created when the game initializes
+2. **Code-defined** --- Registrations happen in native code
+3. **Self-describing** --- Each part carries its own index internally
 
 ### The Key Insight: Self-Describing Parts
 
@@ -128,14 +155,14 @@ Every part UObject contains a `GbxSerialNumberIndex` structure at offset +0x28:
 
 ```text
 UObject + 0x28: GbxSerialNumberIndex (4 bytes)
-├── Scope (1 byte)   ← EGbxSerialNumberIndexScope (Root=1, Sub=2)
-├── Status (1 byte)  ← Reserved/state flags
-└── Index (2 bytes)  ← THE serial index for this part
+├── Scope (1 byte)   <- EGbxSerialNumberIndexScope (Root=1, Sub=2)
+├── Status (1 byte)  <- Reserved/state flags
+└── Index (2 bytes)  <- THE serial index for this part
 ```
 
 This is a "reverse mapping" architecture:
 
-- **Traditional approach**: Separate lookup table maps `index → part_name`
+- **Traditional approach**: Separate lookup table maps `index -> part_name`
 - **BL4's approach**: Each part stores its own index; the "mapping" IS the parts themselves
 
 **Why this design makes sense:**
@@ -147,10 +174,11 @@ This is a "reverse mapping" architecture:
 | Stable indices | A part's index never changes because it's intrinsic to that part |
 | No sync issues | Impossible for mapping to drift from actual parts |
 
-**Practical implication**: When we extract parts from memory, we're not building a mapping from separate data—we're reading the authoritative index directly from each part. The memory dump contains the complete, correct mapping because that mapping IS the parts.
+**Practical implication**: When we extract parts from memory, we're not building a mapping from separate data---we're reading the authoritative index directly from each part. The memory dump contains the complete, correct mapping because that mapping IS the parts.
 
-!!! note "Why Memory Dumps Are Essential"
-    Since each part carries its own index internally, and parts only exist as runtime UObjects (not pak file assets), memory dumps are the only way to capture this data. The game's binary contains the code to create parts, but the actual GbxSerialNumberIndex values are set during initialization.
+::: {.callout-note title="Why Memory Dumps Are Essential"}
+Since each part carries its own index internally, and parts only exist as runtime UObjects (not pak file assets), memory dumps are the only way to capture this data. The game's binary contains the code to create parts, but the actual GbxSerialNumberIndex values are set during initialization.
+:::
 
 ---
 
@@ -164,24 +192,25 @@ When the game loads, it creates UObjects for each part and registers them in an 
 
 ```text
 Part Array Entry (24 bytes):
-├── FName Index (4 bytes)     ← References the part name in FNamePool
-├── Padding (4 bytes)         ← Always zero
-├── Pointer (8 bytes)         ← Address of the part's UObject
-├── Marker (4 bytes)          ← 0xFFFFFFFF sentinel value
-└── Priority (4 bytes)        ← Selection priority (not the serial index!)
+├── FName Index (4 bytes)     <- References the part name in FNamePool
+├── Padding (4 bytes)         <- Always zero
+├── Pointer (8 bytes)         <- Address of the part's UObject
+├── Marker (4 bytes)          <- 0xFFFFFFFF sentinel value
+└── Priority (4 bytes)        <- Selection priority (not the serial index!)
 ```
 
 The serial **Index** is stored **inside the pointed UObject**, at offset +0x28:
 
 ```text
 UObject at Pointer (offset +0x28):
-├── Scope (1 byte)            ← EGbxSerialNumberIndexScope (always 2 for parts)
-├── Reserved (1 byte)         ← Usually 0
-└── Index (2 bytes, Int16)    ← THE SERIAL INDEX we need!
+├── Scope (1 byte)            <- EGbxSerialNumberIndexScope (always 2 for parts)
+├── Reserved (1 byte)         <- Usually 0
+└── Index (2 bytes, Int16)    <- THE SERIAL INDEX we need!
 ```
 
-!!! important "Category Derivation"
-    The Part Group ID (category) is **not** stored in the UObject at a fixed offset. Instead, derive it from the part name prefix (e.g., `DAD_PS` → category 2, `VLA_AR` → category 17). The bl4 tool includes a complete prefix-to-category mapping.
+::: {.callout-important title="Category Derivation"}
+The Part Group ID (category) is **not** stored in the UObject at a fixed offset. Instead, derive it from the part name prefix (e.g., `DAD_PS` -> category 2, `VLA_AR` -> category 17). The bl4 tool includes a complete prefix-to-category mapping.
+:::
 
 ### Verified Example
 
@@ -190,13 +219,14 @@ Searching for FName `DAD_PS.part_barrel_01` (FName index 0x736a0a):
 1. **Find the array entry**: FName appears in the part array with pointer 0x7ff4ca7d75d0
 2. **Read offset +0x28**: At 0x7ff4ca7d75f8 we find `02 00 07 00`
 3. **Parse**: Scope=2, Reserved=0, **Index=7**
-4. **Derive category**: `DAD_PS` prefix → category 2
-5. **Verify**: Reference data confirms DAD_PS.part_barrel_01 has index 7 ✓
+4. **Derive category**: `DAD_PS` prefix -> category 2
+5. **Verify**: Reference data confirms DAD_PS.part_barrel_01 has index 7
 
 Additional verified mappings:
-- `DAD_PS.part_barrel_02` → Index 8 ✓
-- `DAD_PS.part_barrel_01_Zipgun` → Index 1 ✓
-- `DAD_PS.part_barrel_02_rangefinder` → Index 78 ✓
+
+- `DAD_PS.part_barrel_02` -> Index 8
+- `DAD_PS.part_barrel_01_Zipgun` -> Index 1
+- `DAD_PS.part_barrel_02_rangefinder` -> Index 78
 
 ### Extraction Algorithm
 
@@ -257,65 +287,72 @@ def get_category_from_prefix(name):
 ### Why This Works
 
 The game registers parts at startup into internal arrays. Each entry links:
-- **FName reference** → The part's name (e.g., "VLA_SM.part_barrel_01")
-- **UObject pointer** → The full part definition, including serial index
+
+- **FName reference** -> The part's name (e.g., "VLA_SM.part_barrel_01")
+- **UObject pointer** -> The full part definition, including serial index
 
 By scanning for the 0xFFFFFFFF sentinel pattern that marks entry boundaries, we can walk these arrays and extract every part mapping the game knows about.
 
-!!! tip "Practical Implication"
-    Memory dumps contain **authoritative** part-to-index mappings. Extract them directly—no empirical testing required for known parts. Empirical validation is only needed for new parts added in patches.
+::: {.callout-tip title="Practical Implication"}
+Memory dumps contain **authoritative** part-to-index mappings. Extract them directly---no empirical testing required for known parts. Empirical validation is only needed for new parts added in patches.
+:::
 
 ### Extraction Results and Limitations
 
-Running the extraction on a Dec 2025 memory dump yields:
+The initial memory extraction (Dec 2025) captured roughly 1,041 parts across 47 categories---about 40% of the total. Memory extraction only captures parts that were **instantiated** at the time of the dump.
 
-| Metric | Value |
-|--------|-------|
-| Total parts extracted | ~1,041 |
-| Categories covered | 47 |
-| Expected parts (estimated) | ~2,600+ |
+NCS extraction changed the picture entirely. Parsing the `inv*.bin` files yields the complete dataset:
 
-!!! warning "Incomplete Coverage"
-    Memory extraction only captures parts that were **instantiated in memory** at the time of the dump. This means:
+| Metric | Memory Extraction | NCS Extraction |
+|--------|-------------------|----------------|
+| Total parts | ~1,041 | 5,360 |
+| Categories covered | 47 | 120 |
+| Source | Runtime UObjects | Static game data |
+| Requires game running | Yes | No |
 
-    - **Significant gaps exist** in index sequences (e.g., category 2 has indices 2, 3, 5-8, 10-11... but missing 0, 1, 4, 9, etc.)
-    - **Only ~40% of parts** have authoritative indices
-    - Parts not spawned during the capture session are missing
-    - Static part pool definitions aren't available through this method
+::: {.callout-warning title="Memory vs NCS Coverage"}
+Memory extraction only captures parts **instantiated in memory** at the time of the dump. Significant gaps exist in index sequences---parts not spawned during the capture session are simply absent.
 
-**What we have:**
-- Accurate indices for parts that WERE instantiated
-- Complete category-to-prefix mappings
-- Manufacturer associations
+NCS extraction from `inv*.bin` files provides the complete dataset without requiring the game to be running. Memory dumps remain valuable for validation and for capturing data not present in NCS files (like UObject layout details).
+:::
 
-**What we're missing:**
-- Complete part lists per category
-- Parts from DLC/content not loaded during capture
-- Static part pool definitions (which would give complete part sets)
+**What we have from NCS:**
+
+- Complete part lists per category (5,360 parts across 120 categories)
+- Serial indices for all extracted parts
+- Category names derived from NCS keys
+
+**What still requires memory dumps:**
+
+- UObject layout verification
+- Schema data (usmap generation)
+- Parts from DLC/content not yet in NCS files
 
 ### Data Pipeline: Current State
 
 The part mapping workflow uses multiple data sources:
 
-**1. Part Names (Complete)**
+**1. NCS Extraction (Primary)**
 
-`share/manifest/part_pools.json` contains the complete list of 2,566 part names, organized by category. Source: memory dump FName extraction.
+`share/manifest/parts_database.json` contains 5,360 parts across 120 categories. Source: NCS `inv*.bin` file extraction.
 
 ```bash
-# Part names are complete - we know ALL parts that exist
-bl4 memory --dump game.dmp dump-parts -o parts_dump.json
+# Extract complete parts database from NCS files
+bl4 ncs extract --extract-type manifest
 ```
 
-**2. Part Indices (Incomplete)**
+**2. Memory Dumps (Validation & Schema)**
 
-`share/manifest/parts_database.json` contains ~1,041 parts with authoritative indices (40% coverage). Source: memory dump UObject scanning.
+Memory dumps validate NCS data and provide schema information not available from static files.
 
 ```bash
-# Extract indices from memory - only gets instantiated parts
+# Extract indices from memory - validates NCS data
 bl4 memory --dump game.dmp extract-parts -o parts_with_categories.json
 ```
 
-**The Gap**: We have all part names but only 40% of indices. Missing indices are for parts not instantiated during the memory capture.
+**3. Part Names (Complete)**
+
+`share/manifest/category_names.json` contains 120 category names. Source: NCS extraction alongside the parts database.
 
 ### What NCS/UASSET Data Provides
 
@@ -330,7 +367,7 @@ Current NCS extraction yields 806 files with 232 unique types:
 
 ### NCS Serial Index Discovery
 
-**Breakthrough**: NCS `inv.bin` DOES contain serial indices for weapon parts! The indices are stored in the binary section entries.
+**Breakthrough**: NCS `inv.bin` DOES contain serial indices for weapon parts. The indices are stored in the binary section entries.
 
 **Format**: Part names in NCS use a different format than memory:
 
@@ -342,12 +379,12 @@ Current NCS extraction yields 806 files with 232 unique types:
 
 **Verified matches** between NCS indices and memory-extracted indices:
 
-- `BOR_SG_Grip_01` = 42 ✓
-- `BOR_SG_Grip_02` = 43 ✓
-- `BOR_SG_Foregrip_01` = 50 ✓
-- `BOR_SG_Foregrip_02` = 81 ✓
-- `BOR_SG_Barrel_02_B` = 71 ✓
-- `BOR_SG_Barrel_02_D` = 73 ✓
+- `BOR_SG_Grip_01` = 42
+- `BOR_SG_Grip_02` = 43
+- `BOR_SG_Foregrip_01` = 50
+- `BOR_SG_Foregrip_02` = 81
+- `BOR_SG_Barrel_02_B` = 71
+- `BOR_SG_Barrel_02_D` = 73
 
 **Important caveats**:
 
@@ -358,31 +395,16 @@ Current NCS extraction yields 806 files with 232 unique types:
 
 **Extraction approach**: Filter for records where the name matches weapon part patterns, then extract `value_0` as the serial index. Cross-reference with memory-extracted indices where available.
 
-### Strategies for Complete Index Coverage
-
-1. **NCS extraction (preferred)** — Extract indices from `inv.bin` `value_0` fields. This is static game data that doesn't require memory dumps.
-2. **Memory dumps (validation)** — Use memory-extracted indices to validate NCS data and capture parts with mismatched formats.
-3. **Multiple memory dumps** — Capture game state with different loadouts to instantiate more parts.
-4. **Empirical validation** — Verify unknown indices by testing serials in-game.
-
-**Recommended workflow**:
-
-1. Extract all potential indices from NCS `inv.bin`
-2. Cross-reference with memory-extracted indices
-3. For matches, trust the data
-4. For mismatches, investigate (NCS format may differ from memory format)
-5. For NCS-only parts, treat indices as provisional until validated
-
 ### Category Derivation from NCS (Jan 2026 Discovery)
 
 **Finding**: NCS files do NOT directly store category IDs. However, categories can be derived from part name prefixes:
 
 ```rust
 // Prefix-to-category mapping
-"BOR_SG" → Category 12  (Ripper Shotgun)
-"JAK_SG" → Category 9   (Jakobs Shotgun)
-"DAD_PS" → Category 2   (Daedalus Pistol)
-"VLA_AR" → Category 17  (Vladof Assault Rifle)
+"BOR_SG" -> Category 12  (Ripper Shotgun)
+"JAK_SG" -> Category 9   (Jakobs Shotgun)
+"DAD_PS" -> Category 2   (Daedalus Pistol)
+"VLA_AR" -> Category 17  (Vladof Assault Rifle)
 // ... etc
 ```
 
@@ -394,12 +416,10 @@ Current NCS extraction yields 806 files with 232 unique types:
 2. **Non-prefixed parts fail**: Generic parts (`comp_01_common`, `part_firmware_*`, `part_ra_*`) have no prefix, so category cannot be determined from NCS alone
 3. **Same part name, different categories**: Parts like `comp_01_common` exist in many categories with different indices. Without category context, these cannot be uniquely identified.
 
-**Result**: NCS extraction using BinaryParserV2 yields:
-- **875 part names** extracted from `inv*.bin` files
-- **38 parts with categories** (only manufacturer-prefixed parts like BOR_SG, ORD_AR)
-- **837 parts without categories** (generic parts like comp_*, part_firmware_*)
+**Result**: The NCS parser extracts **649/655 serial indices** from inv0.bin with structured table/record/entry output. Previous heuristic approaches (BinaryParserV2) used incorrect structural models and have been removed. Category limitations remain:
 
 **Conclusion**: NCS provides part indices but NOT categories. For complete part database:
+
 - Use NCS for manufacturer-specific weapon parts (BOR_SG, JAK_PS, etc.)
 - Requires memory dumps or other sources for non-prefixed parts
 - Categories must be derived from prefixes, not extracted from NCS data
@@ -415,13 +435,13 @@ For edge cases or when memory extraction isn't possible, empirical validation re
 3. Record which weapon/part combinations the tokens represent
 4. Validate by injecting serials into saves and checking in-game
 
-The `parts_database.json` file combines memory-extracted mappings with empirically-verified data for comprehensive coverage.
+The `parts_database.json` file combines NCS-extracted mappings with empirically-verified data for comprehensive coverage.
 
 ---
 
 ## Extraction Tools
 
-### retoc — IoStore Extraction
+### retoc --- IoStore Extraction
 
 The essential tool for BL4's pak format:
 
@@ -435,13 +455,15 @@ retoc list /path/to/pakchunk0-Windows_0_P.utoc
 retoc unpack /path/to/pakchunk0-Windows_0_P.utoc ./output/
 ```
 
-!!! warning
-    For converting to legacy format, point at the **Paks directory**, not a single file. The tool needs access to `global.utoc` for ScriptObjects:
-    ```bash
-    retoc to-legacy /path/to/Paks/ ./output/ --no-script-objects
-    ```
+::: {.callout-warning}
+For converting to legacy format, point at the **Paks directory**, not a single file. The tool needs access to `global.utoc` for ScriptObjects:
 
-### uextract — Project Tool
+```bash
+retoc to-legacy /path/to/Paks/ ./output/ --no-script-objects
+```
+:::
+
+### uextract --- Project Tool
 
 The bl4 project's custom extraction tool:
 
@@ -470,7 +492,7 @@ Unversioned (new): 0x42480000 0x0000000A
                    └── Just values, no names
 ```
 
-To parse unversioned data, you need a usmap file containing the schema—all class definitions, property names, types, and offsets.
+To parse unversioned data, you need a usmap file containing the schema---all class definitions, property names, types, and offsets.
 
 We generate usmap from memory dumps:
 
@@ -487,7 +509,7 @@ The project includes a pre-generated usmap at `share/manifest/mappings.usmap`.
 
 ## Extracting Parts from Memory
 
-Since parts only exist at runtime, memory extraction is the path forward.
+Since parts only exist at runtime, memory extraction is the path forward for validation and schema work.
 
 ### Step 1: Create Memory Dump
 
@@ -538,8 +560,9 @@ The result maps parts to categories and indices:
 }
 ```
 
-!!! important "Index Ordering"
-    Part indices from memory dumps reflect the game's internal registration order—not alphabetical. Parts typically register in this order: unique variants, bodies, barrels, shields, magazines, scopes, grips, licensed parts. Alphabetical sorting produces wrong indices.
+::: {.callout-important title="Index Ordering"}
+Part indices from memory dumps reflect the game's internal registration order---not alphabetical. Parts typically register in this order: unique variants, bodies, barrels, shields, magazines, scopes, grips, licensed parts. Alphabetical sorting produces wrong indices.
+:::
 
 ---
 
@@ -595,7 +618,7 @@ Stats follow naming conventions: `StatName_ModifierType_Index_GUID`
 
 | Modifier | Meaning |
 |----------|---------|
-| `Scale` | Multiplier (×) |
+| `Scale` | Multiplier (x) |
 | `Add` | Flat addition (+) |
 | `Value` | Absolute override |
 | `Percent` | Percentage bonus |
@@ -611,8 +634,9 @@ BL4 uses Oodle compression (RAD Game Tools). The `retoc` tool handles decompress
 └── oo2core_9_win64.dll
 ```
 
-!!! tip
-    If extraction fails with Oodle errors, verify the game is installed and the DLL path is accessible. On Linux, Wine must be able to load the DLL.
+::: {.callout-tip}
+If extraction fails with Oodle errors, verify the game is installed and the DLL path is accessible. On Linux, Wine must be able to load the DLL.
+:::
 
 ---
 
@@ -635,6 +659,23 @@ retoc unpack "$GAME_DIR/OakGame/Content/Paks/pakchunk0-Windows_0_P.utoc" "$OUTPU
 
 ---
 
+## Strategies for Complete Index Coverage
+
+1. **NCS extraction (preferred)** --- Extract indices from `inv.bin` `value_0` fields. This is static game data that doesn't require memory dumps.
+2. **Memory dumps (validation)** --- Use memory-extracted indices to validate NCS data and capture parts with mismatched formats.
+3. **Multiple memory dumps** --- Capture game state with different loadouts to instantiate more parts.
+4. **Empirical validation** --- Verify unknown indices by testing serials in-game.
+
+**Recommended workflow**:
+
+1. Extract all potential indices from NCS `inv.bin`
+2. Cross-reference with memory-extracted indices
+3. For matches, trust the data
+4. For mismatches, investigate (NCS format may differ from memory format)
+5. For NCS-only parts, treat indices as provisional until validated
+
+---
+
 ## Summary: Data Sources
 
 | Data | Source | Extractable? | Status |
@@ -643,15 +684,15 @@ retoc unpack "$GAME_DIR/OakGame/Content/Paks/pakchunk0-Windows_0_P.utoc" "$OUTPU
 | Naming strategies | Pak files / NCS | Yes | Complete |
 | Loot pools | Pak files / NCS | Yes | Complete |
 | Body definitions | Pak files | Yes | Complete |
-| Part names | NCS (`inv.bin`) | Yes | Complete (~13,860 entries) |
-| Part serial indices | Memory dump | Partial | ~40% coverage (1,041/~2,600) |
-| Category mappings | Code analysis | Yes | Complete |
+| Part names | NCS (`inv.bin`) | Yes | Complete (5,360 parts) |
+| Part serial indices | NCS + Memory | Yes | Complete (5,360 across 120 categories) |
+| Category mappings | Code analysis | Yes | Complete (120 categories) |
 
-!!! important "Current State"
-    **Part names** are available from NCS data (complete list).
-    **Part indices** are only available from memory dumps (incomplete).
+::: {.callout-important title="Current State"}
+**Part names and indices** are available from NCS data (complete list: 5,360 parts across 120 categories).
 
-    Serial decoding works for the ~1,041 parts we have indices for. Unknown indices display as `[category:index]` placeholders until we can extract complete mappings from static game data or multiple memory dumps.
+**Memory dumps** remain valuable for validation, schema extraction (usmap), and capturing data not present in NCS files. Serial decoding works for all extracted parts. Unknown indices display as `[category:index]` placeholders until validated.
+:::
 
 ---
 
@@ -673,8 +714,8 @@ Extract assets for two manufacturers (Jakobs vs Maliwan). Compare directory stru
 
 ## What's Next
 
-We've covered the full data extraction story—what works, what doesn't, and why. The bl4 project wraps all these techniques into command-line tools.
+We've covered the full data extraction story---what works, what doesn't, and why. The bl4 project wraps all these techniques into command-line tools.
 
 Next, we'll tour those tools: how to decode serials, edit saves, extract data, and more, all from the command line.
 
-**Next: [Chapter 7: Using bl4 Tools](07-bl4-tools.md)**
+**Next: [Chapter 9: Using bl4 Tools](09-bl4-tools.md)**

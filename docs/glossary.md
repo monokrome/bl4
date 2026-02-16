@@ -22,6 +22,9 @@ Quick reference for terms used throughout this guide. Page references indicate t
 
 ## B
 
+**bl4-community**
+: Axum-based REST API server for sharing verified item data between users. Part of the bl4 monorepo. See [Chapter 9](09-bl4-tools.md).
+
 **Base85**
 : Number encoding using 85 printable ASCII characters. BL4 uses a custom alphabet for item serials. See [Chapter 5](05-item-serials.md).
 
@@ -51,8 +54,11 @@ Quick reference for terms used throughout this guide. Page references indicate t
 
 ## D
 
+**Differential Encoding**
+: NCS string compression where subsequent strings store only their difference from the first. The prefix `1airship` means "replace first character and append 'airship'". See [Chapter 6](06-ncs-format.md).
+
 **DataTable**
-: UE asset type for tabular data. Contains rows of structured data. See [Chapter 6](06-data-extraction.md).
+: UE asset type for tabular data. Contains rows of structured data. See [Chapter 7](07-data-extraction.md).
 
 **Dedicated Drop**
 : Loot that only drops from specific enemies. See [Appendix C](appendix-c-loot-system.md).
@@ -75,7 +81,7 @@ Quick reference for terms used throughout this guide. Page references indicate t
 : Unreal's string identifier. 8 bytes containing index and instance number. See [Chapter 2](02-unreal-architecture.md).
 
 **FNV-1a**
-: Fowler-Noll-Vo hash function (variant 1a). Used by NCS format for field name lookups. 64-bit version with offset basis 0xcbf29ce484222325 and prime 0x100000001b3. See [Appendix D](appendix-d-game-files.md).
+: Fowler-Noll-Vo hash function (variant 1a). Used by NCS format for field name lookups. 64-bit version with offset basis 0xcbf29ce484222325 and prime 0x100000001b3. See [Chapter 6](06-ncs-format.md).
 
 **FNamePool**
 : Global string pool containing all FName strings. Also called GNames. See [Chapter 2](02-unreal-architecture.md).
@@ -97,7 +103,7 @@ Quick reference for terms used throughout this guide. Page references indicate t
 ## G
 
 **gBx**
-: Magic header for NCS files (0x67 0x42 0x78). Followed by variant byte and Oodle-compressed payload. See [Appendix D](appendix-d-game-files.md).
+: Magic header for NCS files (0x67 0x42 0x78). Followed by variant byte and Oodle-compressed payload. See [Chapter 6](06-ncs-format.md).
 
 **GNames**
 : Global FName string pool. Located at offset 0x112a1c80 from PE base. See [Chapter 2](02-unreal-architecture.md).
@@ -126,7 +132,7 @@ Quick reference for terms used throughout this guide. Page references indicate t
 : UObject field at offset 0x0C containing position in GUObjectArray. See [Chapter 2](02-unreal-architecture.md).
 
 **IoStore**
-: UE5's container format using .utoc (table of contents) and .ucas (data) files. See [Chapter 6](06-data-extraction.md).
+: UE5's container format using .utoc (table of contents) and .ucas (data) files. See [Chapter 7](07-data-extraction.md).
 
 **Item Pool**
 : Definition of possible loot drops. See [Appendix C](appendix-c-loot-system.md).
@@ -137,6 +143,9 @@ Quick reference for terms used throughout this guide. Page references indicate t
 ---
 
 ## L
+
+**Licensed Parts**
+: BL4's cross-manufacturer part system. A weapon can gain abilities from other manufacturers (e.g., Jakobs Ricochet on a Vladof rifle). Level-gated via `Att_MinGameStage_LicensedPart_*` attributes. See [Chapter 8](08-parts-system.md).
 
 **Little-Endian**
 : Byte order where least significant byte comes first. Used by x86/x64 and save files. See [Chapter 1](01-binary-basics.md).
@@ -159,7 +168,7 @@ Quick reference for terms used throughout this guide. Page references indicate t
 ## N
 
 **NCS (Nexus Config Store)**
-: Gearbox's format for storing item pools, part data, and game configuration. Uses gBx header with Oodle compression. Contains data not found in standard PAK assets. See [Appendix D](appendix-d-game-files.md).
+: Gearbox's format for storing item pools, part data, and game configuration. Uses gBx header with Oodle compression. Contains data not found in standard PAK assets. See [Chapter 6](06-ncs-format.md).
 
 **NamePrivate**
 : UObject field at offset 0x18 containing the object's FName. See [Chapter 2](02-unreal-architecture.md).
@@ -175,7 +184,7 @@ Quick reference for terms used throughout this guide. Page references indicate t
 : UObject field at offset 0x08 containing RF_* state flags. See [Chapter 2](02-unreal-architecture.md).
 
 **Oodle**
-: Compression algorithm used in UE5 IoStore containers and NCS files. BL4 uses version 9 (oo2core_9_win64.dll). See [Chapter 6](06-data-extraction.md) and [Appendix D](appendix-d-game-files.md).
+: Compression algorithm used in UE5 IoStore containers and NCS files. BL4 uses version 9 (oo2core_9_win64.dll). See [Chapter 6](06-ncs-format.md) and [Appendix D](appendix-d-game-files.md).
 
 **OuterPrivate**
 : UObject field at offset 0x20 pointing to parent/container object. See [Chapter 2](02-unreal-architecture.md).
@@ -184,8 +193,11 @@ Quick reference for terms used throughout this guide. Page references indicate t
 
 ## P
 
+**Parts System**
+: BL4's item assembly system where weapons are composed of individual parts (barrel, grip, scope, etc.) drawn from per-manufacturer pools. Defined in NCS `inv.bin`, not PAK assets. See [Chapter 8](08-parts-system.md).
+
 **Pak File**
-: Legacy UE archive format (.pak). See [Chapter 6](06-data-extraction.md).
+: Legacy UE archive format (.pak). See [Chapter 7](07-data-extraction.md).
 
 **Part**
 : Token type in item serials representing weapon components. See [Chapter 5](05-item-serials.md).
@@ -203,6 +215,9 @@ Quick reference for terms used throughout this guide. Page references indicate t
 
 ## R
 
+**Root/Sub Scope**
+: In BL4's serial format, bit 7 of a part token index encodes whether a part is Root scope (core item type, bit 7 = 0) or Sub scope (attachment part, bit 7 = 1). The actual index is `token & 0x7F`. See [Chapter 8](08-parts-system.md).
+
 **Rarity**
 : Item quality tier (Common, Uncommon, Rare, Epic, Legendary). See [Appendix B](appendix-b-weapon-parts.md).
 
@@ -210,7 +225,7 @@ Quick reference for terms used throughout this guide. Page references indicate t
 : UE's runtime type information system. See [Chapter 2](02-unreal-architecture.md).
 
 **retoc**
-: Tool for extracting IoStore containers. See [Chapter 6](06-data-extraction.md).
+: Tool for extracting IoStore containers. See [Chapter 7](07-data-extraction.md).
 
 **RIP-Relative**
 : x64 addressing mode relative to instruction pointer. See [Chapter 3](03-memory-analysis.md).
@@ -235,6 +250,9 @@ Quick reference for terms used throughout this guide. Page references indicate t
 
 ## T
 
+**Tag-Based Encoding**
+: The most complex NCS binary format, used by `inv.bin` and `gbxactor.bin`. Each byte acts as a type tag (0x61=pair, 0x62=u32, 0x63=u32f32, 0x64-0x66=list, 0x70=variant, 0x7a=end) determining how to interpret following data. See [Chapter 6](06-ncs-format.md).
+
 **TArray**
 : Unreal's dynamic array template. 16 bytes containing pointer, count, max. See [Appendix A](appendix-a-sdk-layouts.md).
 
@@ -246,16 +264,16 @@ Quick reference for terms used throughout this guide. Page references indicate t
 ## U
 
 **uasset**
-: Unreal asset file containing object definitions and properties. See [Chapter 6](06-data-extraction.md).
+: Unreal asset file containing object definitions and properties. See [Chapter 7](07-data-extraction.md).
 
 **UClass**
 : UE's class definition object. Size: 512 bytes. See [Chapter 2](02-unreal-architecture.md).
 
 **ucas**
-: IoStore container archive file containing compressed asset data. See [Chapter 6](06-data-extraction.md).
+: IoStore container archive file containing compressed asset data. See [Chapter 7](07-data-extraction.md).
 
 **uexp**
-: Bulk data file accompanying .uasset. See [Chapter 6](06-data-extraction.md).
+: Bulk data file accompanying .uasset. See [Chapter 7](07-data-extraction.md).
 
 **UObject**
 : Base class for all Unreal objects. Size: 40 bytes. See [Chapter 2](02-unreal-architecture.md).
@@ -267,7 +285,7 @@ Quick reference for terms used throughout this guide. Page references indicate t
 : UE's structure/class layout descriptor. Size: 176 bytes. See [Chapter 2](02-unreal-architecture.md).
 
 **utoc**
-: IoStore table of contents file. See [Chapter 6](06-data-extraction.md).
+: IoStore table of contents file. See [Chapter 7](07-data-extraction.md).
 
 ---
 
@@ -290,14 +308,14 @@ Quick reference for terms used throughout this guide. Page references indicate t
 ## W
 
 **WASM**
-: WebAssembly. Binary format for running code in browsers. See [Chapter 7](07-bl4-tools.md).
+: WebAssembly. Binary format for running code in browsers. See [Chapter 9](09-bl4-tools.md).
 
 ---
 
 ## Z
 
 **Zen Package**
-: UE5's internal package format used in IoStore containers. See [Chapter 6](06-data-extraction.md).
+: UE5's internal package format used in IoStore containers. See [Chapter 7](07-data-extraction.md).
 
 **zlib**
 : Compression library. Used for save file compression after encryption. See [Chapter 4](04-save-files.md).
