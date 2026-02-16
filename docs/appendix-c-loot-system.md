@@ -1,4 +1,4 @@
-# Appendix C: Loot System Internals
+# Appendix C: Loot System Internals {#sec-loot-system}
 
 This appendix documents the internal workings of BL4's loot system, based on memory analysis and game file extraction.
 
@@ -212,11 +212,11 @@ Each boss has 1-3 dedicated legendary drops. Extracted from `itempoollist.bin` N
 
 | Code | Manufacturer |
 |------|--------------|
-| BOR | Borealis |
-| DAD | Dahlia Defense |
+| BOR | Ripper |
+| DAD | Daedalus |
 | JAK | Jakobs |
 | MAL | Maliwan |
-| ORD | Ordnance |
+| ORD | Order |
 | TED | Tediore |
 | TOR | Torgue |
 | VLA | Vladof |
@@ -581,7 +581,7 @@ MANUFACTURER_TYPE.comp_05_legendary_NAME
 Examples:
 - `JAK_SG.comp_05_legendary_Hellwalker` - Jakobs Shotgun "Hellwalker"
 - `MAL_SM.comp_05_legendary_PlasmaCoil` - Maliwan SMG "PlasmaCoil"
-- `DAD_SHIELD.comp_05_legendary_angel` - Dahlia Defense Shield "Guardian Angel"
+- `DAD_SHIELD.comp_05_legendary_angel` - Daedalus Shield "Guardian Angel"
 
 ### Component Tiers
 
@@ -666,11 +666,11 @@ Items are categorized into slots based on their type:
 
 | Code | Manufacturer | Specialty |
 |------|--------------|-----------|
-| BOR | Borealis | - |
-| DAD | Dahlia Defense | Shields |
+| BOR | Ripper | - |
+| DAD | Daedalus | Shields |
 | JAK | Jakobs | High damage, slow fire |
 | MAL | Maliwan | Elemental |
-| ORD | Ordnance | - |
+| ORD | Order | - |
 | TED | Tediore | Throw-to-reload |
 | TOR | Torgue | Explosives |
 | VLA | Vladof | High fire rate |

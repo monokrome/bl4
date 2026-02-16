@@ -1,4 +1,4 @@
-# Chapter 3: Memory Analysis
+# Chapter 3: Memory Analysis {#sec-memory-analysis}
 
 There's data you can find in files, and there's data you can only find in memory. Your character's current health, the weapon in your hand, the damage numbers floating off enemies—these exist only while the game runs. To see them, we need to look inside the running process.
 
@@ -173,7 +173,7 @@ These commands encapsulate the pointer-chasing and interpretation logic, letting
 
 ## Practical Example: Finding Item Serials
 
-Item serials—those shareable weapon codes—exist in memory as strings. Finding them reveals where item data lives.
+Item serials—the internal strings that encode each weapon in save data—exist in memory as raw character sequences. Finding them reveals where item data lives.
 
 ```bash
 # Search for the @Ug prefix that starts all serials
@@ -303,4 +303,4 @@ Memory analysis reveals runtime state, but most players interact with the game t
 
 Next, we'll crack open BL4 save files—understanding the encryption, decompression, and YAML structure that makes save editing possible.
 
-**Next: [Chapter 4: Save File Format](04-save-files.md)**
+**Next: [Chapter 4: Save File Format](#sec-save-files)**

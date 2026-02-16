@@ -1,4 +1,4 @@
-# Chapter 2: Unreal Engine Architecture
+# Chapter 2: Unreal Engine Architecture {#sec-unreal-architecture}
 
 Borderlands 4 runs on Unreal Engine 5, and that's great news for reverse engineering. Every Unreal game—from Fortnite to Elden Ring to indie projects—shares the same fundamental architecture. Learn how Unreal organizes data once, and you've learned something applicable to hundreds of games.
 
@@ -329,4 +329,4 @@ You now understand how Unreal organizes its world—UObjects with reflectable pr
 
 Next, we'll put these concepts into practice by analyzing live game memory and extracting data directly from a running instance.
 
-**Next: [Chapter 3: Memory Analysis](03-memory-analysis.md)**
+**Next: [Chapter 3: Memory Analysis](#sec-memory-analysis)**

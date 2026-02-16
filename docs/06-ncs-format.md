@@ -1,4 +1,4 @@
-# Chapter 6: NCS Format (Nexus Config Store)
+# Chapter 6: NCS Format (Nexus Config Store) {#sec-ncs-format}
 
 Try searching BL4's pak files for item pool definitions. For loot configuration tables. For achievement data. You'll find nothing --- these classes don't exist as standard `.uasset` files. Gearbox moved critical game configuration into a custom binary format embedded directly in pak chunks, invisible to normal Unreal Engine extraction tools.
 
@@ -880,7 +880,7 @@ bl4 drops find hellwalker
 bl4 drops source Timekeeper
 ```
 
-See [Appendix C: Loot System Internals](appendix-c-loot-system.md) for detailed drop table documentation.
+See [Appendix C: Loot System Internals](#sec-loot-system) for detailed drop table documentation.
 
 ---
 
@@ -1004,4 +1004,4 @@ Several areas of the format remain partially understood:
 
 ---
 
-The NCS format is approximately 95% reverse-engineered. The compression layer, string tables, differential encoding, and tag-based binary section are all well understood and implemented in the `bl4-ncs` parser. The remaining unknowns are in the binary section's finer details --- hash table structures, cross-file reference resolution, and the exact semantics of per-entry schema encoding. [Chapter 7](07-data-extraction.md) covers how to extract usable game data from these parsed NCS documents.
+The NCS format is approximately 95% reverse-engineered. The compression layer, string tables, differential encoding, and tag-based binary section are all well understood and implemented in the `bl4-ncs` parser. The remaining unknowns are in the binary section's finer details --- hash table structures, cross-file reference resolution, and the exact semantics of per-entry schema encoding. [Chapter 7](#sec-data-extraction) covers how to extract usable game data from these parsed NCS documents.

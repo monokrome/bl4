@@ -1,4 +1,4 @@
-# Chapter 9: Using bl4 Tools
+# Chapter 9: Using bl4 Tools {#sec-bl4-tools}
 
 Everything we've learned---binary decoding, memory analysis, save file encryption, serial parsing---comes together in the bl4 command-line tools. This chapter serves as your practical reference for day-to-day use.
 
@@ -138,7 +138,7 @@ Tokens: 180928 | 50 | {0:1} 21 {4} , 2 , , 105 102 41
 ```
 
 ::: {.callout-note title="Part Name Resolution"}
-Part names are resolved from `share/manifest/parts_database.json`. Currently ~40% of parts have known mappings from memory extraction. Unknown parts display as `[category:index]` placeholders (e.g., `[22:5]`). See [Chapter 7](07-data-extraction.md) for details on part data coverage.
+Part names are resolved from `share/manifest/parts_database.json`. Currently ~40% of parts have known mappings from memory extraction. Unknown parts display as `[category:index]` placeholders (e.g., `[22:5]`). See [Chapter 7](#sec-data-extraction) for details on part data coverage.
 :::
 
 Options:
@@ -822,8 +822,8 @@ bl4 drops generate ./ncs_output/ -o share/manifest/drops.json
 
 The appendices provide deep reference material:
 
-- **[Appendix A: SDK Class Layouts](appendix-a-sdk-layouts.md)** --- Memory layouts for key UE5 classes
-- **[Appendix B: Weapon Parts Reference](appendix-b-weapon-parts.md)** --- Complete parts catalog
-- **[Appendix C: Loot System Internals](appendix-c-loot-system.md)** --- Drop pools and rarity
-- **[Appendix D: Game File Structure](appendix-d-game-files.md)** --- Asset organization
-- **[Glossary](glossary.md)** --- Terms and quick reference
+- **[Appendix A: SDK Class Layouts](#sec-sdk-layouts)** --- Memory layouts for key UE5 classes
+- **[Appendix B: Weapon Parts Reference](#sec-weapon-parts)** --- Complete parts catalog
+- **[Appendix C: Loot System Internals](#sec-loot-system)** --- Drop pools and rarity
+- **[Appendix D: Game File Structure](#sec-game-files)** --- Asset organization
+- **[Glossary](#sec-glossary)** --- Terms and quick reference

@@ -1,4 +1,4 @@
-# Appendix D: Game File Structure
+# Appendix D: Game File Structure {#sec-game-files}
 
 This appendix provides a complete reference of BL4's file structure, asset organization, and content layout.
 
@@ -438,7 +438,7 @@ BOR, TOR, VLA, COV, MAL, TED, DAD, JAK, ORD
 
 ## NCS Format (Nexus Config Store)
 
-NCS is Gearbox's format for storing item pool definitions, part data, and other game configuration that isn't in standard PAK assets. For the complete NCS format specification, see [Chapter 6: NCS Format](06-ncs-format.md).
+NCS is Gearbox's format for storing item pool definitions, part data, and other game configuration that isn't in standard PAK assets. For the complete NCS format specification, see [Chapter 6: NCS Format](#sec-ncs-format).
 
 ### Key NCS Files
 

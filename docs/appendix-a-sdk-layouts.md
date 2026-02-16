@@ -1,6 +1,6 @@
-# Appendix A: SDK Class Layouts
+# Appendix A: SDK Class Layouts {#sec-sdk-layouts}
 
-This appendix provides detailed memory layouts for BL4's core classes, extracted from SDK analysis. These are essential for memory hacking, cheat development, or deep reverse engineering.
+This appendix provides detailed memory layouts for BL4's core classes, extracted from SDK analysis. These are essential for memory analysis, save editing tools, or deep reverse engineering.
 
 ---
 

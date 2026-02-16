@@ -1,4 +1,4 @@
-# Chapter 1: Binary Basics
+# Chapter 1: Binary Basics {#sec-binary-basics}
 
 Open any game file in a hex editor and you'll see a wall of numbers and letters that looks like gibberish. But it's not gibberish—it's data, organized according to rules we can learn. This chapter teaches you to read that wall of bytes like a map.
 
@@ -65,7 +65,7 @@ Stored bytes:    0x78  0x56  0x34  0x12
 
 Big-endian systems store bytes in the order we'd expect: 0x12 first, then 0x34, then 0x56, then 0x78. Network protocols often use big-endian (it's sometimes called "network byte order").
 
-BL4 uses both. Save files are little-endian because they're made for x86 processors. But item serials—those shareable weapon codes—use big-endian for the Base85 decoding step. Always verify which you're dealing with before assuming.
+BL4 uses both. Save files are little-endian because they're made for x86 processors. But item serials—the internal strings that encode each weapon in save data—use big-endian for the Base85 decoding step. Always verify which you're dealing with before assuming.
 
 ---
 
@@ -260,4 +260,4 @@ You now have the foundation to read binary data. But raw bytes only get you so f
 
 Next, we'll explore Unreal Engine 5's architecture: how it tracks objects with reflection, serializes properties, and stores assets in pak files. Understanding UE5's patterns makes the difference between staring at random bytes and recognizing game data instantly.
 
-**Next: [Chapter 2: Unreal Engine Architecture](02-unreal-architecture.md)**
+**Next: [Chapter 2: Unreal Engine Architecture](#sec-unreal-architecture)**

@@ -1,4 +1,4 @@
-# Chapter 8: Parts System
+# Chapter 8: Parts System {#sec-parts-system}
 
 Every weapon in Borderlands 4 is an assembly. A Daedalus pistol isn't one object — it's a barrel, a grip, a magazine, a scope, and a body bolted together, each chosen from a pool of compatible parts. Swap the barrel and you change damage. Swap the grip and you change handling. The combinations run into the millions, and every one of them needs to encode into a compact serial string.
 
