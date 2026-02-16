@@ -64,46 +64,46 @@ static WEAPON_INFO: phf::Map<u64, (&'static str, &'static str)> = phf_map! {
 };
 
 /// Serial ID (first varint) to Parts Database Category mapping
-/// Serial IDs in decoded serials differ from the category IDs used in parts_database.json
-/// This table maps between them for correct part resolution
+///
+/// Serial IDs in decoded serials differ from the NCS category IDs used in
+/// parts_database.json. This table maps serial IDs to NCS-authoritative
+/// category IDs extracted from inv*.bin root entries.
 static SERIAL_TO_PARTS_CAT: phf::Map<u64, u64> = phf_map! {
-    // Shotguns
+    // Shotguns (NCS: bor_sg=7, dad_sg=8, jak_sg=9, mal_sg=10, ted_sg=11, tor_sg=12)
     1u64 => 8,    // DAD_SG
-    3u64 => 11,   // TOR_SG
-    5u64 => 19,   // MAL_SG
+    3u64 => 12,   // TOR_SG
+    5u64 => 10,   // MAL_SG
     9u64 => 9,    // JAK_SG
-    13u64 => 10,  // TED_SG
-    14u64 => 12,  // BOR_SG
+    13u64 => 11,  // TED_SG
+    14u64 => 7,   // BOR_SG
 
-    // Pistols
+    // Pistols (NCS: dad_ps=2, jak_ps=3, ord_ps=4, ted_ps=5, tor_ps=6)
     2u64 => 3,    // JAK_PS
     4u64 => 2,    // DAD_PS
-    6u64 => 5,    // TOR_PS
-    10u64 => 4,   // TED_PS
+    6u64 => 6,    // TOR_PS
+    10u64 => 5,   // TED_PS
     12u64 => 3,   // JAK_PS (alternate)
 
-    // Assault Rifles (low IDs)
-    7u64 => 15,   // TED_AR
+    // Assault Rifles (NCS: dad_ar=13, ted_ar=14, ord_ar=15, tor_ar=17, vla_ar=18, jak_ar=27)
+    7u64 => 14,   // TED_AR
     11u64 => 13,  // DAD_AR
-    15u64 => 18,  // ORD_AR
+    15u64 => 15,  // ORD_AR
+    132u64 => 18, // VLA_AR
+    136u64 => 17, // TOR_AR
+    141u64 => 27, // JAK_AR
 
-    // Snipers (high IDs) - VLA_SR and BOR_SR share category 25
-    128u64 => 25, // VLA_SR
-    129u64 => 26, // JAK_SR
-    133u64 => 28, // ORD_SR
-    137u64 => 29, // MAL_SR
-    142u64 => 25, // BOR_SR
+    // Snipers (NCS: vla_sr=16, bor_sr=23, jak_sr=24, mal_sr=25, ord_sr=26)
+    128u64 => 16, // VLA_SR
+    129u64 => 24, // JAK_SR
+    133u64 => 26, // ORD_SR
+    137u64 => 25, // MAL_SR
+    142u64 => 23, // BOR_SR
 
-    // SMGs (high IDs)
+    // SMGs (NCS: bor_sm=19, dad_sm=20, mal_sm=21, vla_sm=22)
     130u64 => 20, // DAD_SM
-    134u64 => 21, // BOR_SM
-    138u64 => 23, // MAL_SM
+    134u64 => 19, // BOR_SM
+    138u64 => 21, // MAL_SM
     140u64 => 22, // VLA_SM
-
-    // Assault Rifles (high IDs)
-    132u64 => 17, // VLA_AR
-    136u64 => 16, // TOR_AR
-    141u64 => 14, // JAK_AR
 };
 
 /// Convert serial ID (first varint) to parts database category
@@ -377,7 +377,7 @@ mod tests {
     fn test_category_name_lookup() {
         assert_eq!(category_name(2), Some("Daedalus Pistol"));
         assert_eq!(category_name(22), Some("Vladof SMG"));
-        assert_eq!(category_name(283), Some("Armor Shield"));
+        assert_eq!(category_name(283), Some("Vladof Shield"));
         assert_eq!(category_name(999), None);
     }
 
@@ -400,11 +400,11 @@ mod tests {
 
     #[test]
     fn test_serial_id_to_parts_category() {
-        // Known mappings from SERIAL_TO_PARTS_CAT
+        // Known mappings from SERIAL_TO_PARTS_CAT (NCS category IDs)
         assert_eq!(serial_id_to_parts_category(1), 8); // DAD_SG
         assert_eq!(serial_id_to_parts_category(9), 9); // JAK_SG
-        assert_eq!(serial_id_to_parts_category(128), 25); // VLA_SR (corrected from 27)
-        assert_eq!(serial_id_to_parts_category(138), 23); // MAL_SM
+        assert_eq!(serial_id_to_parts_category(128), 16); // VLA_SR
+        assert_eq!(serial_id_to_parts_category(138), 21); // MAL_SM
 
         // Unknown ID returns the ID itself as fallback
         assert_eq!(serial_id_to_parts_category(999), 999);
@@ -440,8 +440,8 @@ mod tests {
 
     #[test]
     fn test_category_name_for_type_fallback() {
-        // Unknown category falls back to manifest lookup
-        assert_eq!(category_name_for_type('r', 283), Some("Armor Shield"));
+        // Shield category not in SHIELD_CATEGORY_NAMES falls back to manifest lookup
+        assert_eq!(category_name_for_type('r', 283), Some("Vladof Shield"));
         // Unknown category for unknown type returns None
         assert_eq!(category_name_for_type('a', 99999), None);
     }
