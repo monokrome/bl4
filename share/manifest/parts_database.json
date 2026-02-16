@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "source": "Merged: old database + NCS extraction with categories",
+  "version": 2,
+  "source": "NCS inv*.bin extraction",
   "parts": [
     {
       "category": 1,
@@ -4040,12 +4040,12 @@
     {
       "category": 12,
       "index": 33,
-      "name": "BOR_SG_Scope_02_A"
+      "name": "part_scope_acc_s02_l02_b"
     },
     {
       "category": 12,
       "index": 34,
-      "name": "BOR_SG_Scope_02_B"
+      "name": "part_grip_05c_ted_jav"
     },
     {
       "category": 12,
@@ -4055,7 +4055,7 @@
     {
       "category": 12,
       "index": 36,
-      "name": "BOR_SG_Scope_01_B"
+      "name": "part_grip_05a_ted_legs"
     },
     {
       "category": 12,
@@ -4070,37 +4070,37 @@
     {
       "category": 12,
       "index": 39,
-      "name": "BOR_SG_Grip_05_C"
+      "name": "part_grip_03"
     },
     {
       "category": 12,
       "index": 40,
-      "name": "BOR_SG_Grip_05_A"
+      "name": "part_grip_04_hyp"
     },
     {
       "category": 12,
       "index": 41,
-      "name": "BOR_SG_Grip_05_B"
+      "name": "part_underbarrel_05_ammoswitcher"
     },
     {
       "category": 12,
       "index": 42,
-      "name": "BOR_SG_Grip_01"
+      "name": "part_underbarrel_06_malswitch"
     },
     {
       "category": 12,
       "index": 43,
-      "name": "BOR_SG_Grip_02"
+      "name": "part_underbarrel_01_seeker_missiles"
     },
     {
       "category": 12,
       "index": 44,
-      "name": "BOR_SG_Grip_03"
+      "name": "part_underbarrel_03_bounce_grenade"
     },
     {
       "category": 12,
       "index": 45,
-      "name": "BOR_SG_Grip_04"
+      "name": "part_underbarrel_04_atlas"
     },
     {
       "category": 12,
@@ -4110,37 +4110,37 @@
     {
       "category": 12,
       "index": 47,
-      "name": "BOR_SG_UnderBarrel_04"
+      "name": "part_foregrip_03"
     },
     {
       "category": 12,
       "index": 48,
-      "name": "BOR_SG_UnderBarrel_01"
+      "name": "part_foregrip_01"
     },
     {
       "category": 12,
       "index": 49,
-      "name": "BOR_SG_UnderBarrel_02"
+      "name": "part_underbarrel_04_atlas_ball"
     },
     {
       "category": 12,
       "index": 50,
-      "name": "BOR_SG_Foregrip_01"
+      "name": "part_underbarrel_02_flameblast"
     },
     {
       "category": 12,
       "index": 51,
-      "name": "BOR_SG_Foregrip_03"
+      "name": "part_secondary_ammo_smg"
     },
     {
       "category": 12,
       "index": 52,
-      "name": "BOR_SG_UnderBarrel_05"
+      "name": "part_secondary_ammo_ps"
     },
     {
       "category": 12,
       "index": 53,
-      "name": "BOR_SG_UnderBarrel_06"
+      "name": "part_secondary_ammo_ar"
     },
     {
       "category": 12,
@@ -4180,82 +4180,47 @@
     {
       "category": 12,
       "index": 66,
-      "name": "BOR_SG_Barrel_01_A"
+      "name": "part_barrel_02_b"
     },
     {
       "category": 12,
       "index": 67,
-      "name": "BOR_SG_Barrel_01_B"
+      "name": "part_barrel_02_c"
     },
     {
       "category": 12,
       "index": 68,
-      "name": "BOR_SG_Barrel_01_C"
+      "name": "part_barrel_02_d"
     },
     {
       "category": 12,
       "index": 69,
-      "name": "BOR_SG_Barrel_01_D"
+      "name": "part_barrel_licensed_jak"
     },
     {
       "category": 12,
       "index": 70,
-      "name": "BOR_SG_Barrel_02_A"
+      "name": "part_barrel_licensed_ted"
     },
     {
       "category": 12,
       "index": 71,
-      "name": "BOR_SG_Barrel_02_B"
+      "name": "part_barrel_licensed_ted_shooting"
     },
     {
       "category": 12,
       "index": 72,
-      "name": "BOR_SG_Barrel_02_C"
+      "name": "part_barrel_licensed_ted_mirv"
     },
     {
       "category": 12,
       "index": 73,
-      "name": "BOR_SG_Barrel_02_D"
+      "name": "part_barrel_licensed_ted_combo"
     },
     {
       "category": 12,
       "index": 74,
-      "name": "BOR_SG_TAcc_01"
-    },
-    {
-      "category": 12,
-      "index": 75,
-      "name": "BOR_SG_TAcc_03"
-    },
-    {
-      "category": 12,
-      "index": 76,
-      "name": "BOR_SG_TAcc_03_A"
-    },
-    {
-      "category": 12,
-      "index": 77,
-      "name": "BOR_SG_TAcc_03_B"
-    },
-    {
-      "category": 12,
-      "index": 78,
-      "name": "BOR_SG_TAcc_03_C"
-    },
-    {
-      "category": 12,
-      "index": 79,
-      "name": "BOR_SG_TAcc_02"
-    },
-    {
-      "category": 12,
-      "index": 80,
-      "name": "BOR_SG_UnderBarrel_03"
-    },
-    {
-      "category": 12,
-      "index": 81,
-      "name": "BOR_SG_Foregrip_02"
+      "name": "part_barrel_licensed_hyp"
     },
     {
       "category": 12,
@@ -6683,11 +6648,6 @@
       "name": "comp_04_epic"
     },
     {
-      "category": 18,
-      "index": 392,
-      "name": "ORD_AR_Foregrip_03"
-    },
-    {
       "category": 19,
       "index": 2,
       "name": "part_body"
@@ -7750,12 +7710,12 @@
     {
       "category": 21,
       "index": 54,
-      "name": "BOR_SM_UnderBarrel_05"
+      "name": "part_secondary_ammo_sg"
     },
     {
       "category": 21,
       "index": 55,
-      "name": "BOR_SM_Foregrip_02"
+      "name": "part_secondary_ammo_ar"
     },
     {
       "category": 21,
@@ -7765,7 +7725,7 @@
     {
       "category": 21,
       "index": 57,
-      "name": "BOR_SM_Mag_04"
+      "name": "part_secondary_ammo_sr"
     },
     {
       "category": 21,
@@ -7780,7 +7740,7 @@
     {
       "category": 21,
       "index": 65,
-      "name": "BOR_SM_Ironsight"
+      "name": "part_barrel_01_a"
     },
     {
       "category": 21,
