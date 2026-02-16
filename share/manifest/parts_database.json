@@ -26801,6 +26801,2521 @@
       "category": 399,
       "index": 2,
       "name": "compsplicejumborocket"
+    },
+    {
+      "category": 10001,
+      "index": 176,
+      "name": "part_stat2_statuseffect_chance"
+    },
+    {
+      "category": 10001,
+      "index": 177,
+      "name": "part_stat2_statuseffect_damage"
+    },
+    {
+      "category": 10001,
+      "index": 178,
+      "name": "part_stat2_weapon_accuracy"
+    },
+    {
+      "category": 10001,
+      "index": 179,
+      "name": "part_stat2_weapon_ads_proficiency"
+    },
+    {
+      "category": 10001,
+      "index": 180,
+      "name": "part_stat2_weapon_criticaldamage"
+    },
+    {
+      "category": 10001,
+      "index": 181,
+      "name": "part_stat2_weapon_damage"
+    },
+    {
+      "category": 10001,
+      "index": 182,
+      "name": "part_stat2_weapon_equipspeed"
+    },
+    {
+      "category": 10001,
+      "index": 183,
+      "name": "part_stat2_weapon_firerate"
+    },
+    {
+      "category": 10001,
+      "index": 184,
+      "name": "part_stat2_weapon_magsize"
+    },
+    {
+      "category": 10001,
+      "index": 185,
+      "name": "part_stat2_weapon_reloadspeed"
+    },
+    {
+      "category": 10001,
+      "index": 186,
+      "name": "part_stat2_weapon_splashdamage"
+    },
+    {
+      "category": 10001,
+      "index": 187,
+      "name": "part_stat2_weapon_splashradius"
+    },
+    {
+      "category": 10001,
+      "index": 188,
+      "name": "part_stat2_wt_ar_accuracy"
+    },
+    {
+      "category": 10001,
+      "index": 189,
+      "name": "part_stat2_wt_ar_ads_proficiency"
+    },
+    {
+      "category": 10001,
+      "index": 190,
+      "name": "part_stat2_wt_ar_criticaldamage"
+    },
+    {
+      "category": 10001,
+      "index": 191,
+      "name": "part_stat2_wt_ar_damage"
+    },
+    {
+      "category": 10001,
+      "index": 192,
+      "name": "part_stat2_wt_ar_equipspeed"
+    },
+    {
+      "category": 10001,
+      "index": 193,
+      "name": "part_stat2_wt_ar_firerate"
+    },
+    {
+      "category": 10001,
+      "index": 194,
+      "name": "part_stat2_wt_ar_magsize"
+    },
+    {
+      "category": 10001,
+      "index": 195,
+      "name": "part_stat2_wt_ar_reloadspeed"
+    },
+    {
+      "category": 10001,
+      "index": 196,
+      "name": "part_stat2_wt_ar_splashdamage"
+    },
+    {
+      "category": 10001,
+      "index": 197,
+      "name": "part_stat2_wt_ar_splashradius"
+    },
+    {
+      "category": 10001,
+      "index": 198,
+      "name": "part_stat2_wt_ar_statuseffectchance"
+    },
+    {
+      "category": 10001,
+      "index": 199,
+      "name": "part_stat2_wt_ar_statuseffectdamage"
+    },
+    {
+      "category": 10001,
+      "index": 200,
+      "name": "part_stat2_wt_ps_accuracy"
+    },
+    {
+      "category": 10001,
+      "index": 201,
+      "name": "part_stat2_wt_ps_ads_proficiency"
+    },
+    {
+      "category": 10001,
+      "index": 202,
+      "name": "part_stat2_wt_ps_criticaldamage"
+    },
+    {
+      "category": 10001,
+      "index": 203,
+      "name": "part_stat2_wt_ps_damage"
+    },
+    {
+      "category": 10001,
+      "index": 204,
+      "name": "part_stat2_wt_ps_equipspeed"
+    },
+    {
+      "category": 10001,
+      "index": 205,
+      "name": "part_stat2_wt_ps_firerate"
+    },
+    {
+      "category": 10001,
+      "index": 206,
+      "name": "part_stat2_wt_ps_magsize"
+    },
+    {
+      "category": 10001,
+      "index": 207,
+      "name": "part_stat2_wt_ps_reloadspeed"
+    },
+    {
+      "category": 10001,
+      "index": 208,
+      "name": "part_stat2_wt_ps_splashdamage"
+    },
+    {
+      "category": 10001,
+      "index": 209,
+      "name": "part_stat2_wt_ps_splashradius"
+    },
+    {
+      "category": 10001,
+      "index": 210,
+      "name": "part_stat2_wt_ps_statuseffectchance"
+    },
+    {
+      "category": 10001,
+      "index": 211,
+      "name": "part_stat2_wt_ps_statuseffectdamage"
+    },
+    {
+      "category": 10001,
+      "index": 212,
+      "name": "part_stat2_wt_sg_accuracy"
+    },
+    {
+      "category": 10001,
+      "index": 213,
+      "name": "part_stat2_wt_sg_ads_proficiency"
+    },
+    {
+      "category": 10001,
+      "index": 214,
+      "name": "part_stat2_wt_sg_criticaldamage"
+    },
+    {
+      "category": 10001,
+      "index": 215,
+      "name": "part_stat2_wt_sg_damage"
+    },
+    {
+      "category": 10001,
+      "index": 216,
+      "name": "part_stat2_wt_sg_equipspeed"
+    },
+    {
+      "category": 10001,
+      "index": 217,
+      "name": "part_stat2_wt_sg_firerate"
+    },
+    {
+      "category": 10001,
+      "index": 218,
+      "name": "part_stat2_wt_sg_magsize"
+    },
+    {
+      "category": 10001,
+      "index": 219,
+      "name": "part_stat2_wt_sg_reloadspeed"
+    },
+    {
+      "category": 10001,
+      "index": 220,
+      "name": "part_stat2_wt_sg_splashdamage"
+    },
+    {
+      "category": 10001,
+      "index": 221,
+      "name": "part_stat2_wt_sg_splashradius"
+    },
+    {
+      "category": 10001,
+      "index": 222,
+      "name": "part_stat2_wt_sg_statuseffectchance"
+    },
+    {
+      "category": 10001,
+      "index": 223,
+      "name": "part_stat2_wt_sg_statuseffectdamage"
+    },
+    {
+      "category": 10001,
+      "index": 224,
+      "name": "part_stat2_wt_sm_accuracy"
+    },
+    {
+      "category": 10001,
+      "index": 225,
+      "name": "part_stat2_wt_sm_ads_proficiency"
+    },
+    {
+      "category": 10001,
+      "index": 226,
+      "name": "part_stat2_wt_sm_criticaldamage"
+    },
+    {
+      "category": 10001,
+      "index": 227,
+      "name": "part_stat2_wt_sm_damage"
+    },
+    {
+      "category": 10001,
+      "index": 228,
+      "name": "part_stat2_wt_sm_equipspeed"
+    },
+    {
+      "category": 10001,
+      "index": 229,
+      "name": "part_stat2_wt_sm_firerate"
+    },
+    {
+      "category": 10001,
+      "index": 230,
+      "name": "part_stat2_wt_sm_magsize"
+    },
+    {
+      "category": 10001,
+      "index": 231,
+      "name": "part_stat2_wt_sm_reloadspeed"
+    },
+    {
+      "category": 10001,
+      "index": 232,
+      "name": "part_stat2_wt_sm_splashdamage"
+    },
+    {
+      "category": 10001,
+      "index": 233,
+      "name": "part_stat2_wt_sm_splashradius"
+    },
+    {
+      "category": 10001,
+      "index": 234,
+      "name": "part_stat2_wt_sm_statuseffectchance"
+    },
+    {
+      "category": 10001,
+      "index": 235,
+      "name": "part_stat2_wt_sm_statuseffectdamage"
+    },
+    {
+      "category": 10001,
+      "index": 236,
+      "name": "part_stat2_wt_sr_accuracy"
+    },
+    {
+      "category": 10001,
+      "index": 237,
+      "name": "part_stat2_wt_sr_ads_proficiency"
+    },
+    {
+      "category": 10001,
+      "index": 238,
+      "name": "part_stat2_wt_sr_criticaldamage"
+    },
+    {
+      "category": 10001,
+      "index": 239,
+      "name": "part_stat2_wt_sr_damage"
+    },
+    {
+      "category": 10001,
+      "index": 240,
+      "name": "part_stat2_wt_sr_equipspeed"
+    },
+    {
+      "category": 10001,
+      "index": 241,
+      "name": "part_stat2_wt_sr_firerate"
+    },
+    {
+      "category": 10001,
+      "index": 242,
+      "name": "part_stat2_wt_sr_magsize"
+    },
+    {
+      "category": 10001,
+      "index": 243,
+      "name": "part_stat2_wt_sr_reloadspeed"
+    },
+    {
+      "category": 10001,
+      "index": 244,
+      "name": "part_stat2_wt_sr_splashdamage"
+    },
+    {
+      "category": 10001,
+      "index": 245,
+      "name": "part_stat2_wt_sr_splashradius"
+    },
+    {
+      "category": 10001,
+      "index": 246,
+      "name": "part_stat2_wt_sr_statuseffectchance"
+    },
+    {
+      "category": 10001,
+      "index": 247,
+      "name": "part_stat2_wt_sr_statuseffectdamage"
+    },
+    {
+      "category": 10002,
+      "index": 104,
+      "name": "part_stat3_wt_sr_statuseffectdamage"
+    },
+    {
+      "category": 10002,
+      "index": 105,
+      "name": "part_stat3_wt_sr_statuseffectchance"
+    },
+    {
+      "category": 10002,
+      "index": 106,
+      "name": "part_stat3_wt_sr_splashradius"
+    },
+    {
+      "category": 10002,
+      "index": 107,
+      "name": "part_stat3_wt_sr_splashdamage"
+    },
+    {
+      "category": 10002,
+      "index": 108,
+      "name": "part_stat3_wt_sr_reloadspeed"
+    },
+    {
+      "category": 10002,
+      "index": 109,
+      "name": "part_stat3_wt_sr_magsize"
+    },
+    {
+      "category": 10002,
+      "index": 110,
+      "name": "part_stat3_wt_sr_firerate"
+    },
+    {
+      "category": 10002,
+      "index": 111,
+      "name": "part_stat3_wt_sr_equipspeed"
+    },
+    {
+      "category": 10002,
+      "index": 112,
+      "name": "part_stat3_wt_sr_damage"
+    },
+    {
+      "category": 10002,
+      "index": 113,
+      "name": "part_stat3_wt_sr_criticaldamage"
+    },
+    {
+      "category": 10002,
+      "index": 114,
+      "name": "part_stat3_wt_sr_ads_proficiency"
+    },
+    {
+      "category": 10002,
+      "index": 115,
+      "name": "part_stat3_wt_sr_accuracy"
+    },
+    {
+      "category": 10002,
+      "index": 116,
+      "name": "part_stat3_wt_sm_statuseffectdamage"
+    },
+    {
+      "category": 10002,
+      "index": 117,
+      "name": "part_stat3_wt_sm_statuseffectchance"
+    },
+    {
+      "category": 10002,
+      "index": 118,
+      "name": "part_stat3_wt_sm_splashradius"
+    },
+    {
+      "category": 10002,
+      "index": 119,
+      "name": "part_stat3_wt_sm_splashdamage"
+    },
+    {
+      "category": 10002,
+      "index": 120,
+      "name": "part_stat3_wt_sm_reloadspeed"
+    },
+    {
+      "category": 10002,
+      "index": 121,
+      "name": "part_stat3_wt_sm_magsize"
+    },
+    {
+      "category": 10002,
+      "index": 122,
+      "name": "part_stat3_wt_sm_firerate"
+    },
+    {
+      "category": 10002,
+      "index": 123,
+      "name": "part_stat3_wt_sm_equipspeed"
+    },
+    {
+      "category": 10002,
+      "index": 124,
+      "name": "part_stat3_wt_sm_damage"
+    },
+    {
+      "category": 10002,
+      "index": 125,
+      "name": "part_stat3_wt_sm_criticaldamage"
+    },
+    {
+      "category": 10002,
+      "index": 126,
+      "name": "part_stat3_wt_sm_ads_proficiency"
+    },
+    {
+      "category": 10002,
+      "index": 127,
+      "name": "part_stat3_wt_sm_accuracy"
+    },
+    {
+      "category": 10002,
+      "index": 128,
+      "name": "part_stat3_wt_sg_statuseffectdamage"
+    },
+    {
+      "category": 10002,
+      "index": 129,
+      "name": "part_stat3_wt_sg_statuseffectchance"
+    },
+    {
+      "category": 10002,
+      "index": 130,
+      "name": "part_stat3_wt_sg_splashradius"
+    },
+    {
+      "category": 10002,
+      "index": 131,
+      "name": "part_stat3_wt_sg_splashdamage"
+    },
+    {
+      "category": 10002,
+      "index": 132,
+      "name": "part_stat3_wt_sg_reloadspeed"
+    },
+    {
+      "category": 10002,
+      "index": 133,
+      "name": "part_stat3_wt_sg_magsize"
+    },
+    {
+      "category": 10002,
+      "index": 134,
+      "name": "part_stat3_wt_sg_firerate"
+    },
+    {
+      "category": 10002,
+      "index": 135,
+      "name": "part_stat3_wt_sg_equipspeed"
+    },
+    {
+      "category": 10002,
+      "index": 136,
+      "name": "part_stat3_wt_sg_damage"
+    },
+    {
+      "category": 10002,
+      "index": 137,
+      "name": "part_stat3_wt_sg_criticaldamage"
+    },
+    {
+      "category": 10002,
+      "index": 138,
+      "name": "part_stat3_wt_sg_ads_proficiency"
+    },
+    {
+      "category": 10002,
+      "index": 139,
+      "name": "part_stat3_wt_sg_accuracy"
+    },
+    {
+      "category": 10002,
+      "index": 140,
+      "name": "part_stat3_wt_ps_statuseffectdamage"
+    },
+    {
+      "category": 10002,
+      "index": 141,
+      "name": "part_stat3_wt_ps_statuseffectchance"
+    },
+    {
+      "category": 10002,
+      "index": 142,
+      "name": "part_stat3_wt_ps_splashradius"
+    },
+    {
+      "category": 10002,
+      "index": 143,
+      "name": "part_stat3_wt_ps_splashdamage"
+    },
+    {
+      "category": 10002,
+      "index": 144,
+      "name": "part_stat3_wt_ps_reloadspeed"
+    },
+    {
+      "category": 10002,
+      "index": 145,
+      "name": "part_stat3_wt_ps_magsize"
+    },
+    {
+      "category": 10002,
+      "index": 146,
+      "name": "part_stat3_wt_ps_firerate"
+    },
+    {
+      "category": 10002,
+      "index": 147,
+      "name": "part_stat3_wt_ps_equipspeed"
+    },
+    {
+      "category": 10002,
+      "index": 148,
+      "name": "part_stat3_wt_ps_damage"
+    },
+    {
+      "category": 10002,
+      "index": 149,
+      "name": "part_stat3_wt_ps_criticaldamage"
+    },
+    {
+      "category": 10002,
+      "index": 150,
+      "name": "part_stat3_wt_ps_ads_proficiency"
+    },
+    {
+      "category": 10002,
+      "index": 151,
+      "name": "part_stat3_wt_ps_accuracy"
+    },
+    {
+      "category": 10002,
+      "index": 152,
+      "name": "part_stat3_wt_ar_statuseffectdamage"
+    },
+    {
+      "category": 10002,
+      "index": 153,
+      "name": "part_stat3_wt_ar_statuseffectchance"
+    },
+    {
+      "category": 10002,
+      "index": 154,
+      "name": "part_stat3_wt_ar_splashradius"
+    },
+    {
+      "category": 10002,
+      "index": 155,
+      "name": "part_stat3_wt_ar_splashdamage"
+    },
+    {
+      "category": 10002,
+      "index": 156,
+      "name": "part_stat3_wt_ar_reloadspeed"
+    },
+    {
+      "category": 10002,
+      "index": 157,
+      "name": "part_stat3_wt_ar_magsize"
+    },
+    {
+      "category": 10002,
+      "index": 158,
+      "name": "part_stat3_wt_ar_firerate"
+    },
+    {
+      "category": 10002,
+      "index": 159,
+      "name": "part_stat3_wt_ar_equipspeed"
+    },
+    {
+      "category": 10002,
+      "index": 160,
+      "name": "part_stat3_wt_ar_damage"
+    },
+    {
+      "category": 10002,
+      "index": 161,
+      "name": "part_stat3_wt_ar_criticaldamage"
+    },
+    {
+      "category": 10002,
+      "index": 162,
+      "name": "part_stat3_wt_ar_ads_proficiency"
+    },
+    {
+      "category": 10002,
+      "index": 163,
+      "name": "part_stat3_wt_ar_accuracy"
+    },
+    {
+      "category": 10002,
+      "index": 164,
+      "name": "part_stat3_weapon_splashradius"
+    },
+    {
+      "category": 10002,
+      "index": 165,
+      "name": "part_stat3_weapon_splashdamage"
+    },
+    {
+      "category": 10002,
+      "index": 166,
+      "name": "part_stat3_weapon_reloadspeed"
+    },
+    {
+      "category": 10002,
+      "index": 167,
+      "name": "part_stat3_weapon_magsize"
+    },
+    {
+      "category": 10002,
+      "index": 168,
+      "name": "part_stat3_weapon_firerate"
+    },
+    {
+      "category": 10002,
+      "index": 169,
+      "name": "part_stat3_weapon_equipspeed"
+    },
+    {
+      "category": 10002,
+      "index": 170,
+      "name": "part_stat3_weapon_damage"
+    },
+    {
+      "category": 10002,
+      "index": 171,
+      "name": "part_stat3_weapon_criticaldamage"
+    },
+    {
+      "category": 10002,
+      "index": 172,
+      "name": "part_stat3_weapon_ads_proficiency"
+    },
+    {
+      "category": 10002,
+      "index": 173,
+      "name": "part_stat3_weapon_accuracy"
+    },
+    {
+      "category": 10002,
+      "index": 174,
+      "name": "part_stat3_statuseffect_damage"
+    },
+    {
+      "category": 10002,
+      "index": 175,
+      "name": "part_stat3_statuseffect_chance"
+    },
+    {
+      "category": 10003,
+      "index": 1,
+      "name": "base_comp_02_uncommon"
+    },
+    {
+      "category": 10003,
+      "index": 1,
+      "name": "comp_05_legendary_prince"
+    },
+    {
+      "category": 10003,
+      "index": 1,
+      "name": "comp_05_legendary_vamoose"
+    },
+    {
+      "category": 10003,
+      "index": 1,
+      "name": "comp_05_legendary_bonnieclyde"
+    },
+    {
+      "category": 10003,
+      "index": 1,
+      "name": "comp_moxxi_weapon"
+    },
+    {
+      "category": 10003,
+      "index": 1,
+      "name": "comp_05_legendary_boomslang"
+    },
+    {
+      "category": 10003,
+      "index": 1,
+      "name": "comp_05_legendary_bottledlightning"
+    },
+    {
+      "category": 10003,
+      "index": 1,
+      "name": "comp_05_legendary_fisheye"
+    },
+    {
+      "category": 10003,
+      "index": 1,
+      "name": "comp_05_legendary_bugbear"
+    },
+    {
+      "category": 10003,
+      "index": 1,
+      "name": "comp_05_legendary_roach"
+    },
+    {
+      "category": 10003,
+      "index": 1,
+      "name": "comp_05_legendary_linebacker"
+    },
+    {
+      "category": 10003,
+      "index": 1,
+      "name": "comp_05_legendary_splatoon"
+    },
+    {
+      "category": 10003,
+      "index": 1,
+      "name": "comp_05_legendary_onslaught"
+    },
+    {
+      "category": 10003,
+      "index": 2,
+      "name": "base_comp_03_rare"
+    },
+    {
+      "category": 10003,
+      "index": 3,
+      "name": "base_comp_04_epic"
+    },
+    {
+      "category": 10003,
+      "index": 3,
+      "name": "comp_05_legendary_proteancell"
+    },
+    {
+      "category": 10003,
+      "index": 4,
+      "name": "base_comp_05_legendary"
+    },
+    {
+      "category": 10003,
+      "index": 5,
+      "name": "comp_05_legendary_defibrillator"
+    },
+    {
+      "category": 10003,
+      "index": 6,
+      "name": "comp_05_legendary_barrelaged"
+    },
+    {
+      "category": 10003,
+      "index": 6,
+      "name": "exosoldier_turret_base"
+    },
+    {
+      "category": 10003,
+      "index": 6,
+      "name": "exosoldier_turret_rocket"
+    },
+    {
+      "category": 10003,
+      "index": 6,
+      "name": "exosoldier_turret_shotgun"
+    },
+    {
+      "category": 10003,
+      "index": 7,
+      "name": "comp_05_legendary_lightning"
+    },
+    {
+      "category": 10003,
+      "index": 7,
+      "name": "comp_05_legendary_axe"
+    },
+    {
+      "category": 10003,
+      "index": 7,
+      "name": "comp_05_legendary_angel"
+    },
+    {
+      "category": 10003,
+      "index": 7,
+      "name": "comp_05_legendary_triplebypass"
+    },
+    {
+      "category": 10003,
+      "index": 7,
+      "name": "comp_05_legendary_faultydetonator"
+    },
+    {
+      "category": 10003,
+      "index": 7,
+      "name": "comp_05_legendary_shieldboi"
+    },
+    {
+      "category": 10003,
+      "index": 7,
+      "name": "comp_05_legendary_firepot"
+    },
+    {
+      "category": 10003,
+      "index": 7,
+      "name": "comp_05_legendary_firewerks"
+    },
+    {
+      "category": 10003,
+      "index": 7,
+      "name": "comp_05_legendary_blockbuster"
+    },
+    {
+      "category": 10003,
+      "index": 7,
+      "name": "comp_05_legendary_hoarder"
+    },
+    {
+      "category": 10003,
+      "index": 8,
+      "name": "comp_05_legendary_swarm"
+    },
+    {
+      "category": 10003,
+      "index": 8,
+      "name": "comp_05_legendary_timekeeper"
+    },
+    {
+      "category": 10003,
+      "index": 8,
+      "name": "comp_05_legendary_compleat"
+    },
+    {
+      "category": 10003,
+      "index": 8,
+      "name": "comp_camera"
+    },
+    {
+      "category": 10003,
+      "index": 9,
+      "name": "comp_05_legendary_watts4dinner"
+    },
+    {
+      "category": 10003,
+      "index": 9,
+      "name": "comp_05_legendary_rubber"
+    },
+    {
+      "category": 10003,
+      "index": 9,
+      "name": "comp_05_legendary_fuse"
+    },
+    {
+      "category": 10003,
+      "index": 9,
+      "name": "comp_05_legendary_supersoldier"
+    },
+    {
+      "category": 10003,
+      "index": 9,
+      "name": "comp_05_legendary_onionlayeredguard"
+    },
+    {
+      "category": 10003,
+      "index": 9,
+      "name": "comp_05_legendary_disco_disc"
+    },
+    {
+      "category": 10003,
+      "index": 9,
+      "name": "comp_05_momento"
+    },
+    {
+      "category": 10003,
+      "index": 9,
+      "name": "comp_05_legendary_predatordrone"
+    },
+    {
+      "category": 10003,
+      "index": 9,
+      "name": "comp_05_legendary_slippy"
+    },
+    {
+      "category": 10003,
+      "index": 9,
+      "name": "comp_05_legendary_waterfall"
+    },
+    {
+      "category": 10003,
+      "index": 9,
+      "name": "comp_05_legendary_heavyweight"
+    },
+    {
+      "category": 10003,
+      "index": 9,
+      "name": "comp_05_legendary_healthraiser"
+    },
+    {
+      "category": 10003,
+      "index": 10,
+      "name": "comp_05_legendary_aggrovator"
+    },
+    {
+      "category": 10003,
+      "index": 11,
+      "name": "comp_05_legendary_recursive"
+    },
+    {
+      "category": 10003,
+      "index": 12,
+      "name": "comp_05_legendary_shokunai"
+    },
+    {
+      "category": 10003,
+      "index": 12,
+      "name": "comp_05_legendary_firewall"
+    },
+    {
+      "category": 10003,
+      "index": 12,
+      "name": "comp_05_legendary_skully"
+    },
+    {
+      "category": 10003,
+      "index": 12,
+      "name": "comp_05_legendary_urchin"
+    },
+    {
+      "category": 10003,
+      "index": 12,
+      "name": "comp_05_legendary_undershield"
+    },
+    {
+      "category": 10003,
+      "index": 15,
+      "name": "comp_05_legendary_transmission"
+    },
+    {
+      "category": 10003,
+      "index": 19,
+      "name": "comp_05_legendary_goldengod"
+    },
+    {
+      "category": 10003,
+      "index": 19,
+      "name": "comp_05_legendary_stray"
+    },
+    {
+      "category": 10003,
+      "index": 20,
+      "name": "comp_05_legendary_goremaster"
+    },
+    {
+      "category": 10003,
+      "index": 25,
+      "name": "comp_05_legendary_gammavoid"
+    },
+    {
+      "category": 10003,
+      "index": 31,
+      "name": "comp_05_legendary_discjockey"
+    },
+    {
+      "category": 10003,
+      "index": 32,
+      "name": "comp_05_legendary_streamer"
+    },
+    {
+      "category": 10003,
+      "index": 34,
+      "name": "comp_05_legendary_javelin"
+    },
+    {
+      "category": 10003,
+      "index": 35,
+      "name": "comp_05_legendary_chuck"
+    },
+    {
+      "category": 10003,
+      "index": 36,
+      "name": "comp_05_legendary_dividedfocus"
+    },
+    {
+      "category": 10003,
+      "index": 36,
+      "name": "comp_05_legendary_jetset"
+    },
+    {
+      "category": 10003,
+      "index": 39,
+      "name": "comp_02_uncommon_unique_heavyturret"
+    },
+    {
+      "category": 10003,
+      "index": 50,
+      "name": "base_comp_01_common"
+    },
+    {
+      "category": 10003,
+      "index": 53,
+      "name": "comp_05_legendary_bod"
+    },
+    {
+      "category": 10003,
+      "index": 53,
+      "name": "comp_05_legendary_rocketreload"
+    },
+    {
+      "category": 10003,
+      "index": 53,
+      "name": "comp_brenda_weapon"
+    },
+    {
+      "category": 10003,
+      "index": 53,
+      "name": "comp_05_legendary_queensrest"
+    },
+    {
+      "category": 10003,
+      "index": 54,
+      "name": "comp_05_legendary_zipgun"
+    },
+    {
+      "category": 10003,
+      "index": 55,
+      "name": "comp_05_legendary_heartgun"
+    },
+    {
+      "category": 10003,
+      "index": 56,
+      "name": "comp_05_legendary_coldshoulder"
+    },
+    {
+      "category": 10003,
+      "index": 56,
+      "name": "comp_05_legendary_roil"
+    },
+    {
+      "category": 10003,
+      "index": 57,
+      "name": "comp_05_legendary_sweet_embrace"
+    },
+    {
+      "category": 10003,
+      "index": 57,
+      "name": "comp_05_legendary_leadballoon"
+    },
+    {
+      "category": 10003,
+      "index": 57,
+      "name": "comp_05_legendary_rainmaker"
+    },
+    {
+      "category": 10003,
+      "index": 58,
+      "name": "comp_05_legendary_misslaser"
+    },
+    {
+      "category": 10003,
+      "index": 59,
+      "name": "comp_05_legendary_rangefinder"
+    },
+    {
+      "category": 10003,
+      "index": 59,
+      "name": "comp_05_legendary_conglomerate"
+    },
+    {
+      "category": 10003,
+      "index": 59,
+      "name": "comp_05_legendary_breadth"
+    },
+    {
+      "category": 10003,
+      "index": 60,
+      "name": "comp_05_legendary_ohmigot"
+    },
+    {
+      "category": 10003,
+      "index": 63,
+      "name": "comp_05_legendary_plasmacoil"
+    },
+    {
+      "category": 10003,
+      "index": 63,
+      "name": "comp_05_legendary_lucian"
+    },
+    {
+      "category": 10003,
+      "index": 65,
+      "name": "comp_05_legendary_wombocombo"
+    },
+    {
+      "category": 10003,
+      "index": 66,
+      "name": "comp_05_legendary_finnty"
+    },
+    {
+      "category": 10003,
+      "index": 67,
+      "name": "comp_05_legendary_kaoson"
+    },
+    {
+      "category": 10003,
+      "index": 67,
+      "name": "comp_05_legendary_stopgap"
+    },
+    {
+      "category": 10003,
+      "index": 68,
+      "name": "comp_05_legendary_loarmaster"
+    },
+    {
+      "category": 10003,
+      "index": 72,
+      "name": "comp_05_legendary_lumberjack"
+    },
+    {
+      "category": 10003,
+      "index": 73,
+      "name": "comp_cine_weapon"
+    },
+    {
+      "category": 10003,
+      "index": 73,
+      "name": "comp_05_legendary_ballista"
+    },
+    {
+      "category": 10003,
+      "index": 74,
+      "name": "comp_05_legendary_rowan"
+    },
+    {
+      "category": 10003,
+      "index": 74,
+      "name": "comp_ds_as_phaseshard_specter_weapon"
+    },
+    {
+      "category": 10003,
+      "index": 75,
+      "name": "comp_05_legendary_gmr"
+    },
+    {
+      "category": 10003,
+      "index": 76,
+      "name": "comp_05_legendary_kingsgambit"
+    },
+    {
+      "category": 10003,
+      "index": 76,
+      "name": "comp_05_legendary_truck"
+    },
+    {
+      "category": 10003,
+      "index": 76,
+      "name": "comp_05_legendary_goalkeeper"
+    },
+    {
+      "category": 10003,
+      "index": 76,
+      "name": "comp_05_legendary_bully"
+    },
+    {
+      "category": 10003,
+      "index": 76,
+      "name": "comp_05_legendary_symmetry"
+    },
+    {
+      "category": 10003,
+      "index": 77,
+      "name": "comp_05_legendary_screenwriter"
+    },
+    {
+      "category": 10003,
+      "index": 77,
+      "name": "comp_05_legendary_murder"
+    },
+    {
+      "category": 10003,
+      "index": 78,
+      "name": "comp_05_legendary_phantom_flame"
+    },
+    {
+      "category": 10003,
+      "index": 78,
+      "name": "comp_05_legendary_commbd"
+    },
+    {
+      "category": 10003,
+      "index": 78,
+      "name": "comp_05_legendary_potatothrower"
+    },
+    {
+      "category": 10003,
+      "index": 79,
+      "name": "comp_05_legendary_quickdraw"
+    },
+    {
+      "category": 10003,
+      "index": 79,
+      "name": "comp_05_legendary_rowdy"
+    },
+    {
+      "category": 10003,
+      "index": 79,
+      "name": "comp_05_legendary_seamstress"
+    },
+    {
+      "category": 10003,
+      "index": 80,
+      "name": "comp_05_legendary_slugger"
+    },
+    {
+      "category": 10003,
+      "index": 80,
+      "name": "comp_05_legendary_asher"
+    },
+    {
+      "category": 10003,
+      "index": 80,
+      "name": "comp_05_legendary_heavyturret"
+    },
+    {
+      "category": 10003,
+      "index": 80,
+      "name": "comp_05_legendary_mantra"
+    },
+    {
+      "category": 10003,
+      "index": 83,
+      "name": "comp_05_legendary_hellwalker"
+    },
+    {
+      "category": 10003,
+      "index": 83,
+      "name": "comp_05_legendary_firework"
+    },
+    {
+      "category": 10003,
+      "index": 85,
+      "name": "comp_05_legendary_rainbowvomit"
+    },
+    {
+      "category": 10003,
+      "index": 85,
+      "name": "comp_05_legendary_firstimpression"
+    },
+    {
+      "category": 10003,
+      "index": 86,
+      "name": "comp_05_legendary_inscriber"
+    },
+    {
+      "category": 10003,
+      "index": 88,
+      "name": "comp_05_legendary_dualdamage"
+    },
+    {
+      "category": 10003,
+      "index": 88,
+      "name": "comp_05_legendary_beegun"
+    },
+    {
+      "category": 10003,
+      "index": 91,
+      "name": "comp_05_legendary_tkswave"
+    },
+    {
+      "category": 10003,
+      "index": 93,
+      "name": "comp_05_legendary_wf"
+    },
+    {
+      "category": 10003,
+      "index": 537,
+      "name": "comp_05_legendary_raid1"
+    },
+    {
+      "category": 10003,
+      "index": 538,
+      "name": "comp_05_legendary_raid1"
+    },
+    {
+      "category": 10003,
+      "index": 539,
+      "name": "comp_05_legendary_raid1"
+    },
+    {
+      "category": 10003,
+      "index": 541,
+      "name": "comp_05_legendary_raid1"
+    },
+    {
+      "category": 10004,
+      "index": 27,
+      "name": "part_firmware_skillcraft"
+    },
+    {
+      "category": 10004,
+      "index": 65,
+      "name": "part_firmware_skillcraft"
+    },
+    {
+      "category": 10004,
+      "index": 88,
+      "name": "part_firmware_skillcraft"
+    },
+    {
+      "category": 10004,
+      "index": 103,
+      "name": "part_firmware_skillcraft"
+    },
+    {
+      "category": 10004,
+      "index": 113,
+      "name": "part_firmware_skillcraft"
+    },
+    {
+      "category": 10004,
+      "index": 248,
+      "name": "part_firmware_skillcraft"
+    },
+    {
+      "category": 10005,
+      "index": 1,
+      "name": "part_barrel_01_streamer"
+    },
+    {
+      "category": 10005,
+      "index": 1,
+      "name": "part_barrel_02_goremaster"
+    },
+    {
+      "category": 10005,
+      "index": 1,
+      "name": "part_barrel_01_zipgun"
+    },
+    {
+      "category": 10005,
+      "index": 1,
+      "name": "part_barrel_01_lucian"
+    },
+    {
+      "category": 10005,
+      "index": 1,
+      "name": "part_barrel_02_finnty"
+    },
+    {
+      "category": 10005,
+      "index": 2,
+      "name": "part_barrel_02_gmr"
+    },
+    {
+      "category": 10005,
+      "index": 2,
+      "name": "part_barrel_02_splatoon"
+    },
+    {
+      "category": 10005,
+      "index": 2,
+      "name": "part_barrel_02_conglomerate"
+    },
+    {
+      "category": 10005,
+      "index": 7,
+      "name": "part_barrel_01"
+    },
+    {
+      "category": 10005,
+      "index": 8,
+      "name": "part_barrel_02"
+    },
+    {
+      "category": 10005,
+      "index": 17,
+      "name": "part_barrel_02_prince"
+    },
+    {
+      "category": 10005,
+      "index": 18,
+      "name": "part_barrel_goldengod"
+    },
+    {
+      "category": 10005,
+      "index": 20,
+      "name": "part_barrel_01_stray"
+    },
+    {
+      "category": 10005,
+      "index": 21,
+      "name": "part_barrel_02_vamoose"
+    },
+    {
+      "category": 10005,
+      "index": 24,
+      "name": "part_barrel_02_gammavoid"
+    },
+    {
+      "category": 10005,
+      "index": 26,
+      "name": "part_barrel_02_bottledlightning"
+    },
+    {
+      "category": 10005,
+      "index": 30,
+      "name": "part_barrel_02_discjockey"
+    },
+    {
+      "category": 10005,
+      "index": 34,
+      "name": "part_barrel_02_chuck"
+    },
+    {
+      "category": 10005,
+      "index": 35,
+      "name": "part_barrel_javelin"
+    },
+    {
+      "category": 10005,
+      "index": 35,
+      "name": "part_barrel_02_jetset"
+    },
+    {
+      "category": 10005,
+      "index": 39,
+      "name": "part_barrel_01_dividedfocus"
+    },
+    {
+      "category": 10005,
+      "index": 41,
+      "name": "part_barrel_01_ted_sg_heavyturret"
+    },
+    {
+      "category": 10005,
+      "index": 52,
+      "name": "part_barrel_01_bod"
+    },
+    {
+      "category": 10005,
+      "index": 52,
+      "name": "part_barrel_02_queensrest"
+    },
+    {
+      "category": 10005,
+      "index": 54,
+      "name": "part_barrel_heartgun"
+    },
+    {
+      "category": 10005,
+      "index": 54,
+      "name": "part_barrel_02_bugbear"
+    },
+    {
+      "category": 10005,
+      "index": 54,
+      "name": "part_barrel_01_roach"
+    },
+    {
+      "category": 10005,
+      "index": 55,
+      "name": "part_barrel_coldshoulder"
+    },
+    {
+      "category": 10005,
+      "index": 56,
+      "name": "part_barrel_02_leadballoon"
+    },
+    {
+      "category": 10005,
+      "index": 57,
+      "name": "part_barrel_02_lumberjack"
+    },
+    {
+      "category": 10005,
+      "index": 57,
+      "name": "part_barrel_01_roil"
+    },
+    {
+      "category": 10005,
+      "index": 57,
+      "name": "part_barrel_misslaser"
+    },
+    {
+      "category": 10005,
+      "index": 58,
+      "name": "part_barrel_02_sweet_embrace"
+    },
+    {
+      "category": 10005,
+      "index": 58,
+      "name": "part_barrel_01_linebacker"
+    },
+    {
+      "category": 10005,
+      "index": 58,
+      "name": "part_barrel_02_breadth"
+    },
+    {
+      "category": 10005,
+      "index": 58,
+      "name": "part_barrel_02_rainmaker"
+    },
+    {
+      "category": 10005,
+      "index": 59,
+      "name": "part_barrel_01_ohmigot"
+    },
+    {
+      "category": 10005,
+      "index": 62,
+      "name": "part_barrel_02_plasmacoil"
+    },
+    {
+      "category": 10005,
+      "index": 62,
+      "name": "part_barrel_02_mantra"
+    },
+    {
+      "category": 10005,
+      "index": 64,
+      "name": "part_barrel_01_wombocombo"
+    },
+    {
+      "category": 10005,
+      "index": 66,
+      "name": "part_barrel_01_kaoson"
+    },
+    {
+      "category": 10005,
+      "index": 68,
+      "name": "part_barrel_01_onslaught"
+    },
+    {
+      "category": 10005,
+      "index": 69,
+      "name": "part_barrel_01_loarmaster"
+    },
+    {
+      "category": 10005,
+      "index": 70,
+      "name": "part_barrel_01_dualdamage"
+    },
+    {
+      "category": 10005,
+      "index": 72,
+      "name": "part_barrel_quickdraw"
+    },
+    {
+      "category": 10005,
+      "index": 72,
+      "name": "part_barrel_ballista"
+    },
+    {
+      "category": 10005,
+      "index": 72,
+      "name": "part_barrel_02_goalkeeper"
+    },
+    {
+      "category": 10005,
+      "index": 72,
+      "name": "part_barrel_02_symmetry"
+    },
+    {
+      "category": 10005,
+      "index": 72,
+      "name": "part_barrel_01_stopgap"
+    },
+    {
+      "category": 10005,
+      "index": 73,
+      "name": "part_barrel_01_bonnieclyde"
+    },
+    {
+      "category": 10005,
+      "index": 74,
+      "name": "part_barrel_02_boomslang"
+    },
+    {
+      "category": 10005,
+      "index": 75,
+      "name": "part_barrel_02_rowan"
+    },
+    {
+      "category": 10005,
+      "index": 75,
+      "name": "part_barrel_02_kingsgambit"
+    },
+    {
+      "category": 10005,
+      "index": 75,
+      "name": "part_barrel_truck"
+    },
+    {
+      "category": 10005,
+      "index": 75,
+      "name": "part_barrel_02_bully"
+    },
+    {
+      "category": 10005,
+      "index": 75,
+      "name": "part_barrel_01_fisheye"
+    },
+    {
+      "category": 10005,
+      "index": 76,
+      "name": "part_barrel_02_screenwriter"
+    },
+    {
+      "category": 10005,
+      "index": 76,
+      "name": "part_barrel_01_murder"
+    },
+    {
+      "category": 10005,
+      "index": 77,
+      "name": "part_barrel_01_phantom_flame"
+    },
+    {
+      "category": 10005,
+      "index": 77,
+      "name": "part_barrel_01_commbd"
+    },
+    {
+      "category": 10005,
+      "index": 77,
+      "name": "part_barrel_potatothrower"
+    },
+    {
+      "category": 10005,
+      "index": 78,
+      "name": "part_barrel_02_rangefinder"
+    },
+    {
+      "category": 10005,
+      "index": 78,
+      "name": "part_barrel_02_rowdy"
+    },
+    {
+      "category": 10005,
+      "index": 78,
+      "name": "part_barrel_01_seamstress"
+    },
+    {
+      "category": 10005,
+      "index": 79,
+      "name": "part_barrel_01_slugger"
+    },
+    {
+      "category": 10005,
+      "index": 79,
+      "name": "part_barrel_01_asher"
+    },
+    {
+      "category": 10005,
+      "index": 81,
+      "name": "part_barrel_02_rocketreload"
+    },
+    {
+      "category": 10005,
+      "index": 82,
+      "name": "part_barrel_01_hellwalker"
+    },
+    {
+      "category": 10005,
+      "index": 82,
+      "name": "part_barrel_02_firework"
+    },
+    {
+      "category": 10005,
+      "index": 84,
+      "name": "part_barrel_01_firstimpression"
+    },
+    {
+      "category": 10005,
+      "index": 85,
+      "name": "part_barrel_02_inscriber"
+    },
+    {
+      "category": 10005,
+      "index": 86,
+      "name": "part_barrel_rainbowvomit"
+    },
+    {
+      "category": 10005,
+      "index": 87,
+      "name": "part_barrel_beegun"
+    },
+    {
+      "category": 10005,
+      "index": 90,
+      "name": "part_barrel_tkswave"
+    },
+    {
+      "category": 10005,
+      "index": 94,
+      "name": "part_barrel_wf"
+    },
+    {
+      "category": 10006,
+      "index": 1,
+      "name": "part_barrel_licensed_conglomerate"
+    },
+    {
+      "category": 10006,
+      "index": 61,
+      "name": "part_barrel_02_d_plasmacoil"
+    },
+    {
+      "category": 10006,
+      "index": 68,
+      "name": "part_barrel_01_a"
+    },
+    {
+      "category": 10006,
+      "index": 69,
+      "name": "part_barrel_01_b"
+    },
+    {
+      "category": 10006,
+      "index": 70,
+      "name": "part_barrel_01_c"
+    },
+    {
+      "category": 10006,
+      "index": 71,
+      "name": "part_barrel_01_d"
+    },
+    {
+      "category": 10006,
+      "index": 72,
+      "name": "part_barrel_02_a"
+    },
+    {
+      "category": 10006,
+      "index": 73,
+      "name": "part_barrel_02_b"
+    },
+    {
+      "category": 10006,
+      "index": 74,
+      "name": "part_barrel_02_c"
+    },
+    {
+      "category": 10006,
+      "index": 75,
+      "name": "part_barrel_02_d"
+    },
+    {
+      "category": 10006,
+      "index": 76,
+      "name": "part_barrel_licensed_jak"
+    },
+    {
+      "category": 10006,
+      "index": 77,
+      "name": "part_barrel_licensed_hyp"
+    },
+    {
+      "category": 10006,
+      "index": 78,
+      "name": "part_barrel_licensed_multi"
+    },
+    {
+      "category": 10007,
+      "index": 9,
+      "name": "part_barrel_licensed_ted_shooting"
+    },
+    {
+      "category": 10007,
+      "index": 10,
+      "name": "part_barrel_licensed_ted_mirv"
+    },
+    {
+      "category": 10007,
+      "index": 11,
+      "name": "part_barrel_licensed_ted_combo"
+    },
+    {
+      "category": 10007,
+      "index": 12,
+      "name": "part_barrel_licensed_ted_replicator"
+    },
+    {
+      "category": 10007,
+      "index": 55,
+      "name": "part_barrel_licensed_ted_replicator_multi"
+    },
+    {
+      "category": 10008,
+      "index": 21,
+      "name": "part_underbarrel_05_roil"
+    },
+    {
+      "category": 10008,
+      "index": 49,
+      "name": "part_underbarrel_05_ammoswitcher"
+    },
+    {
+      "category": 10008,
+      "index": 50,
+      "name": "part_underbarrel_03_shotgun"
+    },
+    {
+      "category": 10008,
+      "index": 51,
+      "name": "part_underbarrel_06_malswitch"
+    },
+    {
+      "category": 10008,
+      "index": 52,
+      "name": "part_underbarrel_04_atlas_ball"
+    },
+    {
+      "category": 10008,
+      "index": 53,
+      "name": "part_foregrip_01"
+    },
+    {
+      "category": 10008,
+      "index": 54,
+      "name": "part_foregrip_03"
+    },
+    {
+      "category": 10008,
+      "index": 56,
+      "name": "part_underbarrel_01_misslaser"
+    },
+    {
+      "category": 10008,
+      "index": 57,
+      "name": "part_foregrip_01_pt"
+    },
+    {
+      "category": 10008,
+      "index": 75,
+      "name": "part_foregrip_03_pt"
+    },
+    {
+      "category": 10008,
+      "index": 76,
+      "name": "part_foregrip_02_pt"
+    },
+    {
+      "category": 10008,
+      "index": 77,
+      "name": "part_underbarrel_03_seamstress"
+    },
+    {
+      "category": 10008,
+      "index": 79,
+      "name": "part_underbarrel_02_rockets"
+    },
+    {
+      "category": 10008,
+      "index": 79,
+      "name": "part_underbarrel_01_heavyturret"
+    },
+    {
+      "category": 10008,
+      "index": 80,
+      "name": "part_underbarrel_01_drone"
+    },
+    {
+      "category": 10008,
+      "index": 81,
+      "name": "part_underbarrel_04_atlas"
+    },
+    {
+      "category": 10008,
+      "index": 82,
+      "name": "part_foregrip_02"
+    },
+    {
+      "category": 10009,
+      "index": 42,
+      "name": "part_grip_05c_ted_jav"
+    },
+    {
+      "category": 10009,
+      "index": 43,
+      "name": "part_grip_05b_ted_homing"
+    },
+    {
+      "category": 10009,
+      "index": 44,
+      "name": "part_grip_05a_ted_legs"
+    },
+    {
+      "category": 10009,
+      "index": 45,
+      "name": "part_grip_04_hyp"
+    },
+    {
+      "category": 10009,
+      "index": 46,
+      "name": "part_grip_01"
+    },
+    {
+      "category": 10009,
+      "index": 47,
+      "name": "part_grip_02"
+    },
+    {
+      "category": 10009,
+      "index": 48,
+      "name": "part_grip_03"
+    },
+    {
+      "category": 10009,
+      "index": 71,
+      "name": "part_grip_04_hyp_finnty"
+    },
+    {
+      "category": 10009,
+      "index": 83,
+      "name": "part_grip_05a_ted_legs_mirv"
+    },
+    {
+      "category": 10010,
+      "index": 1,
+      "name": "part_mag_03_rocketreload"
+    },
+    {
+      "category": 10010,
+      "index": 1,
+      "name": "part_mag_01_chuck"
+    },
+    {
+      "category": 10010,
+      "index": 17,
+      "name": "part_mag_goldengod"
+    },
+    {
+      "category": 10010,
+      "index": 22,
+      "name": "part_mag_01"
+    },
+    {
+      "category": 10010,
+      "index": 23,
+      "name": "part_mag_02"
+    },
+    {
+      "category": 10010,
+      "index": 24,
+      "name": "part_mag_03_tor"
+    },
+    {
+      "category": 10010,
+      "index": 25,
+      "name": "part_mag_04_cov"
+    },
+    {
+      "category": 10010,
+      "index": 26,
+      "name": "part_mag_05_borg"
+    },
+    {
+      "category": 10010,
+      "index": 74,
+      "name": "part_mag_01_fisheye"
+    },
+    {
+      "category": 10010,
+      "index": 78,
+      "name": "part_mag_01_slugger"
+    },
+    {
+      "category": 10010,
+      "index": 87,
+      "name": "part_mag_rainbowvomit"
+    },
+    {
+      "category": 10011,
+      "index": 27,
+      "name": "part_mag_torgue_normal"
+    },
+    {
+      "category": 10011,
+      "index": 28,
+      "name": "part_mag_torgue_sticky"
+    },
+    {
+      "category": 10011,
+      "index": 49,
+      "name": "part_mag_torgue_sticky_murder"
+    },
+    {
+      "category": 10011,
+      "index": 50,
+      "name": "part_mag_torgue_normal_murder"
+    },
+    {
+      "category": 10011,
+      "index": 71,
+      "name": "part_mag_torgue_sticky_beegun"
+    },
+    {
+      "category": 10011,
+      "index": 84,
+      "name": "part_mag_torgue_normal_inscriber"
+    },
+    {
+      "category": 10011,
+      "index": 86,
+      "name": "part_mag_torgue_normal_beegun"
+    },
+    {
+      "category": 10011,
+      "index": 88,
+      "name": "part_mag_torgue_sticky_tkswave"
+    },
+    {
+      "category": 10011,
+      "index": 89,
+      "name": "part_mag_torgue_normal_tkswave"
+    },
+    {
+      "category": 10012,
+      "index": 14,
+      "name": "part_multi_ted_shooting"
+    },
+    {
+      "category": 10012,
+      "index": 15,
+      "name": "part_multi_ted_mirv"
+    },
+    {
+      "category": 10012,
+      "index": 16,
+      "name": "part_multi_ted_combo"
+    },
+    {
+      "category": 10012,
+      "index": 17,
+      "name": "part_multi_ted_replicator"
+    },
+    {
+      "category": 10013,
+      "index": 61,
+      "name": "part_secondary_ammo_sm"
+    },
+    {
+      "category": 10013,
+      "index": 62,
+      "name": "part_secondary_ammo_sg"
+    },
+    {
+      "category": 10013,
+      "index": 63,
+      "name": "part_secondary_ammo_ar"
+    },
+    {
+      "category": 10013,
+      "index": 64,
+      "name": "part_secondary_ammo_sr"
+    },
+    {
+      "category": 10014,
+      "index": 18,
+      "name": "part_shield_default"
+    },
+    {
+      "category": 10014,
+      "index": 19,
+      "name": "part_shield_ricochet"
+    },
+    {
+      "category": 10014,
+      "index": 20,
+      "name": "part_shield_ammo"
+    },
+    {
+      "category": 10014,
+      "index": 21,
+      "name": "part_shield_amp"
+    },
+    {
+      "category": 10015,
+      "index": 2,
+      "name": "part_body_energy_proteancell"
+    },
+    {
+      "category": 10015,
+      "index": 6,
+      "name": "part_body_energy_lightning"
+    },
+    {
+      "category": 10015,
+      "index": 6,
+      "name": "part_body_angel"
+    },
+    {
+      "category": 10015,
+      "index": 6,
+      "name": "part_body_shieldboi"
+    },
+    {
+      "category": 10015,
+      "index": 6,
+      "name": "part_body_armor_hoarder"
+    },
+    {
+      "category": 10015,
+      "index": 7,
+      "name": "part_body_barrelaged"
+    },
+    {
+      "category": 10015,
+      "index": 8,
+      "name": "part_body_energy_watts4dinner"
+    },
+    {
+      "category": 10015,
+      "index": 8,
+      "name": "part_unique_supersoldier"
+    },
+    {
+      "category": 10015,
+      "index": 8,
+      "name": "part_body_armor_onionlayeredguard"
+    },
+    {
+      "category": 10015,
+      "index": 8,
+      "name": "part_tor_slippy"
+    },
+    {
+      "category": 10015,
+      "index": 8,
+      "name": "part_vla_waterfall"
+    },
+    {
+      "category": 10015,
+      "index": 8,
+      "name": "part_body_armor_heavyweight"
+    },
+    {
+      "category": 10015,
+      "index": 9,
+      "name": "part_body_timekeeper"
+    },
+    {
+      "category": 10015,
+      "index": 9,
+      "name": "part_body_armor_compleat"
+    },
+    {
+      "category": 10015,
+      "index": 11,
+      "name": "part_body_energy_firewall"
+    },
+    {
+      "category": 10015,
+      "index": 11,
+      "name": "part_body_armor_undershield"
+    },
+    {
+      "category": 10016,
+      "index": 6,
+      "name": "part_payload_axe"
+    },
+    {
+      "category": 10016,
+      "index": 6,
+      "name": "part_faultydetonator"
+    },
+    {
+      "category": 10016,
+      "index": 6,
+      "name": "payload_firepot"
+    },
+    {
+      "category": 10016,
+      "index": 6,
+      "name": "part_blockbuster"
+    },
+    {
+      "category": 10016,
+      "index": 8,
+      "name": "part_payload_fuse"
+    },
+    {
+      "category": 10016,
+      "index": 8,
+      "name": "part_predatordrone"
+    },
+    {
+      "category": 10016,
+      "index": 9,
+      "name": "part_aggrovator"
+    },
+    {
+      "category": 10016,
+      "index": 10,
+      "name": "part_payload_unique_rubber"
+    },
+    {
+      "category": 10016,
+      "index": 10,
+      "name": "part_disco_disc"
+    },
+    {
+      "category": 10016,
+      "index": 11,
+      "name": "part_shokunai"
+    },
+    {
+      "category": 10016,
+      "index": 11,
+      "name": "part_skully"
+    },
+    {
+      "category": 10016,
+      "index": 11,
+      "name": "part_urchin"
+    },
+    {
+      "category": 10016,
+      "index": 12,
+      "name": "part_recursive"
+    },
+    {
+      "category": 10016,
+      "index": 14,
+      "name": "part_payload_unique_transmission"
+    },
+    {
+      "category": 10017,
+      "index": 1,
+      "name": "body_02"
+    },
+    {
+      "category": 10017,
+      "index": 2,
+      "name": "body_03"
+    },
+    {
+      "category": 10017,
+      "index": 3,
+      "name": "body_04"
+    },
+    {
+      "category": 10017,
+      "index": 4,
+      "name": "body_05"
+    },
+    {
+      "category": 10017,
+      "index": 5,
+      "name": "body_06"
+    },
+    {
+      "category": 10017,
+      "index": 6,
+      "name": "body_07"
+    },
+    {
+      "category": 10017,
+      "index": 7,
+      "name": "body_08"
+    },
+    {
+      "category": 10017,
+      "index": 8,
+      "name": "body_09"
+    },
+    {
+      "category": 10017,
+      "index": 9,
+      "name": "body_10"
+    },
+    {
+      "category": 10017,
+      "index": 10,
+      "name": "leg_body_01"
+    },
+    {
+      "category": 10017,
+      "index": 11,
+      "name": "leg_body_02"
+    },
+    {
+      "category": 10017,
+      "index": 12,
+      "name": "leg_body_03"
+    },
+    {
+      "category": 10017,
+      "index": 13,
+      "name": "leg_body_04"
+    },
+    {
+      "category": 10017,
+      "index": 14,
+      "name": "leg_body_05"
+    },
+    {
+      "category": 10017,
+      "index": 15,
+      "name": "leg_body_06"
+    },
+    {
+      "category": 10017,
+      "index": 65,
+      "name": "body_01"
+    },
+    {
+      "category": 10017,
+      "index": 66,
+      "name": "leg_body_raid1"
+    },
+    {
+      "category": 10017,
+      "index": 70,
+      "name": "body_01"
+    },
+    {
+      "category": 10017,
+      "index": 220,
+      "name": "body_01"
+    },
+    {
+      "category": 10017,
+      "index": 221,
+      "name": "body_01"
+    },
+    {
+      "category": 10017,
+      "index": 538,
+      "name": "leg_body_raid1"
+    },
+    {
+      "category": 10017,
+      "index": 539,
+      "name": "leg_body_raid1"
+    },
+    {
+      "category": 10017,
+      "index": 540,
+      "name": "leg_body_raid1"
+    },
+    {
+      "category": 10018,
+      "index": 1,
+      "name": "part_augment_unique_triplebypass"
+    },
+    {
+      "category": 10018,
+      "index": 6,
+      "name": "part_augment_unique_defibrillator"
+    },
+    {
+      "category": 10018,
+      "index": 8,
+      "name": "part_augment_unique_healthraiser"
+    },
+    {
+      "category": 10019,
+      "index": 1,
+      "name": "part_body_ele_rainbowvomit_cryo_fire_shock"
+    },
+    {
+      "category": 10019,
+      "index": 16,
+      "name": "part_body_ele_rainbowvomit_cryo_fire_rad"
+    },
+    {
+      "category": 10019,
+      "index": 71,
+      "name": "part_body_ele_rainbowvomit_cor_rad_shock"
+    },
+    {
+      "category": 10019,
+      "index": 72,
+      "name": "part_body_ele_rainbowvomit_cor_fire_shock"
+    },
+    {
+      "category": 10019,
+      "index": 73,
+      "name": "part_body_ele_rainbowvomit_cor_fire_rad"
+    },
+    {
+      "category": 10019,
+      "index": 74,
+      "name": "part_body_ele_rainbowvomit_cor_cryo_shock"
+    },
+    {
+      "category": 10019,
+      "index": 75,
+      "name": "part_body_ele_rainbowvomit_cor_cryo_rad"
+    },
+    {
+      "category": 10019,
+      "index": 76,
+      "name": "part_body_ele_rainbowvomit_cor_cryo_fire"
+    },
+    {
+      "category": 10019,
+      "index": 77,
+      "name": "part_body_ele_rainbowvomit_fire_rad_shock"
+    },
+    {
+      "category": 10019,
+      "index": 84,
+      "name": "part_body_ele_rainbowvomit_cryo_rad_shock"
+    },
+    {
+      "category": 10020,
+      "index": 6,
+      "name": "part_unique_firewerks"
+    },
+    {
+      "category": 10020,
+      "index": 8,
+      "name": "part_unique_momento"
+    },
+    {
+      "category": 10021,
+      "index": 1,
+      "name": "part_scope_02_lens_02_gmr"
+    },
+    {
+      "category": 10022,
+      "index": 7,
+      "name": "part_01_mirv_05_swarm"
+    },
+    {
+      "category": 10023,
+      "index": 69,
+      "name": "part_underbarrel_07_dualdamage"
+    },
+    {
+      "category": 10023,
+      "index": 90,
+      "name": "part_underbarrel_wf_overdrive"
+    },
+    {
+      "category": 10023,
+      "index": 92,
+      "name": "part_underbarrel_02_wf_scrapcannon"
+    },
+    {
+      "category": 10024,
+      "index": 89,
+      "name": "part_underbarrel_overdrive_acc"
+    },
+    {
+      "category": 10024,
+      "index": 91,
+      "name": "part_underbarrel_scrap_acc"
     }
   ]
 }

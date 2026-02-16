@@ -1132,18 +1132,70 @@ fn humanize_category_key(key: &str) -> String {
         .replace("Heavyweapon", "Heavy Weapon")
 }
 
+/// Human-readable name for a dep_table identifier
+fn humanize_dep_table(dep_table: &str) -> String {
+    dep_table
+        .split('_')
+        .map(|w| {
+            let mut chars = w.chars();
+            match chars.next() {
+                Some(c) => {
+                    let upper: String = c.to_uppercase().collect();
+                    format!("{}{}", upper, chars.as_str())
+                }
+                None => String::new(),
+            }
+        })
+        .collect::<Vec<_>>()
+        .join(" ")
+        .replace("Inv Comp", "Rarity Component")
+        .replace("Ele", "Element")
+}
+
+/// Parse an NCS file, handling decompression if needed
+fn parse_ncs_file(path: &Path) -> Option<bl4_ncs::document::Document> {
+    use bl4_ncs::{decompress_ncs, is_ncs};
+
+    let filename = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+    let raw_data = match fs::read(path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("  Skipping {}: {}", filename, e);
+            return None;
+        }
+    };
+
+    let data = if is_ncs(&raw_data) {
+        match decompress_ncs(&raw_data) {
+            Ok(d) => d,
+            Err(e) => {
+                eprintln!("  Skipping {}: decompress failed: {}", filename, e);
+                return None;
+            }
+        }
+    } else {
+        raw_data
+    };
+
+    let doc = bl4_ncs::parse::parse(&data);
+    if doc.is_none() {
+        eprintln!("  Skipping {}: parse failed", filename);
+    }
+    doc
+}
+
 /// Export parts manifest for integration into parts_database.json
 ///
 /// Scans all inv*.bin files and extracts categorized parts and category names.
 /// Each NCS entry with a serialindex defines a category, and its
 /// dep_entries provide the parts with their serial indices.
+/// Also extracts shared cross-category parts from dep tables (elements,
+/// stat mods, rarity components, etc.).
 ///
 /// Produces two files:
 /// - parts_database.json (parts with category/index/name)
 /// - category_names.json (category ID → human-readable name)
 fn export_parts_manifest(path: &Path, output: Option<&Path>, _json: bool) -> Result<()> {
-    use bl4_ncs::{decompress_ncs, is_ncs};
-
     #[derive(Debug, serde::Serialize)]
     struct PartsManifest {
         version: u32,
@@ -1160,6 +1212,7 @@ fn export_parts_manifest(path: &Path, output: Option<&Path>, _json: bool) -> Res
 
     let mut all_parts = Vec::new();
     let mut all_category_names: std::collections::HashMap<u32, String> = std::collections::HashMap::new();
+    let mut shared_dep_tables: BTreeMap<String, u32> = BTreeMap::new();
     let mut files_processed = 0;
 
     eprintln!("Scanning for inv*.bin files...");
@@ -1175,37 +1228,17 @@ fn export_parts_manifest(path: &Path, output: Option<&Path>, _json: bool) -> Res
             continue;
         }
 
-        let raw_data = match fs::read(file_path) {
-            Ok(d) => d,
-            Err(e) => {
-                eprintln!("  Skipping {}: {}", filename, e);
-                continue;
-            }
-        };
-
-        let data = if is_ncs(&raw_data) {
-            match decompress_ncs(&raw_data) {
-                Ok(d) => d,
-                Err(e) => {
-                    eprintln!("  Skipping {}: decompress failed: {}", filename, e);
-                    continue;
-                }
-            }
-        } else {
-            raw_data
-        };
-
-        let doc = match bl4_ncs::parse::parse(&data) {
-            Some(d) => d,
-            None => {
-                eprintln!("  Skipping {}: parse failed", filename);
-                continue;
-            }
+        let Some(doc) = parse_ncs_file(file_path) else {
+            continue;
         };
 
         let parts = bl4_ncs::document::extract_categorized_parts(&doc);
+        let shared = bl4_ncs::document::extract_shared_parts(&doc);
         let cat_names = bl4_ncs::document::extract_category_names(&doc);
-        eprintln!("Processing {} ({} parts, {} categories)...", filename, parts.len(), cat_names.len());
+        eprintln!(
+            "Processing {} ({} parts, {} shared, {} categories)...",
+            filename, parts.len(), shared.len(), cat_names.len()
+        );
 
         for p in parts {
             all_parts.push(ManifestPartEntry {
@@ -1215,8 +1248,32 @@ fn export_parts_manifest(path: &Path, output: Option<&Path>, _json: bool) -> Res
             });
         }
 
-        for (cat_id, ncs_key) in cat_names {
-            all_category_names.entry(cat_id).or_insert(ncs_key);
+        for sp in shared {
+            let next_id = 10001 + shared_dep_tables.len() as u32;
+            let category = *shared_dep_tables
+                .entry(sp.dep_table.clone())
+                .or_insert(next_id);
+            all_parts.push(ManifestPartEntry {
+                category,
+                index: sp.index,
+                name: sp.name,
+            });
+        }
+
+        // Collect category names: entries with parts get priority names,
+        // but also collect ALL entry names from non-custom files for quest
+        // items and other non-modular items (inv_custom reuses the same
+        // index space for cosmetics so we skip those)
+        let is_custom = filename.contains("inv_custom");
+        if is_custom {
+            for (cat_id, ncs_key) in cat_names {
+                all_category_names.entry(cat_id).or_insert(ncs_key);
+            }
+        } else {
+            let all_names = bl4_ncs::document::extract_all_entry_names(&doc);
+            for (cat_id, ncs_key) in all_names {
+                all_category_names.entry(cat_id).or_insert(ncs_key);
+            }
         }
 
         files_processed += 1;
@@ -1228,10 +1285,8 @@ fn export_parts_manifest(path: &Path, output: Option<&Path>, _json: bool) -> Res
 
     all_parts.sort_by_key(|p| (p.category, p.index));
 
-    // Only keep category names for categories that actually have parts
     let categories_with_parts: std::collections::HashSet<u32> =
         all_parts.iter().map(|p| p.category).collect();
-    all_category_names.retain(|cat_id, _| categories_with_parts.contains(cat_id));
 
     eprintln!("\nExtraction complete:");
     eprintln!("  Files processed: {}", files_processed);
@@ -1256,6 +1311,14 @@ fn export_parts_manifest(path: &Path, output: Option<&Path>, _json: bool) -> Res
         for (cat_id, ncs_key) in &all_category_names {
             humanized.insert(cat_id.to_string(), humanize_category_key(ncs_key));
         }
+
+        for (dep_table, cat_id) in &shared_dep_tables {
+            if categories_with_parts.contains(cat_id) {
+                humanized.entry(cat_id.to_string())
+                    .or_insert_with(|| humanize_dep_table(dep_table));
+            }
+        }
+
         let cat_obj = serde_json::json!({ "categories": humanized });
         let cat_str = serde_json::to_string_pretty(&cat_obj)?;
         fs::write(&cat_names_path, &cat_str)?;

@@ -98,6 +98,17 @@ pub struct CategorizedPart {
     pub name: String,
 }
 
+/// A cross-category part from a named dependency table
+///
+/// These parts (elements, stat mods, rarity components, etc.) are shared
+/// across all item categories rather than belonging to a single category.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SharedPart {
+    pub dep_table: String,
+    pub index: u32,
+    pub name: String,
+}
+
 /// Extract parts grouped by category from a parsed document
 ///
 /// Each entry with a serialindex defines a category (the serialindex IS the
@@ -157,6 +168,64 @@ pub fn extract_category_names(doc: &Document) -> HashMap<u32, String> {
     }
 
     names
+}
+
+/// Extract ALL entry names with serial indices, including those without parts
+///
+/// Unlike `extract_category_names` which only includes entries with parts,
+/// this captures every entry that has a serialindex. Useful for naming
+/// quest items, pickups, and other non-modular items.
+/// Callers should be aware that inv_custom files reuse the same index space
+/// with different semantics (cosmetics vs gameplay items).
+pub fn extract_all_entry_names(doc: &Document) -> HashMap<u32, String> {
+    let mut names = HashMap::new();
+
+    for table in doc.tables.values() {
+        for record in &table.records {
+            for entry in &record.entries {
+                if let Some(index) = extract_index_from_value(&entry.value) {
+                    names.entry(index).or_insert_with(|| entry.key.clone());
+                }
+            }
+        }
+    }
+
+    names
+}
+
+/// Extract cross-category shared parts from named dependency tables
+///
+/// Parts in dep tables like "element", "stat_group2", "stat_group3", etc.
+/// are shared across all item categories. They come from entries without
+/// their own serialindex (unlike per-category parts captured by
+/// `extract_categorized_parts`).
+pub fn extract_shared_parts(doc: &Document) -> Vec<SharedPart> {
+    let mut results = Vec::new();
+
+    for table in doc.tables.values() {
+        for record in &table.records {
+            for entry in &record.entries {
+                if extract_index_from_value(&entry.value).is_some() {
+                    continue;
+                }
+
+                for dep_entry in &entry.dep_entries {
+                    if dep_entry.dep_table_name.is_empty() {
+                        continue;
+                    }
+                    if let Some(index) = extract_index_from_value(&dep_entry.value) {
+                        results.push(SharedPart {
+                            dep_table: dep_entry.dep_table_name.clone(),
+                            index,
+                            name: dep_entry.key.clone(),
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    results
 }
 
 /// Extract serial indices from a parsed document
