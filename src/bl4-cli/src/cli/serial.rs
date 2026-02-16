@@ -22,8 +22,8 @@ pub enum SerialCommand {
         #[arg(short, long)]
         analyze: bool,
 
-        /// Path to parts database for resolving part names
-        #[arg(long, default_value = "share/manifest/parts_database.json")]
+        /// Path to parts database (directory of per-category TSVs or single file)
+        #[arg(long, default_value = "share/manifest/parts")]
         parts_db: PathBuf,
     },
 

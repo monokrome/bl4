@@ -1,78 +1,24 @@
 //! Manifest data for Borderlands 4 items
 //!
 //! Provides lookup functions for part names, category names, manufacturers, etc.
-//! Data is embedded at compile time from share/manifest/ JSON files.
+//! Data is embedded at compile time from share/manifest/ files.
 //!
-//! ## Category Names
-//!
-//! Maps category IDs to human-readable names:
-//!
-//! ```json
-#![doc = include_str!("../../../share/manifest/category_names.json")]
-//! ```
-//!
-//! ## Manufacturers
-//!
-//! Maps manufacturer codes to full names:
-//!
-//! ```json
-#![doc = include_str!("../../../share/manifest/manufacturers.json")]
-//! ```
-//!
-//! ## Weapon Types
-//!
-//! Maps weapon types to their valid manufacturers:
-//!
-//! ```json
-#![doc = include_str!("../../../share/manifest/weapon_types.json")]
-//! ```
+//! Parts and category names are stored as TSV (tab-separated values).
+//! Manufacturers and weapon types remain JSON (hand-curated reference data).
 
 use once_cell::sync::Lazy;
 use serde::Deserialize;
 use std::collections::HashMap;
 
-// Embed manifest JSON files at compile time
-const CATEGORY_NAMES_JSON: &str = include_str!("../../../share/manifest/category_names.json");
-const PARTS_DATABASE_JSON: &str = include_str!("../../../share/manifest/parts_database.json");
+// Embed manifest files at compile time
+const CATEGORY_NAMES_TSV: &str = include_str!("../../../share/manifest/category_names.tsv");
+const PARTS_DATABASE_TSV: &str = include_str!(concat!(env!("OUT_DIR"), "/parts_database.tsv"));
 const MANUFACTURERS_JSON: &str = include_str!("../../../share/manifest/manufacturers.json");
 const WEAPON_TYPES_JSON: &str = include_str!("../../../share/manifest/weapon_types.json");
 
 // ============================================================================
-// Data Structures
+// Data Structures (JSON-based reference data only)
 // ============================================================================
-
-#[derive(Debug, Deserialize)]
-struct CategoryNamesFile {
-    categories: HashMap<String, String>,
-}
-
-#[allow(dead_code)]
-#[derive(Debug, Deserialize)]
-struct PartsDatabase {
-    version: u32,
-    #[serde(default)]
-    source: Option<String>,
-    parts: Vec<PartEntry>,
-    #[serde(default)]
-    categories: HashMap<String, CategoryInfo>,
-}
-
-#[allow(dead_code)]
-#[derive(Debug, Deserialize)]
-struct PartEntry {
-    category: i64,
-    index: i64,
-    name: String,
-    #[serde(default)]
-    group: Option<String>,
-}
-
-#[allow(dead_code)]
-#[derive(Debug, Deserialize)]
-struct CategoryInfo {
-    count: usize,
-    name: String,
-}
 
 #[allow(dead_code)]
 #[derive(Debug, Deserialize)]
@@ -95,27 +41,40 @@ struct WeaponType {
 // Parsed Data (Lazy Initialized)
 // ============================================================================
 
-/// Category ID -> Category Name
+/// Category ID -> Category Name (parsed from TSV)
 static CATEGORY_NAMES: Lazy<HashMap<i64, String>> = Lazy::new(|| {
-    let file: CategoryNamesFile =
-        serde_json::from_str(CATEGORY_NAMES_JSON).expect("Failed to parse category_names.json");
-
-    file.categories
-        .into_iter()
-        .filter_map(|(k, v)| k.parse::<i64>().ok().map(|id| (id, v)))
-        .collect()
+    parse_tsv_pairs(CATEGORY_NAMES_TSV)
 });
 
-/// (Category, Index) -> Part Name
+/// (Category, Index) -> Part Name (parsed from TSV)
 static PARTS_BY_ID: Lazy<HashMap<(i64, i64), String>> = Lazy::new(|| {
-    let db: PartsDatabase =
-        serde_json::from_str(PARTS_DATABASE_JSON).expect("Failed to parse parts_database.json");
-
-    db.parts
-        .into_iter()
-        .map(|p| ((p.category, p.index), p.name))
-        .collect()
+    parse_tsv_parts(PARTS_DATABASE_TSV)
 });
+
+fn parse_tsv_pairs(tsv: &str) -> HashMap<i64, String> {
+    tsv.lines()
+        .skip(1)
+        .filter_map(|line| {
+            let mut cols = line.splitn(2, '\t');
+            let id = cols.next()?.parse::<i64>().ok()?;
+            let name = cols.next()?.to_string();
+            Some((id, name))
+        })
+        .collect()
+}
+
+fn parse_tsv_parts(tsv: &str) -> HashMap<(i64, i64), String> {
+    tsv.lines()
+        .skip(1)
+        .filter_map(|line| {
+            let mut cols = line.splitn(3, '\t');
+            let category = cols.next()?.parse::<i64>().ok()?;
+            let index = cols.next()?.parse::<i64>().ok()?;
+            let name = cols.next()?.to_string();
+            Some(((category, index), name))
+        })
+        .collect()
+}
 
 /// Manufacturer Code -> Full Name
 static MANUFACTURERS: Lazy<HashMap<String, String>> = Lazy::new(|| {

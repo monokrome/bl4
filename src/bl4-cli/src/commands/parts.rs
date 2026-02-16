@@ -47,12 +47,86 @@ pub struct PartsQueryResult {
     pub total_parts: usize,
 }
 
-/// Load and parse the parts database from a file
+/// Load and parse the parts database from a file or directory of per-category TSVs
 pub fn load_database(path: &Path) -> Result<PartsDatabase> {
+    if path.is_dir() {
+        return load_database_dir(path);
+    }
+
     let content = std::fs::read_to_string(path)
         .with_context(|| format!("Failed to read parts database: {:?}", path))?;
 
-    serde_json::from_str(&content).context("Failed to parse parts database")
+    let is_tsv = path.extension().is_some_and(|e| e == "tsv")
+        || content.starts_with("category\t");
+
+    if is_tsv {
+        let parts = content
+            .lines()
+            .skip(1)
+            .filter_map(|line| {
+                let mut cols = line.splitn(3, '\t');
+                let category = cols.next()?.parse::<i64>().ok()?;
+                let index = cols.next()?.parse::<i64>().ok()?;
+                let name = cols.next()?.to_string();
+                Some(PartEntry { name, category, index })
+            })
+            .collect();
+        Ok(PartsDatabase { parts })
+    } else {
+        serde_json::from_str(&content).context("Failed to parse parts database")
+    }
+}
+
+/// Load parts database from a directory of per-category TSV files
+///
+/// Each file is named `{category_id}.tsv` with format `index\tname`.
+fn load_database_dir(dir: &Path) -> Result<PartsDatabase> {
+    let mut parts = Vec::new();
+
+    for entry in std::fs::read_dir(dir)
+        .with_context(|| format!("Failed to read directory: {:?}", dir))?
+    {
+        let entry = entry?;
+        let path = entry.path();
+
+        if path.extension().is_none_or(|e| e != "tsv") {
+            continue;
+        }
+
+        let category: i64 = match path.file_stem().and_then(|s| s.to_str()).and_then(parse_category_id) {
+            Some(id) => id,
+            None => continue,
+        };
+
+        let content = std::fs::read_to_string(&path)
+            .with_context(|| format!("Failed to read {:?}", path))?;
+
+        for line in content.lines().skip(1) {
+            let mut cols = line.splitn(2, '\t');
+            let index = match cols.next().and_then(|s| s.parse::<i64>().ok()) {
+                Some(i) => i,
+                None => continue,
+            };
+            let name = match cols.next() {
+                Some(n) => n.to_string(),
+                None => continue,
+            };
+            parts.push(PartEntry { name, category, index });
+        }
+    }
+
+    parts.sort_by_key(|p| (p.category, p.index));
+    Ok(PartsDatabase { parts })
+}
+
+/// Extract category ID from a filename stem like "jakobs_pistol-3" or "3"
+fn parse_category_id(stem: &str) -> Option<i64> {
+    if let Some(pos) = stem.rfind('-') {
+        if let Ok(id) = stem[pos + 1..].parse() {
+            return Some(id);
+        }
+    }
+    stem.parse().ok()
 }
 
 /// Build a category-to-parts mapping from the database
@@ -282,7 +356,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parts_database_deserialize() {
+    fn test_parts_database_deserialize_json() {
         let json = r#"{
             "parts": [
                 {"name": "TEST.part_01", "category": 1, "index": 0},
@@ -293,6 +367,37 @@ mod tests {
         let db: PartsDatabase = serde_json::from_str(json).unwrap();
         assert_eq!(db.parts.len(), 2);
         assert_eq!(db.parts[0].name, "TEST.part_01");
+    }
+
+    #[test]
+    fn test_parts_database_load_tsv() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("parts.tsv");
+        std::fs::write(&path, "category\tindex\tname\n1\t0\tTEST.part_01\n1\t1\tTEST.part_02\n").unwrap();
+
+        let db = load_database(&path).unwrap();
+        assert_eq!(db.parts.len(), 2);
+        assert_eq!(db.parts[0].name, "TEST.part_01");
+        assert_eq!(db.parts[0].category, 1);
+        assert_eq!(db.parts[1].index, 1);
+    }
+
+    #[test]
+    fn test_parts_database_load_dir() {
+        let dir = tempfile::tempdir().unwrap();
+        let parts_dir = dir.path().join("parts");
+        std::fs::create_dir(&parts_dir).unwrap();
+
+        std::fs::write(parts_dir.join("jakobs_pistol-3.tsv"), "index\tname\n0\tJAK_PS.part_barrel_01\n1\tJAK_PS.part_grip_01\n").unwrap();
+        std::fs::write(parts_dir.join("vladof_ar-5.tsv"), "index\tname\n0\tVLA_AR.part_barrel_01\n").unwrap();
+
+        let db = load_database(&parts_dir).unwrap();
+        assert_eq!(db.parts.len(), 3);
+
+        // Should be sorted by (category, index)
+        assert_eq!(db.parts[0].category, 3);
+        assert_eq!(db.parts[0].index, 0);
+        assert_eq!(db.parts[2].category, 5);
     }
 
     #[test]

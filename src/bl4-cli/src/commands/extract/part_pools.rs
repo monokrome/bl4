@@ -1,6 +1,6 @@
 //! Part pools extraction command handler
 //!
-//! Extracts part pools from a parts database JSON file.
+//! Groups parts from a parts database TSV by category.
 
 use anyhow::{Context, Result};
 use std::collections::BTreeMap;
@@ -9,225 +9,108 @@ use std::path::Path;
 
 /// Handle the ExtractCommand::PartPools command
 ///
-/// Extracts part pools from a parts database JSON file.
+/// Groups parts from a parts database (single TSV file or directory of per-category TSVs)
+/// by category.
 pub fn handle_part_pools(input: &Path, output: &Path) -> Result<()> {
-    // Read the parts database (memory-extracted names + verified category assignments)
-    let data =
-        fs::read_to_string(input).with_context(|| format!("Failed to read {}", input.display()))?;
+    let by_category = if input.is_dir() {
+        load_parts_from_dir(input)?
+    } else {
+        load_parts_from_file(input)?
+    };
 
-    // Parse parts array from JSON
-    // Structure: { "parts": [ { "category": N, "name": "...", ... }, ... ], "categories": {...} }
-    let parts_start = data.find("\"parts\"").context("Missing 'parts' key")?;
-    let array_start = data[parts_start..]
-        .find('[')
-        .context("Missing parts array")?
-        + parts_start;
-
-    // Find the matching closing bracket
-    let mut depth = 0;
-    let mut array_end = array_start;
-    for (i, c) in data[array_start..].char_indices() {
-        match c {
-            '[' => depth += 1,
-            ']' => {
-                depth -= 1;
-                if depth == 0 {
-                    array_end = array_start + i;
-                    break;
-                }
-            }
-            _ => {}
-        }
-    }
-    let parts_json = &data[array_start..=array_end];
-
-    // Parse part entries - only need category and name
-    struct PartEntry {
-        category: i64,
-        name: String,
-    }
-
-    let mut parts: Vec<PartEntry> = Vec::new();
-    let mut in_object = false;
-    let mut current_category: i64 = -1;
-    let mut current_name = String::new();
-    let mut depth = 0;
-
-    for (i, c) in parts_json.char_indices() {
-        match c {
-            '{' => {
-                depth += 1;
-                if depth == 1 {
-                    in_object = true;
-                    current_category = -1;
-                    current_name.clear();
-                }
-            }
-            '}' => {
-                depth -= 1;
-                if depth == 0 && in_object {
-                    if current_category > 0 && !current_name.is_empty() {
-                        parts.push(PartEntry {
-                            category: current_category,
-                            name: std::mem::take(&mut current_name),
-                        });
-                    }
-                    in_object = false;
-                }
-            }
-            '"' if in_object && depth == 1 => {
-                let rest = &parts_json[i + 1..];
-                if let Some(end) = rest.find('"') {
-                    let key = &rest[..end];
-                    let after_key = &rest[end + 1..];
-                    if let Some(colon) = after_key.find(':') {
-                        let value_start = after_key[colon + 1..].trim_start();
-                        match key {
-                            "category" => {
-                                let num_end = value_start
-                                    .find(|c: char| !c.is_ascii_digit() && c != '-')
-                                    .unwrap_or(value_start.len());
-                                if let Ok(n) = value_start[..num_end].parse::<i64>() {
-                                    current_category = n;
-                                }
-                            }
-                            "name" => {
-                                if let Some(name_rest) = value_start.strip_prefix('"') {
-                                    if let Some(name_end) = name_rest.find('"') {
-                                        current_name = name_rest[..name_end].to_string();
-                                    }
-                                }
-                            }
-                            _ => {}
-                        }
-                    }
-                }
-            }
-            _ => {}
+    let mut tsv = String::from("category\tpart_name\n");
+    for (category, parts) in &by_category {
+        for part in parts {
+            tsv.push_str(&format!("{}\t{}\n", category, part));
         }
     }
 
-    // Group parts by category
-    let mut by_category: BTreeMap<i64, Vec<String>> = BTreeMap::new();
-    for part in parts {
-        by_category
-            .entry(part.category)
-            .or_default()
-            .push(part.name);
-    }
+    fs::write(output, &tsv)?;
 
-    // Sort parts within each category alphabetically (consistent ordering)
-    for parts_vec in by_category.values_mut() {
-        parts_vec.sort();
-    }
-
-    // Parse category names from the input
-    let mut category_names: BTreeMap<i64, String> = BTreeMap::new();
-    if let Some(cats_start) = data.find("\"categories\"") {
-        if let Some(obj_start) = data[cats_start..].find('{') {
-            let cats_section = &data[cats_start + obj_start..];
-            // Simple parsing for "N": {"name": "..."}
-            let mut pos = 0;
-            while let Some(quote_pos) = cats_section[pos..].find('"') {
-                let key_start = pos + quote_pos + 1;
-                if let Some(key_end) = cats_section[key_start..].find('"') {
-                    let key = &cats_section[key_start..key_start + key_end];
-                    if let Ok(cat_id) = key.parse::<i64>() {
-                        // Look for "name": "..." after this
-                        let after = &cats_section[key_start + key_end..];
-                        if let Some(name_pos) = after.find("\"name\"") {
-                            let name_section = &after[name_pos + 7..];
-                            if let Some(val_start) = name_section.find('"') {
-                                let name_rest = &name_section[val_start + 1..];
-                                if let Some(val_end) = name_rest.find('"') {
-                                    category_names.insert(cat_id, name_rest[..val_end].to_string());
-                                }
-                            }
-                        }
-                    }
-                    pos = key_start + key_end + 1;
-                } else {
-                    break;
-                }
-            }
-        }
-    }
-
-    // Build output JSON with clear metadata
-    let mut json = String::from("{\n");
-    json.push_str(&format!(
-        "  \"version\": \"{}\",\n",
-        env!("CARGO_PKG_VERSION")
-    ));
-    json.push_str("  \"source\": \"parts_database.json (memory-extracted part names)\",\n");
-    json.push_str("  \"notes\": {\n");
-    json.push_str(
-        "    \"part_names\": \"Extracted from game memory via string pattern matching - AUTHORITATIVE\",\n",
-    );
-    json.push_str(
-        "    \"category_assignments\": \"Based on name prefix matching, verified by serial decode - VERIFIED\",\n",
-    );
-    json.push_str(
-        "    \"part_order\": \"Alphabetical within category - NOT authoritative, use memory extraction for true indices\"\n",
-    );
-    json.push_str("  },\n");
-    json.push_str("  \"pools\": {\n");
-
-    let pool_count = by_category.len();
-    for (i, (category, cat_parts)) in by_category.iter().enumerate() {
-        let cat_name = category_names
-            .get(category)
-            .cloned()
-            .unwrap_or_else(|| format!("Category {}", category));
-
-        json.push_str(&format!("    \"{}\": {{\n", category));
-        json.push_str(&format!(
-            "      \"name\": \"{}\",\n",
-            cat_name.replace('"', "\\\"")
-        ));
-        json.push_str(&format!("      \"part_count\": {},\n", cat_parts.len()));
-        json.push_str("      \"parts\": [\n");
-
-        for (j, part) in cat_parts.iter().enumerate() {
-            let escaped = part.replace('\\', "\\\\").replace('"', "\\\"");
-            json.push_str(&format!("        \"{}\"", escaped));
-            if j < cat_parts.len() - 1 {
-                json.push(',');
-            }
-            json.push('\n');
-        }
-
-        json.push_str("      ]\n");
-        json.push_str("    }");
-        if i < pool_count - 1 {
-            json.push(',');
-        }
-        json.push('\n');
-    }
-
-    json.push_str("  },\n");
-
-    // Summary
-    json.push_str("  \"summary\": {\n");
-    json.push_str(&format!("    \"total_pools\": {},\n", pool_count));
     let total_parts: usize = by_category.values().map(|v| v.len()).sum();
-    json.push_str(&format!("    \"total_parts\": {}\n", total_parts));
-    json.push_str("  }\n");
-    json.push_str("}\n");
-
-    fs::write(output, &json)?;
-
     println!(
-        "Extracted {} part pools with {} total parts",
-        pool_count, total_parts
+        "Extracted {} part pools with {} total parts to {}",
+        by_category.len(),
+        total_parts,
+        output.display()
     );
-    println!("\nData sources:");
-    println!("  Part names: Memory extraction (authoritative)");
-    println!("  Categories: Prefix matching (verified by decode)");
-    println!("  Part order: Alphabetical (not authoritative)");
-    println!("\nWritten to: {}", output.display());
 
     Ok(())
+}
+
+/// Load parts from a single monolithic TSV (category\tindex\tname)
+fn load_parts_from_file(path: &Path) -> Result<BTreeMap<i64, Vec<String>>> {
+    let data =
+        fs::read_to_string(path).with_context(|| format!("Failed to read {}", path.display()))?;
+
+    let mut by_category: BTreeMap<i64, Vec<String>> = BTreeMap::new();
+
+    for line in data.lines().skip(1) {
+        let mut cols = line.splitn(3, '\t');
+        let Some(cat_str) = cols.next() else { continue };
+        let Ok(category) = cat_str.parse::<i64>() else { continue };
+        let _ = cols.next(); // skip index
+        let Some(name) = cols.next() else { continue };
+
+        if category > 0 {
+            by_category.entry(category).or_default().push(name.to_string());
+        }
+    }
+
+    for parts in by_category.values_mut() {
+        parts.sort();
+    }
+
+    Ok(by_category)
+}
+
+/// Extract category ID from a filename stem like "jakobs_pistol-3" or "3"
+fn parse_category_id(stem: &str) -> Option<i64> {
+    if let Some(pos) = stem.rfind('-') {
+        if let Ok(id) = stem[pos + 1..].parse() {
+            return Some(id);
+        }
+    }
+    stem.parse().ok()
+}
+
+/// Load parts from a directory of per-category TSV files ({slug}-{id}.tsv with index\tname)
+fn load_parts_from_dir(dir: &Path) -> Result<BTreeMap<i64, Vec<String>>> {
+    let mut by_category: BTreeMap<i64, Vec<String>> = BTreeMap::new();
+
+    for entry in fs::read_dir(dir)
+        .with_context(|| format!("Failed to read directory {}", dir.display()))?
+    {
+        let entry = entry?;
+        let path = entry.path();
+
+        if !path.extension().is_some_and(|e| e == "tsv") {
+            continue;
+        }
+
+        let category: i64 = match path.file_stem().and_then(|s| s.to_str()).and_then(parse_category_id) {
+            Some(id) if id > 0 => id,
+            _ => continue,
+        };
+
+        let content = fs::read_to_string(&path)
+            .with_context(|| format!("Failed to read {}", path.display()))?;
+
+        let mut parts: Vec<String> = content
+            .lines()
+            .skip(1)
+            .filter_map(|line| {
+                let mut cols = line.splitn(2, '\t');
+                let _ = cols.next()?; // skip index
+                Some(cols.next()?.to_string())
+            })
+            .collect();
+
+        parts.sort();
+        by_category.insert(category, parts);
+    }
+
+    Ok(by_category)
 }
 
 #[cfg(test)]
@@ -237,9 +120,46 @@ mod tests {
     #[test]
     fn test_handle_part_pools_missing_file() {
         let result = handle_part_pools(
-            Path::new("/nonexistent/input.json"),
-            Path::new("/tmp/output.json"),
+            Path::new("/nonexistent/input.tsv"),
+            Path::new("/tmp/output.tsv"),
         );
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_handle_part_pools_from_file() {
+        let dir = tempfile::tempdir().unwrap();
+        let input = dir.path().join("parts.tsv");
+        let output = dir.path().join("pools.tsv");
+
+        fs::write(
+            &input,
+            "category\tindex\tname\n3\t0\tJAK_PS_barrel_01\n3\t1\tJAK_PS_grip_01\n5\t0\tVLA_AR_barrel_01\n",
+        ).unwrap();
+
+        handle_part_pools(&input, &output).unwrap();
+
+        let content = fs::read_to_string(&output).unwrap();
+        assert!(content.starts_with("category\tpart_name\n"));
+        assert!(content.contains("3\tJAK_PS_barrel_01"));
+        assert!(content.contains("5\tVLA_AR_barrel_01"));
+    }
+
+    #[test]
+    fn test_handle_part_pools_from_dir() {
+        let dir = tempfile::tempdir().unwrap();
+        let parts_dir = dir.path().join("parts");
+        fs::create_dir(&parts_dir).unwrap();
+        let output = dir.path().join("pools.tsv");
+
+        fs::write(parts_dir.join("jakobs_pistol-3.tsv"), "index\tname\n0\tJAK_PS_barrel_01\n1\tJAK_PS_grip_01\n").unwrap();
+        fs::write(parts_dir.join("vladof_ar-5.tsv"), "index\tname\n0\tVLA_AR_barrel_01\n").unwrap();
+
+        handle_part_pools(&parts_dir, &output).unwrap();
+
+        let content = fs::read_to_string(&output).unwrap();
+        assert!(content.starts_with("category\tpart_name\n"));
+        assert!(content.contains("3\tJAK_PS_barrel_01"));
+        assert!(content.contains("5\tVLA_AR_barrel_01"));
     }
 }

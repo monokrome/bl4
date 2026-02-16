@@ -30,8 +30,8 @@ pub enum ExtractCommand {
     /// Extract part pools from the parts database
     #[command(visible_alias = "pp")]
     PartPools {
-        /// Input parts database JSON
-        #[arg(short, long, default_value = "share/manifest/parts_database.json")]
+        /// Input parts database (directory of per-category TSVs or single file)
+        #[arg(short, long, default_value = "share/manifest/parts")]
         input: PathBuf,
 
         /// Output part pools JSON

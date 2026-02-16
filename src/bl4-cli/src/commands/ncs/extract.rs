@@ -70,7 +70,7 @@ pub fn extract_by_type(
         return build_serial_decoder(path, output, json);
     }
 
-    // Manifest export (for parts_database.json)
+    // Manifest export (parts_database + category_names)
     if extract_type == "manifest" || extract_type == "parts-manifest" {
         return export_parts_manifest(path, output, json);
     }
@@ -109,15 +109,14 @@ pub fn extract_by_type(
     let output_str = if json {
         serde_json::to_string_pretty(&extracted)?
     } else {
-        let mut out = format!("=== Extracted {} entries ===\n\n", extracted.len());
+        let mut out = String::from("file\ttype\tformat\tentry_name\n");
         for info in &extracted {
-            out.push_str(&format!("File: {}\n", info.path));
-            out.push_str(&format!("Format: {}\n", info.format_code));
-            out.push_str("Entries:\n");
             for name in &info.entry_names {
-                out.push_str(&format!("  - {}\n", name));
+                out.push_str(&format!(
+                    "{}\t{}\t{}\t{}\n",
+                    info.path, info.type_name, info.format_code, name
+                ));
             }
-            out.push('\n');
         }
         out
     };
@@ -402,30 +401,25 @@ fn extract_item_parts(path: &Path, output: Option<&Path>, json: bool) -> Result<
     let output_str = if json {
         serde_json::to_string_pretty(&items_vec)?
     } else {
-        let mut out = String::new();
+        let mut out = String::from("item_id\ttype\tname\tunique_name\n");
         for item in &items_vec {
-            out.push_str(&format!(
-                "=== {} ({} parts) ===\n",
-                item.item_id,
-                item.parts.len()
-            ));
             for part in &item.parts {
-                out.push_str(&format!("  {}\n", part));
+                out.push_str(&format!("{}\tpart\t{}\t\n", item.item_id, part));
             }
-            if !item.legendary_compositions.is_empty() {
-                out.push_str("  Legendary Compositions:\n");
-                for comp in &item.legendary_compositions {
-                    out.push_str(&format!("    {} ", comp.name));
-                    if let Some(ref uni) = comp.unique_name {
-                        out.push_str(&format!("({})", uni));
-                    }
-                    out.push('\n');
-                    for part in &comp.mandatory_parts {
-                        out.push_str(&format!("      -> {}\n", part));
-                    }
+            for comp in &item.legendary_compositions {
+                out.push_str(&format!(
+                    "{}\tlegendary\t{}\t{}\n",
+                    item.item_id,
+                    comp.name,
+                    comp.unique_name.as_deref().unwrap_or("")
+                ));
+                for part in &comp.mandatory_parts {
+                    out.push_str(&format!(
+                        "{}\tlegendary_part\t{}\t{}\n",
+                        item.item_id, part, comp.name
+                    ));
                 }
             }
-            out.push('\n');
         }
         out
     };
@@ -1053,6 +1047,11 @@ fn build_serial_decoder(path: &Path, output: Option<&Path>, json: bool) -> Resul
     Ok(())
 }
 
+/// Convert a human-readable name to a filename slug (lowercase, spaces → underscores)
+fn slugify(name: &str) -> String {
+    name.to_lowercase().replace(' ', "_")
+}
+
 /// Known manufacturer code → display name mapping
 /// Includes both short codes (bor, dad) from weapon parts and
 /// long codes (borg, daedalus) from non-weapon NCS entries
@@ -1184,7 +1183,7 @@ fn parse_ncs_file(path: &Path) -> Option<bl4_ncs::document::Document> {
     doc
 }
 
-/// Export parts manifest for integration into parts_database.json
+/// Export parts manifest as TSV (or JSON with --json)
 ///
 /// Scans all inv*.bin files and extracts categorized parts and category names.
 /// Each NCS entry with a serialindex defines a category, and its
@@ -1192,24 +1191,24 @@ fn parse_ncs_file(path: &Path) -> Option<bl4_ncs::document::Document> {
 /// Also extracts shared cross-category parts from dep tables (elements,
 /// stat mods, rarity components, etc.).
 ///
-/// Produces two files:
-/// - parts_database.json (parts with category/index/name)
-/// - category_names.json (category ID → human-readable name)
-fn export_parts_manifest(path: &Path, output: Option<&Path>, _json: bool) -> Result<()> {
-    #[derive(Debug, serde::Serialize)]
-    struct PartsManifest {
-        version: u32,
-        source: String,
-        parts: Vec<ManifestPartEntry>,
-    }
+/// Produces:
+/// - parts/{category_id}.tsv files (index, name) per category
+/// - category_names.tsv (category_id, name)
+#[derive(Debug, serde::Serialize)]
+struct PartsManifest {
+    version: u32,
+    source: String,
+    parts: Vec<ManifestPartEntry>,
+}
 
-    #[derive(Debug, serde::Serialize)]
-    struct ManifestPartEntry {
-        category: u32,
-        index: u32,
-        name: String,
-    }
+#[derive(Debug, serde::Serialize)]
+struct ManifestPartEntry {
+    category: u32,
+    index: u32,
+    name: String,
+}
 
+fn export_parts_manifest(path: &Path, output: Option<&Path>, json: bool) -> Result<()> {
     let mut all_parts = Vec::new();
     let mut all_category_names: std::collections::HashMap<u32, String> = std::collections::HashMap::new();
     let mut shared_dep_tables: BTreeMap<String, u32> = BTreeMap::new();
@@ -1299,32 +1298,97 @@ fn export_parts_manifest(path: &Path, output: Option<&Path>, _json: bool) -> Res
         parts: all_parts,
     };
 
-    let output_str = serde_json::to_string_pretty(&manifest)?;
+    // Build humanized category names
+    let mut humanized: BTreeMap<String, String> = BTreeMap::new();
+    for (cat_id, ncs_key) in &all_category_names {
+        humanized.insert(cat_id.to_string(), humanize_category_key(ncs_key));
+    }
+    for (dep_table, cat_id) in &shared_dep_tables {
+        if categories_with_parts.contains(cat_id) {
+            humanized.entry(cat_id.to_string())
+                .or_insert_with(|| humanize_dep_table(dep_table));
+        }
+    }
 
-    if let Some(output_path) = output {
-        fs::write(output_path, &output_str)?;
-        println!("Wrote manifest with {} parts to {}", manifest.parts.len(), output_path.display());
+    write_parts_manifest(&manifest, &humanized, output, json)
+}
 
-        // Write category_names.json alongside parts_database.json
-        let cat_names_path = output_path.with_file_name("category_names.json");
-        let mut humanized: BTreeMap<String, String> = BTreeMap::new();
-        for (cat_id, ncs_key) in &all_category_names {
-            humanized.insert(cat_id.to_string(), humanize_category_key(ncs_key));
+fn write_parts_manifest(
+    manifest: &PartsManifest,
+    category_names: &BTreeMap<String, String>,
+    output: Option<&Path>,
+    json: bool,
+) -> Result<()> {
+    if json {
+        let output_str = serde_json::to_string_pretty(manifest)?;
+        if let Some(output_path) = output {
+            fs::write(output_path, &output_str)?;
+            println!("Wrote manifest with {} parts to {}", manifest.parts.len(), output_path.display());
+        } else {
+            println!("{}", output_str);
+        }
+    } else if let Some(output_path) = output {
+        // Write per-category files to parts/ subdirectory
+        let parts_dir = output_path.join("parts");
+        fs::create_dir_all(&parts_dir)?;
+
+        // Group parts by category
+        let mut by_category: BTreeMap<u32, Vec<&ManifestPartEntry>> = BTreeMap::new();
+        for p in &manifest.parts {
+            by_category.entry(p.category).or_default().push(p);
         }
 
-        for (dep_table, cat_id) in &shared_dep_tables {
-            if categories_with_parts.contains(cat_id) {
-                humanized.entry(cat_id.to_string())
-                    .or_insert_with(|| humanize_dep_table(dep_table));
+        for (cat_id, parts) in &by_category {
+            let slug = category_names
+                .get(&cat_id.to_string())
+                .map(|name| slugify(name))
+                .unwrap_or_else(|| format!("unknown_{}", cat_id));
+            let cat_path = parts_dir.join(format!("{}-{}.tsv", slug, cat_id));
+            let mut out = String::from("index\tname\n");
+            for p in parts {
+                out.push_str(&format!("{}\t{}\n", p.index, p.name));
             }
+            fs::write(&cat_path, &out)?;
         }
 
-        let cat_obj = serde_json::json!({ "categories": humanized });
-        let cat_str = serde_json::to_string_pretty(&cat_obj)?;
-        fs::write(&cat_names_path, &cat_str)?;
-        println!("Wrote {} category names to {}", humanized.len(), cat_names_path.display());
+        println!(
+            "Wrote {} parts across {} category files to {}",
+            manifest.parts.len(),
+            by_category.len(),
+            parts_dir.display()
+        );
     } else {
-        println!("{}", output_str);
+        // No output path: print monolithic TSV to stdout
+        let mut out = String::from("category\tindex\tname\n");
+        for p in &manifest.parts {
+            out.push_str(&format!("{}\t{}\t{}\n", p.category, p.index, p.name));
+        }
+        println!("{}", out);
+    }
+
+    // Write category names (always a single file)
+    if let Some(output_path) = output {
+        let cat_names_path = if json {
+            // JSON mode: output is a file path, derive sibling
+            output_path.with_file_name("category_names.json")
+        } else {
+            // TSV mode: output is a directory
+            output_path.join("category_names.tsv")
+        };
+
+        let cat_str = if json {
+            let cat_obj = serde_json::json!({ "categories": category_names });
+            serde_json::to_string_pretty(&cat_obj)?
+        } else {
+            let mut out = String::from("category_id\tname\n");
+            for (id, name) in category_names {
+                out.push_str(&format!("{}\t{}\n", id, name));
+            }
+            out
+        };
+
+        fs::write(&cat_names_path, &cat_str)?;
+        println!("Wrote {} category names to {}", category_names.len(), cat_names_path.display());
     }
 
     Ok(())

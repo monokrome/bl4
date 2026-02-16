@@ -143,7 +143,7 @@ pub fn handle_manifest(
 
             // Step 5: Build parts database
             println!("\nStep 5: Building parts database...");
-            let parts_db_path = output.join("parts_database.json");
+            let parts_db_path = output.join("parts");
             let status = ProcessCommand::new(&bl4_exe)
                 .args(["memory", "build-parts-db"])
                 .args(["-i"])

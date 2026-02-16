@@ -1,7 +1,8 @@
 //! Build parts database command handler
 //!
 //! Builds a parts database from a parts dump and category mappings.
-//! This command doesn't require memory access - it only reads/writes JSON.
+//! This command doesn't require memory access - it reads JSON inputs
+//! and writes TSV output.
 
 use crate::commands::parts::PartCategoriesFile;
 use anyhow::{Context, Result};
@@ -166,50 +167,42 @@ fn build_entries(
     db_entries
 }
 
-/// Write the database JSON to a file
+/// Convert a description to a filename slug (lowercase, spaces → underscores)
+fn slugify(name: &str) -> String {
+    name.to_lowercase().replace(' ', "_")
+}
+
+/// Write the database as per-category TSV files in a directory
 fn write_database(
     output: &Path,
     entries: &[(i64, i16, String, String)],
 ) -> Result<BTreeMap<i64, (usize, String)>> {
-    let mut json = String::from("{\n  \"version\": 1,\n  \"parts\": [\n");
+    std::fs::create_dir_all(output)?;
 
-    for (i, (category, index, name, group)) in entries.iter().enumerate() {
-        let escaped_name = name.replace('\\', "\\\\").replace('"', "\\\"");
-        let escaped_group = group.replace('\\', "\\\\").replace('"', "\\\"");
-        json.push_str(&format!(
-            "    {{\"category\": {}, \"index\": {}, \"name\": \"{}\", \"group\": \"{}\"}}",
-            category, index, escaped_name, escaped_group
-        ));
-        if i < entries.len() - 1 {
-            json.push(',');
-        }
-        json.push('\n');
-    }
-    json.push_str("  ],\n  \"categories\": {\n");
-
+    // Group entries by category
+    let mut by_category: BTreeMap<i64, Vec<(i16, &str)>> = BTreeMap::new();
     let mut category_counts: BTreeMap<i64, (usize, String)> = BTreeMap::new();
-    for (category, _, _, group) in entries {
+
+    for (category, index, name, group) in entries {
+        by_category.entry(*category).or_default().push((*index, name.as_str()));
         let entry = category_counts
             .entry(*category)
             .or_insert((0, group.clone()));
         entry.0 += 1;
     }
 
-    let cat_count = category_counts.len();
-    for (i, (category, (count, name))) in category_counts.iter().enumerate() {
-        let escaped = name.replace('\\', "\\\\").replace('"', "\\\"");
-        json.push_str(&format!(
-            "    \"{}\": {{\"count\": {}, \"name\": \"{}\"}}",
-            category, count, escaped
-        ));
-        if i < cat_count - 1 {
-            json.push(',');
+    for (category, parts) in &by_category {
+        let slug = category_counts
+            .get(category)
+            .map(|(_, desc)| slugify(desc))
+            .unwrap_or_else(|| format!("unknown_{}", category));
+        let cat_path = output.join(format!("{}-{}.tsv", slug, category));
+        let mut tsv = String::from("index\tname\n");
+        for (index, name) in parts {
+            tsv.push_str(&format!("{}\t{}\n", index, name));
         }
-        json.push('\n');
+        std::fs::write(&cat_path, &tsv)?;
     }
-    json.push_str("  }\n}\n");
-
-    std::fs::write(output, &json)?;
 
     Ok(category_counts)
 }
@@ -335,19 +328,21 @@ mod tests {
         let dir = TempDir::new().unwrap();
         let categories_path = create_test_categories(&dir);
         let parts_path = create_test_parts_dump(&dir);
-        let output_path = dir.path().join("output.json");
+        let output_path = dir.path().join("output_parts");
 
         let result = handle_build_parts_db(&parts_path, &output_path, &categories_path).unwrap();
 
         assert!(result.entries_count > 0);
         assert!(result.categories_count > 0);
-        assert!(output_path.exists());
+        assert!(output_path.is_dir());
 
-        // Verify output is valid JSON
-        let content = std::fs::read_to_string(&output_path).unwrap();
-        assert!(content.contains("\"version\": 1"));
-        assert!(content.contains("\"parts\""));
-        assert!(content.contains("\"categories\""));
+        // Should have per-category files with slug names
+        let cat3 = std::fs::read_to_string(output_path.join("jakobs_pistol-3.tsv")).unwrap();
+        assert!(cat3.starts_with("index\tname\n"));
+        assert!(cat3.contains("JAK_PS"));
+
+        let cat5 = std::fs::read_to_string(output_path.join("vladof_assault_rifle-5.tsv")).unwrap();
+        assert!(cat5.contains("VLA_AR"));
     }
 
     #[test]
@@ -365,7 +360,7 @@ mod tests {
     #[test]
     fn test_write_database() {
         let dir = TempDir::new().unwrap();
-        let output = dir.path().join("db.json");
+        let output = dir.path().join("db_parts");
 
         let entries = vec![
             (3i64, 0i16, "part1".to_string(), "Group1".to_string()),
@@ -379,9 +374,14 @@ mod tests {
         assert_eq!(counts.get(&3).map(|(c, _)| *c), Some(2));
         assert_eq!(counts.get(&5).map(|(c, _)| *c), Some(1));
 
-        let content = std::fs::read_to_string(&output).unwrap();
-        assert!(content.contains("part1"));
-        assert!(content.contains("part2"));
-        assert!(content.contains("part3"));
+        // Per-category files with slug names
+        let cat3 = std::fs::read_to_string(output.join("group1-3.tsv")).unwrap();
+        assert!(cat3.starts_with("index\tname\n"));
+        assert!(cat3.contains("part1"));
+        assert!(cat3.contains("part2"));
+
+        let cat5 = std::fs::read_to_string(output.join("group2-5.tsv")).unwrap();
+        assert!(cat5.starts_with("index\tname\n"));
+        assert!(cat5.contains("part3"));
     }
 }

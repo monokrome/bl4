@@ -211,8 +211,8 @@ pub enum MemoryAction {
         #[arg(short, long, default_value = "share/manifest/parts_dump.json")]
         input: PathBuf,
 
-        /// Output parts database JSON
-        #[arg(short, long, default_value = "share/manifest/parts_database.json")]
+        /// Output parts database directory
+        #[arg(short, long, default_value = "share/manifest/parts")]
         output: PathBuf,
 
         /// Part categories mapping JSON (prefix -> category ID)

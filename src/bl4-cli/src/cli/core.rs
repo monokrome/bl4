@@ -78,8 +78,8 @@ pub enum Commands {
         #[arg(short, long)]
         list: bool,
 
-        /// Path to parts database
-        #[arg(long, default_value = "share/manifest/parts_database.json")]
+        /// Path to parts database (directory of per-category TSVs or single file)
+        #[arg(long, default_value = "share/manifest/parts")]
         parts_db: PathBuf,
     },
 
