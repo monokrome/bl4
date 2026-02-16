@@ -27,7 +27,7 @@ The encoding is compact. A 40-character serial describes an item that would need
 
 Serials transform through multiple stages. Understanding each stage reveals how the pieces fit together.
 
-```{mermaid}
+```mermaid
 flowchart LR
     A["@Ugr$ZCm/&tH!..."] -->|Strip prefix| B["gr$ZCm/&tH!..."]
     B -->|Base85 decode| C["[0x84, 0xA5, ...]"]

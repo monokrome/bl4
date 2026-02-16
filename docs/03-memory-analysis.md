@@ -86,7 +86,7 @@ Once you have these addresses, everything else becomes accessible. Need to find 
 
 Most interesting data requires following multiple pointers. Think of it as a treasure map where each step reveals the next.
 
-```{mermaid}
+```mermaid
 flowchart LR
     A["GUObjectArray"] -->|"chunk[0]"| B["Object Item\n(24 bytes)"]
     B -->|"ptr at +0x00"| C["UObject\n(40 bytes)"]

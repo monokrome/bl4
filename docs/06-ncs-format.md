@@ -19,9 +19,7 @@ The data exists at two levels:
 
 Figure 6.1 shows the decompression pipeline. Figure 6.2 shows the layout of decompressed content.
 
-```{mermaid}
-%%| label: fig-ncs-pipeline
-%%| fig-cap: "Figure 6.1: NCS decompression pipeline from pak file to parsed content."
+```mermaid
 flowchart LR
     A[PAK File] --> B[NCS Chunk<br/>16-byte header]
     B --> C{Format Flags}
@@ -31,9 +29,7 @@ flowchart LR
     E --> F
 ```
 
-```{mermaid}
-%%| label: fig-ncs-layout
-%%| fig-cap: "Figure 6.2: Layout of decompressed NCS content."
+```mermaid
 flowchart TB
     A[Header<br/>8 bytes] --> B[Type Name<br/>null-terminated]
     B --> C[Format Section<br/>7 bytes]
