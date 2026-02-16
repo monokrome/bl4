@@ -12,59 +12,59 @@ A comprehensive guide to understanding game internals, reverse engineering techn
 
 | Chapter | Title | Description |
 |:-------:|-------|-------------|
-| 1 | [Binary Basics](01-binary-basics.md) | Hexadecimal, endianness, data types, and memory layout |
-| 2 | [Unreal Engine Architecture](02-unreal-architecture.md) | UObjects, reflection system, pak files, and usmap |
-| 3 | [Memory Analysis](03-memory-analysis.md) | Process memory, dumps, pattern scanning, pointer chains |
+| 1 | [Binary Basics](#sec-binary-basics) | Hexadecimal, endianness, data types, and memory layout |
+| 2 | [Unreal Engine Architecture](#sec-unreal-architecture) | UObjects, reflection system, pak files, and usmap |
+| 3 | [Memory Analysis](#sec-memory-analysis) | Process memory, dumps, pattern scanning, pointer chains |
 
 ### Part II: Game Formats
 
 | Chapter | Title | Description |
 |:-------:|-------|-------------|
-| 4 | [Save File Format](04-save-files.md) | Encryption, compression, YAML structure, key derivation |
-| 5 | [Item Serials](05-item-serials.md) | Base85 encoding, bit manipulation, token parsing |
-| 6 | [NCS Format](06-ncs-format.md) | Nexus Config Store: compression, content format, binary section |
+| 4 | [Save File Format](#sec-save-files) | Encryption, compression, YAML structure, key derivation |
+| 5 | [Item Serials](#sec-item-serials) | Base85 encoding, bit manipulation, token parsing |
+| 6 | [NCS Format](#sec-ncs-format) | Nexus Config Store: compression, content format, binary section |
 
 ### Part III: Practical Application
 
 | Chapter | Title | Description |
 |:-------:|-------|-------------|
-| 7 | [Data Extraction](07-data-extraction.md) | Pak files, NCS parsing, memory dumps, manifest generation |
-| 8 | [Parts System](08-parts-system.md) | Part categories, compositions, licensed parts, validation |
-| 9 | [Using bl4 Tools](09-bl4-tools.md) | Complete CLI reference and practical workflows |
+| 7 | [Data Extraction](#sec-data-extraction) | Pak files, NCS parsing, memory dumps, manifest generation |
+| 8 | [Parts System](#sec-parts-system) | Part categories, compositions, licensed parts, validation |
+| 9 | [Using bl4 Tools](#sec-bl4-tools) | Complete CLI reference and practical workflows |
 
 ### Appendices
 
 | Appendix | Title | Description |
 |:--------:|-------|-------------|
-| A | [SDK Class Layouts](appendix-a-sdk-layouts.md) | Memory layouts for UObject, AOakCharacter, AWeapon, etc. |
-| B | [Weapon Parts Reference](appendix-b-weapon-parts.md) | Complete catalog of weapon parts by manufacturer |
-| C | [Loot System Internals](appendix-c-loot-system.md) | Drop pools, rarity weights, luck system |
-| D | [Game File Structure](appendix-d-game-files.md) | Full asset tree and file organization |
+| A | [SDK Class Layouts](#sec-sdk-layouts) | Memory layouts for UObject, AOakCharacter, AWeapon, etc. |
+| B | [Weapon Parts Reference](#sec-weapon-parts) | Complete catalog of weapon parts by manufacturer |
+| C | [Loot System Internals](#sec-loot-system) | Drop pools, rarity weights, luck system |
+| D | [Game File Structure](#sec-game-files) | Full asset tree and file organization |
 
 ### Reference
 
 | | Title | Description |
 |:--:|-------|-------------|
-| | [Glossary](glossary.md) | Terms, definitions, and quick reference tables |
+| | [Glossary](#sec-glossary) | Terms, definitions, and quick reference tables |
 
 ---
 
 ## Quick Start
 
 **New to reverse engineering?**
-Start with [Chapter 1: Binary Basics](01-binary-basics.md) and work through sequentially.
+Start with [Chapter 1: Binary Basics](#sec-binary-basics) and work through sequentially.
 
 **Want to edit saves?**
-Jump to [Chapter 4: Save File Format](04-save-files.md).
+Jump to [Chapter 4: Save File Format](#sec-save-files).
 
 **Need to decode an item?**
-See [Chapter 5: Item Serials](05-item-serials.md).
+See [Chapter 5: Item Serials](#sec-item-serials).
 
 **Interested in the NCS format?**
-See [Chapter 6: NCS Format](06-ncs-format.md) for the complete format specification.
+See [Chapter 6: NCS Format](#sec-ncs-format) for the complete format specification.
 
 **Just want the tool reference?**
-Go to [Chapter 9: Using bl4 Tools](09-bl4-tools.md).
+Go to [Chapter 9: Using bl4 Tools](#sec-bl4-tools).
 
 ---
 

@@ -1,12 +1,12 @@
-# Borderlands 4 Reverse Engineering Guide
+# Borderlands 4 Reverse Engineering Guide {#sec-introduction}
 
 > **Note:** The information in this guide is based on ongoing reverse engineering analysis. Some details may be incomplete or subject to revision as our understanding improves. If you find errors or have corrections, please reach out at hey@monokro.me.
 
-When you pick up a legendary weapon in Borderlands 4 and share it with a friend using a serial code, something remarkable happens. That short string of characters—maybe 40 characters long—encodes everything about your weapon: its manufacturer, every part attached to it, the random seed that determined its stats, even which rarity tier it rolled. Your friend pastes the code, and they get an exact duplicate.
+Every weapon you pick up in Borderlands 4 exists as a compact binary string buried in your save file. That string—maybe 30 bytes of data, rendered as about 40 characters of Base85—encodes everything about the weapon: its manufacturer, every part attached to it, the random seed that determined its stats, even which rarity tier it rolled. The game reads that string and reconstructs the full item, parts and all.
 
 But how does it work?
 
-This guide exists because someone asked that question. What started as curiosity about save file formats turned into a deep dive through binary data, encryption schemes, Unreal Engine internals, and ultimately a complete understanding of how Borderlands 4 stores and encodes its item system.
+This guide exists because someone asked that question. What started as curiosity about save file formats turned into a deep dive through binary data, encryption schemes, Unreal Engine internals, and ultimately a complete understanding of how Borderlands 4 stores and encodes its item system internally.
 
 ---
 

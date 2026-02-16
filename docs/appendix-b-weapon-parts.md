@@ -1,4 +1,4 @@
-# Appendix B: Weapon Parts Reference
+# Appendix B: Weapon Parts Reference {#sec-weapon-parts}
 
 This appendix catalogs all known weapon parts extracted from BL4 game files, organized by manufacturer and weapon type.
 
@@ -852,7 +852,7 @@ Use `bl4 memory dump-parts` and `bl4 memory build-parts-db` to regenerate from a
 
 ---
 
-For complete category mappings, composition system details, and licensed parts documentation, see [Chapter 8: Parts System](08-parts-system.md).
+For complete category mappings, composition system details, and licensed parts documentation, see [Chapter 8: Parts System](#sec-parts-system).
 
 ---
 

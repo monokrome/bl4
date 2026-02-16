@@ -1,4 +1,4 @@
-# Chapter 4: Save File Format
+# Chapter 4: Save File Format {#sec-save-files}
 
 Your entire Borderlands 4 experience—hundreds of hours, thousands of items, every skill point and completed mission—lives in a handful of files. These saves are encrypted, compressed, and structured in ways that seem designed to keep you out. But once you understand the layers, editing them becomes straightforward.
 
@@ -745,4 +745,4 @@ You've seen that inventory items are stored as compact serial strings. But what 
 
 The next chapter decodes item serials. It's one of the most intricate pieces of the puzzle, and understanding it unlocks the ability to create, modify, or analyze any item in the game.
 
-**Next: [Chapter 5: Item Serials](05-item-serials.md)**
+**Next: [Chapter 5: Item Serials](#sec-item-serials)**

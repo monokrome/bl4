@@ -1,4 +1,4 @@
-# Chapter 7: Data Extraction
+# Chapter 7: Data Extraction {#sec-data-extraction}
 
 A save editor needs game data: weapon stats, part definitions, manufacturer information. You might assume this data lives neatly in game files, waiting to be extracted. The reality is more complicated---and more interesting.
 
@@ -718,4 +718,4 @@ We've covered the full data extraction story---what works, what doesn't, and why
 
 Next, we'll tour those tools: how to decode serials, edit saves, extract data, and more, all from the command line.
 
-**Next: [Chapter 9: Using bl4 Tools](09-bl4-tools.md)**
+**Next: [Chapter 8: Parts System](#sec-parts-system)**

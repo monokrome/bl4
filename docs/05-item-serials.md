@@ -1,4 +1,4 @@
-# Chapter 5: Item Serials
+# Chapter 5: Item Serials {#sec-item-serials}
 
 The first time you see an item serial—something like `@Ugr$ZCm/&tH!t{KgK/Shxu>k`—it looks like line noise. Random characters that couldn't possibly mean anything. But that string contains a complete weapon: its manufacturer, every part attached to it, the level, the random seed that determined its stats. Everything needed to reconstruct the item perfectly.
 
@@ -8,7 +8,7 @@ This chapter decodes how serials work. By the end, you'll understand every trans
 
 ## What's Encoded in a Serial
 
-A serial is self-contained. Given just the string, the game can create an identical item anywhere—your inventory, a friend's inventory, another platform entirely. This is how "gun codes" work in Borderlands communities. Copy a serial, share it, and the recipient gets the exact same weapon.
+A serial is self-contained. Given just the string, the game can reconstruct the item completely—no external references needed. If you copy a serial from one save file into another, the recipient gets an exact duplicate of the weapon. This is an internal encoding detail, not something the game exposes to players, but understanding it is what makes save editing and item analysis possible.
 
 Inside that string:
 - Item type (weapon, shield, class mod)
@@ -35,7 +35,7 @@ flowchart LR
     D -->|Parse bitstream| E["Category: 22\nLevel: 50\nParts: [...]"]
 ```
 
-The prefix `@U` marks this as a BL4 serial. The third character indicates item type—`r` for a weapon, `e` for equipment, and so on. After stripping the prefix, everything else is Base85-encoded binary data.
+The prefix `@U` marks this as a BL4 serial. After stripping the two-character prefix, everything else is Base85-encoded binary data. The character at position 3 (the first Base85 character) varies based on the magnitude of the first encoded value—it is NOT a type discriminator, despite appearing to correlate with item types at first glance. See the "Item Type" section below for how type is actually determined.
 
 ---
 
@@ -597,9 +597,13 @@ Find two similar weapons in your inventory. Decode both serials. Which tokens di
 <details>
 <summary>Exercise 1 Answers</summary>
 
-1. `e` at position 3 → Equipment (shield/enhancement)
-2. `w` at position 3 → Weapon (SMG category)
-3. `!` at position 3 → Class Mod
+Decode each serial with `bl4 serial decode` and check the first token after the magic header:
+
+1. First token is VarBit → Equipment (shield/enhancement)
+2. First token is VarInt → Weapon (SMG category)
+3. First token is VarBit → Equipment (class mod)
+
+Note: The character at position 3 is NOT a reliable type indicator—it's just the first Base85 character, which varies with the magnitude of the first encoded value. Always determine type from the parsed bitstream.
 
 </details>
 
@@ -662,4 +666,4 @@ The same legendary can have multiple valid VarInt encodings. When decoding, don'
 
 Now that we understand how serials encode items, we need to understand the NCS format that stores part definitions, item pools, and loot configuration. NCS is the foundational data format that makes serial decoding meaningful.
 
-**Next: [Chapter 6: NCS Format](06-ncs-format.md)**
+**Next: [Chapter 6: NCS Format](#sec-ncs-format)**
