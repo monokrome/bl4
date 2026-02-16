@@ -1161,6 +1161,153 @@ mod tests {
         }
     }
 
+    #[test]
+    #[ignore] // Run with: cargo test -p bl4 statistical_analysis -- --ignored --nocapture
+    fn statistical_analysis() {
+        use std::collections::BTreeMap;
+        use std::fs;
+
+        let serials_path = "/tmp/bl4-all-serials.txt";
+        let content = fs::read_to_string(serials_path)
+            .expect("Export serials first: sqlite3 share/items.db 'SELECT serial FROM items' > /tmp/bl4-all-serials.txt");
+
+        let serials: Vec<&str> = content.lines().filter(|l| !l.is_empty()).collect();
+        println!("\n=== SERIAL STATISTICAL ANALYSIS ===");
+        println!("Total serials: {}\n", serials.len());
+
+        let mut decoded: Vec<ItemSerial> = Vec::new();
+        let mut failures = 0;
+        for s in &serials {
+            match ItemSerial::decode(s) {
+                Ok(item) => decoded.push(item),
+                Err(_) => failures += 1,
+            }
+        }
+        println!("Decoded: {}, Failed: {}\n", decoded.len(), failures);
+
+        // Group by category (using parts_category for both formats)
+        let mut by_cat: BTreeMap<i64, Vec<&ItemSerial>> = BTreeMap::new();
+        for item in &decoded {
+            let cat = item.parts_category().unwrap_or_else(|| {
+                // Fallback: use manufacturer ID for VarInt-first
+                item.manufacturer.map(|m| m as i64).unwrap_or(-1)
+            });
+            by_cat.entry(cat).or_default().push(item);
+        }
+
+        // For top categories: show per-index value distributions
+        println!("=== PART INDEX VALUE ANALYSIS (top 15 categories) ===");
+        let mut sorted_cats: Vec<_> = by_cat.iter().collect();
+        sorted_cats.sort_by(|a, b| b.1.len().cmp(&a.1.len()));
+
+        for (cat, items) in sorted_cats.iter().take(15) {
+            let cat_name = crate::parts::category_name(**cat).unwrap_or("?");
+            let n = items.len();
+            println!("\n  Category {} ({}, n={}):", cat, cat_name, n);
+
+            // Collect: index → list of value vectors
+            let mut index_values: BTreeMap<u64, Vec<&Vec<u64>>> = BTreeMap::new();
+            for item in items.iter() {
+                for token in &item.tokens {
+                    if let Token::Part { index, values } = token {
+                        index_values.entry(*index).or_default().push(values);
+                    }
+                }
+            }
+
+            // Show each index: frequency, value patterns
+            for (idx, all_values) in &index_values {
+                let name = crate::manifest::part_name(**cat, *idx as i64)
+                    .unwrap_or("?");
+                let freq = all_values.len();
+                let pct = freq * 100 / n;
+
+                // Analyze value patterns
+                let empty_count = all_values.iter().filter(|v| v.is_empty()).count();
+                let single_count = all_values.iter().filter(|v| v.len() == 1).count();
+                let multi_count = all_values.iter().filter(|v| v.len() > 1).count();
+
+                // For single-value parts, show value distribution
+                let value_info = if single_count > 0 {
+                    let mut val_dist: BTreeMap<u64, usize> = BTreeMap::new();
+                    for v in all_values.iter().filter(|v| v.len() == 1) {
+                        *val_dist.entry(v[0]).or_default() += 1;
+                    }
+                    let mut sorted_vals: Vec<_> = val_dist.iter().collect();
+                    sorted_vals.sort_by(|a, b| b.1.cmp(a.1));
+                    let top: Vec<String> = sorted_vals
+                        .iter()
+                        .take(5)
+                        .map(|(v, c)| format!("{}x{}", c, v))
+                        .collect();
+                    format!(" vals=[{}]", top.join(","))
+                } else {
+                    String::new()
+                };
+
+                let multi_info = if multi_count > 0 {
+                    // Show sample multi-value
+                    let sample = all_values.iter().find(|v| v.len() > 1).unwrap();
+                    format!(" multi(len={})={:?}", sample.len(), sample)
+                } else {
+                    String::new()
+                };
+
+                println!(
+                    "    idx {:>3} ({:<35}) {:>3}/{} ({:>2}%) empty={} single={} multi={}{}{}",
+                    idx, name, freq, n, pct, empty_count, single_count, multi_count,
+                    value_info, multi_info
+                );
+            }
+        }
+
+        // String token analysis for VarBit-first items
+        println!("\n=== STRING TOKENS IN VARBIT-FIRST ITEMS ===");
+        let mut string_values: BTreeMap<String, usize> = BTreeMap::new();
+        for item in &decoded {
+            if !matches!(item.tokens.first(), Some(Token::VarBit(_))) {
+                continue;
+            }
+            for token in &item.tokens {
+                if let Token::String(s) = token {
+                    *string_values.entry(s.clone()).or_default() += 1;
+                }
+            }
+        }
+        let mut sorted_strings: Vec<_> = string_values.iter().collect();
+        sorted_strings.sort_by(|a, b| b.1.cmp(a.1));
+        for (s, count) in sorted_strings.iter().take(30) {
+            println!("  {:>4}x  {:?}", count, s);
+        }
+        if sorted_strings.len() > 30 {
+            println!("  ... and {} more unique strings", sorted_strings.len() - 30);
+        }
+
+        // Token structure fingerprints
+        println!("\n=== TOKEN STRUCTURE FINGERPRINTS (top 15) ===");
+        let mut fingerprints: BTreeMap<String, usize> = BTreeMap::new();
+        for item in &decoded {
+            let fp: String = item
+                .tokens
+                .iter()
+                .map(|t| match t {
+                    Token::Separator => "|",
+                    Token::SoftSeparator => ".",
+                    Token::VarInt(_) => "I",
+                    Token::VarBit(_) => "B",
+                    Token::Part { .. } => "P",
+                    Token::String(_) => "S",
+                })
+                .collect();
+            *fingerprints.entry(fp).or_default() += 1;
+        }
+        let mut fp_sorted: Vec<_> = fingerprints.iter().collect();
+        fp_sorted.sort_by(|a, b| b.1.cmp(a.1));
+        for (fp, count) in fp_sorted.iter().take(15) {
+            println!("  {:>4}x  {}", count, fp);
+        }
+    }
+
     mod display_tests {
         use super::*;
 

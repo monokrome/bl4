@@ -57,7 +57,7 @@ static WEAPON_INFO: phf::Map<u64, (&'static str, &'static str)> = phf_map! {
 /// Serial ID (first varint) to Parts Database Category mapping
 ///
 /// Serial IDs in decoded serials differ from the NCS category IDs used in
-/// parts_database.json. This table maps serial IDs to NCS-authoritative
+/// parts_database.tsv. This table maps serial IDs to NCS-authoritative
 /// category IDs extracted from inv*.bin root entries.
 static SERIAL_TO_PARTS_CAT: phf::Map<u64, u64> = phf_map! {
     // Shotguns (NCS: bor_sg=7, dad_sg=8, jak_sg=9, mal_sg=10, ted_sg=11, tor_sg=12)
