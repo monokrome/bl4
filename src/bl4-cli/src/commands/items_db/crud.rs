@@ -42,6 +42,7 @@ pub fn salt(db: &Path) -> Result<()> {
 }
 
 /// Handle `idb add`
+#[allow(clippy::too_many_arguments)]
 pub fn add(
     db: &Path,
     serial: &str,
@@ -132,6 +133,7 @@ pub fn show(db: &Path, serial: &str) -> Result<()> {
 }
 
 /// Handle `idb list`
+#[allow(clippy::too_many_arguments)]
 pub fn list(
     db: &Path,
     manufacturer: Option<String>,

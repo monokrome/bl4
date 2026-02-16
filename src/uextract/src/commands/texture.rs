@@ -4,19 +4,28 @@ use crate::texture;
 use anyhow::{Context, Result};
 use std::path::Path;
 
-/// Extract a texture from a ubulk file to PNG
+pub struct ExtractTextureOptions<'a> {
+    pub ubulk_path: &'a Path,
+    pub width: u32,
+    pub height: u32,
+    pub output_path: &'a Path,
+    pub mip_level: usize,
+    pub format: &'a str,
+}
+
 #[allow(clippy::too_many_lines)]
-pub fn extract_texture_cmd(
-    ubulk_path: &Path,
-    width: u32,
-    height: u32,
-    output_path: &Path,
-    mip_level: usize,
-    format: &str,
-) -> Result<()> {
+pub fn extract_texture_cmd(opts: &ExtractTextureOptions<'_>) -> Result<()> {
+    let ExtractTextureOptions {
+        ubulk_path,
+        width,
+        height,
+        output_path,
+        mip_level,
+        format,
+    } = opts;
     use std::io::Read;
 
-    let bytes_per_block: u64 = match format {
+    let bytes_per_block: u64 = match *format {
         "bc1" | "dxt1" => 8,
         "bc7" => 16,
         _ => 16,
@@ -25,16 +34,13 @@ pub fn extract_texture_cmd(
     eprintln!("Reading texture: {:?}", ubulk_path);
     eprintln!("Dimensions: {}x{}, format: {}", width, height, format);
 
-    // Read the ubulk file
     let mut file = std::fs::File::open(ubulk_path).context("Failed to open ubulk file")?;
 
-    // Calculate mip dimensions and offsets
-    let mut mip_width = width;
-    let mut mip_height = height;
+    let mut mip_width = *width;
+    let mut mip_height = *height;
     let mut offset: u64 = 0;
 
-    for i in 0..mip_level {
-        // Calculate size of this mip
+    for i in 0..*mip_level {
         let blocks_x = (mip_width as u64).div_ceil(4);
         let blocks_y = (mip_height as u64).div_ceil(4);
         let mip_size = blocks_x * blocks_y * bytes_per_block;
@@ -57,7 +63,6 @@ pub fn extract_texture_cmd(
         mip_level, mip_width, mip_height, offset
     );
 
-    // Calculate size needed for this mip
     let blocks_x = (mip_width as usize).div_ceil(4);
     let blocks_y = (mip_height as usize).div_ceil(4);
     let mip_size = blocks_x * blocks_y * bytes_per_block as usize;
@@ -73,7 +78,7 @@ pub fn extract_texture_cmd(
     eprintln!("Read {} bytes of {} data", mip_data.len(), format);
 
     // Decode to RGBA based on format
-    let rgba = match format {
+    let rgba = match *format {
         "bc1" | "dxt1" => texture::decode_bc1(&mip_data, mip_width, mip_height)
             .context("Failed to decode BC1 texture")?,
         "bc7" => texture::decode_bc7(&mip_data, mip_width, mip_height)

@@ -7,6 +7,30 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
+/// Maximum file size for NCS scanning without the `large-ncs` feature (512MB)
+const MAX_SCAN_SIZE: u64 = 512 * 1024 * 1024;
+
+/// Check file size before loading into memory for scanning.
+/// Returns an error if file exceeds MAX_SCAN_SIZE and `large-ncs` feature is not enabled.
+#[cfg(not(feature = "large-ncs"))]
+fn check_scan_size(path: &Path) -> Result<()> {
+    let metadata = fs::metadata(path)?;
+    if metadata.len() > MAX_SCAN_SIZE {
+        anyhow::bail!(
+            "File too large for NCS scanning ({:.1}MB > 512MB limit).\n\
+             For .pak files, use the PAK index-based extraction instead.\n\
+             To scan large files anyway, rebuild with: cargo build --features large-ncs",
+            metadata.len() as f64 / (1024.0 * 1024.0)
+        );
+    }
+    Ok(())
+}
+
+#[cfg(feature = "large-ncs")]
+fn check_scan_size(_path: &Path) -> Result<()> {
+    Ok(())
+}
+
 /// Handle the ExtractCommand::NcsCheck command
 ///
 /// Checks if a file is a valid NCS file.
@@ -274,6 +298,7 @@ fn handle_extract_pak_index(input: &Path, output: &Path, do_decompress: bool) ->
 ///
 /// Scans a file for embedded NCS chunks.
 pub fn handle_scan(input: &Path, _all: bool) -> Result<()> {
+    check_scan_size(input)?;
     println!("Scanning {:?} for NCS chunks...", input);
     let data = fs::read(input)?;
     let file_size = data.len();
@@ -325,6 +350,7 @@ pub fn handle_extract(input: &Path, output: &Path, decompress: bool) -> Result<(
     }
 
     // Fallback to magic byte scanning for non-PAK files
+    check_scan_size(input)?;
     let data = fs::read(input)?;
 
     // Use manifest-based extraction for proper correlation

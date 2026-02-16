@@ -91,6 +91,7 @@ pub fn extract_struct_properties(
 }
 
 /// Extract enum values from a UEnum
+#[allow(clippy::cognitive_complexity)]
 pub fn extract_enum_values(
     source: &dyn MemorySource,
     enum_addr: usize,
@@ -142,8 +143,8 @@ pub fn extract_enum_values(
 
         // Data pointer should be in heap range (0x7ff4... for this dump) or reasonable heap (> 0x1000000)
         // and count should be small (enum shouldn't have millions of values)
-        let is_heap_ptr = (data_ptr >= 0x1000000 && data_ptr < 0x140000000)
-            || (data_ptr >= 0x7ff000000000 && data_ptr < 0x800000000000);
+        let is_heap_ptr = (0x1000000..0x140000000).contains(&data_ptr)
+            || (0x7ff000000000..0x800000000000).contains(&data_ptr);
 
         if data_ptr != 0 && is_heap_ptr && count > 0 && count < 1000 {
             // Read all pairs at once
@@ -207,6 +208,7 @@ pub fn extract_enum_values(
 }
 
 /// Extract all reflection data (structs, classes, enums) from discovered UObjects
+#[allow(clippy::cognitive_complexity)]
 pub fn extract_reflection_data(
     source: &dyn MemorySource,
     objects: &[UObjectInfo],
@@ -229,9 +231,8 @@ pub fn extract_reflection_data(
         if i % 500 == 0 {
             eprint!("\r  Processing class {}/{}...", i, classes.len());
         }
-        match extract_struct_properties(source, obj.address, &obj.name, true, fname_reader) {
-            Ok(info) => structs.push(info),
-            Err(_) => {} // Skip errors silently
+        if let Ok(info) = extract_struct_properties(source, obj.address, &obj.name, true, fname_reader) {
+            structs.push(info);
         }
     }
     eprintln!("\r  Processed {} classes", classes.len());
@@ -244,9 +245,8 @@ pub fn extract_reflection_data(
         if i % 500 == 0 {
             eprint!("\r  Processing struct {}/{}...", i, script_structs.len());
         }
-        match extract_struct_properties(source, obj.address, &obj.name, false, fname_reader) {
-            Ok(info) => structs.push(info),
-            Err(_) => {} // Skip errors silently
+        if let Ok(info) = extract_struct_properties(source, obj.address, &obj.name, false, fname_reader) {
+            structs.push(info);
         }
     }
     eprintln!("\r  Processed {} structs", script_structs.len());
@@ -256,9 +256,8 @@ pub fn extract_reflection_data(
         if i % 500 == 0 {
             eprint!("\r  Processing enum {}/{}...", i, enum_objects.len());
         }
-        match extract_enum_values(source, obj.address, &obj.name, fname_reader) {
-            Ok(info) => enums.push(info),
-            Err(_) => {} // Skip errors silently
+        if let Ok(info) = extract_enum_values(source, obj.address, &obj.name, fname_reader) {
+            enums.push(info);
         }
     }
     eprintln!("\r  Processed {} enums", enum_objects.len());

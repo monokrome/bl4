@@ -181,8 +181,7 @@ impl<'a> Iterator for UObjectIterator<'a> {
     type Item = (usize, usize); // (index, object_ptr)
 
     fn next(&mut self) -> Option<Self::Item> {
-        let num_chunks = ((self.array.num_elements as usize) + GUOBJECTARRAY_CHUNK_SIZE - 1)
-            / GUOBJECTARRAY_CHUNK_SIZE;
+        let num_chunks = (self.array.num_elements as usize).div_ceil(GUOBJECTARRAY_CHUNK_SIZE);
 
         loop {
             if self.chunk_idx >= num_chunks {

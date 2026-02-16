@@ -95,7 +95,7 @@ impl EPropertyType {
     }
 
     /// Get the usmap type ID
-    pub fn to_usmap_id(&self) -> u8 {
+    pub fn to_usmap_id(self) -> u8 {
         match self {
             Self::ByteProperty => 0,
             Self::BoolProperty => 1,

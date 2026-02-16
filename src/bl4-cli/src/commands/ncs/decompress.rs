@@ -2,7 +2,7 @@
 
 use anyhow::{Context, Result};
 use bl4_ncs::oodle::{self, OodleDecompressor};
-use bl4_ncs::{decompress_ncs_with, is_ncs, parse_document, NcsContent};
+use bl4_ncs::{decompress_ncs_with, is_ncs, parse_ncs_binary, NcsContent};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -72,7 +72,7 @@ fn decompress_file_impl(
         if let Some(output_path) = output {
             if raw {
                 fs::write(output_path, &decompressed)?;
-            } else if let Some(doc) = parse_document(&decompressed) {
+            } else if let Some(doc) = parse_ncs_binary(&decompressed) {
                 fs::write(output_path, format_tsv(&doc))?;
             } else {
                 fs::write(output_path, &decompressed)?;
@@ -96,7 +96,7 @@ fn decompress_file_impl(
         if let Some(output_path) = output {
             if raw {
                 fs::write(output_path, &decompressed)?;
-            } else if let Some(doc) = parse_document(&decompressed) {
+            } else if let Some(doc) = parse_ncs_binary(&decompressed) {
                 fs::write(output_path, format_tsv(&doc))?;
             } else {
                 fs::write(output_path, &decompressed)?;
@@ -156,9 +156,11 @@ fn decompress_file_impl(
                         fs::write(&out_path, &decompressed)?;
                     }
                     success += 1;
-                } else if let Some(doc) = parse_document(&decompressed) {
+                } else if let Some(doc) = parse_ncs_binary(&decompressed) {
                     // Parse and output as TSV
-                    let filename = format!("{}.tsv", doc.type_name);
+                    let table_name = doc.tables.keys().next()
+                        .map(|s| s.as_str()).unwrap_or("unknown");
+                    let filename = format!("{}.tsv", table_name);
                     let out_path = output_dir.join(&filename);
                     let tsv_content = format_tsv(&doc);
                     fs::write(&out_path, &tsv_content)?;
@@ -271,9 +273,11 @@ fn decompress_pak_index(
             let out_path = output_dir.join(format!("{}.bin", type_name));
             fs::write(&out_path, &decompressed)?;
             success += 1;
-        } else if let Some(doc) = parse_document(&decompressed) {
+        } else if let Some(doc) = parse_ncs_binary(&decompressed) {
             // Parse and output as TSV
-            let out_path = output_dir.join(format!("{}.tsv", doc.type_name));
+            let table_name = doc.tables.keys().next()
+                .map(|s| s.as_str()).unwrap_or("unknown");
+            let out_path = output_dir.join(format!("{}.tsv", table_name));
             let tsv_content = format_tsv(&doc);
             fs::write(&out_path, &tsv_content)?;
             success += 1;

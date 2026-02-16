@@ -5,6 +5,7 @@ use bl4_idb::{AttachmentsRepository, ImportExportRepository, ItemsRepository};
 use std::path::Path;
 
 /// Handle `idb attach`
+#[allow(clippy::too_many_arguments)]
 pub fn attach(
     db: &Path,
     image: &Path,

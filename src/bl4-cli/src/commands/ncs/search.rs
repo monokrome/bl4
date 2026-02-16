@@ -56,7 +56,7 @@ pub fn search_files(path: &Path, pattern: &str, all: bool, limit: usize) -> Resu
     for m in &matches {
         println!(
             "{} ({})",
-            m.path.split('/').last().unwrap_or(&m.path),
+            m.path.split('/').next_back().unwrap_or(&m.path),
             m.type_name
         );
         for s in &m.matches {

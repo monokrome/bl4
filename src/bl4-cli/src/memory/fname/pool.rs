@@ -77,7 +77,7 @@ impl FNamePool {
                 if current_cursor == 0 || current_cursor > 0x100000 {
                     continue;
                 }
-                if block0 < 0x100000 || block0 > 0x800000000000 || block0 % 8 != 0 {
+                if !(0x100000..=0x800000000000).contains(&block0) || !block0.is_multiple_of(8) {
                     continue;
                 }
 
@@ -126,7 +126,7 @@ impl FNamePool {
         if current_block == 0 || current_block > 1000 {
             bail!("FNamePool current_block {} invalid", current_block);
         }
-        if block0 == 0 || block0 < MIN_VALID_POINTER || block0 > MAX_VALID_POINTER {
+        if block0 == 0 || !(MIN_VALID_POINTER..=MAX_VALID_POINTER).contains(&block0) {
             bail!("FNamePool block0 pointer {:#x} is invalid", block0);
         }
 
