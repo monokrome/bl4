@@ -17,14 +17,16 @@ book:
         - 01-binary-basics.md
         - 02-unreal-architecture.md
         - 03-memory-analysis.md
-    - part: "Practical Application"
+    - part: "Game Formats"
       chapters:
         - 04-save-files.md
         - 05-item-serials.md
-        - 06-data-extraction.md
-    - part: "Reference"
+        - 06-ncs-format.md
+    - part: "Practical Application"
       chapters:
-        - 07-bl4-tools.md
+        - 07-data-extraction.md
+        - 08-parts-system.md
+        - 09-bl4-tools.md
     - part: "Appendices"
       chapters:
         - appendix-a-sdk-layouts.md
@@ -37,6 +39,8 @@ format:
   html:
     theme: darkly
     toc: true
+    mermaid:
+      theme: dark
   pdf:
     documentclass: scrbook
     toc: true

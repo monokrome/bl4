@@ -8,16 +8,17 @@
 - [Unreal Engine Architecture](02-unreal-architecture.md)
 - [Memory Analysis](03-memory-analysis.md)
 
-# Practical Application
+# Game Formats
 
 - [Save File Format](04-save-files.md)
 - [Item Serials](05-item-serials.md)
-- [Data Extraction](06-data-extraction.md)
+- [NCS Format (Nexus Config Store)](06-ncs-format.md)
 
-# Reference
+# Practical Application
 
-- [Using bl4 Tools](07-bl4-tools.md)
-- [NCS Format (Nexus Config Store)](08-ncs-format.md)
+- [Data Extraction](07-data-extraction.md)
+- [Parts System](08-parts-system.md)
+- [Using bl4 Tools](09-bl4-tools.md)
 
 # Appendices
 

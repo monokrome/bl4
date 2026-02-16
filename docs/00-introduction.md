@@ -89,7 +89,7 @@ This guide is meant to be read sequentially, but you might have a specific goal 
 
 **Need to edit a save file?** Chapter 4 covers the format in detail. If you're comfortable with encryption concepts and binary data, jump there. Otherwise, Chapters 1-2 provide helpful background.
 
-**Interested in extracting game assets?** Chapter 6 walks through pak file parsing. Chapter 2's coverage of Unreal Engine architecture explains why assets are structured the way they are.
+**Interested in extracting game assets?** Chapter 7 walks through data extraction and pak file parsing. Chapter 6 covers the NCS format that holds part and loot data. Chapter 2's coverage of Unreal Engine architecture explains why assets are structured the way they are.
 
 **Curious about the whole picture?** Start from the beginning. Each chapter adds a piece to the puzzle.
 

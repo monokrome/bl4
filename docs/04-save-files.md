@@ -36,11 +36,11 @@ Your Steam ID is a 17-digit number starting with 7656119. The game syncs these t
 
 BL4 saves are an onion. The outer layer is AES-256-ECB encryption. Peel that away, and you find zlib compression. Decompress that, and you reach YAML—the actual save data in a format you can read and edit.
 
-```text
-.sav file
-    └── AES-256-ECB encrypted
-        └── zlib compressed
-            └── YAML document
+```{mermaid}
+flowchart LR
+    A[".sav file"] -->|AES-256-ECB| B["Encrypted blob"]
+    B -->|zlib decompress| C["Compressed data"]
+    C -->|Parse| D["YAML document"]
 ```
 
 To edit a save, you reverse this process: decrypt, decompress, edit the YAML, compress, encrypt. The bl4 tools handle the first four steps automatically. Let's understand each layer.

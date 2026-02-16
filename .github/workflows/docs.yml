@@ -36,7 +36,7 @@ jobs:
 
       - name: Build all formats
         run: |
-          cd docs/quarto
+          cd docs
           quarto render --to html
           quarto render --to pdf
           quarto render --to epub

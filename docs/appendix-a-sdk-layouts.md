@@ -25,8 +25,9 @@ struct FVector {
 };
 ```
 
-!!! warning
-    UE5 uses `double` (8 bytes) for vectors, not `float` like UE4. This is a common source of offset calculation errors.
+::: {.callout-warning}
+UE5 uses `double` (8 bytes) for vectors, not `float` like UE4. This is a common source of offset calculation errors.
+:::
 
 ### FRotator (24 bytes)
 
@@ -420,8 +421,9 @@ These offsets are from the PE image base (0x140000000):
 | GWorld | 0x11532cb8 | 0x151532cb8 | Current world |
 | ProcessEvent | 0x14f7010 | 0x144f7010 | Event dispatcher |
 
-!!! note
-    These offsets are from the November 2025 patch. Earlier versions had offsets 0x1000 lower.
+::: {.callout-note}
+These offsets are from the November 2025 patch. Earlier versions had offsets 0x1000 lower.
+:::
 
 ---
 
