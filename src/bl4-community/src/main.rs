@@ -215,6 +215,7 @@ impl Database {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     async fn set_value(
         &self,
         serial: &str,
@@ -236,6 +237,7 @@ impl Database {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     async fn add_attachment(
         &self,
         serial: &str,
@@ -835,6 +837,135 @@ async fn create_item(
     ))
 }
 
+struct ValidItem {
+    serial: String,
+    item_type: String,
+    source: String,
+    uuid: Uuid,
+    name: Option<String>,
+    values: Vec<ItemValueRequest>,
+}
+
+struct ValidationResult {
+    valid_items: Vec<ValidItem>,
+    errors: Vec<CreateItemResponse>,
+}
+
+fn validate_bulk_items(
+    items: Vec<CreateItemRequest>,
+    batch_source: &str,
+) -> ValidationResult {
+    let mut valid_items = Vec::new();
+    let mut errors = Vec::new();
+
+    for item in items {
+        let decoded = match bl4::ItemSerial::decode(&item.serial) {
+            Ok(d) => d,
+            Err(e) => {
+                errors.push(CreateItemResponse {
+                    serial: item.serial,
+                    created: false,
+                    message: format!("Invalid serial: {}", e),
+                });
+                continue;
+            }
+        };
+
+        let (source, uuid) = match &item.source {
+            Some(hashed_source) => {
+                let uuid = generate_item_uuid(&item.serial, hashed_source);
+                (hashed_source.clone(), uuid)
+            }
+            None => {
+                let uuid = generate_random_uuid();
+                (batch_source.to_owned(), uuid)
+            }
+        };
+
+        valid_items.push(ValidItem {
+            serial: item.serial,
+            item_type: decoded.item_type.to_string(),
+            source,
+            uuid,
+            name: item.name,
+            values: item.values,
+        });
+    }
+
+    ValidationResult { valid_items, errors }
+}
+
+async fn update_bulk_metadata(db: &Database, valid_items: &[ValidItem]) {
+    // Bulk update sources (1 query)
+    let source_updates: Vec<(&str, &str)> = valid_items
+        .iter()
+        .map(|i| (i.serial.as_str(), i.source.as_str()))
+        .collect();
+    let _ = db.set_sources_bulk(&source_updates).await;
+
+    // Bulk update item_types (1 query)
+    let type_updates: Vec<(&str, &str)> = valid_items
+        .iter()
+        .map(|i| (i.serial.as_str(), i.item_type.as_str()))
+        .collect();
+    let _ = db.set_item_types_bulk(&type_updates).await;
+
+    // Bulk insert uuid values (1 query)
+    let uuid_strings: Vec<String> = valid_items.iter().map(|i| i.uuid.to_string()).collect();
+    let uuid_values: Vec<(&str, &str, &str, &str, &str)> = valid_items
+        .iter()
+        .zip(uuid_strings.iter())
+        .map(|(i, uuid_str)| {
+            (
+                i.serial.as_str(),
+                "uuid",
+                uuid_str.as_str(),
+                "decoder",
+                "verified",
+            )
+        })
+        .collect();
+    let _ = db.set_values_bulk(&uuid_values).await;
+
+    // Bulk insert name values if any (1 query)
+    let name_values: Vec<(&str, &str, &str, &str, &str)> = valid_items
+        .iter()
+        .filter_map(|i| {
+            i.name.as_ref().map(|n| {
+                (
+                    i.serial.as_str(),
+                    "name",
+                    n.as_str(),
+                    "community_tool",
+                    "uncertain",
+                )
+            })
+        })
+        .collect();
+    if !name_values.is_empty() {
+        let _ = db.set_values_bulk(&name_values).await;
+    }
+
+    // Bulk insert item_values from request (1 query per batch)
+    let all_values: Vec<(&str, &str, &str, &str, &str)> = valid_items
+        .iter()
+        .flat_map(|i| {
+            i.values.iter().map(move |v| {
+                (
+                    i.serial.as_str(),
+                    v.field.as_str(),
+                    v.value.as_str(),
+                    v.source.as_str(),
+                    v.confidence.as_str(),
+                )
+            })
+        })
+        .collect();
+    if !all_values.is_empty() {
+        let _ = db.set_values_bulk(&all_values).await;
+    }
+}
+
 #[utoipa::path(
     post,
     path = "/items/bulk",
@@ -850,55 +981,10 @@ async fn create_items_bulk(
     let batch_id = Uuid::new_v4().to_string();
     let batch_source = format!("community:{}", batch_id);
 
-    let mut results = Vec::new();
-    let mut failed = 0;
-
-    // Phase 1: Validate all serials (CPU only, no DB)
-    struct ValidItem {
-        serial: String,
-        item_type: String,
-        source: String,
-        uuid: Uuid,
-        name: Option<String>,
-        values: Vec<ItemValueRequest>,
-    }
-
-    let mut valid_items: Vec<ValidItem> = Vec::new();
-
-    for item in req.items {
-        let decoded = match bl4::ItemSerial::decode(&item.serial) {
-            Ok(d) => d,
-            Err(e) => {
-                results.push(CreateItemResponse {
-                    serial: item.serial,
-                    created: false,
-                    message: format!("Invalid serial: {}", e),
-                });
-                failed += 1;
-                continue;
-            }
-        };
-
-        let (source, uuid) = match &item.source {
-            Some(hashed_source) => {
-                let uuid = generate_item_uuid(&item.serial, hashed_source);
-                (hashed_source.clone(), uuid)
-            }
-            None => {
-                let uuid = generate_random_uuid();
-                (batch_source.clone(), uuid)
-            }
-        };
-
-        valid_items.push(ValidItem {
-            serial: item.serial,
-            item_type: decoded.item_type.to_string(),
-            source,
-            uuid,
-            name: item.name,
-            values: item.values,
-        });
-    }
+    let validation = validate_bulk_items(req.items, &batch_source);
+    let mut results: Vec<CreateItemResponse> = validation.errors;
+    let failed = results.len();
+    let valid_items = validation.valid_items;
 
     // Phase 2: Bulk insert items (1 query)
     // Note: add_items_bulk uses ON CONFLICT DO NOTHING, so duplicates are silently ignored
@@ -916,74 +1002,7 @@ async fn create_items_bulk(
     let new_items = bulk_result.succeeded;
     let duplicates = bulk_result.failed;
 
-    // Phase 3: Bulk update sources (1 query)
-    let source_updates: Vec<(&str, &str)> = valid_items
-        .iter()
-        .map(|i| (i.serial.as_str(), i.source.as_str()))
-        .collect();
-    let _ = state.db.set_sources_bulk(&source_updates).await;
-
-    // Phase 4: Bulk update item_types (1 query)
-    let type_updates: Vec<(&str, &str)> = valid_items
-        .iter()
-        .map(|i| (i.serial.as_str(), i.item_type.as_str()))
-        .collect();
-    let _ = state.db.set_item_types_bulk(&type_updates).await;
-
-    // Phase 5: Bulk insert uuid values (1 query)
-    let uuid_strings: Vec<String> = valid_items.iter().map(|i| i.uuid.to_string()).collect();
-    let uuid_values: Vec<(&str, &str, &str, &str, &str)> = valid_items
-        .iter()
-        .zip(uuid_strings.iter())
-        .map(|(i, uuid_str)| {
-            (
-                i.serial.as_str(),
-                "uuid",
-                uuid_str.as_str(),
-                "decoder",
-                "verified",
-            )
-        })
-        .collect();
-    let _ = state.db.set_values_bulk(&uuid_values).await;
-
-    // Phase 6: Bulk insert name values if any (1 query)
-    let name_values: Vec<(&str, &str, &str, &str, &str)> = valid_items
-        .iter()
-        .filter_map(|i| {
-            i.name.as_ref().map(|n| {
-                (
-                    i.serial.as_str(),
-                    "name",
-                    n.as_str(),
-                    "community_tool",
-                    "uncertain",
-                )
-            })
-        })
-        .collect();
-    if !name_values.is_empty() {
-        let _ = state.db.set_values_bulk(&name_values).await;
-    }
-
-    // Phase 7: Bulk insert item_values from request (1 query per batch)
-    let all_values: Vec<(&str, &str, &str, &str, &str)> = valid_items
-        .iter()
-        .flat_map(|i| {
-            i.values.iter().map(move |v| {
-                (
-                    i.serial.as_str(),
-                    v.field.as_str(),
-                    v.value.as_str(),
-                    v.source.as_str(),
-                    v.confidence.as_str(),
-                )
-            })
-        })
-        .collect();
-    if !all_values.is_empty() {
-        let _ = state.db.set_values_bulk(&all_values).await;
-    }
+    update_bulk_metadata(&state.db, &valid_items).await;
 
     // Build results - all valid items are considered successful
     for item in valid_items {

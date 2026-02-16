@@ -7,7 +7,7 @@ use std::io::Write;
 use std::path::Path;
 
 /// Handle `serial decode` command
-#[allow(clippy::too_many_lines)] // Serial decoding with debug output
+#[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
 pub fn decode(
     serial: &str,
     verbose: bool,

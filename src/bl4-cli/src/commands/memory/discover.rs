@@ -160,6 +160,7 @@ pub fn handle_objects(source: &dyn MemorySource, class: Option<&str>, limit: usi
 /// Handle the FindClassUClass command
 ///
 /// Exhaustively searches for Class UClass using self-referential detection.
+#[allow(clippy::cognitive_complexity)]
 pub fn handle_find_class_uclass(source: &dyn MemorySource) -> Result<()> {
     // First discover FNamePool to resolve names
     let _gnames = memory::discover_gnames(source).context("Failed to find GNames pool")?;

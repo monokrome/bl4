@@ -74,7 +74,7 @@ fn dump_field_class_debug(class_data: &[u8], field_class_ptr: usize) {
             eprint!(" | ");
             for j in 0..16 {
                 let b = class_data[offset + j];
-                if b >= 0x20 && b < 0x7f {
+                if (0x20..0x7f).contains(&b) {
                     eprint!("{}", b as char);
                 } else {
                     eprint!(".");

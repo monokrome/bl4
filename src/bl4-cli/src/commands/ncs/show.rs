@@ -1,7 +1,7 @@
 //! NCS show command
 
 use anyhow::{Context, Result};
-use bl4_ncs::{decompress_ncs, is_ncs, parse_document, NcsContent};
+use bl4_ncs::{decompress_ncs, is_ncs, parse_ncs_binary, NcsContent};
 use std::fs;
 use std::path::Path;
 
@@ -9,6 +9,7 @@ use super::format::output_tsv;
 use super::types::FileInfo;
 use super::util::print_hex;
 
+#[allow(clippy::fn_params_excessive_bools)]
 pub fn show_file(path: &Path, all_strings: bool, hex: bool, json: bool, tsv: bool) -> Result<()> {
     let data = fs::read(path).context("Failed to read file")?;
 
@@ -26,7 +27,7 @@ pub fn show_file(path: &Path, all_strings: bool, hex: bool, json: bool, tsv: boo
 
     // For JSON output, use the structured parser
     if json {
-        if let Some(doc) = parse_document(&decompressed) {
+        if let Some(doc) = parse_ncs_binary(&decompressed) {
             println!("{}", serde_json::to_string_pretty(&doc)?);
             return Ok(());
         }
@@ -35,7 +36,7 @@ pub fn show_file(path: &Path, all_strings: bool, hex: bool, json: bool, tsv: boo
 
     // For TSV output, use the structured parser
     if tsv {
-        if let Some(doc) = parse_document(&decompressed) {
+        if let Some(doc) = parse_ncs_binary(&decompressed) {
             output_tsv(&doc);
             return Ok(());
         }

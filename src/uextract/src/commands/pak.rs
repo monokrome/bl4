@@ -6,15 +6,23 @@ use std::path::Path;
 
 use crate::pak::{find_pak_files, PakReader};
 
-/// Extract files from PAK archives
-pub fn extract_pak(
-    input: &Path,
-    output: &Path,
-    extension: Option<&str>,
-    filters: &[String],
-    list_only: bool,
-    verbose: bool,
-) -> Result<()> {
+pub struct ExtractPakOptions<'a> {
+    pub input: &'a Path,
+    pub output: &'a Path,
+    pub extension: Option<&'a str>,
+    pub filters: &'a [String],
+    pub list_only: bool,
+    pub verbose: bool,
+}
+
+#[allow(clippy::too_many_lines)]
+pub fn extract_pak(opts: &ExtractPakOptions<'_>) -> Result<()> {
+    let input = opts.input;
+    let output = opts.output;
+    let extension = &opts.extension;
+    let filters = opts.filters;
+    let list_only = opts.list_only;
+    let verbose = opts.verbose;
     // Determine if input is a file or directory
     let pak_files = if input.is_file() {
         vec![input.to_path_buf()]

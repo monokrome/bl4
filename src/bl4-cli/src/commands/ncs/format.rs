@@ -1,58 +1,57 @@
 //! Output formatting for NCS commands
 
-use bl4_ncs::Value;
+use bl4_ncs::ParsedDocument;
 use std::fmt::Write;
 
-/// Output parsed document as TSV (tab-separated values) to stdout
-pub fn output_tsv(doc: &bl4_ncs::Document) {
+/// Output parsed document as TSV to stdout
+pub fn output_tsv(doc: &ParsedDocument) {
     print!("{}", format_tsv(doc));
 }
 
 /// Format parsed document as TSV string
-pub fn format_tsv(doc: &bl4_ncs::Document) -> String {
+pub fn format_tsv(doc: &ParsedDocument) -> String {
     let mut output = String::new();
 
-    // Collect all field names across all records
-    let mut all_fields: Vec<String> = Vec::new();
-    for record in &doc.records {
-        for key in record.fields.keys() {
-            if !all_fields.contains(key) {
-                all_fields.push(key.clone());
+    for (table_name, table) in &doc.tables {
+        writeln!(output, "# {}", table_name).unwrap();
+
+        for (i, record) in table.records.iter().enumerate() {
+            for entry in &record.entries {
+                write!(output, "record_{}\t{}\t", i, entry.key).unwrap();
+                format_value(&entry.value, &mut output);
+                writeln!(output).unwrap();
             }
         }
-    }
-    all_fields.sort();
-
-    // Write header
-    write!(output, "name").unwrap();
-    for field in &all_fields {
-        write!(output, "\t{}", field).unwrap();
-    }
-    writeln!(output).unwrap();
-
-    // Write rows
-    for record in &doc.records {
-        write!(output, "{}", record.name).unwrap();
-        for field in &all_fields {
-            write!(output, "\t").unwrap();
-            if let Some(value) = record.fields.get(field) {
-                match value {
-                    Value::String(s) => write!(output, "{}", s).unwrap(),
-                    Value::Number(n) => write!(output, "{}", n).unwrap(),
-                    Value::Integer(i) => write!(output, "{}", i).unwrap(),
-                    Value::Boolean(b) => write!(output, "{}", b).unwrap(),
-                    Value::Reference(r) => write!(output, "{}", r).unwrap(),
-                    Value::Array(arr) => {
-                        let items: Vec<String> = arr.iter().map(|v| format!("{:?}", v)).collect();
-                        write!(output, "[{}]", items.join(",")).unwrap();
-                    }
-                    Value::Object(_) => write!(output, "{{...}}").unwrap(),
-                    Value::Null => {}
-                }
-            }
-        }
-        writeln!(output).unwrap();
     }
 
     output
+}
+
+fn format_value(value: &bl4_ncs::ParsedValue, output: &mut String) {
+    match value {
+        bl4_ncs::ParsedValue::Null => write!(output, "null").unwrap(),
+        bl4_ncs::ParsedValue::Leaf(s) => write!(output, "{}", s).unwrap(),
+        bl4_ncs::ParsedValue::Array(arr) => {
+            write!(output, "[").unwrap();
+            for (i, v) in arr.iter().enumerate() {
+                if i > 0 {
+                    write!(output, ", ").unwrap();
+                }
+                format_value(v, output);
+            }
+            write!(output, "]").unwrap();
+        }
+        bl4_ncs::ParsedValue::Map(map) => {
+            write!(output, "{{").unwrap();
+            for (i, (k, v)) in map.iter().enumerate() {
+                if i > 0 {
+                    write!(output, ", ").unwrap();
+                }
+                write!(output, "{}: ", k).unwrap();
+                format_value(v, output);
+            }
+            write!(output, "}}").unwrap();
+        }
+        bl4_ncs::ParsedValue::Ref { r#ref } => write!(output, "ref({})", r#ref).unwrap(),
+    }
 }

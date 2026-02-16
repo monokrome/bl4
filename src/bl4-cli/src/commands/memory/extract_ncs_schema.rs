@@ -1,6 +1,6 @@
-///! Extract NCS field schema from memory
-///!
-///! Scans FNamePool and attempts to correlate FNames with NCS field hashes.
+//! Extract NCS field schema from memory
+//!
+//! Scans FNamePool and attempts to correlate FNames with NCS field hashes.
 
 use crate::memory::{self, MemorySource};
 use anyhow::{bail, Context, Result};

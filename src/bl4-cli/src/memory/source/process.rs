@@ -168,11 +168,7 @@ pub fn find_bl4_process() -> Result<u32> {
             if cmdline.contains("Borderlands4.exe") || cmdline.contains("borderlands4.exe") {
                 let tgid = get_tgid(pid).unwrap_or(pid);
 
-                if memory > 1_000_000_000 {
-                    candidates.push((tgid, memory));
-                } else {
-                    candidates.push((tgid, memory));
-                }
+                candidates.push((tgid, memory));
             }
         }
 

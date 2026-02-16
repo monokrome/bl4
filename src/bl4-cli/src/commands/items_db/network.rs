@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::path::Path;
 
 /// Handle `idb publish`
+#[allow(clippy::cognitive_complexity)]
 pub fn publish(
     db: &Path,
     server: &str,

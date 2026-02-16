@@ -236,6 +236,7 @@ pub fn decode(db: &Path, serial: Option<String>, all: bool) -> Result<()> {
 }
 
 /// Handle `idb import-save`
+#[allow(clippy::cognitive_complexity)]
 pub fn import_save(
     db: &Path,
     save: &Path,

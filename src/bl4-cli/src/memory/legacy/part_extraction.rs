@@ -16,6 +16,7 @@ use byteorder::{ByteOrder, LE};
 ///
 /// The SerialIndex is a GbxSerialNumberIndex struct embedded in the object.
 /// We need to find its offset by examining the class properties or empirically.
+#[allow(clippy::cognitive_complexity)]
 pub fn extract_part_definitions(
     source: &dyn MemorySource,
     _gnames_addr: usize,
@@ -227,6 +228,7 @@ pub fn extract_part_definitions(
 ///
 /// The Part Group ID (category) is derived from the part name prefix, as it's not
 /// stored directly in the UObject structure at a fixed offset.
+#[allow(clippy::cognitive_complexity)]
 pub fn extract_parts_from_fname_arrays(source: &dyn MemorySource) -> Result<Vec<PartDefinition>> {
     eprintln!("Extracting parts via FName array pattern...");
 

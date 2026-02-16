@@ -84,7 +84,7 @@ fn find_part_fnames(
 
     let max_blocks = pool.blocks.len().min(400);
     for (block_idx, &block_ptr) in pool.blocks.iter().take(max_blocks).enumerate() {
-        if block_ptr < MIN_VALID_POINTER || block_ptr > MAX_VALID_POINTER {
+        if !(MIN_VALID_POINTER..=MAX_VALID_POINTER).contains(&block_ptr) {
             continue;
         }
 
@@ -195,7 +195,7 @@ pub fn extract_parts_raw(source: &dyn MemorySource) -> Result<PartsExtraction> {
             if marker != 0xFFFFFFFF || padding != 0 {
                 continue;
             }
-            if pointer < MIN_VALID_POINTER || pointer > MAX_VALID_POINTER {
+            if !(MIN_VALID_POINTER..=MAX_VALID_POINTER).contains(&pointer) {
                 continue;
             }
 

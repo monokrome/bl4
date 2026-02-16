@@ -245,7 +245,7 @@ fn handle_offline_memory_action(action: &MemoryAction, dump: Option<&Path>) -> R
             Ok(true)
         }
         MemoryAction::ExtractNcsSchema { output } => {
-            commands::memory::handle_extract_ncs_schema(&output, dump)?;
+            commands::memory::handle_extract_ncs_schema(output, dump)?;
             Ok(true)
         }
         MemoryAction::Preload {

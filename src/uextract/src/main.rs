@@ -39,14 +39,14 @@ fn main() -> Result<()> {
                 filter,
                 list,
                 verbose,
-            } => commands::extract_pak(
-                &input,
-                &output,
-                extension.as_deref(),
-                &filter,
-                list,
+            } => commands::extract_pak(&commands::ExtractPakOptions {
+                input: &input,
+                output: &output,
+                extension: extension.as_deref(),
+                filters: &filter,
+                list_only: list,
                 verbose,
-            ),
+            }),
             Commands::Texture {
                 ubulk,
                 width,
@@ -54,7 +54,14 @@ fn main() -> Result<()> {
                 output,
                 mip,
                 format,
-            } => commands::extract_texture_cmd(&ubulk, width, height, &output, mip, &format),
+            } => commands::extract_texture_cmd(&commands::ExtractTextureOptions {
+                ubulk_path: &ubulk,
+                width,
+                height,
+                output_path: &output,
+                mip_level: mip,
+                format: &format,
+            }),
             Commands::ScriptObjects {
                 input,
                 output,
