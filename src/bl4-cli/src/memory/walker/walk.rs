@@ -12,6 +12,7 @@ use anyhow::{bail, Result};
 use byteorder::{ByteOrder, LE};
 
 /// Walk the GUObjectArray and collect all UClass/UScriptStruct/UEnum objects
+#[allow(clippy::cognitive_complexity)]
 pub fn walk_guobject_array(
     source: &dyn MemorySource,
     guobj_array: &GUObjectArray,
@@ -30,7 +31,7 @@ pub fn walk_guobject_array(
     let item_size = guobj_array.item_size;
     const CHUNK_SIZE: usize = GUOBJECTARRAY_CHUNK_SIZE;
 
-    let num_chunks = ((guobj_array.num_elements as usize) + CHUNK_SIZE - 1) / CHUNK_SIZE;
+    let num_chunks = (guobj_array.num_elements as usize).div_ceil(CHUNK_SIZE);
 
     eprintln!(
         "Walking GUObjectArray: {} elements in {} chunks",

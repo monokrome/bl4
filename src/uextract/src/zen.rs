@@ -12,8 +12,7 @@ use usmap::Usmap;
 use crate::property::{parse_export_properties, parse_export_properties_with_schema};
 use crate::types::{ZenAssetInfo, ZenExportInfo, ZenImportInfo};
 
-/// Parse Zen format asset to JSON string
-#[allow(clippy::too_many_lines)]
+#[allow(clippy::too_many_lines, clippy::too_many_arguments)]
 pub fn parse_zen_to_json(
     data: &[u8],
     path: &str,

@@ -118,6 +118,7 @@ pub fn edit(input: &Path, steam_id: Option<String>, backup: bool) -> Result<()> 
 }
 
 /// Handle `save get` command
+#[allow(clippy::too_many_arguments, clippy::fn_params_excessive_bools)]
 pub fn get(
     input: &Path,
     steam_id: Option<String>,
@@ -188,6 +189,7 @@ pub fn get(
 }
 
 /// Handle `save set` command
+#[allow(clippy::too_many_arguments)]
 pub fn set(
     input: &Path,
     steam_id: Option<String>,

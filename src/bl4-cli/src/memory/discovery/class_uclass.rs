@@ -11,6 +11,7 @@ use byteorder::{ByteOrder, LE};
 /// Discover the "Class" UClass by scanning for self-referential pattern
 /// In UE5, the UClass for "Class" has ClassPrivate pointing to itself
 /// This doesn't rely on GUObjectArray being correct
+#[allow(clippy::cognitive_complexity)]
 pub fn discover_class_uclass(source: &dyn MemorySource) -> Result<usize> {
     let code_bounds = find_code_bounds(source)?;
 
@@ -51,7 +52,7 @@ pub fn discover_class_uclass(source: &dyn MemorySource) -> Result<usize> {
             let vtable_ptr = LE::read_u64(&data[i..i + 8]) as usize;
 
             // vtable should be in a valid range (not null, not too low)
-            if vtable_ptr < 0x140000000 || vtable_ptr > 0x160000000 {
+            if !(0x140000000..=0x160000000).contains(&vtable_ptr) {
                 continue;
             }
 
@@ -106,7 +107,7 @@ pub fn discover_class_uclass(source: &dyn MemorySource) -> Result<usize> {
                     let obj_addr = region.start + i;
                     let vtable_ptr = LE::read_u64(&data[i..i + 8]) as usize;
 
-                    if vtable_ptr < 0x140000000 || vtable_ptr > 0x160000000 {
+                    if !(0x140000000..=0x160000000).contains(&vtable_ptr) {
                         continue;
                     }
 

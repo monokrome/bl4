@@ -36,7 +36,7 @@ pub fn find_preload_library() -> Option<PathBuf> {
 }
 
 /// Build the LD_PRELOAD launch options string
-pub fn build_launch_options(lib_path: &PathBuf) -> String {
+pub fn build_launch_options(lib_path: &std::path::Path) -> String {
     format!("LD_PRELOAD={} %command%", lib_path.display())
 }
 
@@ -84,11 +84,10 @@ pub fn handle(yes: bool) -> Result<()> {
     print_launch_info(&launch_options);
 
     // Prompt for confirmation
-    if !yes {
-        if !prompt_confirmation()? {
+    if !yes
+        && !prompt_confirmation()? {
             return Ok(());
         }
-    }
 
     launch_via_steam()
 }

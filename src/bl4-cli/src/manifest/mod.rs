@@ -45,8 +45,8 @@ pub use pak_manifest::{
 };
 
 pub use property_parsing::{
-    extract_strings, parse_property_strings, parse_stat_properties, stat_descriptions, AssetInfo,
-    PropertyEntry, StatEntry, StatProperty,
+    extract_strings, parse_property_strings, parse_stat_properties, AssetInfo, PropertyEntry,
+    StatEntry, StatProperty,
 };
 
 pub use reference_data::{

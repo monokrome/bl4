@@ -20,6 +20,7 @@ pub struct PartDefinition {
 }
 
 /// Map part name prefix to Part Group ID (category)
+#[allow(clippy::cognitive_complexity)]
 pub fn get_category_for_part(name: &str) -> Option<i64> {
     // Extract prefix (everything before ".part_")
     let prefix = name.split(".part_").next()?.to_lowercase();

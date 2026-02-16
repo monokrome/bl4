@@ -813,11 +813,12 @@ impl ItemSerial {
         self.parts()
             .into_iter()
             .map(|(index, values)| {
-                // For indices > 142 (beyond element range), bit 7 indicates scope:
+                // For indices >= 128, bit 7 indicates scope:
                 //   Bit 7 = 0: Root scope (core parts like body, barrel, scope)
                 //   Bit 7 = 1: Sub scope (modular attachments like grips, foregrips)
                 // Strip bit 7 to get the actual part index
-                let lookup_index = if index > 142 {
+                // (Indices 128-142 that resolve to elements are filtered separately in parts_summary)
+                let lookup_index = if index >= 128 {
                     index & 0x7F  // Keep only lower 7 bits
                 } else {
                     index
@@ -839,8 +840,9 @@ impl ItemSerial {
 
         let mut output = Vec::new();
         for (index, name, values) in parts {
-            // Skip element markers (128-142) as they're shown separately
-            if (128..=142).contains(&index) {
+            // Skip element markers (128-142) only if they resolve to a known element
+            // For legendaries, indices in this range might be special parts
+            if (128..=142).contains(&index) && Element::from_id(index - 128).is_some() {
                 continue;
             }
 

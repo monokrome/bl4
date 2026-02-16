@@ -14,7 +14,7 @@ use byteorder::{ByteOrder, LE};
 /// Windows heap is typically in the range 0x00010000-0x7FFFFFFFFFFF
 pub fn is_valid_pointer(ptr: usize) -> bool {
     // Accept both low heap (Windows user mode) and high addresses (executable sections)
-    ptr >= MIN_VALID_POINTER && ptr < MAX_VALID_POINTER
+    (MIN_VALID_POINTER..MAX_VALID_POINTER).contains(&ptr)
 }
 
 /// Discover GUObjectArray by scanning code for the access pattern
@@ -22,6 +22,7 @@ pub fn is_valid_pointer(ptr: usize) -> bool {
 /// Uses the code pattern: 48 8B 05 ?? ?? ?? ?? 48 8B 0C C8 48 8D 04 D1
 /// This is: mov rax, [rip+offset]; mov rcx, [rax+rcx*8]; lea rax, [rcx+rdx*8]
 /// The RIP-relative offset in the first instruction points to GUObjectArray
+#[allow(clippy::cognitive_complexity)]
 pub fn discover_guobject_array(
     source: &dyn MemorySource,
     _gnames_addr: usize,
@@ -173,7 +174,7 @@ pub fn discover_guobject_array(
                 continue;
             }
             // MaxElements is typically 0x200000 (2097152) or similar power of 2
-            if max_elements < 100_000 || max_elements > 10_000_000 {
+            if !(100_000..=10_000_000).contains(&max_elements) {
                 continue;
             }
             // NumElements should be reasonable
@@ -181,7 +182,7 @@ pub fn discover_guobject_array(
                 continue;
             }
             // NumChunks should be reasonable (each chunk holds 64K items)
-            if num_chunks < 1 || num_chunks > 100 {
+            if !(1..=100).contains(&num_chunks) {
                 continue;
             }
 

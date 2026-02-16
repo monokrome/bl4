@@ -70,7 +70,7 @@ pub fn find_all_uclasses(
 
             // Validate vtable
             let vtable_ptr = LE::read_u64(&data[i..i + 8]) as usize;
-            if vtable_ptr < MIN_VTABLE_ADDR || vtable_ptr > MAX_VTABLE_ADDR {
+            if !(MIN_VTABLE_ADDR..=MAX_VTABLE_ADDR).contains(&vtable_ptr) {
                 continue;
             }
 
@@ -121,6 +121,7 @@ pub fn find_all_uclasses(
 ///
 /// This function tries different combinations of ClassPrivate and NamePrivate offsets
 /// to handle UE5 version differences.
+#[allow(clippy::cognitive_complexity)]
 pub fn discover_uclass_metaclass_exhaustive(
     source: &dyn MemorySource,
     fname_reader: &mut FNameReader,
@@ -174,7 +175,7 @@ pub fn discover_uclass_metaclass_exhaustive(
             };
 
             scanned_mb += data.len() / (1024 * 1024);
-            if scanned_mb % 1000 == 0 && scanned_mb > 0 {
+            if scanned_mb.is_multiple_of(1000) && scanned_mb > 0 {
                 eprint!("\r  Scanned {} MB...", scanned_mb);
             }
 
@@ -207,7 +208,7 @@ pub fn discover_uclass_metaclass_exhaustive(
 
                         // Check vtable
                         let vtable_ptr = LE::read_u64(&data[pos..pos + 8]) as usize;
-                        if vtable_ptr < MIN_VTABLE_ADDR || vtable_ptr > MAX_VTABLE_ADDR {
+                        if !(MIN_VTABLE_ADDR..=MAX_VTABLE_ADDR).contains(&vtable_ptr) {
                             continue;
                         }
 
@@ -288,7 +289,7 @@ pub fn discover_uclass_metaclass_exhaustive(
             };
 
             scanned_mb2 += data.len() / (1024 * 1024);
-            if scanned_mb2 % 2000 == 0 && scanned_mb2 > 0 {
+            if scanned_mb2.is_multiple_of(2000) && scanned_mb2 > 0 {
                 eprint!("\r  Scanned {} MB for self-refs...", scanned_mb2);
             }
 
@@ -312,7 +313,7 @@ pub fn discover_uclass_metaclass_exhaustive(
 
                         // Validate vtable
                         let vtable_ptr = LE::read_u64(&data[i..i + 8]) as usize;
-                        if vtable_ptr < MIN_VTABLE_ADDR || vtable_ptr > MAX_VTABLE_ADDR {
+                        if !(MIN_VTABLE_ADDR..=MAX_VTABLE_ADDR).contains(&vtable_ptr) {
                             continue;
                         }
 

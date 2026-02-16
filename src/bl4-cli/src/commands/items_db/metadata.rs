@@ -64,6 +64,7 @@ pub fn set_source(
 }
 
 /// Handle `idb set-value`
+#[allow(clippy::too_many_arguments)]
 pub fn set_value(
     db: &Path,
     serial: &str,

@@ -245,8 +245,7 @@ pub fn property_to_value(prop: &ParsedProperty) -> ParsedPropertyValue {
     ParsedPropertyValue::Null
 }
 
-/// Parse a property value, returning the value and bytes consumed
-#[allow(clippy::too_many_lines)]
+#[allow(clippy::cognitive_complexity, clippy::too_many_lines)]
 pub fn parse_property_value_extended(
     data: &[u8],
     pos: usize,
@@ -573,8 +572,7 @@ pub fn parse_property_value_extended(
     }
 }
 
-/// Parse property values from export serialized data (heuristic approach)
-#[allow(clippy::too_many_lines)]
+#[allow(clippy::cognitive_complexity, clippy::too_many_lines)]
 pub fn parse_export_properties(
     data: &[u8],
     offset: usize,
@@ -702,7 +700,7 @@ pub fn parse_export_properties(
     }
 }
 
-/// Parse embedded UserDefinedStruct schema to extract per-property type info
+#[allow(clippy::too_many_lines)]
 pub fn parse_embedded_schema(_data: &[u8], names: &[String]) -> Option<Vec<PropertyTypeInfo>> {
     let name_to_idx: HashMap<&str, usize> = names
         .iter()
@@ -814,8 +812,7 @@ pub fn extract_property_info_from_names(names: &[String]) -> Vec<(String, u32, S
     props
 }
 
-/// Parse properties using usmap schema for proper field names and types
-#[allow(clippy::too_many_lines)]
+#[allow(clippy::cognitive_complexity, clippy::too_many_lines, clippy::too_many_arguments)]
 pub fn parse_export_properties_with_schema(
     data: &[u8],
     offset: usize,
