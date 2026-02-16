@@ -15,8 +15,8 @@ use base85::{decode_base85, encode_base85, mirror_byte};
 use bitstream::{BitReader, BitWriter};
 
 use crate::parts::{
-    item_type_name, level_from_code, manufacturer_name, serial_format, serial_id_to_parts_category,
-    weapon_info_from_first_varint,
+    category_from_varbit, level_from_code, manufacturer_name, serial_id_to_parts_category,
+    varbit_divisor, weapon_info_from_first_varint,
 };
 
 /// Element types for weapons
@@ -551,7 +551,7 @@ fn extract_elements(tokens: &[Token]) -> Vec<Element> {
 }
 
 /// Extract rarity based on item format
-fn extract_rarity(tokens: &[Token], item_type: char, is_varbit_first: bool) -> Option<Rarity> {
+fn extract_rarity(tokens: &[Token], is_varbit_first: bool) -> Option<Rarity> {
     if is_varbit_first {
         let first_varbit = tokens.iter().find_map(|t| {
             if let Token::VarBit(v) = t {
@@ -560,9 +560,7 @@ fn extract_rarity(tokens: &[Token], item_type: char, is_varbit_first: bool) -> O
                 None
             }
         })?;
-        let divisor = serial_format(item_type)
-            .map(|f| f.category_divisor)
-            .unwrap_or(384);
+        let divisor = varbit_divisor(first_varbit);
         Rarity::from_equipment_varbit(first_varbit, divisor)
     } else {
         let (header_varints, _) = collect_varints(tokens);
@@ -593,7 +591,7 @@ impl ItemSerial {
         };
 
         let elements = extract_elements(&tokens);
-        let rarity = extract_rarity(&tokens, item_type, is_varbit_first);
+        let rarity = extract_rarity(&tokens, is_varbit_first);
 
         Ok(ItemSerial {
             original: serial.to_string(),
@@ -713,9 +711,20 @@ impl ItemSerial {
         output.trim().to_string()
     }
 
-    /// Get item type description
+    /// Get item type description based on token stream structure
     pub fn item_type_description(&self) -> &'static str {
-        item_type_name(self.item_type)
+        let is_varbit_first = matches!(self.tokens.first(), Some(Token::VarBit(_)));
+        if is_varbit_first {
+            "Item"
+        } else if let Some(Token::VarInt(id)) = self.tokens.first() {
+            if weapon_info_from_first_varint(*id).is_some() {
+                "Weapon"
+            } else {
+                "Item"
+            }
+        } else {
+            "Unknown"
+        }
     }
 
     /// Get manufacturer name if known
@@ -744,8 +753,8 @@ impl ItemSerial {
     ///
     /// Returns None for VarBit-first formats or if the ID is unknown.
     pub fn weapon_info(&self) -> Option<(&'static str, &'static str)> {
-        let fmt = serial_format(self.item_type)?;
-        if fmt.has_weapon_info {
+        let is_varint_first = matches!(self.tokens.first(), Some(Token::VarInt(_)));
+        if is_varint_first {
             self.manufacturer.and_then(weapon_info_from_first_varint)
         } else {
             None
@@ -754,10 +763,9 @@ impl ItemSerial {
 
     /// Extract Part Group ID (category) from the serial
     ///
-    /// Uses the format's category_divisor to extract category from first VarBit.
-    /// Returns None if this format doesn't use VarBit categories.
+    /// For VarBit-first items, determines the correct divisor from VarBit magnitude
+    /// and extracts the NCS category ID. Returns None for VarInt-first items.
     pub fn part_group_id(&self) -> Option<i64> {
-        let fmt = serial_format(self.item_type)?;
         let first_varbit = self.tokens.iter().find_map(|t| {
             if let Token::VarBit(v) = t {
                 Some(*v)
@@ -765,7 +773,12 @@ impl ItemSerial {
                 None
             }
         })?;
-        fmt.extract_category(first_varbit)
+
+        if !matches!(self.tokens.first(), Some(Token::VarBit(_))) {
+            return None;
+        }
+
+        Some(category_from_varbit(first_varbit))
     }
 
     /// Get the parts database category for this item
@@ -1185,22 +1198,25 @@ mod tests {
         }
 
         #[test]
-        fn test_item_type_description_shield() {
+        fn test_item_type_description_varbit_first() {
+            // VarBit-first items (shields, gadgets, weapons with high VarBit)
             let item = ItemSerial::decode("@Ugr$N8m/)}}!q9r4K/ShxuK@").unwrap();
             assert_eq!(item.item_type_description(), "Item");
-        }
 
-        #[test]
-        fn test_item_type_description_equipment() {
             let item = ItemSerial::decode("@Uge98>m/)}}!c5JeNWCvCXc7").unwrap();
             assert_eq!(item.item_type_description(), "Item");
         }
 
         #[test]
-        fn test_item_type_description_class_mod() {
+        fn test_item_type_description_varint_first() {
+            // VarInt-first: weapon when ID is in WEAPON_INFO
+            let item = ItemSerial::decode("@Ugd_t@FmVuJyjIXzRG}JG7S$K^1{DjH5&-").unwrap();
+            assert_eq!(item.item_type_description(), "Weapon");
+
+            // VarInt-first: "Item" when ID not in WEAPON_INFO (class mods, etc.)
             let item =
                 ItemSerial::decode("@Ug!pHG2}TYgjMfjzn~K!T)XUVX)U4Eu)Qi+?RPAVZh!@!b00").unwrap();
-            assert_eq!(item.item_type_description(), "Class Mod");
+            assert_eq!(item.item_type_description(), "Item");
         }
 
         #[test]

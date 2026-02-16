@@ -54,8 +54,8 @@ pub use backup::{smart_backup, update_after_edit, BackupError};
 pub use crypto::{decrypt_sav, derive_key, encrypt_sav, CryptoError};
 #[doc(inline)]
 pub use parts::{
-    category_name, category_name_for_type, item_type_name, level_from_code, manufacturer_name,
-    serial_format, serial_id_to_parts_category, SerialFormat,
+    category_from_varbit, category_name, level_from_code, manufacturer_name,
+    serial_id_to_parts_category, varbit_divisor,
 };
 #[doc(inline)]
 pub use save::{ChangeSet, SaveError, SaveFile, StateFlags};

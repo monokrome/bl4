@@ -29,8 +29,7 @@ pub fn decode_all(db: &Path, force: bool) -> Result<()> {
                         .map(|(m, w)| (Some(m.to_string()), Some(w.to_string())))
                         .unwrap_or((None, None))
                 } else if let Some(group_id) = decoded_item.part_group_id() {
-                    let cat_name =
-                        bl4::parts::category_name_for_type(decoded_item.item_type, group_id);
+                    let cat_name = bl4::parts::category_name(group_id);
                     (None, cat_name.map(|s| s.to_string()))
                 } else {
                     (None, None)
@@ -154,7 +153,7 @@ pub fn decode(db: &Path, serial: Option<String>, all: bool) -> Result<()> {
                     }
                 } else if let Some(group_id) = item.part_group_id() {
                     if let Some(cat_name) =
-                        bl4::parts::category_name_for_type(item.item_type, group_id)
+                        bl4::parts::category_name(group_id)
                     {
                         wdb.set_value(
                             serial,

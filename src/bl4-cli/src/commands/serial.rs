@@ -29,7 +29,7 @@ pub fn decode(
         println!("Weapon: {} {}", mfr, weapon_type);
     } else if let Some(group_id) = item.part_group_id() {
         let category_name =
-            bl4::category_name_for_type(item.item_type, group_id).unwrap_or("Unknown");
+            bl4::category_name(group_id).unwrap_or("Unknown");
         println!("Category: {} ({})", category_name, group_id);
     }
 

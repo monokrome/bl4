@@ -9,12 +9,11 @@
 use phf::phf_map;
 
 /// First VarInt to (Manufacturer, Weapon Type) mapping
-/// For VarInt-first serial format (types a-g, u-z)
+/// For VarInt-first serial format
 ///
 /// Verification status:
 ///   [V] = Verified in-game with screenshots
 ///   [I] = Inferred from category/parts data
-///   [?] = Needs verification
 static WEAPON_INFO: phf::Map<u64, (&'static str, &'static str)> = phf_map! {
     // Shotguns (low IDs)
     1u64 => ("Daedalus", "Shotgun"),   // [I] DAD_SG - category 8
@@ -22,7 +21,7 @@ static WEAPON_INFO: phf::Map<u64, (&'static str, &'static str)> = phf_map! {
     5u64 => ("Maliwan", "Shotgun"),    // [I] MAL_SG - category 19
     9u64 => ("Jakobs", "Shotgun"),     // [V] JAK_SG - Rainbow Vomit screenshot
     13u64 => ("Tediore", "Shotgun"),   // [I] TED_SG - category 10
-    14u64 => ("Ripper", "Shotgun"),      // [V] BOR_SG - verified via NCS NexusSerialized
+    14u64 => ("Ripper", "Shotgun"),    // [V] BOR_SG - verified via NCS
 
     // Pistols (low IDs)
     2u64 => ("Jakobs", "Pistol"),      // [V] JAK_PS - Seventh Sense screenshot
@@ -41,11 +40,11 @@ static WEAPON_INFO: phf::Map<u64, (&'static str, &'static str)> = phf_map! {
     129u64 => ("Jakobs", "Sniper"),    // [I] JAK_SR - category 26
     133u64 => ("Order", "Sniper"),     // [I] ORD_SR - category 28
     137u64 => ("Maliwan", "Sniper"),   // [I] MAL_SR - category 29
-    142u64 => ("Ripper", "Sniper"),      // [V] BOR_SR - verified via NCS NexusSerialized
+    142u64 => ("Ripper", "Sniper"),    // [V] BOR_SR - verified via NCS
 
     // SMGs (high IDs, bit 7 set)
     130u64 => ("Daedalus", "SMG"),     // [I] DAD_SM - category 20
-    134u64 => ("Ripper", "SMG"),         // [V] BOR_SM - verified via NCS NexusSerialized
+    134u64 => ("Ripper", "SMG"),       // [V] BOR_SM - verified via NCS
     138u64 => ("Maliwan", "SMG"),      // [I] MAL_SM - category 23
     140u64 => ("Vladof", "SMG"),       // [I] VLA_SM - category 22
 
@@ -53,14 +52,6 @@ static WEAPON_INFO: phf::Map<u64, (&'static str, &'static str)> = phf_map! {
     132u64 => ("Vladof", "AR"),        // [I] VLA_AR - category 17
     136u64 => ("Torgue", "AR"),        // [I] TOR_AR - category 16
     141u64 => ("Jakobs", "AR"),        // [I] JAK_AR - category 14
-
-    // Shields (type 'r' format - verified from tagged bank items 2025-12-20)
-    133824u64 => ("", "Armor Shield"),     // [V] Tagged bank items
-    221888u64 => ("", "Armor Shield"),     // [V] Tagged bank items
-    254656u64 => ("", "Armor Shield"),     // [V] Tagged bank items
-    53952u64 => ("", "Energy Shield"),     // [V] Tagged bank items
-    168640u64 => ("", "Energy Shield"),    // [V] Tagged bank items
-    238272u64 => ("", "Energy Shield"),    // [V] Tagged bank items
 };
 
 /// Serial ID (first varint) to Parts Database Category mapping
@@ -114,84 +105,30 @@ pub fn serial_id_to_parts_category(serial_id: u64) -> u64 {
         .unwrap_or(serial_id)
 }
 
-// Category names are now loaded from manifest data at compile time
-// See crate::manifest for the source data
-
-/// Serial format configuration
+/// VarBit magnitude threshold separating the two divisor regimes.
 ///
-/// Defines how to parse a serial based on its type character.
-#[derive(Debug, Clone, Copy)]
-pub struct SerialFormat {
-    /// Divisor to extract category from first VarBit (0 = use VarInt weapon info instead)
-    pub category_divisor: u64,
-    /// Whether first VarInt contains manufacturer+weapon type ID
-    pub has_weapon_info: bool,
-    /// Whether to extract level from 4th header VarInt
-    pub extract_level: bool,
-}
+/// Empirically derived: all observed VarBit values with divisor 384 are <= 111,296,
+/// and all with divisor 8192 are >= 133,824. The threshold 131,072 = 16 * 8192
+/// cleanly separates them. Safe for equipment categories up to ~340.
+const VARBIT_DIVISOR_THRESHOLD: u64 = 131_072;
 
-impl SerialFormat {
-    const fn varint_weapon(extract_level: bool) -> Self {
-        Self {
-            category_divisor: 0,
-            has_weapon_info: true,
-            extract_level,
-        }
-    }
-
-    const fn varbit(divisor: u64) -> Self {
-        Self {
-            category_divisor: divisor,
-            has_weapon_info: false,
-            extract_level: false,
-        }
-    }
-
-    const fn class_mod() -> Self {
-        Self {
-            category_divisor: 0,
-            has_weapon_info: false,
-            extract_level: false,
-        }
-    }
-
-    /// Extract category from VarBit value (returns None if this format doesn't use VarBit categories)
-    pub fn extract_category(&self, varbit: u64) -> Option<i64> {
-        if self.category_divisor > 0 {
-            Some((varbit / self.category_divisor) as i64)
-        } else {
-            None
-        }
+/// Determine the correct divisor for a VarBit-first item based on value magnitude.
+///
+/// VarBit values encode `category * divisor + metadata`. Two regimes exist:
+/// - Small values (< 131,072): divisor 384, categories are equipment/mixed (1-340)
+/// - Large values (>= 131,072): divisor 8192, categories are weapons (16-31)
+pub fn varbit_divisor(varbit: u64) -> u64 {
+    if varbit >= VARBIT_DIVISOR_THRESHOLD {
+        8192
+    } else {
+        384
     }
 }
 
-/// Serial format lookup by type character
-static SERIAL_FORMATS: phf::Map<char, SerialFormat> = phf_map! {
-    // VarInt-first weapons (first VarInt = manufacturer+type, 4th = level)
-    'a' => SerialFormat::varint_weapon(true),
-    'b' => SerialFormat::varint_weapon(true),
-    'c' => SerialFormat::varint_weapon(true),
-    'd' => SerialFormat::varint_weapon(true),
-    'f' => SerialFormat::varint_weapon(true),
-    'g' => SerialFormat::varint_weapon(true),
-    'u' => SerialFormat::varint_weapon(true),
-    'v' => SerialFormat::varint_weapon(true),
-    'w' => SerialFormat::varint_weapon(true),
-    'x' => SerialFormat::varint_weapon(true),
-    'y' => SerialFormat::varint_weapon(true),
-    'z' => SerialFormat::varint_weapon(true),
-    // VarBit-first items (category = first VarBit / divisor)
-    'e' => SerialFormat::varbit(384),
-    // Shields (VarBit-first, category = VarBit / 8192)
-    'r' => SerialFormat::varbit(8192),
-    // Class mods
-    '!' => SerialFormat::class_mod(),
-    '#' => SerialFormat::class_mod(),
-};
-
-/// Get the serial format for a type character
-pub fn serial_format(type_char: char) -> Option<&'static SerialFormat> {
-    SERIAL_FORMATS.get(&type_char)
+/// Extract NCS category ID from a VarBit value
+pub fn category_from_varbit(varbit: u64) -> i64 {
+    let divisor = varbit_divisor(varbit);
+    (varbit / divisor) as i64
 }
 
 // Public API functions that wrap the static maps
@@ -209,7 +146,6 @@ pub fn weapon_type_from_first_varint(id: u64) -> Option<&'static str> {
 }
 
 pub fn category_name(category: i64) -> Option<&'static str> {
-    // Delegate to manifest module (loads from compiled-in JSON data)
     if let Some(name) = crate::manifest::category_name(category) {
         return Some(name);
     }
@@ -224,54 +160,6 @@ pub fn category_name(category: i64) -> Option<&'static str> {
     None
 }
 
-/// Shield category names for r-type items
-/// These overlap with weapon categories but have different meanings
-/// Based on verified tagged bank items
-static SHIELD_CATEGORY_NAMES: phf::Map<i64, &'static str> = phf_map! {
-    16i64 => "Energy Shield",   // [I] r-type category 16
-    20i64 => "Energy Shield",   // [I] r-type category 20
-    21i64 => "Energy Shield",   // [I] r-type category 21
-    24i64 => "Energy Shield",   // [I] r-type category 24
-    28i64 => "Armor Shield",    // [I] r-type category 28
-    31i64 => "Armor Shield",    // [V] r-type category 31 - verified from tagged bank
-};
-
-/// Get category name with item type awareness
-/// For r-type (shields), uses shield-specific category map to avoid conflicts with weapons
-pub fn category_name_for_type(item_type: char, category: i64) -> Option<&'static str> {
-    match item_type {
-        'r' => SHIELD_CATEGORY_NAMES
-            .get(&category)
-            .copied()
-            .or_else(|| crate::manifest::category_name(category)),
-        _ => crate::manifest::category_name(category),
-    }
-}
-
-/// Get a human-readable description for a type character
-///
-/// Returns a description based on the serial format.
-pub fn item_type_name(type_char: char) -> &'static str {
-    match serial_format(type_char) {
-        Some(fmt) if fmt.has_weapon_info => "Weapon",
-        Some(fmt) if fmt.category_divisor > 0 => "Item",
-        Some(_) => "Class Mod",
-        None => "Unknown",
-    }
-}
-
-/// Decode level from token (level code)
-///
-/// BL4 max level is 50. Encoding varies by context:
-/// - For tokens 1-50: level = token directly
-/// - For tokens >= 128: level = 2 * (code - 120), capped at 50
-///   - Code 128 → 16, Code 135 → 30, Code 145 → 50
-///   - Codes > 145 are capped at 50 (e.g., 196 → 50)
-/// - Tokens 51-127: invalid (return None)
-///
-/// Note: This applies to VarBit-first equipment (level = 2nd VarBit)
-/// and VarInt-first weapons (level = 4th VarInt). The encoding may
-/// differ slightly between item types - needs more in-game verification.
 /// Decode a level from a raw code value.
 /// Returns (decoded_level, raw_decoded_value) tuple.
 /// If raw_decoded_value > 50, our decoding may be wrong.
@@ -279,7 +167,6 @@ pub fn level_from_code(code: u64) -> Option<(u8, u8)> {
     const MAX_LEVEL: u8 = 50;
 
     if code >= 128 {
-        // High-level encoding: level = 2 * (code - 120)
         let level = 2 * (code as i32 - 120);
         if level > 0 {
             let raw = level as u8;
@@ -289,10 +176,8 @@ pub fn level_from_code(code: u64) -> Option<(u8, u8)> {
             None
         }
     } else if code <= 50 {
-        // Direct encoding for levels 1-50
         Some((code as u8, code as u8))
     } else {
-        // Codes 51-127 are invalid
         None
     }
 }
@@ -303,30 +188,16 @@ mod tests {
 
     #[test]
     fn test_weapon_info_lookup() {
-        // Verified in-game: slot 3 Jakobs Pistol = first VarInt 12
         assert_eq!(
             weapon_info_from_first_varint(12),
             Some(("Jakobs", "Pistol"))
         );
-        // Verified in-game: Vladof Sniper (Vamoose) = first VarInt 128
         assert_eq!(
             weapon_info_from_first_varint(128),
             Some(("Vladof", "Sniper"))
         );
-        // Verified in-game: slot 2 Torgue AR = first VarInt 136
         assert_eq!(weapon_info_from_first_varint(136), Some(("Torgue", "AR")));
-        // Verified in-game: slot 4 Maliwan SMG = first VarInt 138
         assert_eq!(weapon_info_from_first_varint(138), Some(("Maliwan", "SMG")));
-        // Verified shields from tagged bank items (type 'r' format)
-        assert_eq!(
-            weapon_info_from_first_varint(133824),
-            Some(("", "Armor Shield"))
-        );
-        assert_eq!(
-            weapon_info_from_first_varint(238272),
-            Some(("", "Energy Shield"))
-        );
-        // Unknown ID returns None
         assert_eq!(weapon_info_from_first_varint(999), None);
     }
 
@@ -339,38 +210,32 @@ mod tests {
     }
 
     #[test]
-    fn test_item_type_lookup() {
-        assert_eq!(item_type_name('a'), "Weapon");
-        assert_eq!(item_type_name('r'), "Item");
-        assert_eq!(item_type_name('e'), "Item");
-        assert_eq!(item_type_name('!'), "Class Mod");
-        assert_eq!(item_type_name('?'), "Unknown");
+    fn test_varbit_divisor() {
+        // Below threshold: equipment divisor
+        assert_eq!(varbit_divisor(107200), 384);
+        assert_eq!(varbit_divisor(8896), 384);
+        assert_eq!(varbit_divisor(111296), 384);
+        assert_eq!(varbit_divisor(704), 384);
+        assert_eq!(varbit_divisor(0), 384);
+
+        // At/above threshold: weapon divisor
+        assert_eq!(varbit_divisor(131072), 8192);
+        assert_eq!(varbit_divisor(133824), 8192);
+        assert_eq!(varbit_divisor(180928), 8192);
+        assert_eq!(varbit_divisor(254656), 8192);
     }
 
     #[test]
-    fn test_serial_format() {
-        // VarInt-first weapons
-        let fmt = serial_format('a').unwrap();
-        assert!(fmt.has_weapon_info);
-        assert!(fmt.extract_level);
-        assert_eq!(fmt.category_divisor, 0);
+    fn test_category_from_varbit() {
+        // Equipment: VarBit / 384
+        assert_eq!(category_from_varbit(107200), 279); // Maliwan Shield
+        assert_eq!(category_from_varbit(8896), 23);    // Ripper Sniper
+        assert_eq!(category_from_varbit(111296), 289);  // Maliwan Heavy Weapon
 
-        // VarBit-first items
-        let fmt = serial_format('e').unwrap();
-        assert!(!fmt.has_weapon_info);
-        assert_eq!(fmt.category_divisor, 384);
-        assert_eq!(fmt.extract_category(384 * 23), Some(23)); // Maliwan SMG
-
-        let fmt = serial_format('r').unwrap();
-        assert_eq!(fmt.category_divisor, 8192);
-
-        // Class mods
-        let fmt = serial_format('!').unwrap();
-        assert!(!fmt.has_weapon_info);
-        assert_eq!(fmt.category_divisor, 0);
-
-        // Unknown
-        assert!(serial_format('?').is_none());
+        // Weapons: VarBit / 8192
+        assert_eq!(category_from_varbit(180928), 22);  // Vladof SMG
+        assert_eq!(category_from_varbit(133824), 16);  // Vladof Sniper
+        assert_eq!(category_from_varbit(254656), 31);  // Unknown (high weapon cat)
     }
 
     #[test]
@@ -383,66 +248,33 @@ mod tests {
 
     #[test]
     fn test_level_from_code() {
-        // Direct encoding - capped and raw are the same
         assert_eq!(level_from_code(1), Some((1, 1)));
         assert_eq!(level_from_code(50), Some((50, 50)));
-        // High-level encoding: level = 2*(code-120)
-        assert_eq!(level_from_code(128), Some((16, 16))); // 2*(128-120) = 16
-        assert_eq!(level_from_code(135), Some((30, 30))); // 2*(135-120) = 30 (verified in-game)
-        assert_eq!(level_from_code(145), Some((50, 50))); // 2*(145-120) = 50
-                                                          // Capped at 50 for higher codes - raw shows true decoded value
-        assert_eq!(level_from_code(150), Some((50, 60))); // raw=60, capped to 50
-        assert_eq!(level_from_code(196), Some((50, 152))); // raw=152, capped to 50
-                                                           // Invalid codes (51-127)
+        assert_eq!(level_from_code(128), Some((16, 16)));
+        assert_eq!(level_from_code(135), Some((30, 30)));
+        assert_eq!(level_from_code(145), Some((50, 50)));
+        assert_eq!(level_from_code(150), Some((50, 60)));
+        assert_eq!(level_from_code(196), Some((50, 152)));
         assert_eq!(level_from_code(51), None);
         assert_eq!(level_from_code(127), None);
     }
 
     #[test]
     fn test_serial_id_to_parts_category() {
-        // Known mappings from SERIAL_TO_PARTS_CAT (NCS category IDs)
-        assert_eq!(serial_id_to_parts_category(1), 8); // DAD_SG
-        assert_eq!(serial_id_to_parts_category(9), 9); // JAK_SG
-        assert_eq!(serial_id_to_parts_category(128), 16); // VLA_SR
-        assert_eq!(serial_id_to_parts_category(138), 21); // MAL_SM
-
-        // Unknown ID returns the ID itself as fallback
+        assert_eq!(serial_id_to_parts_category(1), 8);
+        assert_eq!(serial_id_to_parts_category(9), 9);
+        assert_eq!(serial_id_to_parts_category(128), 16);
+        assert_eq!(serial_id_to_parts_category(138), 21);
         assert_eq!(serial_id_to_parts_category(999), 999);
     }
 
     #[test]
     fn test_weapon_type_from_first_varint() {
-        // Known weapon types
         assert_eq!(weapon_type_from_first_varint(1), Some("Shotgun"));
         assert_eq!(weapon_type_from_first_varint(2), Some("Pistol"));
         assert_eq!(weapon_type_from_first_varint(128), Some("Sniper"));
         assert_eq!(weapon_type_from_first_varint(138), Some("SMG"));
         assert_eq!(weapon_type_from_first_varint(136), Some("AR"));
-
-        // Unknown returns None
         assert_eq!(weapon_type_from_first_varint(999), None);
-    }
-
-    #[test]
-    fn test_category_name_for_type_regular() {
-        // Non-shield items use manifest lookup
-        assert_eq!(category_name_for_type('a', 2), Some("Daedalus Pistol"));
-        assert_eq!(category_name_for_type('e', 22), Some("Vladof SMG"));
-    }
-
-    #[test]
-    fn test_category_name_for_type_shield() {
-        // Shield items (type 'r') use SHIELD_CATEGORY_NAMES first
-        assert_eq!(category_name_for_type('r', 16), Some("Energy Shield"));
-        assert_eq!(category_name_for_type('r', 20), Some("Energy Shield"));
-        assert_eq!(category_name_for_type('r', 21), Some("Energy Shield"));
-    }
-
-    #[test]
-    fn test_category_name_for_type_fallback() {
-        // Shield category not in SHIELD_CATEGORY_NAMES falls back to manifest lookup
-        assert_eq!(category_name_for_type('r', 283), Some("Vladof Shield"));
-        // Unknown category for unknown type returns None
-        assert_eq!(category_name_for_type('a', 99999), None);
     }
 }
