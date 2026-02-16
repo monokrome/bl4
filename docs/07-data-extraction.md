@@ -32,7 +32,7 @@ BL4 uses IoStore (UE5's format), not legacy PAK. Tools like `repak` won't work o
 
 Three distinct sources feed into the parts database, each with different strengths and limitations:
 
-```{mermaid}
+```mermaid
 flowchart TB
     subgraph "Static Sources"
         PAK[PAK Files<br/>Balance, naming, bodies]
