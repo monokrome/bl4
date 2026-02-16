@@ -115,6 +115,7 @@ impl NameDataMap {
 
     /// Find the best entry from a list of indices
     /// Prefers entries that look like boss names (simple, short, proper nouns)
+    #[allow(clippy::too_many_lines)]
     fn find_best_entry(&self, indices: &[usize]) -> Option<&NameDataEntry> {
         // Prefixes that indicate variants (we prefer the base name)
         let variant_prefixes = [
@@ -196,7 +197,7 @@ impl NameDataMap {
             }
 
             // Prefer names that start with capital letter (proper nouns)
-            if entry.display_name.chars().next().map_or(false, |c| c.is_uppercase()) {
+            if entry.display_name.chars().next().is_some_and(|c| c.is_uppercase()) {
                 score += 5;
             }
 
@@ -296,7 +297,7 @@ fn extract_strings(data: &[u8]) -> Vec<String> {
     const MIN_LENGTH: usize = 10; // NameData entries are at least 10 chars
 
     for &byte in data {
-        if byte >= 0x20 && byte < 0x7f {
+        if (0x20..0x7f).contains(&byte) {
             current.push(byte);
         } else if !current.is_empty() {
             if current.len() >= MIN_LENGTH {
@@ -407,7 +408,7 @@ pub fn extract_from_directory<P: AsRef<Path>>(ncs_dir: P) -> NameDataMap {
         .filter_map(|e| e.ok())
     {
         let path = entry.path();
-        if path.extension().map_or(false, |e| e == "bin") {
+        if path.extension().is_some_and(|e| e == "bin") {
             if let Ok(data) = std::fs::read(path) {
                 for name_entry in extract_from_binary(&data) {
                     map.add(name_entry);

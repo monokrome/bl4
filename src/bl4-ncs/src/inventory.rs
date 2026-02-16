@@ -104,6 +104,7 @@ pub struct LegendaryComposition {
 }
 
 /// Parse inventory data from raw bytes
+#[allow(clippy::cognitive_complexity, clippy::too_many_lines)]
 pub fn parse_inventory(data: &[u8]) -> Option<Inventory> {
     let strings = extract_null_strings(data);
     if strings.is_empty() {
@@ -243,95 +244,6 @@ pub fn get_parts_by_slot<'a>(inventory: &'a Inventory, item_id: &str, slot: &str
         .unwrap_or_default()
 }
 
-/// Extract serial indices from inv.bin binary section
-pub fn extract_serial_indices(data: &[u8]) -> BTreeMap<String, PartIndices> {
-    use crate::parser::{parse_header, find_binary_section_with_count};
-    use crate::string_table::parse_string_table;
-
-    let header = match parse_header(data) {
-        Some(h) => h,
-        None => return BTreeMap::new(),
-    };
-
-    let _strings = parse_string_table(data, &header);
-
-    // Find binary offset
-    let binary_offset = match find_binary_section_with_count(data, header.string_table_offset, Some(18393)) {
-        Some(offset) => offset,
-        None => return BTreeMap::new(),
-    };
-
-    let binary_data = &data[binary_offset..];
-    let mut result: BTreeMap<String, PartIndices> = BTreeMap::new();
-
-    // Tag-based extraction using best performing tag+offset combinations
-    // Based on analysis:
-    // - tag 'f' (0x66) at offset 27: 3,471 indices (63% of target)
-    // - tag 'a' (0x61) at offset 5: 2,921 indices
-    // Combined with position-based deduplication
-
-    let mut position_value_pairs: std::collections::HashSet<(usize, u32)> = std::collections::HashSet::new();
-
-    // Primary: tag 'f' at offset 27
-    for i in 0..binary_data.len() {
-        if binary_data[i] == 0x66 && i + 27 < binary_data.len() {
-            let pos = i + 27;
-
-            // Try u8 for values < 256
-            let val_u8 = binary_data[pos] as u32;
-            if val_u8 >= 1 && val_u8 < 256 {
-                position_value_pairs.insert((pos, val_u8));
-            }
-
-            // Try u16 LE for values >= 256
-            if pos + 1 < binary_data.len() {
-                let val_u16 = u16::from_le_bytes([binary_data[pos], binary_data[pos + 1]]) as u32;
-                if val_u16 >= 256 && val_u16 <= 541 {
-                    position_value_pairs.insert((pos, val_u16));
-                }
-            }
-        }
-    }
-
-    // Secondary: tag 'a' at offset 5
-    for i in 0..binary_data.len() {
-        if binary_data[i] == 0x61 && i + 5 < binary_data.len() {
-            let pos = i + 5;
-
-            let val_u8 = binary_data[pos] as u32;
-            if val_u8 >= 1 && val_u8 < 256 {
-                position_value_pairs.insert((pos, val_u8));
-            }
-
-            if pos + 1 < binary_data.len() {
-                let val_u16 = u16::from_le_bytes([binary_data[pos], binary_data[pos + 1]]) as u32;
-                if val_u16 >= 256 && val_u16 <= 541 {
-                    position_value_pairs.insert((pos, val_u16));
-                }
-            }
-        }
-    }
-
-    // Convert to result format
-    let mut all_indices: Vec<u32> = position_value_pairs.iter().map(|(_, v)| *v).collect();
-    all_indices.sort();
-
-    for &index in &all_indices {
-        let entry = result.entry("parts".to_string()).or_insert_with(|| PartIndices {
-            item_type: "parts".to_string(),
-            parts: Vec::new(),
-        });
-
-        entry.parts.push(SerialIndex {
-            part: format!("serial_{}", index),
-            index,
-            scope: "Sub".to_string(),
-            slot: None,
-        });
-    }
-
-    result
-}
 
 /// Check if string is a weapon part (MANU_TYPE_PartName pattern)
 fn is_weapon_part(s: &str) -> bool {
@@ -343,6 +255,7 @@ fn is_weapon_part(s: &str) -> bool {
 }
 
 /// Check if a string matches a part name pattern
+#[allow(clippy::too_many_lines)]
 fn is_part_pattern(s: &str) -> bool {
     // Too short
     if s.len() < 3 {
@@ -431,24 +344,6 @@ fn is_part_name(s: &str) -> bool {
     is_part_pattern(s)
 }
 
-/// Export serial indices to TSV format
-///
-/// Format: item_type\tslot\tpart\tserial_index
-pub fn serial_indices_to_tsv(indices: &BTreeMap<String, PartIndices>) -> String {
-    let mut lines = vec!["item_type\tslot\tpart\tserial_index".to_string()];
-
-    for (item_type, part_indices) in indices {
-        for si in &part_indices.parts {
-            let slot = si.slot.as_deref().unwrap_or("unknown");
-            lines.push(format!(
-                "{}\t{}\t{}\t{}",
-                item_type, slot, si.part, si.index
-            ));
-        }
-    }
-
-    lines.join("\n")
-}
 
 /// Raw string entry from NCS data
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -463,30 +358,13 @@ pub struct RawStringEntry {
 ///
 /// Returns the complete string table for downstream processing.
 pub fn extract_raw_strings(data: &[u8]) -> Vec<RawStringEntry> {
-    use crate::parser::parse_header;
-    use crate::string_table::parse_string_table;
-
-    let header = match parse_header(data) {
-        Some(h) => h,
-        None => {
-            // Fallback to simple null-string extraction
-            return extract_null_strings(data)
-                .into_iter()
-                .enumerate()
-                .map(|(i, s)| RawStringEntry {
-                    string_index: i,
-                    value: s,
-                })
-                .collect();
-        }
-    };
-
-    let strings = parse_string_table(data, &header);
-    (0..strings.len())
-        .filter_map(|i| strings.get(i).map(|s| RawStringEntry {
+    extract_null_strings(data)
+        .into_iter()
+        .enumerate()
+        .map(|(i, s)| RawStringEntry {
             string_index: i,
-            value: s.to_string(),
-        }))
+            value: s,
+        })
         .collect()
 }
 
@@ -519,32 +397,18 @@ pub struct StringNumericPair {
 
 /// Extract all string-numeric pairs from the string table (raw, unfiltered)
 pub fn extract_string_numeric_pairs(data: &[u8]) -> Vec<StringNumericPair> {
-    use crate::parser::parse_header;
-    use crate::string_table::parse_string_table;
-
-    let header = match parse_header(data) {
-        Some(h) => h,
-        None => return Vec::new(),
-    };
-
-    let strings = parse_string_table(data, &header);
+    let strings = extract_null_strings(data);
     let mut pairs = Vec::new();
 
     for i in 1..strings.len() {
-        if let Some(s) = strings.get(i) {
-            if let Ok(num) = s.parse::<u32>() {
-                // Found a numeric - get preceding string
-                if let Some(prev) = strings.get(i - 1) {
-                    // Skip if preceding is also numeric
-                    if prev.parse::<u32>().is_err() {
-                        pairs.push(StringNumericPair {
-                            string_index: i - 1,
-                            string_value: prev.to_string(),
-                            numeric_value: num,
-                            numeric_index: i,
-                        });
-                    }
-                }
+        if let Ok(num) = strings[i].parse::<u32>() {
+            if strings[i - 1].parse::<u32>().is_err() {
+                pairs.push(StringNumericPair {
+                    string_index: i - 1,
+                    string_value: strings[i - 1].clone(),
+                    numeric_value: num,
+                    numeric_index: i,
+                });
             }
         }
     }
@@ -706,98 +570,95 @@ mod tests {
     }
 
     #[test]
-    #[ignore] // Integration test - requires real data file
-    fn test_extract_serial_indices_from_inv4() {
-        let inv_path = "/home/polar/Documents/Borderlands 4/ncsdata/pakchunk4-Windows_0_P/Nexus-Data-inv4.bin";
-        let data = std::fs::read(inv_path).expect("Failed to read inv4.bin");
-
-        let indices = extract_serial_indices(&data);
-
-        // Count total parts across all item types
-        let total_parts: usize = indices.values().map(|p| p.parts.len()).sum();
-        let total_item_types = indices.len();
-
-        println!("Found {} item types with {} total serial indices", total_item_types, total_parts);
-
-        // Print breakdown by item type
-        for (item_type, part_indices) in &indices {
-            let root_count = part_indices.parts.iter().filter(|p| p.scope == "Root").count();
-            let sub_count = part_indices.parts.iter().filter(|p| p.scope == "Sub").count();
-            println!("  {}: {} Root, {} Sub", item_type, root_count, sub_count);
-        }
-
-        // If we found under 1000 parts, we are grossly lacking
-        assert!(total_parts >= 1000, "Expected at least 1000 parts, got {}", total_parts);
+    fn test_extract_raw_strings() {
+        let data = b"alpha\0beta\0gamma\0";
+        let raw = extract_raw_strings(data);
+        assert_eq!(raw.len(), 3);
+        assert_eq!(raw[0].string_index, 0);
+        assert_eq!(raw[0].value, "alpha");
+        assert_eq!(raw[1].string_index, 1);
+        assert_eq!(raw[1].value, "beta");
+        assert_eq!(raw[2].string_index, 2);
+        assert_eq!(raw[2].value, "gamma");
     }
 
     #[test]
-    #[ignore] // Integration test - requires real data file
-    fn test_binary_parser_on_inv4() {
-        use crate::binary_parser::BinaryParser;
-        use crate::parser::{parse_header, find_binary_section_with_count};
-        use crate::string_table::parse_string_table;
+    fn test_extract_raw_strings_skips_non_ascii() {
+        // Non-ASCII bytes clear the accumulator but don't prevent subsequent strings
+        let data = b"good\0\x80\x81bad\0ok\0";
+        let raw = extract_raw_strings(data);
+        assert_eq!(raw.len(), 3);
+        assert_eq!(raw[0].value, "good");
+        assert_eq!(raw[1].value, "bad");
+        assert_eq!(raw[2].value, "ok");
 
-        let inv_path = "/home/polar/Documents/Borderlands 4/ncsdata/pakchunk4-Windows_0_P/Nexus-Data-inv4.bin";
-        let data = std::fs::read(inv_path).expect("Failed to read inv4.bin");
+        // Non-ASCII mid-string truncates only the current token
+        let data2 = b"hel\x80lo\0world\0";
+        let raw2 = extract_raw_strings(data2);
+        assert_eq!(raw2.len(), 2);
+        assert_eq!(raw2[0].value, "lo");
+        assert_eq!(raw2[1].value, "world");
+    }
 
-        // Parse NCS header using the document parser (same as CLI)
-        let header = parse_header(&data).expect("Failed to parse header");
-        let string_table = parse_string_table(&data, &header);
+    #[test]
+    fn test_extract_string_numeric_pairs_basic() {
+        let data = b"part_barrel\042\0other\0100\0";
+        let pairs = extract_string_numeric_pairs(data);
+        assert_eq!(pairs.len(), 2);
 
-        println!("Type: {}", header.type_name);
-        println!("Format code: {}", header.format_code);
-        println!("String count: {}", string_table.len());
+        assert_eq!(pairs[0].string_value, "part_barrel");
+        assert_eq!(pairs[0].numeric_value, 42);
+        assert_eq!(pairs[0].string_index, 0);
+        assert_eq!(pairs[0].numeric_index, 1);
 
-        // Find correct binary offset by counting exactly 18,393 strings
-        let binary_offset = find_binary_section_with_count(&data, header.string_table_offset, Some(18393))
-            .expect("Failed to find binary section");
+        assert_eq!(pairs[1].string_value, "other");
+        assert_eq!(pairs[1].numeric_value, 100);
+    }
 
-        println!("Binary section offset: 0x{:x}", binary_offset);
-        println!("File size: {} bytes", data.len());
-        println!("Binary section size: {} bytes", data.len() - binary_offset);
+    #[test]
+    fn test_extract_string_numeric_pairs_consecutive_numbers() {
+        // Two consecutive numbers: only the first one preceded by a non-number gets paired
+        let data = b"name\010\020\0";
+        let pairs = extract_string_numeric_pairs(data);
+        assert_eq!(pairs.len(), 1);
+        assert_eq!(pairs[0].string_value, "name");
+        assert_eq!(pairs[0].numeric_value, 10);
+    }
 
-        let parser = BinaryParser::new(
-            &data,
-            &string_table,
-            &header.format_code,
-        );
+    #[test]
+    fn test_extract_string_numeric_pairs_no_numbers() {
+        let data = b"alpha\0beta\0gamma\0";
+        let pairs = extract_string_numeric_pairs(data);
+        assert!(pairs.is_empty());
+    }
 
-        let records = parser.parse_records(binary_offset);
-        println!("Parsed {} records from binary section", records.len());
+    #[test]
+    fn test_raw_strings_to_tsv() {
+        let entries = vec![
+            RawStringEntry {
+                string_index: 0,
+                value: "hello".to_string(),
+            },
+            RawStringEntry {
+                string_index: 1,
+                value: "world\ttab".to_string(),
+            },
+        ];
+        let tsv = raw_strings_to_tsv(&entries);
+        assert!(tsv.starts_with("index\tvalue"));
+        assert!(tsv.contains("0\thello"));
+        assert!(tsv.contains("1\tworld\\ttab"));
+    }
 
-        // Debug: try reading first few values manually
-        use crate::bit_reader::{bit_width, BitReader};
-        let string_bits = bit_width(string_table.len() as u32);
-        println!("String bits: {}", string_bits);
-
-        let binary_data = &data[binary_offset..];
-        let mut reader = BitReader::new(binary_data);
-
-        // Try reading first few string indices
-        println!("First 10 potential string indices:");
-        for i in 0..10 {
-            if let Some(idx) = reader.read_bits(string_bits) {
-                let s = string_table.get(idx as usize).unwrap_or("(oob)");
-                println!("  [{}] idx={:5} -> {:?}", i, idx, s);
-            }
-        }
-
-        // Look for serialindex in records
-        let mut serial_count = 0;
-        for record in &records {
-            if record.fields.contains_key("serialindex") {
-                serial_count += 1;
-            }
-            for dep in &record.dep_entries {
-                if dep.fields.contains_key("serialindex") {
-                    serial_count += 1;
-                }
-            }
-        }
-        println!("Found {} records with serialindex", serial_count);
-
-        // Don't fail on 0 records - we're still debugging
-        println!("Total records: {}", records.len());
+    #[test]
+    fn test_is_part_pattern() {
+        assert!(is_part_pattern("part_barrel_01"));
+        assert!(is_part_pattern("comp_05_legendary_Zipgun"));
+        assert!(is_part_pattern("DAD_PS_Barrel_01"));
+        assert!(is_part_pattern("uni_zipper"));
+        assert!(is_part_pattern("legendary"));
+        assert!(!is_part_pattern("ab"));
+        assert!(!is_part_pattern("no_match_here_from_unknown_prefix"));
     }
 
     #[test]
@@ -833,456 +694,4 @@ mod tests {
         println!("\nPairs with part-like patterns: {}", part_patterns);
     }
 
-    #[test]
-    #[ignore]
-    fn test_find_real_binary_offset() {
-        use crate::parser::parse_header;
-
-        let inv_path = "/home/polar/Documents/Borderlands 4/ncsdata/pakchunk4-Windows_0_P/Nexus-Data-inv4.bin";
-        let data = std::fs::read(inv_path).expect("Failed to read inv4.bin");
-
-        let header = parse_header(&data).expect("Failed to parse header");
-
-        println!("File size: 0x{:x} ({} bytes)", data.len(), data.len());
-        println!("String table offset: 0x{:x}", header.string_table_offset);
-        println!("String count from header: {}", header.string_count.unwrap_or(0));
-        println!("Binary offset from header: 0x{:x}", header.binary_offset);
-
-        // Manually count to the 18,393rd string
-        let mut pos = header.string_table_offset;
-        let mut string_count = 0;
-        let target = header.string_count.unwrap_or(18393);
-
-        println!("\nCounting {} strings...", target);
-
-        while pos < data.len() && string_count < target {
-            let start = pos;
-
-            // Find null terminator
-            while pos < data.len() && data[pos] != 0 {
-                pos += 1;
-            }
-
-            // Count this string
-            string_count += 1;
-
-            // Show last few strings
-            if string_count >= target - 3 {
-                let s = std::str::from_utf8(&data[start..pos]).unwrap_or("<invalid>");
-                println!("String {}: {:?}", string_count, s);
-            }
-
-            // Skip null terminator
-            if pos < data.len() {
-                pos += 1;
-            }
-        }
-
-        println!("\nAfter {} strings, position is: 0x{:x}", string_count, pos);
-        println!("Bytes remaining: {} ({} bytes)", data.len() - pos, data.len() - pos);
-
-        // Show what's after the last string
-        println!("\nFirst 200 bytes after string table:");
-        for i in pos..(pos + 200).min(data.len()) {
-            if (i - pos) % 16 == 0 {
-                print!("\n{:08x}: ", i);
-            }
-            print!("{:02x} ", data[i]);
-        }
-        println!("\n");
-
-        // Try to parse as null-terminated strings
-        println!("Trying to parse remaining bytes as strings:");
-        let mut str_pos = pos;
-        let mut found_strings = 0;
-        while str_pos < data.len() && found_strings < 20 {
-            let start = str_pos;
-            while str_pos < data.len() && data[str_pos] != 0 {
-                str_pos += 1;
-            }
-
-            if str_pos > start {
-                if let Ok(s) = std::str::from_utf8(&data[start..str_pos]) {
-                    println!("  [{}] {:?}", found_strings, s);
-                    found_strings += 1;
-                }
-            }
-
-            if str_pos < data.len() {
-                str_pos += 1;
-            }
-        }
-    }
-
-    #[test]
-    #[ignore]
-    fn test_parse_tags_sequentially() {
-        use crate::parser::{parse_header, find_binary_section_with_count};
-        use crate::string_table::parse_string_table;
-
-        let inv_path = "/home/polar/Documents/Borderlands 4/ncsdata/pakchunk4-Windows_0_P/Nexus-Data-inv4.bin";
-        let data = std::fs::read(inv_path).expect("Failed to read inv4.bin");
-
-        let header = parse_header(&data).expect("Failed to parse header");
-        let _strings = parse_string_table(&data, &header);
-        let binary_offset = find_binary_section_with_count(&data, header.string_table_offset, Some(18393))
-            .expect("Failed to find binary section");
-
-        let binary_data = &data[binary_offset..];
-
-        println!("Binary section: offset=0x{:x}, size={} bytes", binary_offset, binary_data.len());
-
-        // Tags in format code "abcefhijl"
-        let tag_bytes = [0x61u8, 0x62, 0x63, 0x65, 0x66, 0x68, 0x69, 0x6a, 0x6c]; // a,b,c,e,f,h,i,j,l
-
-        println!("\nFirst 50 tag occurrences:");
-        let mut tag_count = 0;
-        for i in 0..binary_data.len().min(5000) {
-            if tag_bytes.contains(&binary_data[i]) {
-                let tag_char = binary_data[i] as char;
-
-                // Show next 30 bytes
-                print!("0x{:04x}: '{}' | ", i, tag_char);
-                for j in 0..30.min(binary_data.len() - i - 1) {
-                    print!("{:02x} ", binary_data[i + 1 + j]);
-                }
-                println!();
-
-                tag_count += 1;
-                if tag_count >= 50 {
-                    break;
-                }
-            }
-        }
-
-        println!("\n\nAnalyzing structure around known serial index 237 at 0x13cd:");
-        let pos_237: usize = 0x13cd;
-        println!("Context (100 bytes before to 20 after):");
-        for i in (pos_237.saturating_sub(100))..pos_237.saturating_add(20).min(binary_data.len()) {
-            if i % 16 == 0 {
-                print!("\n{:04x}: ", i);
-            }
-            let byte = binary_data[i];
-            if tag_bytes.contains(&byte) {
-                print!("[{}] ", byte as char);
-            } else if i == pos_237 {
-                print!("<{:02x}> ", byte);
-            } else {
-                print!("{:02x} ", byte);
-            }
-        }
-        println!();
-    }
-
-    #[test]
-    #[ignore]
-    fn test_extract_via_j_tags() {
-        use crate::parser::{parse_header, find_binary_section_with_count};
-        use crate::string_table::parse_string_table;
-
-        let inv_path = "/home/polar/Documents/Borderlands 4/ncsdata/pakchunk4-Windows_0_P/Nexus-Data-inv4.bin";
-        let data = std::fs::read(inv_path).expect("Failed to read inv4.bin");
-
-        let header = parse_header(&data).expect("Failed to parse header");
-        let _strings = parse_string_table(&data, &header);
-        let binary_offset = find_binary_section_with_count(&data, header.string_table_offset, Some(18393))
-            .expect("Failed to find binary section");
-
-        let binary_data = &data[binary_offset..];
-
-        println!("Scanning for 'j' tags and potential serial indices...");
-
-        let mut found_indices = Vec::new();
-
-        // Scan for 'j' (0x6a) tags
-        for i in 0..binary_data.len() {
-            if binary_data[i] == 0x6a {
-                // Check next 30 bytes for values in serial index range (1-541)
-                for offset in 1..30 {
-                    if i + offset >= binary_data.len() {
-                        break;
-                    }
-
-                    let val_u8 = binary_data[i + offset] as u32;
-                    if val_u8 >= 1 && val_u8 <= 541 {
-                        found_indices.push((i, offset, val_u8, "u8"));
-                    }
-
-                    // Also check u16 LE
-                    if i + offset + 1 < binary_data.len() {
-                        let val_u16 = u16::from_le_bytes([
-                            binary_data[i + offset],
-                            binary_data[i + offset + 1]
-                        ]) as u32;
-                        if val_u16 >= 1 && val_u16 <= 541 {
-                            found_indices.push((i, offset, val_u16, "u16le"));
-                        }
-                    }
-                }
-            }
-        }
-
-        println!("Found {} potential serial indices after 'j' tags", found_indices.len());
-
-        // Group by offset distance
-        let mut by_offset: std::collections::HashMap<usize, Vec<u32>> = std::collections::HashMap::new();
-        for (_, offset, val, _) in &found_indices {
-            by_offset.entry(*offset).or_insert_with(Vec::new).push(*val);
-        }
-
-        println!("\nSerial indices grouped by offset from 'j' tag:");
-        let mut offsets: Vec<_> = by_offset.keys().collect();
-        offsets.sort();
-        for offset in offsets.iter().take(10) {
-            let values = by_offset.get(offset).unwrap();
-            println!("  Offset {}: {} values (e.g., {:?})", offset, values.len(), &values[..values.len().min(10)]);
-        }
-
-        // Count unique values found at offset 21 (known distance for serial index 237)
-        if let Some(vals_at_21) = by_offset.get(&21) {
-            let mut unique: Vec<u32> = vals_at_21.clone();
-            unique.sort();
-            unique.dedup();
-            println!("\nUnique serial indices at offset 21 from 'j': {}", unique.len());
-            println!("First 30: {:?}", &unique[..unique.len().min(30)]);
-        }
-
-        // Now scan ALL tag types and find the best offset for each
-        println!("\n\nScanning ALL tag types (a,b,c,e,f,h,i,j,l)...");
-        let tag_chars = ['a', 'b', 'c', 'e', 'f', 'h', 'i', 'j', 'l'];
-
-        for tag_char in tag_chars {
-            let tag_byte = tag_char as u8;
-            let mut tag_indices = Vec::new();
-
-            for i in 0..binary_data.len() {
-                if binary_data[i] == tag_byte {
-                    // Check offsets 1-30
-                    for offset in 1..30 {
-                        if i + offset >= binary_data.len() {
-                            break;
-                        }
-
-                        let val_u8 = binary_data[i + offset] as u32;
-                        if val_u8 >= 1 && val_u8 <= 541 {
-                            tag_indices.push((offset, val_u8));
-                        }
-
-                        if i + offset + 1 < binary_data.len() {
-                            let val_u16 = u16::from_le_bytes([
-                                binary_data[i + offset],
-                                binary_data[i + offset + 1]
-                            ]) as u32;
-                            if val_u16 >= 256 && val_u16 <= 541 {
-                                tag_indices.push((offset, val_u16));
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Group by offset
-            let mut by_off: std::collections::HashMap<usize, Vec<u32>> = std::collections::HashMap::new();
-            for (off, val) in &tag_indices {
-                by_off.entry(*off).or_insert_with(Vec::new).push(*val);
-            }
-
-            // Find offset with most unique values
-            let mut best_offset = 0;
-            let mut best_count = 0;
-            for (off, vals) in &by_off {
-                let mut unique = vals.clone();
-                unique.sort();
-                unique.dedup();
-                if unique.len() > best_count {
-                    best_count = unique.len();
-                    best_offset = *off;
-                }
-            }
-
-            if best_count > 0 {
-                let vals = by_off.get(&best_offset).unwrap();
-                let mut unique = vals.clone();
-                unique.sort();
-                unique.dedup();
-                println!("  Tag '{}': best at offset {} with {} unique values (total {} hits)",
-                    tag_char, best_offset, unique.len(), vals.len());
-            }
-        }
-
-        // Combine all tag types at their best offsets
-        println!("\n\nCombining all tags at optimal offsets...");
-
-        // Use (position, value) pairs to avoid counting the same byte position multiple times
-        let mut position_value_pairs: std::collections::HashSet<(usize, u32)> = std::collections::HashSet::new();
-
-        // Define best offsets for each tag
-        let tag_offsets = [
-            ('a', 5),
-            ('b', 5),
-            ('c', 20),
-            ('e', 19),
-            ('f', 27),
-            ('h', 28),
-            ('i', 3),
-            ('j', 14),  // Using best offset (14) instead of 21
-            ('l', 26),
-        ];
-
-        for (tag_char, offset) in tag_offsets {
-            let tag_byte = tag_char as u8;
-            for i in 0..binary_data.len() {
-                if binary_data[i] == tag_byte && i + offset < binary_data.len() {
-                    let pos = i + offset;
-
-                    // Try u8 for values < 256
-                    let val_u8 = binary_data[pos] as u32;
-                    if val_u8 >= 1 && val_u8 < 256 {
-                        position_value_pairs.insert((pos, val_u8));
-                    }
-
-                    // Try u16 LE for values >= 256
-                    if pos + 1 < binary_data.len() {
-                        let val_u16 = u16::from_le_bytes([
-                            binary_data[pos],
-                            binary_data[pos + 1]
-                        ]) as u32;
-                        if val_u16 >= 256 && val_u16 <= 541 {
-                            position_value_pairs.insert((pos, val_u16));
-                        }
-                    }
-                }
-            }
-        }
-
-        let all_occurrences: Vec<u32> = position_value_pairs.iter().map(|(_, v)| *v).collect();
-        let unique_count = {
-            let mut unique = all_occurrences.clone();
-            unique.sort();
-            unique.dedup();
-            unique.len()
-        };
-
-        println!("Total serial index occurrences (deduped by position): {}", all_occurrences.len());
-        println!("Unique serial index values: {}", unique_count);
-        println!("Target total occurrences: 5,513");
-
-        // Find which single tag+offset combination is closest to 5,513
-        println!("\n\nChecking individual tag+offset counts:");
-        for (tag_char, offset) in tag_offsets {
-            let tag_byte = tag_char as u8;
-            let mut count = 0;
-            let mut uniq = std::collections::HashSet::new();
-
-            for i in 0..binary_data.len() {
-                if binary_data[i] == tag_byte && i + offset < binary_data.len() {
-                    let val_u8 = binary_data[i + offset] as u32;
-                    if val_u8 >= 1 && val_u8 < 256 {
-                        count += 1;
-                        uniq.insert(val_u8);
-                    }
-
-                    if i + offset + 1 < binary_data.len() {
-                        let val_u16 = u16::from_le_bytes([
-                            binary_data[i + offset],
-                            binary_data[i + offset + 1]
-                        ]) as u32;
-                        if val_u16 >= 256 && val_u16 <= 541 {
-                            count += 1;
-                            uniq.insert(val_u16);
-                        }
-                    }
-                }
-            }
-
-            let diff = (count as i32 - 5513).abs();
-            println!("  Tag '{}' at offset {}: {} occurrences ({} unique) - diff from target: {}",
-                tag_char, offset, count, uniq.len(), diff);
-        }
-    }
-
-    #[test]
-    #[ignore]
-    fn test_string_indices() {
-        use crate::parser::parse_header;
-        use crate::string_table::parse_string_table;
-
-        let inv_path = "/home/polar/Documents/Borderlands 4/ncsdata/pakchunk4-Windows_0_P/Nexus-Data-inv4.bin";
-        let data = std::fs::read(inv_path).expect("Failed to read inv4.bin");
-
-        let header = parse_header(&data).expect("Failed to parse header");
-        let strings = parse_string_table(&data, &header);
-
-        println!("String table size: {}", strings.len());
-        println!("First 20 strings:");
-        for i in 0..20.min(strings.len()) {
-            println!("  [{}] = {}", i, strings.get(i).unwrap_or("(none)"));
-        }
-
-        // Find key strings
-        let key_strings = [
-            "Active", "Root", "Sub", "Subs", "inv_type", "Armor_Shield", "serialindex",
-        ];
-        println!("\nKey string indices:");
-        for key in key_strings {
-            if let Some(idx) = strings.find(key) {
-                println!("  {} = {}", key, idx);
-            } else {
-                println!("  {} = NOT FOUND", key);
-            }
-        }
-
-        // Search for strings around indices 49-60
-        println!("\nStrings around key indices (45-90):");
-        for i in 45..90.min(strings.len()) {
-            println!("  [{}] = {}", i, strings.get(i).unwrap_or("(none)"));
-        }
-
-        // Count numeric strings (potential serialindex values)
-        let mut numeric_count = 0;
-        let mut numeric_samples = Vec::new();
-        for i in 0..strings.len() {
-            if let Some(s) = strings.get(i) {
-                if s.parse::<u32>().is_ok() {
-                    numeric_count += 1;
-                    if numeric_samples.len() < 20 {
-                        numeric_samples.push((i, s.to_string()));
-                    }
-                }
-            }
-        }
-        println!("\nNumeric strings: {} total", numeric_count);
-        println!("First 20 numeric strings:");
-        for (idx, val) in &numeric_samples {
-            println!("  [{}] = {}", idx, val);
-        }
-
-        // Test extraction
-        use crate::inventory::extract_serial_indices;
-        let indices = extract_serial_indices(&data);
-        let total_parts: usize = indices.values().map(|p| p.parts.len()).sum();
-        let root_count: usize = indices
-            .values()
-            .flat_map(|p| p.parts.iter())
-            .filter(|p| p.scope == "Root")
-            .count();
-        let sub_count: usize = indices
-            .values()
-            .flat_map(|p| p.parts.iter())
-            .filter(|p| p.scope == "Sub")
-            .count();
-        println!("\n=== Extraction Results ===");
-        println!("Total item types: {}", indices.len());
-        println!("Total parts: {}", total_parts);
-        println!("Root: {}, Sub: {}", root_count, sub_count);
-
-        // Show first few entries
-        println!("\nFirst 10 entries:");
-        for (item_type, part_indices) in indices.iter().take(3) {
-            println!("  {}: {} parts", item_type, part_indices.parts.len());
-            for p in part_indices.parts.iter().take(5) {
-                println!("    {} = {} ({})", p.part, p.index, p.scope);
-            }
-        }
-    }
 }

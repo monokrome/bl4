@@ -1,15 +1,27 @@
 //! Drop extraction from NCS data files
 
 use super::types::{BossNameMapping, DropEntry, DropProbabilities, DropsManifest, DropSource};
-use crate::types::Value;
+use crate::document::Value;
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
+
+/// Recursively collect all Leaf string values from a Value tree
+fn collect_leaf_strings(value: &Value) -> Vec<&str> {
+    match value {
+        Value::Leaf(s) => vec![s.as_str()],
+        Value::Array(arr) => arr.iter().flat_map(collect_leaf_strings).collect(),
+        Value::Map(map) => map.values().flat_map(collect_leaf_strings).collect(),
+        Value::Ref { r#ref: s } => vec![s.as_str()],
+        Value::Null => Vec::new(),
+    }
+}
 
 /// Extract drops from itempoollist NCS data
 ///
 /// Parses itempoollist.bin content and extracts boss → legendary mappings.
+#[allow(clippy::cognitive_complexity, clippy::too_many_lines)]
 pub fn extract_drops_from_itempoollist(data: &[u8]) -> Vec<DropEntry> {
-    let doc = match crate::parser::parse_document(data) {
+    let doc = match crate::parse::parse(data) {
         Some(d) => d,
         None => return Vec::new(),
     };
@@ -18,87 +30,91 @@ pub fn extract_drops_from_itempoollist(data: &[u8]) -> Vec<DropEntry> {
     let mut current_boss: Option<String> = None;
     let mut is_true_boss = false;
 
-    for record in &doc.records {
-        let name = &record.name;
+    for table in doc.tables.values() {
+        for record in &table.records {
+            for entry in &record.entries {
+                let name = &entry.key;
 
-        // Boss pool pattern: ItemPoolList_<BossName>
-        if name.starts_with("ItemPoolList_") && !name.contains("Enemy_BaseLoot") {
-            if name.ends_with("_TrueBoss") {
-                is_true_boss = true;
-            } else {
-                current_boss = Some(name.replace("ItemPoolList_", ""));
-                is_true_boss = false;
-            }
+                // Boss pool pattern: ItemPoolList_<BossName>
+                if name.starts_with("ItemPoolList_") && !name.contains("Enemy_BaseLoot") {
+                    if name.ends_with("_TrueBoss") {
+                        is_true_boss = true;
+                    } else {
+                        current_boss = Some(name.replace("ItemPoolList_", ""));
+                        is_true_boss = false;
+                    }
 
-            // Extract items from boss record fields
-            let boss = current_boss.as_ref().unwrap();
-            for value in record.fields.values() {
-                if let Value::String(s) = value {
-                    if s.to_lowercase().contains(".comp_05_legendary_")
-                        && !s.starts_with("itempool_")
-                    {
-                        if let Some(mut entry) = parse_legendary_item_id(boss, s, DropSource::Boss)
+                    // Extract items from entry value tree
+                    let boss = current_boss.as_ref().unwrap();
+                    for s in collect_leaf_strings(&entry.value) {
+                        if s.to_lowercase().contains(".comp_05_legendary_")
+                            && !s.starts_with("itempool_")
                         {
-                            if is_true_boss {
-                                entry.drop_tier = "TrueBoss".to_string();
+                            if let Some(mut drop_entry) =
+                                parse_legendary_item_id(boss, s, DropSource::Boss)
+                            {
+                                if is_true_boss {
+                                    drop_entry.drop_tier = "TrueBoss".to_string();
+                                }
+                                drops.push(drop_entry);
                             }
-                            drops.push(entry);
+                        }
+                    }
+                    continue;
+                }
+
+                // Skip if no current boss
+                let boss = match &current_boss {
+                    Some(b) => b.clone(),
+                    None => continue,
+                };
+
+                // Check if this is a tier record with items in its value tree
+                if let Some(tier) = extract_tier_name(name) {
+                    for s in collect_leaf_strings(&entry.value) {
+                        if s.to_lowercase().contains(".comp_05_legendary_")
+                            && !s.starts_with("itempool_")
+                        {
+                            if let Some(mut drop_entry) =
+                                parse_legendary_item_id(&boss, s, DropSource::Boss)
+                            {
+                                drop_entry.drop_tier =
+                                    if is_true_boss && !tier.is_empty() {
+                                        format!("TrueBoss{}", tier)
+                                    } else if is_true_boss {
+                                        "TrueBoss".to_string()
+                                    } else {
+                                        tier.clone()
+                                    };
+                                drops.push(drop_entry);
+                            }
                         }
                     }
                 }
-            }
-            continue;
-        }
-
-        // Skip if no current boss
-        let boss = match &current_boss {
-            Some(b) => b.clone(),
-            None => continue,
-        };
-
-        // Check if this is a tier record with items in its fields
-        if let Some(tier) = extract_tier_name(name) {
-            for value in record.fields.values() {
-                if let Value::String(s) = value {
-                    if s.to_lowercase().contains(".comp_05_legendary_")
-                        && !s.starts_with("itempool_")
+                // Check if entry key itself is a legendary item
+                else if name.to_lowercase().contains(".comp_05_legendary_") {
+                    if let Some(mut drop_entry) =
+                        parse_legendary_item_id(&boss, name, DropSource::Boss)
                     {
-                        if let Some(mut entry) = parse_legendary_item_id(&boss, s, DropSource::Boss)
-                        {
-                            entry.drop_tier = if is_true_boss && !tier.is_empty() {
-                                format!("TrueBoss{}", tier)
-                            } else if is_true_boss {
-                                "TrueBoss".to_string()
-                            } else {
-                                tier.clone()
-                            };
-                            drops.push(entry);
+                        if is_true_boss {
+                            drop_entry.drop_tier = "TrueBoss".to_string();
                         }
+                        drops.push(drop_entry);
                     }
-                }
-            }
-        }
-        // Check if record name itself is a legendary item
-        else if name.to_lowercase().contains(".comp_05_legendary_") {
-            if let Some(mut entry) = parse_legendary_item_id(&boss, name, DropSource::Boss) {
-                if is_true_boss {
-                    entry.drop_tier = "TrueBoss".to_string();
-                }
-                drops.push(entry);
-            }
 
-            // Also extract nested items from this record's fields
-            for value in record.fields.values() {
-                if let Value::String(s) = value {
-                    if s.to_lowercase().contains(".comp_05_legendary_")
-                        && !s.starts_with("itempool_")
-                    {
-                        if let Some(mut entry) = parse_legendary_item_id(&boss, s, DropSource::Boss)
+                    // Also extract nested items from this entry's value tree
+                    for s in collect_leaf_strings(&entry.value) {
+                        if s.to_lowercase().contains(".comp_05_legendary_")
+                            && !s.starts_with("itempool_")
                         {
-                            if is_true_boss {
-                                entry.drop_tier = "TrueBoss".to_string();
+                            if let Some(mut drop_entry) =
+                                parse_legendary_item_id(&boss, s, DropSource::Boss)
+                            {
+                                if is_true_boss {
+                                    drop_entry.drop_tier = "TrueBoss".to_string();
+                                }
+                                drops.push(drop_entry);
                             }
-                            drops.push(entry);
                         }
                     }
                 }
@@ -122,9 +138,8 @@ fn extract_tier_name(s: &str) -> Option<String> {
     ];
 
     for (prefix, tier) in tier_prefixes {
-        if s.starts_with(prefix) {
-            let rest = &s[prefix.len()..];
-            if rest.contains('_') && rest.chars().next().map_or(false, |c| c.is_ascii_digit()) {
+        if let Some(rest) = s.strip_prefix(prefix) {
+            if rest.contains('_') && rest.chars().next().is_some_and(|c| c.is_ascii_digit()) {
                 return Some(tier.to_string());
             }
         }
@@ -135,72 +150,71 @@ fn extract_tier_name(s: &str) -> Option<String> {
 /// Extract drops from itempool NCS data
 ///
 /// Parses itempool.bin content and extracts black market, fish collector, and mission drops
+#[allow(clippy::cognitive_complexity, clippy::too_many_lines)]
 pub fn extract_drops_from_itempool(data: &[u8]) -> Vec<DropEntry> {
-    let doc = match crate::parser::parse_document(data) {
+    let doc = match crate::parse::parse(data) {
         Some(d) => d,
         None => return Vec::new(),
     };
 
     let mut drops = Vec::new();
 
-    for record in &doc.records {
-        let name = &record.name;
+    for table in doc.tables.values() {
+        for record in &table.records {
+            for entry in &record.entries {
+                let name = &entry.key;
 
-        // Black Market items
-        if name.starts_with("ItemPool_BlackMarket_") {
-            let item_part = name.replace("ItemPool_BlackMarket_Comp_", "");
-            if let Some(entry) = parse_black_market_item(&item_part) {
-                drops.push(entry);
-            }
-        }
+                // Black Market items
+                if name.starts_with("ItemPool_BlackMarket_") {
+                    let item_part = name.replace("ItemPool_BlackMarket_Comp_", "");
+                    if let Some(drop_entry) = parse_black_market_item(&item_part) {
+                        drops.push(drop_entry);
+                    }
+                }
 
-        // Fish Collector rewards
-        if name.starts_with("ItemPool_FishCollector_Reward_") {
-            let tier = name.replace("ItemPool_FishCollector_Reward_", "");
-            for value in record.fields.values() {
-                if let Value::String(s) = value {
-                    if s.to_lowercase().contains(".comp_05_legendary_") {
-                        if let Some(mut entry) =
-                            parse_legendary_item_id("Fish Collector", s, DropSource::Special)
-                        {
-                            entry.drop_tier = tier.clone();
-                            drops.push(entry);
+                // Fish Collector rewards
+                if name.starts_with("ItemPool_FishCollector_Reward_") {
+                    let tier = name.replace("ItemPool_FishCollector_Reward_", "");
+                    for s in collect_leaf_strings(&entry.value) {
+                        if s.to_lowercase().contains(".comp_05_legendary_") {
+                            if let Some(mut drop_entry) =
+                                parse_legendary_item_id("Fish Collector", s, DropSource::Special)
+                            {
+                                drop_entry.drop_tier = tier.clone();
+                                drops.push(drop_entry);
+                            }
                         }
                     }
                 }
-            }
-        }
 
-        // Side mission rewards
-        if name.starts_with("ItemPool_SideMission_") && !name.ends_with("_TurretDrop") {
-            let mission_name = name
-                .replace("ItemPool_SideMission_", "")
-                .replace('_', " ");
-            for value in record.fields.values() {
-                if let Value::String(s) = value {
-                    if s.to_lowercase().contains(".comp_05_legendary_") {
-                        if let Some(entry) =
-                            parse_legendary_item_id(&mission_name, s, DropSource::Mission)
-                        {
-                            drops.push(entry);
+                // Side mission rewards
+                if name.starts_with("ItemPool_SideMission_") && !name.ends_with("_TurretDrop") {
+                    let mission_name = name
+                        .replace("ItemPool_SideMission_", "")
+                        .replace('_', " ");
+                    for s in collect_leaf_strings(&entry.value) {
+                        if s.to_lowercase().contains(".comp_05_legendary_") {
+                            if let Some(drop_entry) =
+                                parse_legendary_item_id(&mission_name, s, DropSource::Mission)
+                            {
+                                drops.push(drop_entry);
+                            }
                         }
                     }
                 }
-            }
-        }
 
-        // Main mission rewards
-        if name.starts_with("ItemPool_MainMission_") {
-            let mission_name = name
-                .replace("ItemPool_MainMission_", "")
-                .replace('_', " ");
-            for value in record.fields.values() {
-                if let Value::String(s) = value {
-                    if s.to_lowercase().contains(".comp_05_legendary_") {
-                        if let Some(entry) =
-                            parse_legendary_item_id(&mission_name, s, DropSource::Mission)
-                        {
-                            drops.push(entry);
+                // Main mission rewards
+                if name.starts_with("ItemPool_MainMission_") {
+                    let mission_name = name
+                        .replace("ItemPool_MainMission_", "")
+                        .replace('_', " ");
+                    for s in collect_leaf_strings(&entry.value) {
+                        if s.to_lowercase().contains(".comp_05_legendary_") {
+                            if let Some(drop_entry) =
+                                parse_legendary_item_id(&mission_name, s, DropSource::Mission)
+                            {
+                                drops.push(drop_entry);
+                            }
                         }
                     }
                 }
@@ -291,6 +305,7 @@ fn parse_legendary_item_id(source: &str, item_id: &str, source_type: DropSource)
 }
 
 /// Generate world drop entries from existing drops
+#[allow(clippy::too_many_lines)]
 fn generate_world_drops(existing_drops: &[DropEntry]) -> Vec<DropEntry> {
     let world_drop_gear_types = [
         "AR", "PS", "SM", "SG", "SR", "SHIELD", "GRENADE_GADGET", "HW", "REPAIR_KIT",
@@ -375,6 +390,7 @@ fn generate_world_drops(existing_drops: &[DropEntry]) -> Vec<DropEntry> {
 /// Generate drops manifest from NCS data directory
 ///
 /// Scans for itempoollist.bin and itempool.bin files and extracts all drops.
+#[allow(clippy::too_many_lines)]
 pub fn generate_drops_manifest<P: AsRef<Path>>(ncs_dir: P) -> Result<DropsManifest, std::io::Error> {
     let boss_names = BossNameMapping::load();
     let name_data = crate::name_data::extract_from_directory(ncs_dir.as_ref());
@@ -459,4 +475,88 @@ pub fn generate_drops_manifest<P: AsRef<Path>>(ncs_dir: P) -> Result<DropsManife
         drops: all_drops,
         probabilities: DropProbabilities::default(),
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_collect_leaf_strings_leaf() {
+        let value = Value::Leaf("hello".to_string());
+        assert_eq!(collect_leaf_strings(&value), vec!["hello"]);
+    }
+
+    #[test]
+    fn test_collect_leaf_strings_null() {
+        let value = Value::Null;
+        assert!(collect_leaf_strings(&value).is_empty());
+    }
+
+    #[test]
+    fn test_collect_leaf_strings_array() {
+        let value = Value::Array(vec![
+            Value::Leaf("a".to_string()),
+            Value::Null,
+            Value::Leaf("b".to_string()),
+        ]);
+        assert_eq!(collect_leaf_strings(&value), vec!["a", "b"]);
+    }
+
+    #[test]
+    fn test_collect_leaf_strings_map() {
+        let mut map = HashMap::new();
+        map.insert("k1".to_string(), Value::Leaf("v1".to_string()));
+        map.insert("k2".to_string(), Value::Leaf("v2".to_string()));
+        let value = Value::Map(map);
+        let result = collect_leaf_strings(&value);
+        assert_eq!(result.len(), 2);
+        assert!(result.contains(&"v1"));
+        assert!(result.contains(&"v2"));
+    }
+
+    #[test]
+    fn test_collect_leaf_strings_ref() {
+        let value = Value::Ref {
+            r#ref: "some_ref".to_string(),
+        };
+        assert_eq!(collect_leaf_strings(&value), vec!["some_ref"]);
+    }
+
+    #[test]
+    fn test_collect_leaf_strings_nested() {
+        let mut inner_map = HashMap::new();
+        inner_map.insert("deep".to_string(), Value::Leaf("found_it".to_string()));
+
+        let value = Value::Array(vec![
+            Value::Leaf("top".to_string()),
+            Value::Map(inner_map),
+            Value::Array(vec![Value::Leaf("nested".to_string())]),
+        ]);
+        let result = collect_leaf_strings(&value);
+        assert_eq!(result.len(), 3);
+        assert!(result.contains(&"top"));
+        assert!(result.contains(&"found_it"));
+        assert!(result.contains(&"nested"));
+    }
+
+    #[test]
+    fn test_extract_tier_name() {
+        // Function checks for tier prefixes like "Primary_", "Shiny_" etc.
+        // followed by a digit and underscore
+        assert_eq!(
+            extract_tier_name("Primary_01_SomePool"),
+            Some("Primary".to_string())
+        );
+        assert_eq!(
+            extract_tier_name("Shiny_42_Something"),
+            Some("Shiny".to_string())
+        );
+        assert_eq!(
+            extract_tier_name("TrueBoss_1_Boss"),
+            Some("".to_string())
+        );
+        assert_eq!(extract_tier_name("SomethingElse"), None);
+        assert_eq!(extract_tier_name("Primary_NoDig"), None);
+    }
 }

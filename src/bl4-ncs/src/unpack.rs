@@ -12,10 +12,10 @@ use crate::types::{UnpackedString, UnpackedValue};
 /// - "0.175128Session" -> [Float(0.175128), String("Session")]
 /// - "5true" -> [Integer(5), Boolean(true)]
 /// - "simple" -> [String("simple")] (not packed)
+#[allow(clippy::cognitive_complexity, clippy::too_many_lines)]
 pub fn unpack_string(s: &str) -> UnpackedString {
     let original = s.to_string();
 
-    // Empty string
     if s.is_empty() {
         return UnpackedString {
             original,
@@ -112,13 +112,11 @@ fn find_float_end(s: &str) -> Option<usize> {
     let mut has_dot = false;
     let mut has_digit = false;
 
-    // Optional leading minus
     if chars.peek() == Some(&'-') {
         chars.next();
         pos += 1;
     }
 
-    // Digits before decimal
     while let Some(&c) = chars.peek() {
         if c.is_ascii_digit() {
             has_digit = true;
@@ -129,13 +127,11 @@ fn find_float_end(s: &str) -> Option<usize> {
         }
     }
 
-    // Decimal point
     if chars.peek() == Some(&'.') {
         has_dot = true;
         chars.next();
         pos += 1;
 
-        // Digits after decimal
         while let Some(&c) = chars.peek() {
             if c.is_ascii_digit() {
                 has_digit = true;
@@ -166,11 +162,7 @@ fn find_integer_end(s: &str) -> Option<usize> {
         }
     }
 
-    if pos > 0 {
-        Some(pos)
-    } else {
-        None
-    }
+    if pos > 0 { Some(pos) } else { None }
 }
 
 /// Batch unpack multiple strings, returning only those that were packed
@@ -188,17 +180,14 @@ mod tests {
 
     #[test]
     fn test_unpack_string_simple() {
-        // Pure integer
         let result = unpack_string("123");
         assert!(!result.was_packed);
         assert_eq!(result.values, vec![UnpackedValue::Integer(123)]);
 
-        // Pure float
         let result = unpack_string("1.5");
         assert!(!result.was_packed);
         assert_eq!(result.values, vec![UnpackedValue::Float(1.5)]);
 
-        // Pure string
         let result = unpack_string("hello");
         assert!(!result.was_packed);
         assert_eq!(result.values, vec![UnpackedValue::String("hello".into())]);
@@ -206,14 +195,12 @@ mod tests {
 
     #[test]
     fn test_unpack_string_packed_int_string() {
-        // Integer + string (e.g., "1airship")
         let result = unpack_string("1airship");
         assert!(result.was_packed);
         assert_eq!(result.values.len(), 2);
         assert_eq!(result.values[0], UnpackedValue::Integer(1));
         assert_eq!(result.values[1], UnpackedValue::String("airship".into()));
 
-        // Multiple digits + string
         let result = unpack_string("12ships");
         assert!(result.was_packed);
         assert_eq!(result.values[0], UnpackedValue::Integer(12));
@@ -222,7 +209,6 @@ mod tests {
 
     #[test]
     fn test_unpack_string_packed_float_string() {
-        // Float + string (e.g., "0.175128Session")
         let result = unpack_string("0.175128Session");
         assert!(result.was_packed);
         assert_eq!(result.values.len(), 2);
@@ -232,7 +218,6 @@ mod tests {
 
     #[test]
     fn test_unpack_string_packed_int_bool() {
-        // Integer + boolean (e.g., "5true")
         let result = unpack_string("5true");
         assert!(result.was_packed);
         assert_eq!(result.values.len(), 2);

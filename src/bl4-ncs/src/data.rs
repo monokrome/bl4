@@ -173,6 +173,7 @@ fn decompress_single_block(
 /// Decompress multi-block format (format flags = 0x03030812)
 ///
 /// Block count at 0x0c, block sizes at 0x40, data follows table.
+#[allow(clippy::too_many_lines)]
 fn decompress_multi_block(
     compressed: &[u8],
     decompressed_size: usize,
