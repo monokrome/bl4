@@ -134,6 +134,35 @@ pub fn all_manufacturers() -> impl Iterator<Item = (&'static str, &'static str)>
         .map(|(code, name)| (code.as_str(), name.as_str()))
 }
 
+/// Extract slot name from a manifest part name.
+///
+/// Takes the segment after the last `.`, strips the `part_` prefix,
+/// and strips trailing `_NN` digit suffixes.
+///
+/// Examples:
+/// - `"DAD_PS.part_barrel_01"` → `"barrel"`
+/// - `"part_scope_02"` → `"scope"`
+/// - `"part_body"` → `"body"`
+/// - `"comp_03_rare"` → `"comp_03_rare"` (no `part_` prefix)
+pub fn slot_from_part_name(name: &str) -> &str {
+    let segment = name.split('.').next_back().unwrap_or(name);
+
+    let stripped = match segment.strip_prefix("part_") {
+        Some(rest) => rest,
+        None => return segment,
+    };
+
+    // Strip trailing _NN (1-2 digits)
+    if let Some(pos) = stripped.rfind('_') {
+        let suffix = &stripped[pos + 1..];
+        if !suffix.is_empty() && suffix.len() <= 2 && suffix.chars().all(|c| c.is_ascii_digit()) {
+            return &stripped[..pos];
+        }
+    }
+
+    stripped
+}
+
 /// Check if manifest data is loaded (forces initialization)
 pub fn is_loaded() -> bool {
     // Access lazy statics to force initialization
@@ -250,5 +279,16 @@ mod tests {
         assert!(is_loaded());
         // Call again to ensure it's idempotent
         assert!(is_loaded());
+    }
+
+    #[test]
+    fn test_slot_from_part_name() {
+        assert_eq!(slot_from_part_name("DAD_PS.part_barrel_01"), "barrel");
+        assert_eq!(slot_from_part_name("part_scope_02"), "scope");
+        assert_eq!(slot_from_part_name("part_body"), "body");
+        assert_eq!(slot_from_part_name("comp_03_rare"), "comp_03_rare");
+        assert_eq!(slot_from_part_name("JAK_SG.part_foregrip_03"), "foregrip");
+        assert_eq!(slot_from_part_name("part_mag_1"), "mag");
+        assert_eq!(slot_from_part_name("part_barrel"), "barrel");
     }
 }

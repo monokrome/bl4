@@ -6,6 +6,37 @@ use std::path::Path;
 
 use super::helpers::extract_serials_from_yaml;
 
+/// Build structured parts from a decoded item serial
+fn build_item_parts(
+    decoded: &bl4::ItemSerial,
+    manufacturer: Option<&str>,
+) -> Vec<bl4_idb::NewItemPart> {
+    decoded
+        .parts_with_names()
+        .into_iter()
+        .filter(|(index, _, _)| {
+            // Skip element markers (128-142) that resolve to known elements
+            if (128..=142).contains(index) {
+                return bl4::serial::Element::from_id(index - 128).is_none();
+            }
+            true
+        })
+        .map(|(index, name, _values)| {
+            let slot = name
+                .map(bl4::manifest::slot_from_part_name)
+                .unwrap_or("unknown")
+                .to_string();
+
+            bl4_idb::NewItemPart {
+                slot,
+                part_index: Some(index as i32),
+                part_name: name.map(String::from),
+                manufacturer: manufacturer.map(String::from),
+            }
+        })
+        .collect()
+}
+
 /// Handle `idb decode-all`
 pub fn decode_all(db: &Path, force: bool) -> Result<()> {
     let wdb = bl4_idb::SqliteDb::open(db)?;
@@ -45,7 +76,7 @@ pub fn decode_all(db: &Path, force: bool) -> Result<()> {
                 let rarity = decoded_item.rarity_name().map(|s| s.to_string());
 
                 let update = bl4_idb::ItemUpdate {
-                    manufacturer: mfg,
+                    manufacturer: mfg.clone(),
                     weapon_type: wtype,
                     level,
                     element,
@@ -66,6 +97,12 @@ pub fn decode_all(db: &Path, force: bool) -> Result<()> {
                         Some("bl4-cli"),
                         bl4_idb::Confidence::Inferred,
                     );
+                }
+
+                // Store structured parts
+                let new_parts = build_item_parts(&decoded_item, mfg.as_deref());
+                if !new_parts.is_empty() {
+                    let _ = wdb.set_parts(&item.serial, &new_parts);
                 }
 
                 if item.verification_status == bl4_idb::VerificationStatus::Unverified {
@@ -129,7 +166,7 @@ pub fn decode(db: &Path, serial: Option<String>, all: bool) -> Result<()> {
                 }
 
                 // Extract manufacturer and weapon_type from first varint
-                if let Some(mfg_id) = item.manufacturer {
+                let mfg_name = if let Some(mfg_id) = item.manufacturer {
                     if let Some((mfg, wtype)) = bl4::parts::weapon_info_from_first_varint(mfg_id) {
                         wdb.set_value(
                             serial,
@@ -150,22 +187,26 @@ pub fn decode(db: &Path, serial: Option<String>, all: bool) -> Result<()> {
                             bl4_idb::Confidence::Inferred,
                         )?;
                         values_set += 1;
+                        Some(mfg.to_string())
+                    } else {
+                        None
                     }
-                } else if let Some(group_id) = item.part_group_id() {
-                    if let Some(cat_name) =
-                        bl4::parts::category_name(group_id)
-                    {
-                        wdb.set_value(
-                            serial,
-                            "weapon_type",
-                            cat_name,
-                            bl4_idb::ValueSource::Decoder,
-                            Some("bl4-cli"),
-                            bl4_idb::Confidence::Inferred,
-                        )?;
-                        values_set += 1;
+                } else {
+                    if let Some(group_id) = item.part_group_id() {
+                        if let Some(cat_name) = bl4::parts::category_name(group_id) {
+                            wdb.set_value(
+                                serial,
+                                "weapon_type",
+                                cat_name,
+                                bl4_idb::ValueSource::Decoder,
+                                Some("bl4-cli"),
+                                bl4_idb::Confidence::Inferred,
+                            )?;
+                            values_set += 1;
+                        }
                     }
-                }
+                    None
+                };
 
                 // Set item_type
                 wdb.set_value(
@@ -216,6 +257,12 @@ pub fn decode(db: &Path, serial: Option<String>, all: bool) -> Result<()> {
                         bl4_idb::Confidence::Inferred,
                     )?;
                     values_set += 1;
+                }
+
+                // Store structured parts
+                let new_parts = build_item_parts(&item, mfg_name.as_deref());
+                if !new_parts.is_empty() {
+                    wdb.set_parts(serial, &new_parts)?;
                 }
 
                 decoded_count += 1;
@@ -315,7 +362,7 @@ pub fn import_save(
                 let rarity = decoded_item.rarity_name().map(|s| s.to_string());
 
                 let update = bl4_idb::ItemUpdate {
-                    manufacturer: mfg,
+                    manufacturer: mfg.clone(),
                     weapon_type: wtype,
                     level,
                     element,
@@ -335,6 +382,12 @@ pub fn import_save(
                         Some("bl4-cli"),
                         bl4_idb::Confidence::Inferred,
                     );
+                }
+
+                // Store structured parts
+                let new_parts = build_item_parts(&decoded_item, mfg.as_deref());
+                if !new_parts.is_empty() {
+                    let _ = wdb.set_parts(&item.serial, &new_parts);
                 }
 
                 if item.verification_status == bl4_idb::VerificationStatus::Unverified {

@@ -300,6 +300,15 @@ pub struct ItemPart {
     pub verified_at: Option<String>,
 }
 
+/// Insert-only weapon part (no id or verification fields)
+#[derive(Debug, Clone)]
+pub struct NewItemPart {
+    pub slot: String,
+    pub part_index: Option<i32>,
+    pub part_name: Option<String>,
+    pub manufacturer: Option<String>,
+}
+
 /// Image attachment entry
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Attachment {

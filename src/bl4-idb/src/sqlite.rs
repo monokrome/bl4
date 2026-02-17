@@ -624,6 +624,31 @@ impl ItemsRepository for SqliteDb {
         Ok(parts)
     }
 
+    fn set_parts(&self, serial: &str, parts: &[NewItemPart]) -> RepoResult<()> {
+        let tx = self
+            .conn
+            .unchecked_transaction()
+            .map_err(|e| RepoError::Database(e.to_string()))?;
+
+        tx.execute(
+            "DELETE FROM item_parts WHERE item_serial = ?1",
+            params![serial],
+        )
+        .map_err(|e| RepoError::Database(e.to_string()))?;
+
+        for part in parts {
+            tx.execute(
+                "INSERT INTO item_parts (item_serial, slot, part_index, part_name, manufacturer) VALUES (?1, ?2, ?3, ?4, ?5)",
+                params![serial, part.slot, part.part_index, part.part_name, part.manufacturer],
+            )
+            .map_err(|e| RepoError::Database(e.to_string()))?;
+        }
+
+        tx.commit()
+            .map_err(|e| RepoError::Database(e.to_string()))?;
+        Ok(())
+    }
+
     fn set_value(
         &self,
         serial: &str,

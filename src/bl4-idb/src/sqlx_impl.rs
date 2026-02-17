@@ -60,6 +60,11 @@ pub trait AsyncItemsRepository {
     /// Set source for an item
     async fn set_source(&self, serial: &str, source: &str) -> AsyncRepoResult<()>;
 
+    // === Parts ===
+
+    /// Replace all parts for an item (delete existing + insert new)
+    async fn set_parts(&self, serial: &str, parts: &[NewItemPart]) -> AsyncRepoResult<()>;
+
     // === Multi-source values ===
 
     /// Set a field value with source attribution
@@ -574,6 +579,33 @@ pub mod sqlite {
                 .execute(&self.pool)
                 .await
                 .map_err(|e| RepoError::Database(e.to_string()))?;
+            Ok(())
+        }
+
+        async fn set_parts(&self, serial: &str, parts: &[NewItemPart]) -> AsyncRepoResult<()> {
+            let mut tx = self.pool.begin().await.map_err(|e| RepoError::Database(e.to_string()))?;
+
+            sqlx::query("DELETE FROM item_parts WHERE item_serial = ?")
+                .bind(serial)
+                .execute(&mut *tx)
+                .await
+                .map_err(|e| RepoError::Database(e.to_string()))?;
+
+            for part in parts {
+                sqlx::query(
+                    "INSERT INTO item_parts (item_serial, slot, part_index, part_name, manufacturer) VALUES (?, ?, ?, ?, ?)",
+                )
+                .bind(serial)
+                .bind(&part.slot)
+                .bind(part.part_index)
+                .bind(&part.part_name)
+                .bind(&part.manufacturer)
+                .execute(&mut *tx)
+                .await
+                .map_err(|e| RepoError::Database(e.to_string()))?;
+            }
+
+            tx.commit().await.map_err(|e| RepoError::Database(e.to_string()))?;
             Ok(())
         }
 
@@ -1498,6 +1530,33 @@ pub mod postgres {
                 .execute(&self.pool)
                 .await
                 .map_err(|e| RepoError::Database(e.to_string()))?;
+            Ok(())
+        }
+
+        async fn set_parts(&self, serial: &str, parts: &[NewItemPart]) -> AsyncRepoResult<()> {
+            let mut tx = self.pool.begin().await.map_err(|e| RepoError::Database(e.to_string()))?;
+
+            sqlx::query("DELETE FROM item_parts WHERE item_serial = $1")
+                .bind(serial)
+                .execute(&mut *tx)
+                .await
+                .map_err(|e| RepoError::Database(e.to_string()))?;
+
+            for part in parts {
+                sqlx::query(
+                    "INSERT INTO item_parts (item_serial, slot, part_index, part_name, manufacturer) VALUES ($1, $2, $3, $4, $5)",
+                )
+                .bind(serial)
+                .bind(&part.slot)
+                .bind(part.part_index)
+                .bind(&part.part_name)
+                .bind(&part.manufacturer)
+                .execute(&mut *tx)
+                .await
+                .map_err(|e| RepoError::Database(e.to_string()))?;
+            }
+
+            tx.commit().await.map_err(|e| RepoError::Database(e.to_string()))?;
             Ok(())
         }
 
