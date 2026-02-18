@@ -83,6 +83,9 @@ Quick reference for terms used throughout this guide. Page references indicate t
 **FNV-1a**
 : Fowler-Noll-Vo hash function (variant 1a). Used by NCS format for field name lookups. 64-bit version with offset basis 0xcbf29ce484222325 and prime 0x100000001b3. See [Chapter 6](#sec-ncs-format).
 
+**FOD (Fog of Discovery)**
+: The map fog overlay that clears as you explore. Stored in save files as a 128x128 grayscale alpha map per zone (0=fogged, 255=revealed, intermediate values for soft edges). See [Chapter 4](#sec-save-files).
+
 **FNamePool**
 : Global string pool containing all FName strings. Also called GNames. See [Chapter 2](#sec-unreal-architecture).
 

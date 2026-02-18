@@ -442,7 +442,7 @@ Invalid serials cause problems—items may not appear, or the game might crash. 
 
 ## Map Exploration Data (foddatas)
 
-The `foddatas` section stores your map exploration progress—the areas you've uncovered as you explore each zone. This data is surprisingly large, as it tracks exploration state at a granular level for every map in the game.
+The `foddatas` section stores your map exploration progress --- the areas you've uncovered as you explore each zone. "FOD" stands for Fog of Discovery: the fog overlay on the in-game map that clears as you move through an area.
 
 ### Structure
 
@@ -467,10 +467,35 @@ Each zone entry contains:
 | Field | Description |
 |-------|-------------|
 | `levelname` | Internal zone identifier (e.g., `World_P`, `Fortress_Grasslands_P`) |
-| `foddimensionx` | Grid width (typically 128) |
-| `foddimensiony` | Grid height (typically 128) |
+| `foddimensionx` | Grid width (always 128 in current game version) |
+| `foddimensiony` | Grid height (always 128 in current game version) |
 | `compressiontype` | Always `Zlib` |
-| `foddata` | Base64-encoded, zlib-compressed exploration bitmap |
+| `foddata` | Base64-encoded, zlib-compressed fog alpha map |
+
+### Fog Alpha Map Format
+
+The `foddata` payload decodes to a **128x128 grayscale image** --- one byte per cell, stored as a flat row-major array. Each byte is a fog alpha value:
+
+| Value | Meaning |
+|:-----:|---------|
+| 0 | Fully fogged (unexplored) |
+| 1--254 | Partially revealed (gradient at fog boundary) |
+| 255 | Fully revealed (explored) |
+
+To decode:
+
+1. Base64-decode the `foddata` string
+2. Zlib-decompress the result
+3. Read the output as a flat array of `foddimensionx * foddimensiony` bytes
+4. Index as `grid[row * foddimensionx + col]`
+
+The decompressed size is always exactly 16,384 bytes (128 * 128). A fully-explored zone uses all 256 possible values --- the intermediate values (1--254) form smooth gradients at the edges of explored regions, matching the soft feathered fog boundary visible on the in-game map.
+
+::: {.callout-note title="Not a Bitmask"}
+Despite the name "exploration bitmap" in early documentation, the format is not binary explored/unexplored. It's a full 8-bit alpha channel. The game renders this as a texture overlay on the zone's minimap. Cells near the player transition from 0 to 255 with a radial falloff, producing the familiar soft-edged fog reveal.
+:::
+
+A fully-explored save has roughly 30--40% of cells at 255, with another 5--10% at intermediate values and the rest at 0 (out-of-bounds or unreachable areas). A fresh character's zones are almost entirely zeros, compressing down to a few hundred bytes.
 
 ### Zone Names
 
@@ -484,22 +509,27 @@ Each zone entry contains:
 | `ElpisElevator_P` | Elpis elevator zone |
 | `Elpis_P` | Moon base |
 | `UpperCity_P` | Upper city |
+| `Vault_Grasslands_P` | Grasslands vault |
+| `Vault_ShatteredLands_P` | Shattered Lands vault |
+| `Vault_Mountains_P` | Mountains vault |
+| `Raid1_P` | Raid zone |
 
-### Copying Exploration Progress
+Only visited zones appear in the save. A new character has no entries; a completionist save has all 12.
+
+### Manipulating FOD Data
+
+To reveal an entire zone, generate a 16,384-byte array filled with `0xFF`, zlib-compress it, and base64-encode the result. To hide everything, do the same with `0x00`.
 
 To copy exploration data from one character to another, extract the entire `foddatas` block (including `fodsaveversion`) and replace it in the target save:
 
 ```bash
-# Decrypt both saves
-bl4 save decrypt source.sav source.yaml
-bl4 save decrypt target.sav target.yaml
+bl4 save decrypt -i source.sav -o source.yaml
+bl4 save decrypt -i target.sav -o target.yaml
 
 # Copy foddatas section (use text manipulation or YAML tools)
 # Then re-encrypt
-bl4 save encrypt target_modified.yaml target.sav
+bl4 save encrypt -i target_modified.yaml -o target.sav
 ```
-
-The foddata is substantial—a fully-explored save can have 40KB+ of exploration data compared to a fresh character's few hundred bytes.
 
 ---
 
