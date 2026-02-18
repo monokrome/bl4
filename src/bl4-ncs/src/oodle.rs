@@ -336,6 +336,186 @@ pub fn exec_backend<S: Into<String>>(command: S) -> Box<dyn OodleDecompressor> {
     Box::new(ExecBackend::new(command))
 }
 
+/// FIFO-based external command decompressor (Unix only)
+///
+/// Uses named pipes (FIFOs) instead of stdin/stdout for data transfer. This is
+/// required for Wine-based decompression, where Wine's console layer can corrupt
+/// binary data over stdio. FIFOs look like regular files to the Wine process but
+/// stream data in-memory without touching disk.
+///
+/// # Protocol
+///
+/// The command is invoked as:
+/// ```text
+/// <command> decompress <decompressed_size> <input_fifo> <output_fifo>
+/// ```
+///
+/// - The helper reads compressed data from `<input_fifo>`
+/// - The helper writes decompressed data to `<output_fifo>`
+/// - Exit code 0 indicates success
+#[cfg(unix)]
+pub struct FifoExecBackend {
+    command: String,
+    _fifo_dir: tempfile::TempDir,
+    input_fifo: std::path::PathBuf,
+    output_fifo: std::path::PathBuf,
+}
+
+#[cfg(unix)]
+impl FifoExecBackend {
+    /// Create a new FIFO exec backend with the given command
+    pub fn new<S: Into<String>>(command: S) -> Result<Self> {
+        let fifo_dir = tempfile::tempdir()
+            .map_err(|e| Error::Oodle(format!("Failed to create FIFO directory: {}", e)))?;
+
+        let input_fifo = fifo_dir.path().join("input");
+        let output_fifo = fifo_dir.path().join("output");
+
+        mkfifo(&input_fifo)?;
+        mkfifo(&output_fifo)?;
+
+        Ok(Self {
+            command: command.into(),
+            _fifo_dir: fifo_dir,
+            input_fifo,
+            output_fifo,
+        })
+    }
+}
+
+#[cfg(unix)]
+impl std::fmt::Debug for FifoExecBackend {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("FifoExecBackend")
+            .field("command", &self.command)
+            .field("input_fifo", &self.input_fifo)
+            .field("output_fifo", &self.output_fifo)
+            .finish()
+    }
+}
+
+#[cfg(unix)]
+impl FifoExecBackend {
+    fn spawn_helper(&self, decompressed_size: usize) -> Result<std::process::Child> {
+        let parts: Vec<&str> = self.command.split_whitespace().collect();
+        let (program, prefix_args) = parts
+            .split_first()
+            .ok_or_else(|| Error::Oodle("Empty exec command".into()))?;
+
+        Command::new(program)
+            .args(prefix_args)
+            .arg("decompress")
+            .arg(decompressed_size.to_string())
+            .arg(&self.input_fifo)
+            .arg(&self.output_fifo)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::piped())
+            .spawn()
+            .map_err(|e| {
+                Error::Oodle(format!(
+                    "Failed to spawn command '{}': {}",
+                    self.command, e
+                ))
+            })
+    }
+
+    fn check_exit(&self, child: &mut std::process::Child) -> Result<()> {
+        let status = child
+            .wait()
+            .map_err(|e| Error::Oodle(format!("Failed to wait for command: {}", e)))?;
+
+        if !status.success() {
+            let stderr_output = child
+                .stderr
+                .take()
+                .map(|mut s| {
+                    let mut buf = String::new();
+                    std::io::Read::read_to_string(&mut s, &mut buf).ok();
+                    buf
+                })
+                .unwrap_or_default();
+            return Err(Error::Oodle(format!(
+                "Command '{}' failed with exit code {:?}: {}",
+                self.command,
+                status.code(),
+                stderr_output.trim()
+            )));
+        }
+
+        Ok(())
+    }
+}
+
+#[cfg(unix)]
+impl OodleDecompressor for FifoExecBackend {
+    fn decompress_block(&self, compressed: &[u8], decompressed_size: usize) -> Result<Vec<u8>> {
+        let mut child = self.spawn_helper(decompressed_size)?;
+
+        // Writer thread: opens input FIFO and writes compressed data.
+        // Blocks until the helper opens the FIFO for reading.
+        let input_path = self.input_fifo.clone();
+        let compressed_data = compressed.to_vec();
+        let writer = std::thread::spawn(move || -> Result<()> {
+            let mut file = std::fs::File::create(&input_path)
+                .map_err(|e| Error::Oodle(format!("Failed to open input FIFO: {}", e)))?;
+            file.write_all(&compressed_data)
+                .map_err(|e| Error::Oodle(format!("Failed to write to input FIFO: {}", e)))?;
+            Ok(())
+        });
+
+        // Main thread: opens output FIFO and reads decompressed data.
+        // Blocks until the helper opens the FIFO for writing.
+        let output = std::fs::read(&self.output_fifo)
+            .map_err(|e| Error::Oodle(format!("Failed to read from output FIFO: {}", e)))?;
+
+        writer
+            .join()
+            .map_err(|_| Error::Oodle("Writer thread panicked".into()))??;
+
+        self.check_exit(&mut child)?;
+
+        if output.len() != decompressed_size {
+            return Err(Error::DecompressionSize {
+                expected: decompressed_size,
+                actual: output.len(),
+            });
+        }
+
+        Ok(output)
+    }
+
+    fn name(&self) -> &'static str {
+        "fifo-exec"
+    }
+
+    fn is_full_support(&self) -> bool {
+        true
+    }
+}
+
+/// Create a FIFO-based exec backend (Unix only, required for Wine)
+#[cfg(unix)]
+pub fn fifo_exec_backend<S: Into<String>>(command: S) -> Result<Box<dyn OodleDecompressor>> {
+    Ok(Box::new(FifoExecBackend::new(command)?))
+}
+
+/// Create named FIFO at the given path
+#[cfg(unix)]
+fn mkfifo(path: &std::path::Path) -> Result<()> {
+    let c_path = std::ffi::CString::new(
+        path.to_str()
+            .ok_or_else(|| Error::Oodle("non-UTF8 FIFO path".into()))?,
+    )
+    .map_err(|e| Error::Oodle(format!("invalid FIFO path: {}", e)))?;
+
+    let result = unsafe { libc::mkfifo(c_path.as_ptr(), 0o600) };
+    if result != 0 {
+        return Err(Error::Io(std::io::Error::last_os_error()));
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -393,6 +573,95 @@ mod tests {
                 );
             }
             Ok(_) => panic!("native_backend should return Err on non-Windows"),
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn test_fifo_exec_backend_creates_fifos() {
+        let backend = FifoExecBackend::new("nonexistent_helper").unwrap();
+        assert!(backend.input_fifo.exists());
+        assert!(backend.output_fifo.exists());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn test_fifo_exec_backend_name() {
+        let backend = FifoExecBackend::new("test_helper").unwrap();
+        assert_eq!(backend.name(), "fifo-exec");
+        assert!(backend.is_full_support());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn test_fifo_exec_backend_cleanup_on_drop() {
+        let (input_path, output_path);
+        {
+            let backend = FifoExecBackend::new("test_helper").unwrap();
+            input_path = backend.input_fifo.clone();
+            output_path = backend.output_fifo.clone();
+            assert!(input_path.exists());
+            assert!(output_path.exists());
+        }
+        // TempDir dropped — FIFOs should be cleaned up
+        assert!(!input_path.exists());
+        assert!(!output_path.exists());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn test_fifo_exec_backend_empty_command() {
+        let backend = FifoExecBackend::new("").unwrap();
+        let result = backend.decompress_block(&[0u8; 4], 4);
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        assert!(err.contains("Empty exec command"), "got: {}", err);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn test_fifo_exec_backend_nonexistent_command() {
+        let backend = FifoExecBackend::new("nonexistent_fifo_helper").unwrap();
+        let result = backend.decompress_block(&[0u8; 4], 4);
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        assert!(err.contains("Failed to spawn"), "got: {}", err);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn test_fifo_exec_backend_end_to_end() {
+        use std::os::unix::fs::PermissionsExt;
+
+        // Create a helper script that reads from input FIFO and writes to output FIFO.
+        // Identity "decompression": cat input → output.
+        // Args: $1=decompress $2=size $3=input_fifo $4=output_fifo
+        let script_dir = tempfile::tempdir().unwrap();
+        let script_path = script_dir.path().join("test_helper.sh");
+        std::fs::write(
+            &script_path,
+            "#!/bin/sh\ncat < \"$3\" > \"$4\"\n",
+        )
+        .unwrap();
+        std::fs::set_permissions(&script_path, std::fs::Permissions::from_mode(0o755)).unwrap();
+
+        let backend = FifoExecBackend::new(script_path.to_str().unwrap()).unwrap();
+
+        let input_data = b"hello world test data";
+        let result = backend.decompress_block(input_data, input_data.len());
+
+        match result {
+            Ok(output) => assert_eq!(output, input_data),
+            Err(e) => panic!("FIFO decompression failed: {}", e),
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn test_fifo_exec_factory() {
+        match fifo_exec_backend("test_helper") {
+            Ok(backend) => assert_eq!(backend.name(), "fifo-exec"),
+            Err(e) => panic!("fifo_exec_backend factory failed: {}", e),
         }
     }
 }
