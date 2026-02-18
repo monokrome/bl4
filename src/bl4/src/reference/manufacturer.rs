@@ -77,6 +77,11 @@ pub fn manufacturer_name_by_code(code: &str) -> Option<&'static str> {
     manufacturer_by_code(code).map(|m| m.name)
 }
 
+/// Get manufacturer by display name (reverse lookup)
+pub fn manufacturer_by_name(name: &str) -> Option<&'static Manufacturer> {
+    MANUFACTURERS.iter().find(|m| m.name.eq_ignore_ascii_case(name))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -86,5 +91,13 @@ mod tests {
         assert_eq!(manufacturer_by_code("JAK").map(|m| m.name), Some("Jakobs"));
         assert_eq!(manufacturer_by_code("TOR").map(|m| m.name), Some("Torgue"));
         assert_eq!(manufacturer_name_by_code("VLA"), Some("Vladof"));
+    }
+
+    #[test]
+    fn test_manufacturer_by_name() {
+        assert_eq!(manufacturer_by_name("Jakobs").map(|m| m.code), Some("JAK"));
+        assert_eq!(manufacturer_by_name("Torgue").map(|m| m.code), Some("TOR"));
+        assert_eq!(manufacturer_by_name("Vladof").map(|m| m.code), Some("VLA"));
+        assert!(manufacturer_by_name("Unknown").is_none());
     }
 }

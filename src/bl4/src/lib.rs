@@ -70,8 +70,8 @@ pub use manifest::{all_categories, all_manufacturers, part_name, stats as manife
 #[doc(inline)]
 pub use reference::{
     element_by_code, gear_type_by_code, legendary_by_name, manufacturer_by_code,
-    manufacturer_name_by_code, rarity_by_code, rarity_by_tier, stat_description,
-    weapon_type_by_code, ElementType, GearType, LegendaryItem, Manufacturer, RarityTier,
-    WeaponType, ELEMENT_TYPES, GEAR_TYPES, KNOWN_LEGENDARIES, MANUFACTURERS, RARITY_TIERS,
-    WEAPON_TYPES,
+    manufacturer_by_name, manufacturer_name_by_code, rarity_by_code, rarity_by_tier,
+    rarity_probability, stat_description, weapon_type_by_code, weapon_type_by_name, ElementType,
+    GearType, LegendaryItem, Manufacturer, RarityTier, WeaponType, ELEMENT_TYPES, GEAR_TYPES,
+    KNOWN_LEGENDARIES, MANUFACTURERS, RARITY_TIERS, WEAPON_TYPES,
 };
