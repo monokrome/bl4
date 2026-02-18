@@ -60,11 +60,14 @@ pub use parts::{
 #[doc(inline)]
 pub use save::{ChangeSet, SaveError, SaveFile, StateFlags};
 #[doc(inline)]
-pub use serial::{ItemSerial, SerialError};
+pub use serial::{ItemSerial, RarityEstimate, SerialError};
 
 // Manifest data lookups
 #[doc(inline)]
-pub use manifest::{all_categories, all_manufacturers, part_name, stats as manifest_stats};
+pub use manifest::{
+    all_categories, all_manufacturers, drop_pool, part_name, stats as manifest_stats,
+    world_pool_legendary_count, DropPool,
+};
 
 // Reference data (rarities, elements, weapon types, manufacturers, gear types)
 #[doc(inline)]

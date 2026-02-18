@@ -1,0 +1,23 @@
+manufacturer_code	gear_type_code	legendary_count	boss_source_count	world_pool_name
+BOR	HW	1	1	Heavy Weapons
+BOR	SG	1	1	Shotguns
+BOR	SM	1	1	SMGs
+DAD	AR	2	2	Assault Rifles
+DAD	PS	2	2	Pistols
+DAD	SG	2	2	Shotguns
+JAK	AR	1	1	Assault Rifles
+JAK	PS	3	3	Pistols
+JAK	SG	1	1	Shotguns
+JAK	SR	1	1	Sniper Rifles
+MAL	HW	1	1	Heavy Weapons
+MAL	SM	1	1	SMGs
+TED	AR	1	1	Assault Rifles
+TED	PS	1	1	Pistols
+TED	SG	1	1	Shotguns
+TOR	AR	1	1	Assault Rifles
+TOR	HW	1	1	Heavy Weapons
+TOR	SG	1	1	Shotguns
+VLA	AR	1	1	Assault Rifles
+VLA	HW	1	1	Heavy Weapons
+VLA	SM	1	1	SMGs
+VLA	SR	1	1	Sniper Rifles

@@ -15,6 +15,7 @@ const CATEGORY_NAMES_TSV: &str = include_str!("../../../share/manifest/category_
 const PARTS_DATABASE_TSV: &str = include_str!(concat!(env!("OUT_DIR"), "/parts_database.tsv"));
 const MANUFACTURERS_JSON: &str = include_str!("../../../share/manifest/manufacturers.json");
 const WEAPON_TYPES_JSON: &str = include_str!("../../../share/manifest/weapon_types.json");
+const DROP_POOLS_TSV: &str = include_str!("../../../share/manifest/drop_pools.tsv");
 
 // ============================================================================
 // Data Structures (JSON-based reference data only)
@@ -76,6 +77,38 @@ fn parse_tsv_parts(tsv: &str) -> HashMap<(i64, i64), String> {
         .collect()
 }
 
+/// Drop pool data for legendary items per (manufacturer, gear_type) pair
+#[derive(Debug, Clone)]
+pub struct DropPool {
+    pub manufacturer_code: String,
+    pub gear_type_code: String,
+    pub legendary_count: u32,
+    pub boss_source_count: u32,
+    pub world_pool_name: String,
+}
+
+/// (ManufacturerCode, GearTypeCode) -> DropPool
+static DROP_POOLS: Lazy<HashMap<(String, String), DropPool>> = Lazy::new(|| {
+    DROP_POOLS_TSV
+        .lines()
+        .skip(1)
+        .filter_map(|line| {
+            let cols: Vec<&str> = line.splitn(5, '\t').collect();
+            if cols.len() < 5 {
+                return None;
+            }
+            let pool = DropPool {
+                manufacturer_code: cols[0].to_string(),
+                gear_type_code: cols[1].to_string(),
+                legendary_count: cols[2].parse().ok()?,
+                boss_source_count: cols[3].parse().ok()?,
+                world_pool_name: cols[4].to_string(),
+            };
+            Some(((cols[0].to_string(), cols[1].to_string()), pool))
+        })
+        .collect()
+});
+
 /// Manufacturer Code -> Full Name
 static MANUFACTURERS: Lazy<HashMap<String, String>> = Lazy::new(|| {
     let mfrs: HashMap<String, Manufacturer> =
@@ -115,6 +148,20 @@ pub fn part_name(category: i64, index: i64) -> Option<&'static str> {
 /// Get a manufacturer's full name from its code
 pub fn manufacturer_name(code: &str) -> Option<&'static str> {
     MANUFACTURERS.get(code).map(|s| s.as_str())
+}
+
+/// Get drop pool data for a (manufacturer, gear_type) pair
+pub fn drop_pool(manufacturer_code: &str, gear_type_code: &str) -> Option<&'static DropPool> {
+    DROP_POOLS.get(&(manufacturer_code.to_string(), gear_type_code.to_string()))
+}
+
+/// Get the total number of legendaries in a world drop pool (e.g., all "Pistols")
+pub fn world_pool_legendary_count(world_pool_name: &str) -> u32 {
+    DROP_POOLS
+        .values()
+        .filter(|p| p.world_pool_name == world_pool_name)
+        .map(|p| p.legendary_count)
+        .sum()
 }
 
 /// Get all manufacturer codes for a weapon type
@@ -279,6 +326,29 @@ mod tests {
         assert!(is_loaded());
         // Call again to ensure it's idempotent
         assert!(is_loaded());
+    }
+
+    #[test]
+    fn test_drop_pool() {
+        let pool = drop_pool("JAK", "PS");
+        assert!(pool.is_some());
+        let pool = pool.unwrap();
+        assert_eq!(pool.manufacturer_code, "JAK");
+        assert_eq!(pool.gear_type_code, "PS");
+        assert!(pool.legendary_count > 0);
+        assert_eq!(pool.world_pool_name, "Pistols");
+    }
+
+    #[test]
+    fn test_drop_pool_unknown() {
+        assert!(drop_pool("ZZZ", "XX").is_none());
+    }
+
+    #[test]
+    fn test_world_pool_legendary_count() {
+        let pistol_count = world_pool_legendary_count("Pistols");
+        assert!(pistol_count > 0);
+        assert!(world_pool_legendary_count("Nonexistent") == 0);
     }
 
     #[test]

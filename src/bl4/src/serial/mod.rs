@@ -10,9 +10,12 @@
 
 mod base85;
 mod bitstream;
+mod rarity;
 
 use base85::{decode_base85, encode_base85, mirror_byte};
 use bitstream::{BitReader, BitWriter};
+
+pub use rarity::RarityEstimate;
 
 use crate::parts::{
     category_from_varbit, level_from_code, manufacturer_name, serial_id_to_parts_category,
