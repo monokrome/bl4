@@ -13,6 +13,7 @@ pub fn decode(
     verbose: bool,
     debug: bool,
     analyze: bool,
+    rarity: bool,
     parts_db: &Path,
 ) -> Result<()> {
     let item = bl4::ItemSerial::decode(serial).context("Failed to decode serial")?;
@@ -131,6 +132,10 @@ pub fn decode(
         analyze_first_token(&item)?;
     }
 
+    if rarity {
+        print_rarity_estimate(&item);
+    }
+
     Ok(())
 }
 
@@ -205,6 +210,48 @@ fn analyze_first_token(item: &bl4::ItemSerial) -> Result<()> {
     }
 
     Ok(())
+}
+
+fn print_rarity_estimate(item: &bl4::ItemSerial) {
+    match item.rarity_estimate() {
+        Some(est) => {
+            println!("\nRarity estimate:");
+            println!(
+                "  Tier: {} ({:.6}%, {})",
+                est.rarity.name(),
+                est.tier_probability * 100.0,
+                est.odds_display()
+            );
+            if let Some(category) = &est.category {
+                if let Some(pool_size) = est.pool_size {
+                    let world_total = est.world_pool_size.unwrap_or(pool_size);
+                    println!(
+                        "  Pool: {} ({} legendaries, {} in world pool)",
+                        category, pool_size, world_total
+                    );
+                } else {
+                    println!("  Category: {}", category);
+                }
+            }
+            if let Some(per_item) = est.per_item_probability {
+                println!(
+                    "  Per-item: {:.8}% (~1 in {})",
+                    per_item * 100.0,
+                    if per_item > 0.0 {
+                        format!("{}", (1.0 / per_item).round() as u64)
+                    } else {
+                        "?".to_string()
+                    }
+                );
+            }
+            if let Some(bosses) = est.boss_sources {
+                println!("  Boss sources: {}", bosses);
+            }
+        }
+        None => {
+            println!("\nRarity estimate: unavailable (insufficient serial data)");
+        }
+    }
 }
 
 /// Handle `serial encode` command

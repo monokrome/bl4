@@ -8,7 +8,8 @@ mod types;
 
 pub use db::DropsDb;
 pub use extract::{
-    extract_drops_from_itempool, extract_drops_from_itempoollist, generate_drops_manifest,
+    extract_drops_from_itempool, extract_drops_from_itempoollist, generate_drop_pools_tsv,
+    generate_drops_manifest,
 };
 pub use types::{
     BossNameMapping, DropEntry, DropLocation, DropProbabilities, DropSource, DropsManifest,

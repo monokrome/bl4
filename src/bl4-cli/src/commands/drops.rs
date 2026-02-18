@@ -11,7 +11,11 @@ pub fn handle(command: DropsCommand) -> Result<()> {
         DropsCommand::Find { item, manifest } => find_item(&item.join(" "), &manifest),
         DropsCommand::Source { name, manifest } => find_source(&name.join(" "), &manifest),
         DropsCommand::List { sources, manifest } => list(&manifest, sources),
-        DropsCommand::Generate { ncs_dir, output } => generate(&ncs_dir, &output),
+        DropsCommand::Generate {
+            ncs_dir,
+            output,
+            manifest_dir,
+        } => generate(&ncs_dir, &output, &manifest_dir),
     }
 }
 
@@ -114,8 +118,8 @@ fn list(manifest_path: &Path, list_sources: bool) -> Result<()> {
     Ok(())
 }
 
-fn generate(ncs_dir: &Path, output: &Path) -> Result<()> {
-    use bl4_ncs::DropSource;
+fn generate(ncs_dir: &Path, output: &Path, manifest_dir: &Path) -> Result<()> {
+    use bl4_ncs::{generate_drop_pools_tsv, DropSource};
 
     println!("Generating drops manifest from {}...", ncs_dir.display());
 
@@ -128,6 +132,13 @@ fn generate(ncs_dir: &Path, output: &Path) -> Result<()> {
 
     let json = serde_json::to_string_pretty(&manifest)?;
     std::fs::write(output, &json)?;
+
+    // Also write drop_pools.tsv for compile-time embedding
+    std::fs::create_dir_all(manifest_dir)?;
+    let pools_tsv = generate_drop_pools_tsv(&manifest);
+    let pools_path = manifest_dir.join("drop_pools.tsv");
+    std::fs::write(&pools_path, &pools_tsv)?;
+    println!("Wrote drop pools to {}", pools_path.display());
 
     // Count by source type
     let boss_count = manifest
