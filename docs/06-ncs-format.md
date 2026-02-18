@@ -871,7 +871,7 @@ Numeric values (weights, probabilities) are stored as strings in NCS: `"0.200000
 
 ```bash
 # Generate drops manifest from NCS data
-bl4 drops generate "/path/to/ncs_native" -o share/manifest/drops.json
+bl4 drops generate "/path/to/ncs_native" -o share/manifest/drops.json --manifest-dir share/manifest
 
 # Find where an item drops
 bl4 drops find hellwalker

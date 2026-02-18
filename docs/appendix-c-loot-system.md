@@ -1,128 +1,176 @@
 # Appendix C: Loot System Internals {#sec-loot-system}
 
-This appendix documents the internal workings of BL4's loot system, based on memory analysis and game file extraction.
+This appendix explains how BL4's loot system decides what to drop, how rare each drop is, and how the bl4 toolkit estimates item rarity from serial data.
 
 ---
 
-## Loot Pool Architecture
+## Two Ways to Get a Legendary
 
-### Core Classes
+Every legendary in BL4 reaches the player through one of two paths: **dedicated drops** or **world drops**. They use different probability models, and understanding the difference matters for estimating how rare a given item is.
 
-| Class | Description |
-|-------|-------------|
-| ItemPoolDef | Defines a loot pool |
-| ItemPoolEntry | Single item in a pool |
-| ItemPoolListDef | List of multiple pools |
-| ItemPoolSelectorDef | Selection logic |
-| ItemPoolInstanceData | Runtime instance data |
-| ItemPoolSelectorStateDef | Selection state |
+### Dedicated Drops
 
-Script path: `/Script/GbxGame.ItemPoolDef`
+Dedicated drops are tied to specific bosses. Each boss has an `ItemPoolList` in NCS that names 1--3 legendary items, each assigned to a **tier** that determines its drop chance per kill:
 
-### Pool Types Enum
+| Tier | Chance per kill |
+|------|:---------:|
+| Primary | 6% |
+| Secondary | 4.5% |
+| Tertiary | 3% |
 
-```cpp
-enum class ELootPoolTypes {
-    All = 0,
-    BaseLoot = 1,
-    AdditionalLoot = 2,
-    DedicatedDrops = 3,
-    GearDrivenDrops = 4,
-    MAX = 5
-};
+The first item in a boss's pool is Primary (highest chance), the second is Secondary, and so on. When you kill a boss, the game rolls independently for each dedicated item --- you can get zero, one, or (rarely) multiple legendaries from a single kill.
+
+::: {.callout-note title="Shiny and TrueBoss Variants"}
+Bosses have additional tier variants for special modes. **TrueBoss** (Chaos mode) raises the dedicated drop rate to 25%, making legendaries roughly 4x more common per kill. **Shiny** items are cosmetic variants at 1%, and **TrueBossShiny** at 3%.
+:::
+
+This is the simplest path to a legendary: kill a boss, roll against a known percentage. If the Hellwalker is the Saddleback's Primary drop, you have a 6% chance per kill. Farm the boss enough and you'll get one.
+
+### World Drops
+
+World drops are the other path. When any enemy dies, it can drop gear from the general loot pool. The rarity of that gear is selected by a weighted roll:
+
+| Rarity | Weight | Probability |
+|--------|-------:|:-----------:|
+| Common | 100.0 | ~94.18% |
+| Uncommon | 6.0 | ~5.65% |
+| Rare | 0.14 | ~0.132% |
+| Epic | 0.045 | ~0.0424% |
+| Legendary | 0.0003 | ~0.000283% |
+
+These weights come from the `rarity_balance` table in `gbx_ue_data_table0.bin`. The game sums all weights (106.1853) and picks a tier proportionally. Legendary is 0.0003 out of 106.1853 --- roughly 1 in 353,000 world drops.
+
+But that's the chance of getting *any* legendary. The chance of getting a *specific* one is much lower. If you rolled Legendary on a world drop and the game selects from the Pistol pool, there are 9 legendary pistols across all manufacturers. Your chance of the specific one you wanted is the tier probability divided by the pool size: roughly 1 in 3.2 million.
+
+---
+
+## How a Drop Resolves
+
+When an enemy dies, the game runs through several systems in sequence:
+
+1. **Base loot roll** (`Struct_EnemyDrops`): determines what *categories* drop --- guns, shields, grenades, class mods, currency. Each category has its own probability and quantity. A standard boss might drop 2 guns and 1 shield.
+
+2. **Rarity selection**: for each item that drops, the rarity weight table determines what tier it rolls. This is where Common (94%) vs Legendary (0.0003%) is decided.
+
+3. **Pool selection**: the game picks a specific item from the pool matching that rarity and item category. A legendary gun roll selects from `itempool_guns_05_legendary`.
+
+4. **Dedicated drop check**: independently of the base loot, the boss's dedicated pool is checked. Each assigned legendary rolls independently at its tier percentage (Primary 6%, Secondary 4.5%, etc.).
+
+5. **Luck modifier**: the player's luck stat modifies rarity weights at step 2. Higher luck increases the weight of rarer tiers. The exact formula uses `GrowthExponent`, `BaseWeight`, and `GameStageVariance` properties on the `RarityWeightData` class, but the specific curve is resolved at runtime and hasn't been fully extracted.
+
+Steps 2--3 and step 4 are independent paths. An item can appear as both a dedicated drop (guaranteed from a specific boss) and a world drop (from the general pool). The dedicated path is far more likely for any given item.
+
+---
+
+## Pool Sizes and Per-Item Odds
+
+The rarity tier probability tells you how likely *any* legendary is. The pool size tells you how likely a *specific* one is. These are different questions.
+
+Legendary items are organized into pools by manufacturer and weapon type. Jakobs Shotguns have 2 legendaries. Vladof Assault Rifles have 3. The bl4 toolkit's `drop_pools.tsv` manifest captures these counts.
+
+For world drops, the game selects across all manufacturers within a weapon type. If it rolls "legendary pistol", it's choosing from all 9 legendary pistols (Jakobs, Daedalus, Tediore, etc. combined). The per-item probability for a specific legendary pistol from a world drop is:
+
+```
+tier_probability / world_pool_size = 0.000283% / 9 = ~0.0000314%
 ```
 
----
-
-## Rarity Tiers
-
-### Tier Definitions
-
-| Tier | Component ID | Material Path |
-|------|--------------|---------------|
-| Common | comp_01_common | DA_MD_BOR_Common |
-| Uncommon | comp_02_uncommon | DA_MD_BOR_Uncommon |
-| Rare | comp_03_rare | DA_MD_BOR_Rare |
-| Epic | comp_04_epic | DA_MD_BOR_Epic |
-| Legendary | comp_05_legendary | DA_MD_BOR_Legendary_01 |
-
-Material path pattern: `/Game/Gear/Weapons/_Shared/Materials/BOR/DA_MD_BOR_{Rarity}`
-
-### Price Modifier Attributes
-
-| Tier | Attribute |
-|------|-----------|
-| Common | attr_calc_pricemod_rarity_common |
-| Uncommon | attr_calc_pricemod_rarity_uncommon |
-| Rare | attr_calc_pricemod_rarity_rare |
-| Epic | attr_calc_pricemod_rarity_epic |
-| Legendary | attr_calc_pricemod_rarity_legendary |
+That's roughly 1 in 3.2 million world drops for a specific legendary pistol. This is why dedicated boss farming (6% per kill for a specific item) is orders of magnitude more efficient than hoping for world drops.
 
 ---
 
-## Loot Weight System
+## Rarity Estimation
 
-### Weight Properties
+The bl4 toolkit can estimate an item's rarity from its serial string. The `rarity_estimate()` method on `ItemSerial` combines several data sources:
 
-| Property | Description |
-|----------|-------------|
-| GrowthExponent | Level scaling exponent |
-| BaseWeight | Base drop weight |
-| GameStageVariance | Variance by game stage |
-| RelativeGameStage | Relative stage modifier |
-| GameStageTable | Stage lookup table |
-| LootGameStages | Game stages for loot |
-| RankLootRarityTable | Rarity by rank table |
+1. **Rarity tier**: decoded from the serial's `inv_comp` part (comp_01 through comp_05)
+2. **Tier probability**: looked up from the rarity weight table
+3. **Manufacturer and type codes**: extracted from the serial's token stream (VarInt-first for weapons, VarBit-first for equipment)
+4. **Pool data**: matched against the compile-time `drop_pools.tsv` manifest for legendary count, world pool size, and boss source count
 
-### Weight Classes
+For legendaries, the estimate divides the tier probability by the world pool size to get per-item odds. For other rarities, it reports only the tier probability (since the pool selection is less meaningful --- a "common Jakobs pistol" isn't a specific item the way a legendary is).
 
-| Class | Description |
-|-------|-------------|
-| RarityWeightData | Weight configuration |
-| LocalRarityModifierData | Local rarity modifiers |
+```text
+Rarity estimate:
+  Tier: Legendary (0.000283%, ~1 in 353,490)
+  Pool: Jakobs Shotgun (2 legendaries, 9 in world pool)
+  Per-item: ~1 in 3,181,413
+  Boss sources: 2
+```
 
----
-
-## Luck System
-
-### Core Classes
-
-| Class | Description |
-|-------|-------------|
-| LootGlobalsDef | Global loot settings |
-| LuckCategoryAttribute | Luck category attribute |
-| LuckCategoryAttributesState | Runtime luck state |
-| LuckCategoryDef | Luck category definition |
-| LuckCategoryValueResolver | Resolves luck values |
-| LuckGlobals | Global luck settings |
-
-### Luck Categories
-
-| Category | Description |
-|----------|-------------|
-| LuckCategories | Base luck modifiers |
-| EnemyBasedLuckCategories | Per-enemy modifiers |
-| PlayerBasedLuckCategories | Player-specific modifiers |
+::: {.callout-warning}
+These are estimates, not exact values. The rarity weight table is extracted from NCS data tables and matches community testing results, but luck modifiers, game stage scaling, and category selection probabilities are resolved at runtime and aren't captured here.
+:::
 
 ---
 
-## Drop Probability Tables
+## What We Know vs. Don't Know
 
-### Dedicated Drop Probability (Struct_DedicatedDropProbability)
+**Extracted from NCS data:**
 
-| Tier | Probability |
-|------|-------------|
-| Primary | 20% (0.2) |
-| Secondary | 8% (0.08) |
-| Tertiary | 3% (0.03) |
-| Quaternary | 0% (0.0) |
-| Shiny | 1% (0.01) |
-| TrueBoss | 0% (0.0) |
-| TrueBossShiny | 0% (0.0) |
+- Dedicated drop probabilities per tier (from `Table_DedicatedDropProbability`)
+- Rarity weights for the base tier selection (from `rarity_balance`)
+- Boss-to-legendary assignments and tier ordering (from `itempoollist.bin`)
+- Pool sizes per manufacturer/weapon type (from drops manifest)
+- Enemy drop category probabilities and quantities (from `Table_EnemyDrops`)
 
-### Enemy Drops (Struct_EnemyDrops)
+**Not yet extracted:**
 
-Fields (DoubleProperty type):
+- Luck system curve (how much luck shifts rarity weights, resolved at runtime)
+- Category selection probabilities within a rarity tier (shield vs weapon vs grenade)
+- Game stage scaling effects on weights (the `GrowthExponent` / `GameStageVariance` interaction)
+- Tier assignments for most dedicated drops (only 1 of 133 boss drops has explicit tier context in NCS --- the rest are inferred by pool ordering)
+
+---
+
+## NCS Data Sources
+
+Drop information is stored across several NCS files within pak archives:
+
+| File | Contents |
+|------|----------|
+| `itempoollist.bin` | Boss → legendary item mappings with tier assignments |
+| `itempool.bin` | Item pool definitions, rarity weights, world drop membership |
+| `gbx_ue_data_table0.bin` | `Table_DedicatedDropProbability`, `rarity_balance`, `Table_EnemyDrops`, `Table_LootableBalance` |
+| `loot_config.bin` | Global loot configuration parameters |
+| `preferredparts.bin` | Part preferences for item generation |
+
+Numeric values in these tables are stored as strings in NCS (`"0.060000"`, `"1.500000"`). The binary section's bit-packed indices point into the string table where these values live.
+
+---
+
+## Reference: Dedicated Drop Probability Tiers
+
+From `Table_DedicatedDropProbability` in `gbx_ue_data_table0.bin`. Schema defined in `Struct_DedicatedDropProbability.uasset` with a single `DoubleProperty` field.
+
+| Tier | Row Name | Index | Probability |
+|------|----------|:-----:|:-----------:|
+| Primary | `Primary_2_<GUID>` | 2 | 6% |
+| Secondary | `Secondary_4_<GUID>` | 4 | 4.5% |
+| Tertiary | `Tertiary_6_<GUID>` | 6 | 3% |
+| Shiny | `Shiny_9_<GUID>` | 9 | 1% |
+| TrueBoss | `TrueBoss_12_<GUID>` | 12 | 25% |
+| TrueBossShiny | `TrueBossShiny_14_<GUID>` | 14 | 3% |
+| Quaternary | `Quaternary_16_<GUID>` | 16 | 0% |
+
+---
+
+## Reference: Rarity Weights
+
+From `rarity_balance` in `gbx_ue_data_table0.bin`. Total weight: 106.1853.
+
+| Tier | Component ID | Weight | Probability |
+|------|--------------|-------:|:-----------:|
+| Common | `comp_01_common` | 100.0 | 94.18% |
+| Uncommon | `comp_02_uncommon` | 6.0 | 5.65% |
+| Rare | `comp_03_rare` | 0.14 | 0.132% |
+| Epic | `comp_04_epic` | 0.045 | 0.0424% |
+| Legendary | `comp_05_legendary` | 0.0003 | 0.000283% |
+
+---
+
+## Reference: Enemy Drop Fields
+
+From `Struct_EnemyDrops`. Each enemy tier has rows in `Table_EnemyDrops` controlling what categories drop and in what quantities.
 
 | Field | Description |
 |-------|-------------|
@@ -145,11 +193,9 @@ Fields (DoubleProperty type):
 
 ---
 
-## Dedicated Drop Tables
+## Reference: Boss → Legendary Mappings
 
-### Boss → Legendary Mappings
-
-Each boss has 1-3 dedicated legendary drops. Extracted from `itempoollist.bin` NCS files.
+Extracted from `itempoollist.bin`. Each boss has 1--3 dedicated legendary drops. The first item listed is Primary tier (6%), second is Secondary (4.5%), third is Tertiary (3%).
 
 | Boss | Primary Drop | Secondary Drop | Third Drop |
 |------|--------------|----------------|------------|
@@ -198,34 +244,11 @@ Each boss has 1-3 dedicated legendary drops. Extracted from `itempoollist.bin` N
 | TrashThresher | MAL_SG Kickballer | VLA_SM BeeGun | - |
 | UpgradedElectiMole | DAD_PS Zipgun | JAK_SG RainbowVomit | - |
 
-### Weapon Type Codes
-
-| Code | Weapon Type |
-|------|-------------|
-| AR | Assault Rifle |
-| PS | Pistol |
-| SG | Shotgun |
-| SM | SMG |
-| SR | Sniper Rifle |
-
-### Manufacturer Codes
-
-| Code | Manufacturer |
-|------|--------------|
-| BOR | Ripper |
-| DAD | Daedalus |
-| JAK | Jakobs |
-| MAL | Maliwan |
-| ORD | Order |
-| TED | Tediore |
-| TOR | Torgue |
-| VLA | Vladof |
-
 ---
 
-## Known Item Pools
+## Reference: Item Pools
 
-### Boss Pools
+### Boss Pool Lists
 
 | Pool | Description |
 |------|-------------|
@@ -235,355 +258,47 @@ Each boss has 1-3 dedicated legendary drops. Extracted from `itempoollist.bin` N
 | ItemPoolList_Enemy_BaseLoot_BossVault | Vault boss drops |
 | ItemPoolList_*_TrueBoss | True Boss (Chaos mode) variants |
 
-### Rarity Pools
+### Rarity-Tiered Weapon Pools
 
-| Pool | Description |
-|------|-------------|
-| itempool_guns_01_common | Common weapons |
-| itempool_guns_02_uncommon | Uncommon weapons |
-| itempool_guns_03_rare | Rare weapons |
-| itempool_guns_04_epic | Epic weapons |
-| itempool_guns_05_legendary | Legendary weapons |
+| Pool | Rarity |
+|------|--------|
+| `itempool_guns_01_common` | Common |
+| `itempool_guns_02_uncommon` | Uncommon |
+| `itempool_guns_03_rare` | Rare |
+| `itempool_guns_04_epic` | Epic |
+| `itempool_guns_05_legendary` | Legendary |
 
 ### Special Pools
 
 | Pool | Description |
 |------|-------------|
 | ItemPool_FishCollector_Reward_Legendary | Fish collector reward |
-| ItemPool_BlackMarket_Comp_BOR_HW_DiscJockey | Black Market |
-| ItemPool_BlackMarket_Comp_BOR_HW_Streamer | Black Market |
+| ItemPool_BlackMarket_Comp_BOR_HW_DiscJockey | Black Market exclusive |
+| ItemPool_BlackMarket_Comp_BOR_HW_Streamer | Black Market exclusive |
 
 ---
 
-## Lootable Objects
+## Reference: Drop Source Types
 
-### Classes
-
-| Class | Description |
-|-------|-------------|
-| GbxCondition_CanOpenLootable | Open condition check |
-| GbxCondition_ShouldLootableShowLockedPrompt | Lock prompt |
-| LootableObjectInstanceProxy | Instance proxy |
-| LootableObjectBehaviorMod | Behavior modifier |
-| LootableObjectBodySettings | Body settings |
-| LootableObjectBodyState | Runtime body state |
-
----
-
-## Inventory System
-
-### Core Classes
-
-| Class | Description |
-|-------|-------------|
-| InventoryParam | Inventory parameter |
-| InventoryParamsDef | Parameter definitions |
-| InventoryRarityDataTableValueResolver | Rarity resolver |
-| InventoryRarityDef | Rarity definition |
-| InventorySerialNumber | Item serial number |
-| InventoryStatsContainer | Stats container |
-| InventoryStatsPropertyResolver | Stats resolver |
-| InventoryStatTags | Stat tags |
-| InventoryStatAttribute | Stat attribute |
-
-### Key Class: InventoryRarityDataTableValueResolver
-
-This class resolves rarity values from DataTables. Potential patching target for forcing specific rarity tiers.
-
----
-
-## RNG Implementation
-
-### Import Table Functions
-
-| Address | Function | DLL |
-|---------|----------|-----|
-| 0x150b74e18 | std::_Random_device | MSVCP140.dll |
-| 0x150b75050 | BCryptGenRandom | bcrypt.dll |
-| 0x150b759d0 | rand | api-ms-win-crt-utility-l1-1-0.dll |
-| 0x150b759d8 | srand | api-ms-win-crt-utility-l1-1-0.dll |
-
-### RDRAND Usage
-
-108 `RDRAND` instructions found in the binary. These are hardware RNG entry points.
-
-Pattern: `0F C7 F0` (rdrand eax)
-
----
-
-## Memory Addresses
-
-### FName Locations
-
-| Region | Description |
-|--------|-------------|
-| 0x05b25000-0x05f96000 | Class/struct names |
-| 0x1cd44000-0x1cd55000 | Property/field names |
-
-### Specific Addresses
-
-| Data | Address | Notes |
-|------|---------|-------|
-| ItemPoolDef class | 0x5b25150 | Class definition |
-| Pool types enum | 0x65610d50 | ELootPoolTypes |
-| Rarity tiers | 0x79105c0 | Tier definitions |
-| Weight properties | 0x1cd44680 | Weight data |
-| Luck classes | 0x5f955e0 | Luck system |
-| Legendary items | 0x94e7870 | Item database |
-
----
-
-## Loot Chance System
-
-### DataTable Structure
-
-Found `LootChanceDefinedValueRow` for configuring loot chances.
-
-| Class | Description |
-|-------|-------------|
-| LootChanceDefinedValueRow | DataTable row for chances |
-| GetSummary_Chance | Chance summary function |
-
----
-
-## Stat Modifiers
-
-### From Extracted Data
-
-| Stat | Description |
+| Type | Description |
 |------|-------------|
-| Damage_Scale | Base damage multiplier |
-| Damage_Value | Flat damage value |
-| CritDamage_Add | Critical damage bonus |
-| FireRate_Scale | Fire rate multiplier |
-| FireRate_Value | Fire rate value |
-| ReloadTime_Scale | Reload speed modifier |
-| ElementalChance_Scale | Element proc chance |
-| Accuracy_Scale | Accuracy modifier |
-| Spread_Scale | Spread modifier |
-| Recoil_Scale | Recoil modifier |
+| Boss | Dedicated boss drop with per-kill tier probability |
+| Mission | Side/main mission reward (guaranteed on completion) |
+| BlackMarket | Black Market vendor exclusive |
+| Special | Fish Collector, challenges, event rewards |
+| WorldDrop | General legendary pool (rarity-weighted) |
 
 ---
 
-## Injection Approaches
+## Reference: Item Composition in NCS
 
-### LD_PRELOAD Method (Linux/Proton)
-
-Intercept RNG at syscall level:
-
-```bash
-# Bias RNG for better drops
-LD_PRELOAD=/path/to/libbl4_preload.so BL4_RNG_BIAS=max ./game
-```
-
-This intercepts `getrandom()` and similar syscalls.
-
-### Direct Memory Patching
-
-Target locations for modification:
-
-| Template | Target | Address |
-|----------|--------|---------|
-| dropRate | RarityWeightData | 0x5f9548e |
-| dropRate | BaseWeight | 0x6f3a44c4 |
-| dropRate | GrowthExponent | 0x6f3a44b4 |
-| luck | LuckGlobals | 0x5f95658 |
-| luck | LuckCategories | 0x6f3a4560 |
-
-### Implementation Strategy
-
-1. Find live `InventoryRarityDataTableValueResolver` instances
-2. Locate float weight values in DataTable
-3. Patch weights to favor legendary tier
-4. Or patch comparison code for weight threshold
-
----
-
-## Extracted Items Database
-
-Located at `share/manifest/items_database.json`:
-
-| Content | Count |
-|---------|-------|
-| Item pools | 62 |
-| Balance items | 26 |
-| Stat types | 73 |
-
-### Sample Pools
-
-- `ItemPoolList_Enemy_BaseLoot_Boss`
-- `ItemPoolList_Enemy_BaseLoot_BossRaid`
-- `itempool_guns_01_common`
-- `itempool_guns_04_epic`
-- `ItemPool_FishCollector_Reward_Legendary`
-
-### Generate Database
-
-```bash
-bl4-research items-db -m share/manifest
-```
-
----
-
-## Binary Protection
-
-The executable uses protection (likely Denuvo):
-
-- No exports (stripped)
-- References `Borderlands4.pdb` but PDB not included
-- Heavy obfuscation (XOR, NOT, RCL patterns)
-- Runtime analysis more effective than static
-
-::: {.callout-warning}
-Static binary analysis is difficult. Runtime analysis via memory attachment is recommended.
-:::
-
----
-
-## Drop Probability Research
-
-### Community Testing Results
-
-::: {.callout-note title="Community-Derived Values"}
-From player testing (~3,000 boss kills, Jan 2025):
-
-- **Dedicated drop rate**: ~5% per kill for any individual item
-- **World drop rate**: ~4% base legendary chance
-- Difficulty level does NOT affect drop rates
-:::
-
-### NCS Dedicated Drop Tiers
-
-The `Table_DedicatedDropProbability` in `itempoollist.bin` references a DataTable with the following tier rows:
-
-| Tier | Row Name | Index | Probability |
-|------|----------|:-----:|:-----------:|
-| Primary | `Primary_2_<GUID>` | 2 | 20% |
-| Secondary | `Secondary_4_<GUID>` | 4 | 8% |
-| Tertiary | `Tertiary_6_<GUID>` | 6 | 3% |
-| Shiny | `Shiny_9_<GUID>` | 9 | 1% |
-| TrueBoss | `TrueBoss_12_<GUID>` | 12 | 0% |
-| TrueBossShiny | `TrueBossShiny_14_<GUID>` | 14 | 0% |
-| Quaternary | `Quaternary_16_<GUID>` | 16 | 0% |
-
-The schema is defined in `Struct_DedicatedDropProbability.uasset` with a single `DoubleProperty` field.
-
-### Data Coverage
-
-**What NCS extraction provides:**
-
-1. Which items are dedicated drops for which bosses
-2. World drop pool membership
-3. Boss display names (via NameData entries)
-4. Tier assignment for items with explicit tier context
-
-**What NCS cannot provide:**
-
-1. Actual numeric probability values per tier (extracted from DataTable schemas, not NCS)
-2. Base legendary drop rate (runtime value)
-3. Category selection probabilities (shield vs weapon)
-4. Tier assignments for most items (only 1 of 133 boss drops has explicit tier in NCS)
-
-### Future Investigation
-
-1. Memory scan for float values 0.05, 0.04, etc. when game is running
-2. Check if tier indices correlate to probabilities (e.g., 2 → 2%, 4 → 4%)
-3. Extract actual DataTable values (not just struct schemas) from pak files
-4. Investigate if items without explicit tiers default to Primary
-
----
-
-## Using the Drops Command
-
-The `bl4 drops` command provides a CLI interface for querying drop information:
-
-### Find Item Drop Locations
-
-Find where an item drops, sorted by highest drop rate:
-
-```bash
-bl4 drops find hellwalker
-```
-
-Output:
-```
-Drop locations for 'hellwalker' (sorted by drop rate):
-
-Source                         Type         Tier           Chance
-----------------------------------------------------------------
-MeatheadRider_Jockey           Boss         Primary           20%
-```
-
-### Query Source Drops
-
-List all items dropped by a specific source:
-
-```bash
-bl4 drops source Timekeeper
-```
-
-Output:
-```
-Drops from 'Timekeeper' (sorted by drop rate):
-
-Item                      Type     Tier           Chance
--------------------------------------------------------
-symmetry                  ORD_SR   Primary           20%
-PlasmaCoil                MAL_SM   Primary           20%
-ballista                  JAK_SR   Secondary          8%
-timekeeper                TED_SHIELD Secondary          8%
-star_helix                DAD_AR   Tertiary           3%
-```
-
-### List All Sources
-
-```bash
-bl4 drops list --sources
-```
-
-### List All Items
-
-```bash
-bl4 drops list
-```
-
-### Generate Drops Manifest
-
-Extract drop information from NCS data:
-
-```bash
-bl4 drops generate "/path/to/ncs_native" -o share/manifest/drops.json
-```
-
----
-
-## File Representations
-
-### NCS Files
-
-Drop information is stored in NCS (Nexus Config Store) files within pak archives:
-
-| File | Purpose |
-|------|---------|
-| `itempoollist.bin` | Boss → legendary item mappings |
-| `itempool.bin` | Item pool definitions (rarity weights, world drops) |
-| `loot_config.bin` | Global loot configuration |
-| `preferredparts.bin` | Part preferences for items |
-
-### Item Composition Pattern
-
-Legendary items follow a consistent naming pattern in NCS files:
+Legendary items follow a consistent naming pattern:
 
 ```
 MANUFACTURER_TYPE.comp_05_legendary_NAME
 ```
 
-Examples:
-- `JAK_SG.comp_05_legendary_Hellwalker` - Jakobs Shotgun "Hellwalker"
-- `MAL_SM.comp_05_legendary_PlasmaCoil` - Maliwan SMG "PlasmaCoil"
-- `DAD_SHIELD.comp_05_legendary_angel` - Daedalus Shield "Guardian Angel"
-
-### Component Tiers
+Examples: `JAK_SG.comp_05_legendary_Hellwalker`, `MAL_SM.comp_05_legendary_PlasmaCoil`, `DAD_SHIELD.comp_05_legendary_angel`.
 
 | Component | Rarity |
 |-----------|--------|
@@ -593,76 +308,22 @@ Examples:
 | `comp_04_epic` | Epic |
 | `comp_05_legendary` | Legendary |
 
-### Drops Manifest (drops.json)
-
-The generated manifest contains:
-
-```json
-{
-  "version": 1,
-  "probabilities": {
-    "Primary": 0.20,
-    "Secondary": 0.08,
-    "Tertiary": 0.03,
-    "Shiny": 0.01,
-    "TrueBoss": 0.08,
-    "TrueBossShiny": 0.03
-  },
-  "drops": [
-    {
-      "source": "MeatheadRider_Jockey",
-      "source_type": "Boss",
-      "manufacturer": "JAK",
-      "gear_type": "SG",
-      "item_name": "Hellwalker",
-      "item_id": "JAK_SG.comp_05_legendary_Hellwalker",
-      "pool": "itempool_jak_sg_05_legendary_Hellwalker_shiny",
-      "drop_tier": "Primary",
-      "drop_chance": 0.20
-    }
-  ]
-}
-```
-
-### Source Types
-
-| Type | Description |
-|------|-------------|
-| Boss | Dedicated boss drop |
-| Mission | Side/main mission reward |
-| BlackMarket | Black Market vendor exclusive |
-| Special | Fish Collector, challenges, etc. |
-| WorldDrop | General legendary pool |
-
 ---
 
-## Slot System
+## Reference: Codes
 
-### Gear Slots
+### Weapon Types
 
-Items are categorized into slots based on their type:
-
-| Slot | Type Code | Examples |
-|------|-----------|----------|
-| Weapon 1-4 | AR, PS, SG, SM, SR, HW | Assault Rifles, Pistols, etc. |
-| Shield | SHIELD | Defensive shields |
-| Grenade | GRENADE | Grenade mods |
-| Class Mod | CM | Class-specific mods |
-| Artifact | ARTIFACT | Trinkets/artifacts |
-| Repair Kit | RK, REPAIR_KIT | Healing items |
-
-### Weapon Type Codes
-
-| Code | Full Name |
-|------|-----------|
+| Code | Type |
+|------|------|
 | AR | Assault Rifle |
 | PS | Pistol |
 | SG | Shotgun |
-| SM | SMG (Submachine Gun) |
+| SM | SMG |
 | SR | Sniper Rifle |
 | HW | Heavy Weapon |
 
-### Manufacturer Codes
+### Manufacturers
 
 | Code | Manufacturer | Specialty |
 |------|--------------|-----------|
@@ -675,6 +336,100 @@ Items are categorized into slots based on their type:
 | TOR | Torgue | Explosives |
 | VLA | Vladof | High fire rate |
 
+### Gear Slots
+
+| Slot | Type Code |
+|------|-----------|
+| Weapon 1--4 | AR, PS, SG, SM, SR, HW |
+| Shield | SHIELD |
+| Grenade | GRENADE |
+| Class Mod | CM |
+| Artifact | ARTIFACT |
+| Repair Kit | RK, REPAIR_KIT |
+
 ---
 
-*Data from live memory analysis using `bl4 memory` tool and NCS file extraction.*
+## Reference: Drops Manifest Format
+
+The `drops.json` manifest generated by `bl4 drops generate` contains:
+
+```json
+{
+  "version": 1,
+  "probabilities": {
+    "Primary": 0.06,
+    "Secondary": 0.045,
+    "Tertiary": 0.03,
+    "Shiny": 0.01,
+    "TrueBoss": 0.25,
+    "TrueBossShiny": 0.03
+  },
+  "drops": [
+    {
+      "source": "MeatheadRider_Jockey",
+      "source_display": "Saddleback",
+      "source_type": "Boss",
+      "manufacturer": "JAK",
+      "gear_type": "SG",
+      "item_name": "Hellwalker",
+      "item_id": "JAK_SG.comp_05_legendary_Hellwalker",
+      "pool": "itempool_jak_sg_05_legendary_Hellwalker_shiny",
+      "drop_tier": "Primary",
+      "drop_chance": 0.06
+    }
+  ]
+}
+```
+
+The companion `drop_pools.tsv` summarizes legendary counts and boss source counts per manufacturer/weapon type pool. It is embedded at compile time for the rarity estimation API.
+
+---
+
+## Reference: Loot System Classes
+
+Classes relevant to the loot pipeline, discovered via memory analysis:
+
+### Pool System
+
+| Class | Role |
+|-------|------|
+| ItemPoolDef | Defines a loot pool (`/Script/GbxGame.ItemPoolDef`) |
+| ItemPoolEntry | Single item in a pool |
+| ItemPoolListDef | Ordered list of pools (boss drop lists) |
+| ItemPoolSelectorDef | Selection logic between pools |
+
+```cpp
+enum class ELootPoolTypes {
+    All = 0,
+    BaseLoot = 1,
+    AdditionalLoot = 2,
+    DedicatedDrops = 3,
+    GearDrivenDrops = 4,
+    MAX = 5
+};
+```
+
+### Rarity Resolution
+
+| Class | Role |
+|-------|------|
+| RarityWeightData | Weight configuration (BaseWeight, GrowthExponent, GameStageVariance) |
+| LocalRarityModifierData | Local rarity modifiers (area/event bonuses) |
+| InventoryRarityDataTableValueResolver | Resolves rarity values from DataTables at runtime |
+| InventoryRarityDef | Rarity tier definition |
+| LootChanceDefinedValueRow | DataTable row for loot chance configuration |
+
+### Luck System
+
+| Class | Role |
+|-------|------|
+| LuckGlobals | Global luck settings |
+| LuckCategoryDef | Luck category definition |
+| LuckCategoryAttribute | Per-category luck attribute |
+| LuckCategoryValueResolver | Resolves luck values at runtime |
+
+Three luck category groups: `LuckCategories` (base), `EnemyBasedLuckCategories` (per-enemy), `PlayerBasedLuckCategories` (player-specific).
+
+---
+
+*Data from NCS file extraction and live memory analysis.*
