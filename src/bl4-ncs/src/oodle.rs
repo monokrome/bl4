@@ -205,62 +205,6 @@ impl OodleDecompressor for NativeBackend {
     }
 }
 
-/// Native backend stub for non-Windows platforms
-///
-/// On Linux/macOS, we could potentially use Wine or a compatibility layer,
-/// but for now this just returns an error.
-#[cfg(not(target_os = "windows"))]
-pub struct NativeBackend {
-    _private: (),
-}
-
-#[cfg(not(target_os = "windows"))]
-impl NativeBackend {
-    /// Load the native Oodle backend from a DLL path
-    ///
-    /// On non-Windows platforms, this attempts to use the DLL via Wine.
-    pub fn load<P: AsRef<Path>>(dll_path: P) -> Result<Self> {
-        let path = dll_path.as_ref();
-        if !path.exists() {
-            return Err(Error::Oodle(format!(
-                "Oodle DLL not found: {}",
-                path.display()
-            )));
-        }
-
-        // For now, just store the path - we'll implement Wine-based loading later
-        // or use a native Linux Oodle library if available
-        Ok(Self { _private: () })
-    }
-
-    /// Attempt to decompress using Wine
-    fn decompress_with_wine(
-        &self,
-        _compressed: &[u8],
-        _decompressed_size: usize,
-    ) -> Result<Vec<u8>> {
-        Err(Error::Oodle(
-            "Native Oodle backend not yet supported on this platform. \
-             Use Wine or run on Windows."
-                .to_string(),
-        ))
-    }
-}
-
-#[cfg(not(target_os = "windows"))]
-impl OodleDecompressor for NativeBackend {
-    fn decompress_block(&self, compressed: &[u8], decompressed_size: usize) -> Result<Vec<u8>> {
-        self.decompress_with_wine(compressed, decompressed_size)
-    }
-
-    fn name(&self) -> &'static str {
-        "native (wine)"
-    }
-
-    fn is_full_support(&self) -> bool {
-        true
-    }
-}
 
 /// External command-based Oodle decompressor
 ///
@@ -311,7 +255,13 @@ impl std::fmt::Debug for ExecBackend {
 
 impl OodleDecompressor for ExecBackend {
     fn decompress_block(&self, compressed: &[u8], decompressed_size: usize) -> Result<Vec<u8>> {
-        let mut child = Command::new(&self.command)
+        let parts: Vec<&str> = self.command.split_whitespace().collect();
+        let (program, prefix_args) = parts
+            .split_first()
+            .ok_or_else(|| Error::Oodle("Empty exec command".into()))?;
+
+        let mut child = Command::new(program)
+            .args(prefix_args)
             .arg("decompress")
             .arg(decompressed_size.to_string())
             .stdin(Stdio::piped())
@@ -366,8 +316,19 @@ pub fn default_backend() -> Box<dyn OodleDecompressor> {
 }
 
 /// Create a native backend from a DLL path (Windows only)
+#[cfg(target_os = "windows")]
 pub fn native_backend<P: AsRef<Path>>(dll_path: P) -> Result<Box<dyn OodleDecompressor>> {
     Ok(Box::new(NativeBackend::load(dll_path)?))
+}
+
+/// Native Oodle DLL loading is not available on this platform
+#[cfg(not(target_os = "windows"))]
+pub fn native_backend<P: AsRef<Path>>(_dll_path: P) -> Result<Box<dyn OodleDecompressor>> {
+    Err(Error::Oodle(
+        "Native Oodle DLL loading requires Windows. On Linux/macOS, use \
+         --oodle-exec with a decompression helper (add --oodle-fifo for Wine)"
+            .to_string(),
+    ))
 }
 
 /// Create an exec backend with the given command
@@ -390,5 +351,48 @@ mod tests {
     fn test_default_backend() {
         let backend = default_backend();
         assert_eq!(backend.name(), "oozextract");
+    }
+
+    #[test]
+    fn test_exec_backend_empty_command() {
+        let backend = ExecBackend::new("");
+        let result = backend.decompress_block(&[0u8; 4], 4);
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        assert!(err.contains("Empty exec command"), "got: {}", err);
+    }
+
+    #[test]
+    fn test_exec_backend_single_word_command() {
+        let backend = ExecBackend::new("nonexistent_oodle_helper");
+        let result = backend.decompress_block(&[0u8; 4], 4);
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        assert!(err.contains("Failed to spawn"), "got: {}", err);
+    }
+
+    #[test]
+    fn test_exec_backend_multi_word_command() {
+        let backend = ExecBackend::new("nonexistent_wine nonexistent_helper.exe --dll foo.dll");
+        let result = backend.decompress_block(&[0u8; 4], 4);
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        assert!(err.contains("Failed to spawn"), "got: {}", err);
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    #[test]
+    fn test_native_backend_not_available_on_non_windows() {
+        match native_backend("/path/to/oodle.dll") {
+            Err(e) => {
+                let msg = e.to_string();
+                assert!(
+                    msg.contains("--oodle-exec"),
+                    "error should suggest --oodle-exec, got: {}",
+                    msg
+                );
+            }
+            Ok(_) => panic!("native_backend should return Err on non-Windows"),
+        }
     }
 }
