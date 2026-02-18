@@ -19,5 +19,5 @@ pub use memory::{MemoryAction, PreloadAction};
 pub use ncs::NcsCommand;
 #[cfg(feature = "research")]
 pub use research::{ExtractCommand, UsmapCommand};
-pub use save::SaveCommand;
+pub use save::{MapAction, SaveAction, SaveArgs};
 pub use serial::SerialCommand;

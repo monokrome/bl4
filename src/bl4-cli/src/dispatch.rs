@@ -11,44 +11,47 @@ use crate::commands;
 use crate::memory;
 
 /// Dispatch save subcommands
-pub fn dispatch_save(command: SaveCommand) -> Result<()> {
-    match command {
-        SaveCommand::Decrypt {
-            input,
-            output,
-            steam_id,
-        } => commands::save::decrypt(input.as_deref(), output.as_deref(), steam_id),
+pub fn dispatch_save(args: SaveArgs) -> Result<()> {
+    match args.action {
+        Some(SaveAction::Decrypt { output }) => {
+            commands::save::decrypt(&args.input, output.as_deref(), args.steam_id)
+        }
 
-        SaveCommand::Encrypt {
-            input,
-            output,
-            steam_id,
-        } => commands::save::encrypt(input.as_deref(), output.as_deref(), steam_id),
+        Some(SaveAction::Encrypt { yaml }) => {
+            commands::save::encrypt(&args.input, yaml.as_deref(), args.steam_id)
+        }
 
-        SaveCommand::Edit {
-            input,
-            steam_id,
-            backup,
-        } => commands::save::edit(&input, steam_id, backup),
+        Some(SaveAction::Edit) => commands::save::edit(&args),
 
-        SaveCommand::Get {
-            input,
-            steam_id,
+        Some(SaveAction::Get {
             query,
             level,
             money,
             info,
             all,
-        } => commands::save::get(&input, steam_id, query.as_deref(), level, money, info, all),
+        }) => commands::save::get(
+            &args.input,
+            args.steam_id,
+            query.as_deref(),
+            level,
+            money,
+            info,
+            all,
+        ),
 
-        SaveCommand::Set {
-            input,
-            steam_id,
-            path,
-            value,
+        Some(SaveAction::Set {
+            ref path,
+            ref value,
             raw,
-            backup,
-        } => commands::save::set(&input, steam_id, &path, &value, raw, backup),
+        }) => commands::save::set(&args, path, value, raw),
+
+        None => {
+            if args.map.is_some() {
+                commands::save::map_only(&args)
+            } else {
+                bail!("No action specified. Use a subcommand (decrypt, encrypt, edit, get, set) or --map.")
+            }
+        }
     }
 }
 

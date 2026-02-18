@@ -1,65 +1,61 @@
 //! Save command CLI definitions
 
-use clap::Subcommand;
+use clap::{Args, Subcommand};
 use std::path::PathBuf;
 
-#[derive(Subcommand)]
-pub enum SaveCommand {
-    /// Decrypt a .sav file to YAML (uses stdin/stdout if paths not specified)
-    Decrypt {
-        /// Path to encrypted .sav file (uses stdin if not specified)
-        #[arg(short, long)]
-        input: Option<PathBuf>,
+#[derive(Args)]
+pub struct SaveArgs {
+    /// Path to .sav file
+    pub input: PathBuf,
 
+    /// Reveal or clear the fog-of-discovery map
+    #[arg(long, value_name = "ACTION")]
+    pub map: Option<MapAction>,
+
+    /// Only affect a specific zone (with --map)
+    #[arg(long, requires = "map")]
+    pub zone: Option<String>,
+
+    /// Steam ID (uses configured default if not provided)
+    #[arg(short, long)]
+    pub steam_id: Option<String>,
+
+    /// Create backup before modifying
+    #[arg(short, long, default_value_t = true)]
+    pub backup: bool,
+
+    #[command(subcommand)]
+    pub action: Option<SaveAction>,
+}
+
+#[derive(Clone, clap::ValueEnum)]
+pub enum MapAction {
+    Reveal,
+    Clear,
+}
+
+#[derive(Subcommand)]
+pub enum SaveAction {
+    /// Decrypt to YAML (stdout or -o file)
+    Decrypt {
         /// Path to output YAML file (uses stdout if not specified)
         #[arg(short, long)]
         output: Option<PathBuf>,
-
-        /// Steam ID for decryption (uses configured default if not provided)
-        #[arg(short, long)]
-        steam_id: Option<String>,
     },
 
-    /// Encrypt a YAML file to .sav (uses stdin/stdout if paths not specified)
+    /// Encrypt from YAML (positional file or stdin) to .sav
     Encrypt {
-        /// Path to input YAML file (uses stdin if not specified)
-        #[arg(short, long)]
-        input: Option<PathBuf>,
-
-        /// Path to output .sav file (uses stdout if not specified)
-        #[arg(short, long)]
-        output: Option<PathBuf>,
-
-        /// Steam ID for encryption (uses configured default if not provided)
-        #[arg(short, long)]
-        steam_id: Option<String>,
+        /// YAML input file (reads stdin if not provided)
+        yaml: Option<PathBuf>,
     },
 
-    /// Edit a save file in your $EDITOR
-    Edit {
-        /// Path to .sav file
-        input: PathBuf,
+    /// Edit in $EDITOR
+    Edit,
 
-        /// Steam ID for decryption/encryption (uses configured default if not provided)
-        #[arg(short, long)]
-        steam_id: Option<String>,
-
-        /// Create backup before editing
-        #[arg(short, long, default_value_t = true)]
-        backup: bool,
-    },
-
-    /// Get specific values from a save file
+    /// Query values
     Get {
-        /// Path to .sav file
-        input: PathBuf,
-
-        /// YAML path query (e.g. "state.currencies.cash" or "state.experience[0].level")
+        /// YAML path query (e.g. "state.currencies.cash")
         query: Option<String>,
-
-        /// Steam ID for decryption (uses configured default if not provided)
-        #[arg(short, long)]
-        steam_id: Option<String>,
 
         /// Show character level and XP
         #[arg(long)]
@@ -78,27 +74,16 @@ pub enum SaveCommand {
         all: bool,
     },
 
-    /// Set specific values in a save file
+    /// Set a value
     Set {
-        /// Path to .sav file
-        input: PathBuf,
-
-        /// YAML path to modify (e.g. "state.currencies.cash" or "state.experience[0].level")
+        /// YAML path to modify (e.g. "state.currencies.cash")
         path: String,
 
         /// Value to set (auto-detects numbers vs strings, unless --raw is used)
         value: String,
 
-        /// Steam ID for encryption/decryption (uses configured default if not provided)
-        #[arg(short, long)]
-        steam_id: Option<String>,
-
         /// Treat value as raw YAML (for complex/unknown structures)
         #[arg(short, long)]
         raw: bool,
-
-        /// Create backup before modifying
-        #[arg(short, long, default_value_t = true)]
-        backup: bool,
     },
 }

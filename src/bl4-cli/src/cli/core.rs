@@ -9,7 +9,7 @@ use super::memory::MemoryAction;
 use super::ncs::NcsCommand;
 #[cfg(feature = "research")]
 use super::research::{ExtractCommand, UsmapCommand};
-use super::save::SaveCommand;
+use super::save::SaveArgs;
 use super::serial::SerialCommand;
 
 #[derive(Parser)]
@@ -25,8 +25,8 @@ pub enum Commands {
     /// Save file operations (decrypt, encrypt, edit, get, set)
     #[command(visible_alias = "s")]
     Save {
-        #[command(subcommand)]
-        command: SaveCommand,
+        #[command(flatten)]
+        args: SaveArgs,
     },
 
     /// Inspect a save file (decrypt and display info)

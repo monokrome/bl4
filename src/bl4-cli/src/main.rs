@@ -16,14 +16,22 @@ use clap::Parser;
 use cli::*;
 
 fn main() -> Result<()> {
-    let cli = Cli::parse();
+    // Shorthand: `bl4 1.sav get --level` → `bl4 save 1.sav get --level`
+    let args: Vec<String> = std::env::args().collect();
+    let cli = if args.len() > 1 && args[1].ends_with(".sav") {
+        let mut rewritten = vec![args[0].clone(), "save".to_string()];
+        rewritten.extend_from_slice(&args[1..]);
+        Cli::parse_from(rewritten)
+    } else {
+        Cli::parse()
+    };
 
     match cli.command {
         Commands::Configure { steam_id, show } => {
             commands::configure::handle(steam_id, show)?;
         }
 
-        Commands::Save { command } => dispatch::dispatch_save(command)?,
+        Commands::Save { args } => dispatch::dispatch_save(args)?,
 
         Commands::Inspect {
             input,
