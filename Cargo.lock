@@ -747,6 +747,7 @@ dependencies = [
  "adler",
  "aes",
  "anyhow",
+ "base64 0.22.1",
  "flate2",
  "hex",
  "js-sys",

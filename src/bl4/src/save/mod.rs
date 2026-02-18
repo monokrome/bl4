@@ -3,6 +3,7 @@
 //! This module provides high-level APIs for working with Borderlands 4 save files.
 
 mod changeset;
+mod fod;
 mod state_flags;
 
 pub use changeset::ChangeSet;
@@ -24,6 +25,9 @@ pub enum SaveError {
 
     #[error("Invalid array index: {0}")]
     InvalidIndex(String),
+
+    #[error("FOD compression failed: {0}")]
+    FodCompress(String),
 }
 
 /// Represents a loaded save file with query/modify capabilities
@@ -188,6 +192,22 @@ impl SaveFile {
             "state.experience[1].points",
             serde_yaml::Value::Number(xp.into()),
         )
+    }
+
+    /// Reveal the entire map (all zones, or a specific zone).
+    ///
+    /// Replaces FOD data with fully-revealed grids (all 0xFF).
+    /// Returns the number of zones modified.
+    pub fn reveal_map(&mut self, zone: Option<&str>) -> Result<usize, SaveError> {
+        fod::reveal_map(&mut self.data, zone)
+    }
+
+    /// Clear the entire map (all zones, or a specific zone).
+    ///
+    /// Replaces FOD data with fully-fogged grids (all 0x00).
+    /// Returns the number of zones modified.
+    pub fn clear_map(&mut self, zone: Option<&str>) -> Result<usize, SaveError> {
+        fod::clear_map(&mut self.data, zone)
     }
 }
 
