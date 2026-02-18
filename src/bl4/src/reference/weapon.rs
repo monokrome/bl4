@@ -47,6 +47,11 @@ pub fn weapon_type_by_code(code: &str) -> Option<&'static WeaponType> {
     WEAPON_TYPES.iter().find(|w| w.code == code)
 }
 
+/// Get weapon type by display name (reverse lookup)
+pub fn weapon_type_by_name(name: &str) -> Option<&'static WeaponType> {
+    WEAPON_TYPES.iter().find(|w| w.name.eq_ignore_ascii_case(name))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -61,5 +66,13 @@ mod tests {
             weapon_type_by_code("SR").map(|w| w.name),
             Some("Sniper Rifle")
         );
+    }
+
+    #[test]
+    fn test_weapon_type_by_name() {
+        assert_eq!(weapon_type_by_name("Pistol").map(|w| w.code), Some("PS"));
+        assert_eq!(weapon_type_by_name("Shotgun").map(|w| w.code), Some("SG"));
+        assert_eq!(weapon_type_by_name("SMG").map(|w| w.code), Some("SM"));
+        assert!(weapon_type_by_name("Unknown").is_none());
     }
 }
