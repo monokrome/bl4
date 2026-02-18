@@ -404,8 +404,7 @@ pub mod sqlite {
 
         async fn get_item(&self, serial: &str) -> AsyncRepoResult<Option<Item>> {
             let sql = format!("SELECT {} FROM items WHERE serial = ?", ITEM_SELECT_COLUMNS);
-            let sql: &'static str = Box::leak(sql.into_boxed_str());
-            let row = sqlx::query(sql)
+            let row = sqlx::query(sqlx::AssertSqlSafe(sql))
             .bind(serial)
             .fetch_optional(&self.pool)
             .await
@@ -465,8 +464,7 @@ pub mod sqlite {
 
         async fn list_items(&self, filter: &ItemFilter) -> AsyncRepoResult<Vec<Item>> {
             let (sql, _) = shared::build_list_query(filter, false);
-            let sql: &'static str = Box::leak(sql.into_boxed_str());
-            let mut query = sqlx::query(sql);
+            let mut query = sqlx::query(sqlx::AssertSqlSafe(sql));
 
             if let Some(m) = &filter.manufacturer {
                 query = query.bind(m);
@@ -502,8 +500,7 @@ pub mod sqlite {
 
         async fn count_items(&self, filter: &ItemFilter) -> AsyncRepoResult<i64> {
             let (sql, _) = shared::build_count_query(filter, false);
-            let sql: &'static str = Box::leak(sql.into_boxed_str());
-            let mut query = sqlx::query(sql);
+            let mut query = sqlx::query(sqlx::AssertSqlSafe(sql));
 
             if let Some(m) = &filter.manufacturer {
                 query = query.bind(m);
@@ -1399,8 +1396,7 @@ pub mod postgres {
                 sql.push_str(&format!(" OFFSET {}", offset));
             }
 
-            let sql: &'static str = Box::leak(sql.into_boxed_str());
-            let mut query = sqlx::query(sql);
+            let mut query = sqlx::query(sqlx::AssertSqlSafe(sql));
 
             if let Some(m) = &filter.manufacturer {
                 query = query.bind(m);
@@ -1454,8 +1450,7 @@ pub mod postgres {
                 sql.push_str(&format!(" AND rarity = ${}", param_idx));
             }
 
-            let sql: &'static str = Box::leak(sql.into_boxed_str());
-            let mut query = sqlx::query(sql);
+            let mut query = sqlx::query(sqlx::AssertSqlSafe(sql));
 
             if let Some(m) = &filter.manufacturer {
                 query = query.bind(m);
