@@ -122,6 +122,16 @@ pub enum NcsCommand {
         /// Compressed data is sent to stdin, decompressed data is read from stdout.
         #[arg(long, value_name = "COMMAND")]
         oodle_exec: Option<String>,
+
+        /// Use FIFO-based protocol for external decompression (required for Wine)
+        ///
+        /// Creates named pipes for data transfer instead of stdin/stdout.
+        /// Use with --oodle-exec when the decompression command runs under Wine.
+        /// The command receives FIFO paths as additional arguments:
+        ///   <command> decompress <size> <input_fifo> <output_fifo>
+        #[cfg(unix)]
+        #[arg(long, requires = "oodle_exec")]
+        oodle_fifo: bool,
     },
 
     /// Debug binary structure of an NCS file

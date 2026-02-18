@@ -68,7 +68,8 @@ pub fn handle_ncs_command(command: NcsCommand) -> Result<()> {
             offset,
             raw,
             oodle_exec,
-        } => decompress::decompress_file(&input, output.as_deref(), offset, raw, oodle_exec.as_deref()),
+            oodle_fifo,
+        } => decompress::decompress_file(&input, output.as_deref(), offset, raw, oodle_exec.as_deref(), oodle_fifo),
 
         NcsCommand::Debug { path, hex, parse, offsets } => debug::debug_file(&path, hex, parse, offsets),
     }

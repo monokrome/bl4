@@ -9,6 +9,41 @@ use std::path::{Path, PathBuf};
 use super::format::format_tsv;
 use super::util::print_hex;
 
+/// Select the Oodle decompressor backend based on CLI options
+#[cfg(target_os = "windows")]
+fn select_backend(
+    oodle_dll: Option<&Path>,
+    oodle_exec: Option<&str>,
+) -> Result<Box<dyn OodleDecompressor>> {
+    if let Some(dll_path) = oodle_dll {
+        println!("Using native Oodle backend from: {}", dll_path.display());
+        oodle::native_backend(dll_path)
+            .map_err(|e| anyhow::anyhow!("Failed to load Oodle DLL: {}", e))
+    } else if let Some(cmd) = oodle_exec {
+        println!("Using exec Oodle backend: {}", cmd);
+        Ok(oodle::exec_backend(cmd))
+    } else {
+        Ok(oodle::default_backend())
+    }
+}
+
+/// Select the Oodle decompressor backend based on CLI options
+#[cfg(not(target_os = "windows"))]
+fn select_backend(oodle_exec: Option<&str>, oodle_fifo: bool) -> Result<Box<dyn OodleDecompressor>> {
+    if let Some(cmd) = oodle_exec {
+        if oodle_fifo {
+            println!("Using FIFO exec Oodle backend: {}", cmd);
+            oodle::fifo_exec_backend(cmd)
+                .map_err(|e| anyhow::anyhow!("Failed to create FIFO backend: {}", e))
+        } else {
+            println!("Using exec Oodle backend: {}", cmd);
+            Ok(oodle::exec_backend(cmd))
+        }
+    } else {
+        Ok(oodle::default_backend())
+    }
+}
+
 #[cfg(target_os = "windows")]
 pub fn decompress_file(
     input: &Path,
@@ -18,37 +53,21 @@ pub fn decompress_file(
     oodle_dll: Option<&Path>,
     oodle_exec: Option<&str>,
 ) -> Result<()> {
-    // Create the appropriate decompressor backend
-    let decompressor: Box<dyn OodleDecompressor> = if let Some(dll_path) = oodle_dll {
-        println!("Using native Oodle backend from: {}", dll_path.display());
-        oodle::native_backend(dll_path)
-            .map_err(|e| anyhow::anyhow!("Failed to load Oodle DLL: {}", e))?
-    } else if let Some(cmd) = oodle_exec {
-        println!("Using exec Oodle backend: {}", cmd);
-        oodle::exec_backend(cmd)
-    } else {
-        oodle::default_backend()
-    };
-
+    let decompressor = select_backend(oodle_dll, oodle_exec)?;
     decompress_file_impl(input, output, offset, raw, decompressor)
 }
 
 #[cfg(not(target_os = "windows"))]
+#[allow(clippy::too_many_arguments)]
 pub fn decompress_file(
     input: &Path,
     output: Option<&Path>,
     offset: Option<usize>,
     raw: bool,
     oodle_exec: Option<&str>,
+    oodle_fifo: bool,
 ) -> Result<()> {
-    // Create the appropriate decompressor backend
-    let decompressor: Box<dyn OodleDecompressor> = if let Some(cmd) = oodle_exec {
-        println!("Using exec Oodle backend: {}", cmd);
-        oodle::exec_backend(cmd)
-    } else {
-        oodle::default_backend()
-    };
-
+    let decompressor = select_backend(oodle_exec, oodle_fifo)?;
     decompress_file_impl(input, output, offset, raw, decompressor)
 }
 
@@ -220,17 +239,18 @@ fn decompress_pak_index(
     input: &Path,
     output: Option<&Path>,
     raw: bool,
-    _decompressor: Box<dyn OodleDecompressor>,
+    decompressor: Box<dyn OodleDecompressor>,
 ) -> Result<()> {
-    use bl4_ncs::{decompress_ncs, type_from_filename};
+    use bl4_ncs::{decompress_ncs_with, type_from_filename};
     use uextract::pak::PakReader;
 
     let mut reader = PakReader::open(input)?;
     let ncs_files = reader.files_with_extension("ncs");
 
     println!(
-        "Found {} NCS files in PAK index (repak with oodle support)",
-        ncs_files.len()
+        "Found {} NCS files in PAK index (using {} backend)",
+        ncs_files.len(),
+        decompressor.name()
     );
 
     let output_dir = output.map(Path::to_path_buf).unwrap_or_else(|| {
@@ -257,8 +277,7 @@ fn decompress_pak_index(
             }
         };
 
-        // Decompress NCS data
-        let decompressed = match decompress_ncs(&raw_data) {
+        let decompressed = match decompress_ncs_with(&raw_data, decompressor.as_ref()) {
             Ok(d) => d,
             Err(e) => {
                 eprintln!("  Failed to decompress {}: {}", type_name, e);
