@@ -477,6 +477,60 @@ pub fn generate_drops_manifest<P: AsRef<Path>>(ncs_dir: P) -> Result<DropsManife
     })
 }
 
+/// Generate a drop_pools.tsv summary from a drops manifest.
+///
+/// Groups drops by (manufacturer, gear_type) and counts distinct legendaries
+/// and boss sources per group.
+pub fn generate_drop_pools_tsv(manifest: &DropsManifest) -> String {
+    use std::collections::BTreeMap;
+
+    let mut pools: BTreeMap<(String, String), (HashSet<String>, HashSet<String>)> =
+        BTreeMap::new();
+
+    for drop in &manifest.drops {
+        if drop.manufacturer.is_empty() || drop.gear_type.is_empty() {
+            continue;
+        }
+
+        let key = (drop.manufacturer.clone(), drop.gear_type.clone());
+        let entry = pools.entry(key).or_default();
+        entry.0.insert(drop.item_id.clone());
+        if drop.source_type == DropSource::Boss {
+            entry.1.insert(drop.source.clone());
+        }
+    }
+
+    let mut tsv = String::from(
+        "manufacturer_code\tgear_type_code\tlegendary_count\tboss_source_count\tworld_pool_name\n",
+    );
+
+    for ((mfr, gtype), (items, bosses)) in &pools {
+        let world_pool = match gtype.as_str() {
+            "AR" => "Assault Rifles",
+            "PS" => "Pistols",
+            "SM" => "SMGs",
+            "SG" => "Shotguns",
+            "SR" => "Sniper Rifles",
+            "SHIELD" => "Shields",
+            "GRENADE_GADGET" => "Grenades",
+            "HW" => "Heavy Weapons",
+            "REPAIR_KIT" => "Repair Kits",
+            other => other,
+        };
+
+        tsv.push_str(&format!(
+            "{}\t{}\t{}\t{}\t{}\n",
+            mfr,
+            gtype,
+            items.len(),
+            bosses.len(),
+            world_pool
+        ));
+    }
+
+    tsv
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

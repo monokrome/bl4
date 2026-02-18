@@ -22,6 +22,10 @@ pub enum SerialCommand {
         #[arg(short, long)]
         analyze: bool,
 
+        /// Show rarity estimation (drop probability, pool size, odds)
+        #[arg(short, long)]
+        rarity: bool,
+
         /// Path to parts database (directory of per-category TSVs or single file)
         #[arg(long, default_value = "share/manifest/parts")]
         parts_db: PathBuf,

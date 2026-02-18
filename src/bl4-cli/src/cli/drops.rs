@@ -46,5 +46,9 @@ pub enum DropsCommand {
         /// Output path for drops.json
         #[arg(short, long, default_value = "share/manifest/drops.json")]
         output: PathBuf,
+
+        /// Directory for manifest TSV files (drop_pools.tsv)
+        #[arg(long, default_value = "share/manifest")]
+        manifest_dir: PathBuf,
     },
 }

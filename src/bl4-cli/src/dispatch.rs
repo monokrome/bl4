@@ -60,8 +60,9 @@ pub fn dispatch_serial(command: SerialCommand) -> Result<()> {
             verbose,
             debug,
             analyze,
+            rarity,
             parts_db,
-        } => commands::serial::decode(&serial, verbose, debug, analyze, &parts_db),
+        } => commands::serial::decode(&serial, verbose, debug, analyze, rarity, &parts_db),
 
         SerialCommand::Encode { serial } => commands::serial::encode(&serial),
 

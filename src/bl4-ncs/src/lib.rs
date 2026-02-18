@@ -42,8 +42,9 @@ mod unpack;
 // Re-export main types
 pub use content::{Content as NcsContent, Header as NcsContentHeader};
 pub use drops::{
-    extract_drops_from_itempool, extract_drops_from_itempoollist, generate_drops_manifest,
-    DropEntry, DropLocation, DropProbabilities, DropSource, DropsDb, DropsManifest,
+    extract_drops_from_itempool, extract_drops_from_itempoollist, generate_drop_pools_tsv,
+    generate_drops_manifest, DropEntry, DropLocation, DropProbabilities, DropSource, DropsDb,
+    DropsManifest,
 };
 pub use data::{
     decompress as decompress_ncs, decompress_with as decompress_ncs_with, scan as scan_for_ncs,
