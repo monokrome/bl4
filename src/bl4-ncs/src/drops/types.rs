@@ -197,11 +197,11 @@ pub struct DropProbabilities {
 impl Default for DropProbabilities {
     fn default() -> Self {
         Self {
-            primary: 0.20,
-            secondary: 0.08,
+            primary: 0.06,
+            secondary: 0.045,
             tertiary: 0.03,
             shiny: 0.01,
-            true_boss: 0.08,
+            true_boss: 0.25,
             true_boss_shiny: 0.03,
         }
     }
