@@ -147,6 +147,17 @@ Options:
 bl4 serial decode --verbose '@Ugr...'  # Byte breakdown
 bl4 serial decode --debug '@Ugr...'    # Bit-by-bit parsing
 bl4 serial decode --analyze '@Ugr...'  # Token analysis
+bl4 serial decode --rarity '@Ugr...'   # Show rarity estimate
+```
+
+The `--rarity` flag adds a rarity estimate below the decode output, showing tier probability, pool size, per-item odds, and known boss sources:
+
+```text
+Rarity estimate:
+  Tier: Legendary (0.000283%, ~1 in 353,490)
+  Pool: Jakobs Shotgun (2 legendaries, 9 in world pool)
+  Per-item: ~1 in 3,181,413
+  Boss sources: 2
 ```
 
 ### Compare
@@ -208,8 +219,10 @@ bl4 drops list --sources    # List all known drop sources
 Build the drops manifest from decompressed NCS data:
 
 ```bash
-bl4 drops generate ./ncs_output/ -o share/manifest/drops.json
+bl4 drops generate ./ncs_output/ -o share/manifest/drops.json --manifest-dir share/manifest
 ```
+
+This generates both `drops.json` and `drop_pools.tsv` (pool summary with legendary counts and boss source counts per manufacturer/weapon type). The `drop_pools.tsv` is embedded at compile time for the rarity estimation API.
 
 By default, the `find`, `source`, and `list` commands use `share/manifest/drops.json`. Override with `--manifest <PATH>`.
 
@@ -663,7 +676,7 @@ bl4 memory --dump bl4_new.* extract-parts -o share/manifest/
 bl4 ncs extract ./ncs_output/ -t manifest -o share/manifest/parts_database.json
 
 # Regenerate drops manifest
-bl4 drops generate ./ncs_output/ -o share/manifest/drops.json
+bl4 drops generate ./ncs_output/ -o share/manifest/drops.json --manifest-dir share/manifest
 ```
 
 ### Full Asset Extraction Pipeline
@@ -748,7 +761,7 @@ cargo build --release -p bl4-preload
 Generate the drops manifest first, or point `--manifest` at an existing one:
 
 ```bash
-bl4 drops generate ./ncs_output/ -o share/manifest/drops.json
+bl4 drops generate ./ncs_output/ -o share/manifest/drops.json --manifest-dir share/manifest
 ```
 
 ---
@@ -765,7 +778,7 @@ bl4 drops generate ./ncs_output/ -o share/manifest/drops.json
 | `bl4 save get <FILE> <PATH>` | Query value |
 | `bl4 save set <FILE> <PATH> <VAL>` | Set value |
 | **Serial** | |
-| `bl4 serial decode <SERIAL>` | Decode item serial |
+| `bl4 serial decode <SERIAL> [--rarity]` | Decode item serial (with rarity estimate) |
 | `bl4 serial compare <S1> <S2>` | Compare serials |
 | `bl4 serial modify <BASE> <SRC> <PARTS>` | Swap parts between serials |
 | `bl4 serial batch-decode <IN> <OUT>` | Batch decode to binary |
@@ -773,7 +786,7 @@ bl4 drops generate ./ncs_output/ -o share/manifest/drops.json
 | `bl4 drops find <ITEM>` | Find where an item drops |
 | `bl4 drops source <SOURCE>` | List items from a source |
 | `bl4 drops list [--sources]` | List all items or sources |
-| `bl4 drops generate <DIR> -o <OUT>` | Generate drops manifest |
+| `bl4 drops generate <DIR> -o <OUT> [--manifest-dir <DIR>]` | Generate drops manifest + pool TSV |
 | **NCS** | |
 | `bl4 ncs decompress <PAK> -o <DIR>` | Extract NCS from pak (`--oodle-exec` for full compat) |
 | `bl4 ncs scan <DIR>` | List NCS types |
