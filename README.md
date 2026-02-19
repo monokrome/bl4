@@ -130,17 +130,53 @@ Parse and extract data from the game's binary configuration format:
 
 ```bash
 # Scan a directory for NCS file types
-bl4 ncs scan /path/to/extracted/
+bl4 ncs scan /path/to/decompressed/
 
 # Show contents of an NCS file
 bl4 ncs show inv0.bin
 
 # Extract manifests (parts database, category names)
-bl4 ncs extract --extract-type manifest /path/to/inv/
+bl4 ncs extract -t manifest /path/to/decompressed/ --json
 
 # Search for patterns across NCS files
-bl4 ncs search /path/to/extracted/ "weapon_ps"
+bl4 ncs search /path/to/decompressed/ "weapon_ps"
+
+# Decompress NCS from a .pak file
+bl4 ncs decompress game.pak -o ./ncs/ --raw
+
+# Decompress a single .ncs file
+bl4 ncs decompress Nexus-Data-inv0.ncs -o inv0.bin --raw
 ```
+
+#### Regenerating Manifests from Scratch
+
+The manifest is assembled from three data sources: game memory (part
+indices, usmap schema), PAK assets (manufacturers, weapon types, gear
+types, elements, rarities, stats), and NCS files (parts database,
+category names). Requires the `research` feature:
+`cargo build -p bl4-cli --features research`.
+
+The `bl4 manifest` command runs the full pipeline in one shot:
+
+```bash
+# Full regeneration from game Paks + memory dump
+bl4 manifest /path/to/game/Paks/ -d game.bin
+
+# With a pre-extracted usmap (skips memory dump step)
+bl4 manifest /path/to/game/Paks/ -m game.usmap
+
+# Skip memory entirely (NCS + PAK extraction only)
+bl4 manifest /path/to/game/Paks/ --skip-memory
+
+# Resume from existing uextract output
+bl4 manifest /path/to/game/Paks/ -d game.bin --skip-extract --extracted /tmp/bl4_extract
+
+# Custom output directory
+bl4 manifest /path/to/game/Paks/ -d game.bin -o share/manifest/
+```
+
+Output lands in `share/manifest/` by default. Individual steps can also
+be run separately via `bl4 memory`, `bl4 extract`, and `bl4 ncs`.
 
 ### Drop Rates
 
