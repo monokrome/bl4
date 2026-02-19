@@ -16,6 +16,10 @@ pub struct SaveArgs {
     #[arg(long, requires = "map")]
     pub zone: Option<String>,
 
+    /// Validate all items in the save file
+    #[arg(long)]
+    pub validate_items: bool,
+
     /// Steam ID (uses configured default if not provided)
     #[arg(short, long)]
     pub steam_id: Option<String>,

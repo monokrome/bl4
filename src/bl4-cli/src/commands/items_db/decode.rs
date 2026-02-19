@@ -46,6 +46,7 @@ pub fn decode_all(db: &Path, force: bool) -> Result<()> {
     let mut decoded = 0;
     let mut skipped = 0;
     let mut failed = 0;
+    let mut validated = [0u32; 3]; // [legal, illegal, unknown]
 
     for item in &items {
         if !force && (item.manufacturer.is_some() || item.weapon_type.is_some()) {
@@ -105,6 +106,16 @@ pub fn decode_all(db: &Path, force: bool) -> Result<()> {
                     let _ = wdb.set_parts(&item.serial, &new_parts);
                 }
 
+                // Validate and store legality
+                let validation = decoded_item.validate();
+                let legal = validation.to_legal_flag();
+                let _ = wdb.set_legal(&item.serial, legal);
+                match validation.legality {
+                    bl4::Legality::Legal => validated[0] += 1,
+                    bl4::Legality::Illegal => validated[1] += 1,
+                    bl4::Legality::Unknown => validated[2] += 1,
+                }
+
                 if item.verification_status == bl4_idb::VerificationStatus::Unverified {
                     wdb.set_verification_status(
                         &item.serial,
@@ -123,6 +134,10 @@ pub fn decode_all(db: &Path, force: bool) -> Result<()> {
     println!(
         "Decoded {} items, skipped {} (already decoded), {} failed",
         decoded, skipped, failed
+    );
+    println!(
+        "Validation: {} legal, {} illegal, {} unknown",
+        validated[0], validated[1], validated[2]
     );
     Ok(())
 }
@@ -265,6 +280,10 @@ pub fn decode(db: &Path, serial: Option<String>, all: bool) -> Result<()> {
                     wdb.set_parts(serial, &new_parts)?;
                 }
 
+                // Validate and store legality
+                let validation = item.validate();
+                let _ = wdb.set_legal(serial, validation.to_legal_flag());
+
                 decoded_count += 1;
             }
             Err(e) => {
@@ -390,6 +409,10 @@ pub fn import_save(
                     let _ = wdb.set_parts(&item.serial, &new_parts);
                 }
 
+                // Validate and store legality
+                let validation = decoded_item.validate();
+                let _ = wdb.set_legal(&item.serial, validation.to_legal_flag());
+
                 if item.verification_status == bl4_idb::VerificationStatus::Unverified {
                     let _ = wdb.set_verification_status(
                         &item.serial,
@@ -407,8 +430,8 @@ pub fn import_save(
         let mut marked = 0;
         for serial in &serials {
             if let Ok(Some(item)) = wdb.get_item(serial) {
-                if !item.legal {
-                    let _ = wdb.set_legal(&item.serial, true);
+                if item.legal != Some(true) {
+                    let _ = wdb.set_legal(&item.serial, Some(true));
                     marked += 1;
                 }
             }

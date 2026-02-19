@@ -11,11 +11,13 @@
 mod base85;
 mod bitstream;
 mod rarity;
+mod validate;
 
 use base85::{decode_base85, encode_base85, mirror_byte};
 use bitstream::{BitReader, BitWriter};
 
 pub use rarity::RarityEstimate;
+pub use validate::{Legality, ValidationCheck, ValidationResult};
 
 use crate::parts::{
     category_from_varbit, level_from_code, manufacturer_name, serial_id_to_parts_category,

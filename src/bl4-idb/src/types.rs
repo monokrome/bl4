@@ -279,7 +279,7 @@ pub struct Item {
     pub verification_status: VerificationStatus,
     pub verification_notes: Option<String>,
     pub verified_at: Option<String>,
-    pub legal: bool,
+    pub legal: Option<bool>,
     pub source: Option<String>,
     pub created_at: String,
 }
