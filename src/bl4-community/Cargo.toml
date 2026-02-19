@@ -12,8 +12,8 @@ name = "bl4-community"
 path = "src/main.rs"
 
 [dependencies]
-bl4 = { version = "0.1", path = "../bl4" }
-bl4-idb = { version = "0.1", path = "../bl4-idb", features = ["sqlx-sqlite", "sqlx-postgres", "attachments"] }
+bl4 = { version = "0.6", path = "../bl4" }
+bl4-idb = { version = "0.6", path = "../bl4-idb", features = ["sqlx-sqlite", "sqlx-postgres", "attachments"] }
 
 # Web framework
 axum = { version = "0.8", features = ["multipart"] }

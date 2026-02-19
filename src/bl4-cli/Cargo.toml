@@ -17,10 +17,10 @@ research = ["dep:regex", "dep:unreal_asset", "dep:chrono", "dep:minidump"]
 large-ncs = []  # Allow scanning files >512MB for NCS chunks (research only)
 
 [dependencies]
-bl4 = { version = "0.1", path = "../bl4" }
-bl4-idb = { version = "0.1", path = "../bl4-idb", features = ["sqlite-sync", "attachments"] }
-bl4-ncs = { version = "0.1", path = "../bl4-ncs" }
-uextract = { version = "0.1", path = "../uextract" }
+bl4 = { version = "0.6", path = "../bl4" }
+bl4-idb = { version = "0.6", path = "../bl4-idb", features = ["sqlite-sync", "attachments"] }
+bl4-ncs = { version = "0.6", path = "../bl4-ncs" }
+uextract = { version = "0.6", path = "../uextract" }
 rusqlite = { workspace = true }  # For direct database operations (merge)
 clap.workspace = true
 anyhow.workspace = true

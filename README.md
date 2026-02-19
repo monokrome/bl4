@@ -1,17 +1,19 @@
 # bl4
 
-Borderlands 4 save editor toolkit - library, CLI, and analysis tools.
+Borderlands 4 reverse engineering toolkit — save editor, item serial decoder, NCS parser, items database, drop rate analysis, and memory tools.
 
-## Features
+## Crates
 
-- Decrypt and encrypt .sav files using Steam ID
-- Interactive editing via $EDITOR
-- Query and modify save data (level, currencies, XP, etc.)
-- Decode and analyze item serial numbers
-- Items database for tracking and identifying gear
-- Hash-based backup system
-- WebAssembly support for browser/Node.js
-- Binary pattern analysis with linewise TUI
+| Crate | Description |
+|-------|-------------|
+| `bl4` | Core library (crypto, serial codec, save manipulation, manifest) |
+| `bl4-cli` | Command-line interface (`bl4` binary) |
+| `bl4-idb` | Items database (SQLite/PostgreSQL, sync/async) |
+| `bl4-ncs` | Nexus Config Store parser (game binary config format) |
+| `bl4-community` | Community API server (Axum) |
+| `bl4-save-editor` | GUI save editor (Tauri) |
+| `uextract` | UE5 IoStore/pak extractor |
+| `bl4-preload` | LD_PRELOAD instrumentation library |
 
 ## Installation
 
@@ -28,11 +30,6 @@ cargo build --release -p bl4-cli
 
 Binary location: `target/release/bl4`
 
-JavaScript/TypeScript (NPM):
-```bash
-npm install @monokrome/bl4
-```
-
 ## Usage
 
 ### Configuration
@@ -47,35 +44,33 @@ Steam ID is required for encryption/decryption. Find it in your Steam profile UR
 ### Save Commands
 
 ```bash
+# Decrypt to YAML
+bl4 save 1.sav decrypt -o save.yaml
+bl4 save 1.sav decrypt > save.yaml
+
+# Encrypt from YAML
+bl4 save 1.sav encrypt save.yaml
+
 # Edit in $EDITOR
-bl4 save edit 1.sav
-bl4 save edit 1.sav -s 76561197960521364  # Override Steam ID
+bl4 save 1.sav edit
 
 # Query values
-bl4 save get 1.sav
-bl4 save get 1.sav --level
-bl4 save get 1.sav --money
-bl4 save get 1.sav --info
-bl4 save get 1.sav "state.currencies.cash"
+bl4 save 1.sav get
+bl4 save 1.sav get --level
+bl4 save 1.sav get --money
+bl4 save 1.sav get --info
+bl4 save 1.sav get "state.currencies.cash"
 
 # Set values
-bl4 save set 1.sav "state.experience[0].level" 50
-bl4 save set 1.sav "state.currencies.cash" 999999
-```
+bl4 save 1.sav set "state.experience[0].level" 50
+bl4 save 1.sav set "state.currencies.cash" 999999
 
-### Encryption/Decryption
+# Fog-of-discovery map manipulation
+bl4 save 1.sav --map reveal
+bl4 save 1.sav --map clear --zone "Crimson Badlands"
 
-```bash
-bl4 decrypt 1.sav -o save.yaml
-bl4 decrypt 1.sav > save.yaml
-bl4 encrypt save.yaml -o 1.sav
-```
-
-### Inspection
-
-```bash
-bl4 inspect 1.sav
-bl4 inspect 1.sav --full
+# Validate all items in a save
+bl4 save 1.sav --validate-items
 ```
 
 ### Item Serial Commands
@@ -83,47 +78,136 @@ bl4 inspect 1.sav --full
 ```bash
 # Decode a serial
 bl4 serial decode '@Ugr$ZCm/&tH!t{KgK/Shxu>k'
-bl4 serial decode '@Uge8jxm/)@{!gQaYMipv(G&-b*Z~_' --verbose
+bl4 serial decode '@Ugr$ZCm/&tH!t{KgK/Shxu>k' --verbose
+bl4 serial decode '@Ugr$ZCm/&tH!t{KgK/Shxu>k' --rarity
 
-# Modify serial (swap parts)
-bl4 serial modify <base> <source> <parts>
+# Validate serial legality
+bl4 serial validate '@Ugr$ZCm/&tH!t{KgK/Shxu>k'
+bl4 serial validate '@Ugr$ZCm/&tH!t{KgK/Shxu>k' --verbose
 
-# Batch decode to binary
+# Compare two serials
+bl4 serial compare '<serial1>' '<serial2>'
+
+# Modify serial (swap parts from source into base)
+bl4 serial modify '<base>' '<source>' <parts>
+
+# Batch decode serials to binary
 bl4 serial batch-decode serials.txt output.bin
 ```
 
 ### Items Database
 
-Track and identify items across saves:
+Track, identify, and analyze items across saves:
 
 ```bash
-# Import items from a save
+# Initialize database
+bl4 idb init
+
+# Import items from a save file
 bl4 idb import-save 1.sav --decode
 
-# Query items
-bl4 idb query --weapon-type "Assault Rifle"
-bl4 idb query --manufacturer "Vladof"
+# Decode all serials and populate metadata
+bl4 idb decode-all
 
-# Set item metadata
-bl4 idb set-value "<serial>" name "My Legendary"
+# List items with filters
+bl4 idb list --weapon-type Pistol --manufacturer Jakobs
+bl4 idb list --rarity Legendary --format csv
+
+# Show item details
+bl4 idb show '<serial>'
+
+# Set metadata with source attribution
+bl4 idb set-value '<serial>' name "Terminus" --source ingame
+
+# Publish/pull items to community server
+bl4 idb publish --server https://api.example.com
+bl4 idb pull --server https://api.example.com
 ```
 
-## Backup System
+### NCS (Nexus Config Store)
 
-Hash-based tracking with `.sav.bak` files:
-- First edit creates backup
-- Subsequent edits preserve original
-- File replacement triggers new backup
+Parse and extract data from the game's binary configuration format:
+
+```bash
+# Scan a directory for NCS file types
+bl4 ncs scan /path/to/extracted/
+
+# Show contents of an NCS file
+bl4 ncs show inv0.bin
+
+# Extract manifests (parts database, category names)
+bl4 ncs extract --extract-type manifest /path/to/inv/
+
+# Search for patterns across NCS files
+bl4 ncs search /path/to/extracted/ "weapon_ps"
+```
+
+### Drop Rates
+
+Query drop rates and legendary item sources:
+
+```bash
+# Find where an item drops
+bl4 drops find "Terminus"
+
+# List all drops from a specific source
+bl4 drops source "Dryl"
+
+# List all known sources or items
+bl4 drops list --sources
+bl4 drops list --items
+```
+
+### Parts Database
+
+Query the parts manifest:
+
+```bash
+# Find parts for a weapon type
+bl4 parts "Jakobs Pistol"
+```
+
+### Memory Tools
+
+Read and analyze live game process memory or dump files:
+
+```bash
+# Attach to live process
+bl4 memory info
+bl4 memory objects --class WeaponData
+bl4 memory fname 12345
+
+# Work with dump files
+bl4 memory --dump game.bin info
+bl4 memory --dump game.bin scan "48 8B 05 ?? ?? ?? ??"
+
+# LD_PRELOAD instrumentation
+bl4 memory preload run -- wine Borderlands4.exe
+bl4 memory preload watch /tmp/bl4_log
+```
+
+### UE5 Asset Extraction
+
+```bash
+# Extract all assets from pak files
+uextract /path/to/Paks -o extracted/
+
+# Filter by path pattern
+uextract /path/to/Paks -f "ItemSerialPart" -o parts/
+
+# List contents without extracting
+uextract list /path/to/Paks
+```
 
 ## Library Usage
 
 ```toml
 [dependencies]
-bl4 = "0.4"
+bl4 = "0.6"
 ```
 
 ```rust
-use bl4::{decrypt_sav, encrypt_sav, SaveFile};
+use bl4::{decrypt_sav, encrypt_sav, SaveFile, ItemSerial};
 use std::fs;
 
 let encrypted = fs::read("1.sav")?;
@@ -139,25 +223,28 @@ let encrypted = encrypt_sav(&modified_yaml, "76561197960521364")?;
 fs::write("1.sav", encrypted)?;
 ```
 
-Documentation: https://docs.rs/bl4
+### Serial Decoding
 
-### JavaScript/TypeScript
+```rust
+use bl4::ItemSerial;
 
-```javascript
-import init, { SaveFile, decryptSav, encryptSav } from '@monokrome/bl4';
+let item = ItemSerial::decode("@Ugr$ZCm/&tH!t{KgK/Shxu>k")?;
 
-await init();
+if let Some((mfr, wtype)) = item.weapon_info() {
+    println!("{} {}", mfr, wtype);
+}
 
-const encrypted = new Uint8Array(await file.arrayBuffer());
-const yaml = decryptSav(encrypted, '76561197960521364');
-const save = new SaveFile(yaml);
-
-save.setCash(999999);
-const modified = save.toYaml();
-const encryptedNew = encryptSav(modified, '76561197960521364');
+let validation = item.validate();
+println!("Legality: {}", validation.legality);
 ```
 
-TypeScript definitions included.
+## Save File Format
+
+```
+.sav -> decrypt (AES-256-ECB) -> decompress (zlib) -> YAML
+```
+
+Key derivation: Steam ID XOR'd with hardcoded base key.
 
 ## Development
 
@@ -165,74 +252,6 @@ TypeScript definitions included.
 cargo test
 cargo clippy --workspace
 ```
-
-### WASM Build
-
-```bash
-wasm-pack build src/bl4 --target web --features wasm
-```
-
-### Save File Format
-
-```
-.sav -> decrypt (AES-256-ECB) -> decompress (zlib) -> YAML
-```
-
-Key derivation: Steam ID XOR'd with hardcoded BASE_KEY.
-
-## Tools
-
-### linewise
-
-TUI for binary pattern analysis of length-prefixed records:
-
-```bash
-cargo build --release -p linewise
-
-# Interactive exploration
-linewise explore data.bin
-
-# Statistical analysis
-linewise analyze data.bin -n 64
-linewise frequency data.bin
-linewise ngram data.bin --size 4
-```
-
-Interactive controls:
-- `j/k` - move between records
-- `h/l` - shift field alignment
-- `w/b` - move between fields
-- `Tab` - cycle data types (u8, u16, u32, varint, hex, ascii)
-- `L` - lock current field (e.g., `24L` locks 24 bytes)
-- `:q` - quit
-
-### uextract
-
-UE5 IoStore extractor for game assets:
-
-```bash
-cargo build --release -p uextract
-
-# Extract all assets
-uextract /path/to/Paks -o extracted/
-
-# Filter by path
-uextract /path/to/Paks -f "ItemSerialPart" -o parts/
-
-# Extract specific patterns
-uextract /path/to/Paks -s "**/Weapons/**" -o weapons/
-
-# List contents without extracting
-uextract list /path/to/Paks
-```
-
-Outputs JSON representations of UE5 assets for analysis.
-
-## Releases
-
-1. Update version in root `Cargo.toml`
-2. Tag and push: `git tag v0.4.x && git push origin v0.4.x`
-3. GitHub Actions publishes to crates.io, NPM, and GitHub Releases
 
 ## Disclaimer
 

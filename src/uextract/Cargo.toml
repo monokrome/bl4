@@ -1,6 +1,6 @@
 [package]
 name = "uextract"
-version = "0.1.0"
+version = "0.6.0"
 edition = "2021"
 description = "UE5 IoStore extractor with JSON output - parses Zen format directly"
 license = "BSD-2-Clause"
