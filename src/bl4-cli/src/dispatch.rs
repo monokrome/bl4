@@ -46,10 +46,15 @@ pub fn dispatch_save(args: SaveArgs) -> Result<()> {
         }) => commands::save::set(&args, path, value, raw),
 
         None => {
+            if args.validate_items {
+                commands::save::validate_items(&args)?;
+            }
             if args.map.is_some() {
                 commands::save::map_only(&args)
+            } else if args.validate_items {
+                Ok(())
             } else {
-                bail!("No action specified. Use a subcommand (decrypt, encrypt, edit, get, set) or --map.")
+                bail!("No action specified. Use a subcommand (decrypt, encrypt, edit, get, set) or --map/--validate-items.")
             }
         }
     }
@@ -78,6 +83,10 @@ pub fn dispatch_serial(command: SerialCommand) -> Result<()> {
             source,
             parts,
         } => commands::serial::modify(&base, &source, &parts),
+
+        SerialCommand::Validate { serials, verbose } => {
+            commands::serial::validate(&serials, verbose)
+        }
 
         SerialCommand::BatchDecode { input, output } => {
             commands::serial::batch_decode(&input, &output)

@@ -17,7 +17,7 @@ pub fn get_item_field_value(item: &bl4_idb::Item, field: &str) -> String {
         "level" => item.level.map(|l| l.to_string()).unwrap_or_default(),
         "element" => item.element.clone().unwrap_or_default(),
         "status" => item.verification_status.to_string(),
-        "legal" => if item.legal { "true" } else { "false" }.to_string(),
+        "legal" => match item.legal { Some(true) => "true", Some(false) => "false", None => "" }.to_string(),
         "source" => item.source.clone().unwrap_or_default(),
         "created_at" => item.created_at.clone(),
         _ => String::new(),

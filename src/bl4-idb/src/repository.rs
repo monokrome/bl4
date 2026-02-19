@@ -56,11 +56,11 @@ pub trait ItemsRepository {
         notes: Option<&str>,
     ) -> RepoResult<()>;
 
-    /// Set legal status for an item
-    fn set_legal(&self, serial: &str, legal: bool) -> RepoResult<()>;
+    /// Set legal status for an item (None = unknown)
+    fn set_legal(&self, serial: &str, legal: Option<bool>) -> RepoResult<()>;
 
-    /// Set legal status for all items
-    fn set_all_legal(&self, legal: bool) -> RepoResult<usize>;
+    /// Set legal status for all items (None = unknown)
+    fn set_all_legal(&self, legal: Option<bool>) -> RepoResult<usize>;
 
     // === Metadata ===
 

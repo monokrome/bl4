@@ -43,7 +43,7 @@ fn row_to_item(row: &rusqlite::Row<'_>) -> rusqlite::Result<Item> {
         verification_status: status_str.parse().unwrap_or(VerificationStatus::Unverified),
         verification_notes: row.get(19)?,
         verified_at: row.get(20)?,
-        legal: row.get::<_, Option<bool>>(21)?.unwrap_or(false),
+        legal: row.get::<_, Option<bool>>(21)?,
         source: row.get(22)?,
         created_at: row.get::<_, Option<String>>(23)?.unwrap_or_default(),
     })
@@ -533,7 +533,7 @@ impl ItemsRepository for SqliteDb {
         Ok(())
     }
 
-    fn set_legal(&self, serial: &str, legal: bool) -> RepoResult<()> {
+    fn set_legal(&self, serial: &str, legal: Option<bool>) -> RepoResult<()> {
         self.conn
             .execute(
                 "UPDATE items SET legal = ?2 WHERE serial = ?1",
@@ -543,7 +543,7 @@ impl ItemsRepository for SqliteDb {
         Ok(())
     }
 
-    fn set_all_legal(&self, legal: bool) -> RepoResult<usize> {
+    fn set_all_legal(&self, legal: Option<bool>) -> RepoResult<usize> {
         let rows = self
             .conn
             .execute("UPDATE items SET legal = ?1", params![legal])

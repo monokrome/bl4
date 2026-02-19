@@ -20,12 +20,12 @@ pub fn mark_legal(db: &Path, ids: &[String]) -> Result<()> {
     wdb.init()?;
 
     if ids.len() == 1 && ids[0] == "all" {
-        let count = wdb.set_all_legal(true)?;
+        let count = wdb.set_all_legal(Some(true))?;
         println!("Marked all {} items as legal", count);
     } else {
         let mut marked = 0;
         for serial in ids {
-            wdb.set_legal(serial, true)?;
+            wdb.set_legal(serial, Some(true))?;
             marked += 1;
         }
         println!("Marked {} items as legal", marked);

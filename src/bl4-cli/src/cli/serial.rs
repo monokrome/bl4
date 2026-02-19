@@ -58,6 +58,16 @@ pub enum SerialCommand {
         parts: String,
     },
 
+    /// Validate item serial(s) for legality
+    Validate {
+        /// Item serial(s) to validate
+        serials: Vec<String>,
+
+        /// Show detailed check results
+        #[arg(short, long)]
+        verbose: bool,
+    },
+
     /// Batch decode serials from a file to binary output
     BatchDecode {
         /// Input file with one serial per line

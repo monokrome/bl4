@@ -28,7 +28,7 @@ mod tests {
             level: Some(50),
             element: Some("Fire".to_string()),
             source: Some("ingame".to_string()),
-            legal: true,
+            legal: Some(true),
             verification_status: bl4_idb::VerificationStatus::Verified,
             created_at: "2024-01-01T00:00:00Z".to_string(),
             ..Default::default()
@@ -117,9 +117,10 @@ mod tests {
         }
 
         #[test]
-        fn returns_legal_false() {
+        fn returns_legal_unknown() {
             let item = make_minimal_item();
-            assert_eq!(get_item_field_value(&item, "legal"), "false");
+            // Default Item.legal is None (unknown)
+            assert_eq!(get_item_field_value(&item, "legal"), "");
         }
 
         #[test]

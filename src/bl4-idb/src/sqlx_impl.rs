@@ -49,8 +49,8 @@ pub trait AsyncItemsRepository {
         notes: Option<&str>,
     ) -> AsyncRepoResult<()>;
 
-    /// Set legal status for an item
-    async fn set_legal(&self, serial: &str, legal: bool) -> AsyncRepoResult<()>;
+    /// Set legal status for an item (None = unknown)
+    async fn set_legal(&self, serial: &str, legal: Option<bool>) -> AsyncRepoResult<()>;
 
     // === Metadata ===
 
@@ -200,7 +200,7 @@ pub mod sqlite {
                     .unwrap_or(VerificationStatus::Unverified),
                 verification_notes: row.try_get("verification_notes")?,
                 verified_at: row.try_get("verified_at")?,
-                legal: row.try_get::<Option<bool>, _>("legal")?.unwrap_or(false),
+                legal: row.try_get::<Option<bool>, _>("legal")?,
                 source: row.try_get("source")?,
                 created_at: row
                     .try_get::<Option<String>, _>("created_at")?
@@ -549,7 +549,7 @@ pub mod sqlite {
             Ok(())
         }
 
-        async fn set_legal(&self, serial: &str, legal: bool) -> AsyncRepoResult<()> {
+        async fn set_legal(&self, serial: &str, legal: Option<bool>) -> AsyncRepoResult<()> {
             sqlx::query("UPDATE items SET legal = ? WHERE serial = ?")
                 .bind(legal)
                 .bind(serial)
@@ -886,7 +886,7 @@ pub mod postgres {
                 verified_at: row
                     .try_get::<Option<chrono::DateTime<chrono::Utc>>, _>("verified_at")?
                     .map(|dt| dt.to_rfc3339()),
-                legal: row.try_get::<Option<bool>, _>("legal")?.unwrap_or(false),
+                legal: row.try_get::<Option<bool>, _>("legal")?,
                 source: row.try_get("source")?,
                 created_at: row
                     .try_get::<Option<chrono::DateTime<chrono::Utc>>, _>("created_at")?
@@ -1498,7 +1498,7 @@ pub mod postgres {
             Ok(())
         }
 
-        async fn set_legal(&self, serial: &str, legal: bool) -> AsyncRepoResult<()> {
+        async fn set_legal(&self, serial: &str, legal: Option<bool>) -> AsyncRepoResult<()> {
             sqlx::query("UPDATE items SET legal = $1 WHERE serial = $2")
                 .bind(legal)
                 .bind(serial)

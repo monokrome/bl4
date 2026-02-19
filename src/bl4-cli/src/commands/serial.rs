@@ -7,7 +7,12 @@ use std::io::Write;
 use std::path::Path;
 
 /// Handle `serial decode` command
-#[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
+#[allow(
+    clippy::too_many_lines,
+    clippy::cognitive_complexity,
+    clippy::too_many_arguments,
+    clippy::fn_params_excessive_bools
+)]
 pub fn decode(
     serial: &str,
     verbose: bool,
@@ -252,6 +257,61 @@ fn print_rarity_estimate(item: &bl4::ItemSerial) {
             println!("\nRarity estimate: unavailable (insufficient serial data)");
         }
     }
+}
+
+/// Handle `serial validate` command
+pub fn validate(serials: &[String], verbose: bool) -> Result<()> {
+    use bl4::serial::Legality;
+
+    for serial in serials {
+        let item = match bl4::ItemSerial::decode(serial) {
+            Ok(item) => item,
+            Err(e) => {
+                println!("✗ {}: decode failed: {}", serial, e);
+                continue;
+            }
+        };
+
+        let result = item.validate();
+
+        let icon = match result.legality {
+            Legality::Legal => "✓",
+            Legality::Illegal => "✗",
+            Legality::Unknown => "?",
+        };
+
+        // Build item description
+        let desc = if let Some((mfr, wtype)) = item.weapon_info() {
+            format!("{} {}", mfr, wtype)
+        } else if let Some(group_id) = item.part_group_id() {
+            bl4::category_name(group_id)
+                .unwrap_or("Unknown")
+                .to_string()
+        } else {
+            item.item_type_description().to_string()
+        };
+
+        let truncated = if serial.len() > 30 {
+            format!("{}...", &serial[..27])
+        } else {
+            serial.to_string()
+        };
+
+        println!("{} {:<25} {}", icon, desc, truncated);
+
+        if verbose {
+            for check in &result.checks {
+                let check_icon = match check.passed {
+                    Some(true) => "  ✓",
+                    Some(false) => "  ✗",
+                    None => "  ?",
+                };
+                println!("{}  {}: {}", check_icon, check.name, check.detail);
+            }
+        }
+    }
+
+    Ok(())
 }
 
 /// Handle `serial encode` command

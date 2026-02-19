@@ -210,6 +210,29 @@ pub fn slot_from_part_name(name: &str) -> &str {
     stripped
 }
 
+/// Category ID -> Maximum known part index in that category
+static MAX_PART_INDEX: Lazy<HashMap<i64, i64>> = Lazy::new(|| {
+    let mut max_by_cat: HashMap<i64, i64> = HashMap::new();
+    for &(cat, idx) in PARTS_BY_ID.keys() {
+        let entry = max_by_cat.entry(cat).or_insert(0);
+        if idx > *entry {
+            *entry = idx;
+        }
+    }
+    max_by_cat
+});
+
+/// Get the maximum known part index for a category.
+/// Returns None if the category has no parts in the manifest.
+pub fn max_part_index(category: i64) -> Option<i64> {
+    MAX_PART_INDEX.get(&category).copied()
+}
+
+/// Get the number of known parts for a category.
+pub fn category_part_count(category: i64) -> usize {
+    PARTS_BY_ID.keys().filter(|(cat, _)| *cat == category).count()
+}
+
 /// Check if manifest data is loaded (forces initialization)
 pub fn is_loaded() -> bool {
     // Access lazy statics to force initialization
@@ -349,6 +372,28 @@ mod tests {
         let pistol_count = world_pool_legendary_count("Pistols");
         assert!(pistol_count > 0);
         assert!(world_pool_legendary_count("Nonexistent") == 0);
+    }
+
+    #[test]
+    fn test_max_part_index() {
+        // Categories with parts should return Some
+        // Category 2 = Daedalus Pistol, should have parts
+        let max = max_part_index(2);
+        assert!(max.is_some());
+        assert!(max.unwrap() > 0);
+
+        // Non-existent category returns None
+        assert!(max_part_index(99999).is_none());
+    }
+
+    #[test]
+    fn test_category_part_count() {
+        // Category with parts should have non-zero count
+        let count = category_part_count(2);
+        assert!(count > 0);
+
+        // Non-existent category returns 0
+        assert_eq!(category_part_count(99999), 0);
     }
 
     #[test]
