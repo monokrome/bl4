@@ -143,8 +143,10 @@ impl GUObjectArray {
             valid_16, valid_24
         );
 
-        // Prefer 24-byte if both seem valid (UE5.5 likely uses 24)
-        if valid_24 >= 8 {
+        // Pick whichever stride has higher validity
+        if valid_16 >= 8 && valid_16 > valid_24 {
+            Ok(16)
+        } else if valid_24 >= 8 {
             Ok(24)
         } else if valid_16 >= 8 {
             Ok(16)
@@ -312,28 +314,21 @@ mod tests {
 
     #[test]
     fn test_detect_item_size_16_byte() {
-        // Create mock chunk data with 16-byte items containing valid pointers
         let chunk_base = 0x300000000usize;
-        let mut data = vec![0u8; 24 * 10]; // Need enough for both checks
+        // Fill entirely with invalid pointer bytes, then place valid pointers
+        // at exactly the 16-byte stride positions
+        let mut data = vec![0xFFu8; 24 * 10];
 
-        // Fill with valid pointers at 16-byte intervals
         for i in 0..10 {
             let ptr = 0x200000000u64 + (i as u64 * 0x1000);
             data[i * 16..i * 16 + 8].copy_from_slice(&ptr.to_le_bytes());
-        }
-        // Make 24-byte pattern invalid
-        for i in 0..10 {
-            if i * 24 + 8 <= data.len() {
-                data[i * 24..i * 24 + 8].copy_from_slice(&[0xFF; 8]);
-            }
         }
 
         let source = MockMemorySource::new(data, chunk_base);
         let result = GUObjectArray::detect_item_size(&source, chunk_base);
 
         assert!(result.is_ok());
-        // Note: The function prefers 24-byte if valid_24 >= 8, so this might return 24
-        // depending on the data layout
+        assert_eq!(result.unwrap(), 16);
     }
 
     /// Create mock memory layout for UObjectIterator testing
