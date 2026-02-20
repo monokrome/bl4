@@ -28,18 +28,8 @@ impl NcsFile {
         decompress(&pak_data[self.offset..])
     }
 
-    /// Extract type name from manifest filename
-    /// "Nexus-Data-itempool0.ncs" -> "itempool"
     fn type_from_filename(filename: &str) -> String {
-        filename
-            .strip_prefix("Nexus-Data-")
-            .and_then(|s| {
-                // Remove trailing digit + .ncs (e.g., "0.ncs", "6.ncs")
-                s.rfind(|c: char| c.is_ascii_digit())
-                    .map(|pos| &s[..pos])
-            })
-            .unwrap_or(filename)
-            .to_string()
+        crate::pak::type_from_filename(filename)
     }
 }
 
