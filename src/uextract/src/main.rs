@@ -14,17 +14,12 @@ use std::sync::Arc;
 use usmap::Usmap;
 
 mod cli;
-mod commands;
 mod filter;
-pub mod pak;
-mod property;
-pub mod texture;
-mod types;
-mod zen;
 
 use cli::{Args, Commands, OutputFormat};
 use filter::matches_filters;
-use zen::parse_zen_to_json;
+use uextract::commands;
+use uextract::zen::parse_zen_to_json;
 
 #[allow(clippy::too_many_lines)]
 fn main() -> Result<()> {

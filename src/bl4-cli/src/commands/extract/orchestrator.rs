@@ -32,7 +32,20 @@ fn extract_ncs_from_paks(
                 pak_files.push(path);
             }
         }
-        pak_files.sort();
+        // Sort by UE5 mount priority: (patch_level, chunk) ascending.
+        // Last-write-wins, so highest-priority PAK processes last and overrides.
+        // Unknown filenames sort last (conservative — they win over everything).
+        pak_files.sort_by(|a, b| {
+            use uextract::pak::parse_pak_filename;
+            let pa = parse_pak_filename(a);
+            let pb = parse_pak_filename(b);
+            match (pa, pb) {
+                (Some(a), Some(b)) => (a.patch_level, a.chunk).cmp(&(b.patch_level, b.chunk)),
+                (Some(_), None) => std::cmp::Ordering::Less,
+                (None, Some(_)) => std::cmp::Ordering::Greater,
+                (None, None) => a.cmp(b),
+            }
+        });
     }
 
     if pak_files.is_empty() {
@@ -249,7 +262,7 @@ pub fn handle_manifest(
 
             // Step 6: Extract part pools from parts database
             println!("\nStep 6: Extracting part pools...");
-            let part_pools_path = output.join("part_pools.json");
+            let part_pools_path = output.join("part_pools.tsv");
             let status = ProcessCommand::new(&bl4_exe)
                 .args(["extract", "part-pools"])
                 .args(["-i"])
@@ -293,6 +306,38 @@ pub fn handle_manifest(
         println!();
         extracted
     };
+
+    // In-memory UAsset scanning
+    if !skip_extract {
+        println!("=== UAsset Scanning ===\n");
+
+        // Generate scriptobjects.json (required for class resolution)
+        let scriptobjects_path = output.join("scriptobjects.json");
+        if !scriptobjects_path.exists() {
+            print!("  Generating scriptobjects...");
+            uextract::commands::extract_script_objects(paks, &scriptobjects_path, aes_key)?;
+            println!(" done");
+        }
+
+        println!("  Scanning IoStore for game data assets...");
+        match manifest::extract_uasset_manifest(
+            paks,
+            &usmap_path,
+            &scriptobjects_path,
+            output,
+            aes_key,
+        ) {
+            Ok(summary) => {
+                let total = summary.status_effects_count
+                    + summary.skill_params_count
+                    + summary.balance_structs_count;
+                println!("  UAsset scanning complete: {} assets extracted\n", total);
+            }
+            Err(e) => {
+                eprintln!("  Warning: UAsset scanning failed: {}\n", e);
+            }
+        }
+    }
 
     // NCS extraction from PAK files
     let ncs_dir = output.join("ncs");

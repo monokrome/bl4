@@ -7,7 +7,7 @@ use anyhow::{Context, Result};
 use std::fs::File;
 use std::io::BufReader;
 use std::panic;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 /// Reader for traditional PAK files on disk
 pub struct PakReader {
@@ -210,6 +210,41 @@ pub fn extract_to_directory<P: AsRef<Path>>(
     Ok(extracted)
 }
 
+/// Parsed metadata from a PAK filename.
+///
+/// UE5 PAK filenames encode chunk and patch level:
+/// `pakchunk{N}-Windows_{P}_P.pak` where N=chunk, P=patch level.
+pub struct PakFileInfo {
+    pub chunk: u32,
+    pub patch_level: u32,
+    pub path: PathBuf,
+}
+
+/// Parse a PAK filename into its chunk and patch level.
+///
+/// Handles `pakchunk{N}-Windows_{P}_P.pak` and variants with platform suffixes.
+/// Returns `None` for filenames that don't match the expected pattern.
+pub fn parse_pak_filename(path: &Path) -> Option<PakFileInfo> {
+    let stem = path.file_stem()?.to_str()?;
+
+    // Extract chunk number from "pakchunk{N}-" prefix
+    let rest = stem.strip_prefix("pakchunk")?;
+    let dash_pos = rest.find('-')?;
+    let chunk: u32 = rest[..dash_pos].parse().ok()?;
+
+    // Extract patch level from "_{P}_P" suffix (required)
+    let after_dash = &rest[dash_pos + 1..];
+    let suffix = after_dash.strip_suffix("_P")?;
+    let last_underscore = suffix.rfind('_')?;
+    let patch_level: u32 = suffix[last_underscore + 1..].parse().ok()?;
+
+    Some(PakFileInfo {
+        chunk,
+        patch_level,
+        path: path.to_path_buf(),
+    })
+}
+
 /// Scan a directory for PAK files
 pub fn find_pak_files<P: AsRef<Path>>(dir: P) -> Result<Vec<std::path::PathBuf>> {
     let mut paks = Vec::new();
@@ -256,6 +291,55 @@ mod tests {
         }
 
         None
+    }
+
+    #[test]
+    fn test_parse_pak_filename_standard() {
+        let info = parse_pak_filename(Path::new("pakchunk4-Windows_8_P.pak")).unwrap();
+        assert_eq!(info.chunk, 4);
+        assert_eq!(info.patch_level, 8);
+    }
+
+    #[test]
+    fn test_parse_pak_filename_chunk_zero() {
+        let info = parse_pak_filename(Path::new("pakchunk0-Windows_0_P.pak")).unwrap();
+        assert_eq!(info.chunk, 0);
+        assert_eq!(info.patch_level, 0);
+    }
+
+    #[test]
+    fn test_parse_pak_filename_high_patch() {
+        let info = parse_pak_filename(Path::new("pakchunk6-Windows_12_P.pak")).unwrap();
+        assert_eq!(info.chunk, 6);
+        assert_eq!(info.patch_level, 12);
+    }
+
+    #[test]
+    fn test_parse_pak_filename_full_path() {
+        let info = parse_pak_filename(Path::new(
+            "/opt/games/Borderlands 4/Content/Paks/pakchunk4-Windows_8_P.pak",
+        ))
+        .unwrap();
+        assert_eq!(info.chunk, 4);
+        assert_eq!(info.patch_level, 8);
+    }
+
+    #[test]
+    fn test_parse_pak_filename_not_pak() {
+        assert!(parse_pak_filename(Path::new("random_file.bin")).is_none());
+    }
+
+    #[test]
+    fn test_parse_pak_filename_no_patch_suffix() {
+        // e.g. "pakchunk0-Windows.pak" — no _P suffix → patch level 0
+        assert!(parse_pak_filename(Path::new("pakchunk0-Windows.pak")).is_none());
+    }
+
+    #[test]
+    fn test_parse_pak_filename_preserves_path() {
+        let p = Path::new("/tmp/pakchunk4-Windows_8_P.pak");
+        let info = parse_pak_filename(p).unwrap();
+        assert_eq!(info.path, p);
     }
 
     #[test]
