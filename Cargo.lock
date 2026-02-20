@@ -742,7 +742,7 @@ dependencies = [
 
 [[package]]
 name = "bl4"
-version = "0.1.0"
+version = "0.6.0"
 dependencies = [
  "adler",
  "aes",
@@ -764,7 +764,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-cli"
-version = "0.1.0"
+version = "0.6.0"
 dependencies = [
  "anyhow",
  "bl4",
@@ -795,7 +795,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-community"
-version = "0.1.0"
+version = "0.6.0"
 dependencies = [
  "anyhow",
  "axum",
@@ -816,7 +816,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-idb"
-version = "0.1.0"
+version = "0.6.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -836,7 +836,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-ncs"
-version = "0.1.0"
+version = "0.6.0"
 dependencies = [
  "anyhow",
  "byteorder",
@@ -854,7 +854,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-preload"
-version = "0.1.0"
+version = "0.6.0"
 dependencies = [
  "backtrace",
  "ctor",
@@ -864,7 +864,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-save-editor"
-version = "0.1.0"
+version = "0.6.0"
 dependencies = [
  "anyhow",
  "axum",
@@ -4921,9 +4921,9 @@ dependencies = [
 
 [[package]]
 name = "keccak"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ecc2af9a1119c51f12a14607e783cb977bde58bc069ff0c3da1095e635d70654"
+checksum = "cb26cec98cce3a3d96cbb7bced3c4b16e3d13f27ec56dbd62cbc8f39cfb9d653"
 dependencies = [
  "cpufeatures",
 ]
@@ -10273,7 +10273,7 @@ checksum = "562d481066bde0658276a35467c4af00bdc6ee726305698a55b86e61d7ad82bb"
 
 [[package]]
 name = "uextract"
-version = "0.1.0"
+version = "0.6.0"
 dependencies = [
  "anyhow",
  "byteorder",
