@@ -18,7 +18,7 @@ path = "src/main.rs"
 retoc = { git = "https://github.com/trumank/retoc" }
 
 # Use repak for traditional PAK file reading
-repak = { git = "https://github.com/trumank/repak.git", version = "0.2.2", features = ["oodle"] }
+repak = { git = "https://github.com/monokrome/repak.git", branch = "fix/skip-deleted-pak-entries", version = "0.2.2", features = ["oodle"] }
 
 # Use usmap for property schema parsing (submodule in lib/jmap)
 usmap = { git = "https://github.com/trumank/jmap" }

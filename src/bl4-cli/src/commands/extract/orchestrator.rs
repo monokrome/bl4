@@ -8,6 +8,93 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command as ProcessCommand;
 
+/// Extract and decompress NCS files from PAK files in a directory.
+///
+/// Finds all .pak files in the given directory and runs `bl4 ncs decompress`
+/// on each, using the specified Oodle backend for full decompression support.
+fn extract_ncs_from_paks(
+    paks_dir: &Path,
+    ncs_output: &Path,
+    oodle_exec: Option<&str>,
+    oodle_fifo: bool,
+) -> Result<()> {
+    println!("=== NCS Extraction ===\n");
+
+    // Find all .pak files
+    let mut pak_files: Vec<PathBuf> = Vec::new();
+    if paks_dir.is_file() {
+        pak_files.push(paks_dir.to_path_buf());
+    } else if paks_dir.is_dir() {
+        for entry in fs::read_dir(paks_dir).context("Failed to read paks directory")? {
+            let entry = entry?;
+            let path = entry.path();
+            if path.extension().map(|e| e == "pak").unwrap_or(false) {
+                pak_files.push(path);
+            }
+        }
+        pak_files.sort();
+    }
+
+    if pak_files.is_empty() {
+        println!("No .pak files found, skipping NCS extraction\n");
+        return Ok(());
+    }
+
+    let bl4_exe = std::env::current_exe().context("Failed to get current executable path")?;
+    fs::create_dir_all(ncs_output).context("Failed to create NCS output directory")?;
+
+    let backend_name = if oodle_exec.is_some() {
+        if oodle_fifo { "fifo-exec" } else { "exec" }
+    } else {
+        "oozextract"
+    };
+    println!(
+        "Extracting NCS from {} PAK files (backend: {})...",
+        pak_files.len(),
+        backend_name
+    );
+
+    let mut total_extracted = 0;
+
+    for pak_path in &pak_files {
+        let mut cmd = ProcessCommand::new(&bl4_exe);
+        cmd.args(["ncs", "decompress"])
+            .arg(pak_path)
+            .arg("-o")
+            .arg(ncs_output)
+            .arg("--raw");
+
+        if let Some(exec_cmd) = oodle_exec {
+            cmd.arg("--oodle-exec").arg(exec_cmd);
+            if oodle_fifo {
+                cmd.arg("--oodle-fifo");
+            }
+        }
+
+        let status = cmd
+            .status()
+            .with_context(|| format!("Failed to run ncs decompress on {}", pak_path.display()))?;
+
+        if status.success() {
+            total_extracted += 1;
+        } else {
+            eprintln!(
+                "  Warning: NCS extraction failed for {} (status: {})",
+                pak_path.display(),
+                status
+            );
+        }
+    }
+
+    println!(
+        "  NCS extraction complete: {}/{} PAKs processed\n",
+        total_extracted,
+        pak_files.len()
+    );
+
+    Ok(())
+}
+
 /// Handle the Commands::Manifest command
 ///
 /// Orchestrates full manifest generation from memory dump and pak files.
@@ -21,6 +108,8 @@ pub fn handle_manifest(
     skip_extract: bool,
     extracted: PathBuf,
     skip_memory: bool,
+    oodle_exec: Option<&str>,
+    oodle_fifo: bool,
 ) -> Result<()> {
     // Ensure output directory exists
     fs::create_dir_all(output).context("Failed to create output directory")?;
@@ -205,6 +294,10 @@ pub fn handle_manifest(
         extracted
     };
 
+    // NCS extraction from PAK files
+    let ncs_dir = output.join("ncs");
+    extract_ncs_from_paks(paks, &ncs_dir, oodle_exec, oodle_fifo)?;
+
     // Generate manifest from extracted files
     println!("=== Manifest Generation ===\n");
     println!("Generating manifest files...");
@@ -212,7 +305,6 @@ pub fn handle_manifest(
     println!("\nManifest files written to {}", output.display());
 
     // Generate drops manifest from NCS data if available
-    let ncs_dir = output.join("ncs");
     if ncs_dir.exists() {
         println!("\n=== Drops Manifest ===\n");
         println!("Generating drops manifest from NCS data...");

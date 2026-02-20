@@ -14,6 +14,28 @@ const MANUFACTURERS: &[&str] = &["BOR", "DAD", "JAK", "MAL", "ORD", "TED", "TOR"
 /// Known weapon types
 const WEAPON_TYPES: &[&str] = &["AR", "HW", "PS", "SG", "SM", "SR"];
 
+/// Check if a filename is an inventory NCS file.
+///
+/// Matches both naming conventions:
+/// - Decompress output: `inv.bin`, `inv_custom.bin`, `inv_stat.bin`
+/// - Original PAK names: `Nexus-Data-inv0.bin`, `Nexus-Data-inv_custom0.bin`
+///
+/// Excludes `inventory_container` which is a different NCS type.
+fn is_inv_filename(name: &str) -> bool {
+    if !name.ends_with(".bin") {
+        return false;
+    }
+    if name.contains("inventory_container") {
+        return false;
+    }
+    // Original PAK naming: "Nexus-Data-inv0.bin", "Nexus-Data-inv_custom0.bin"
+    if name.contains("-inv") {
+        return true;
+    }
+    // Decompress output naming: "inv.bin", "inv_custom.bin", "inv_stat.bin"
+    name.starts_with("inv") && (name == "inv.bin" || name.starts_with("inv_"))
+}
+
 pub fn extract_by_type(
     path: &Path,
     extract_type: &str,
@@ -141,8 +163,7 @@ pub fn extract_by_type(
 /// - Part names follow pattern: MANU_TYPE_PartName (e.g., BOR_SG_Grip_01)
 /// - Serial index immediately follows as a decimal string
 fn extract_part_indices(path: &Path, output: Option<&Path>, json: bool) -> Result<()> {
-    // Find inv.bin file
-    let inv_path = find_inv_bin(path)?;
+    let inv_path = find_inv_file(path)?;
     let data = fs::read(&inv_path).context("Failed to read inv.bin")?;
 
     // Extract null-terminated strings
@@ -217,28 +238,6 @@ fn extract_part_indices(path: &Path, output: Option<&Path>, json: bool) -> Resul
 }
 
 /// Find inv.bin file in a directory
-fn find_inv_bin(path: &Path) -> Result<PathBuf> {
-    // If path is a file, use it directly
-    if path.is_file() {
-        return Ok(path.to_path_buf());
-    }
-
-    // Search for inv.bin in directory
-    for entry in walkdir::WalkDir::new(path)
-        .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|e| e.file_type().is_file())
-    {
-        let file_path = entry.path();
-        let name = file_path.file_name().and_then(|n| n.to_str()).unwrap_or("");
-        if name == "inv.bin" {
-            return Ok(file_path.to_path_buf());
-        }
-    }
-
-    anyhow::bail!("inv.bin not found in {}", path.display())
-}
-
 /// Extract null-terminated strings from binary data
 fn extract_null_strings(data: &[u8]) -> Vec<String> {
     let mut strings = Vec::new();
@@ -460,8 +459,7 @@ fn find_inv_file(path: &Path) -> Result<PathBuf> {
     {
         let file_path = entry.path();
         let name = file_path.file_name().and_then(|n| n.to_str()).unwrap_or("");
-        // Match inv.bin or Nexus-Data-inv*.bin
-        if name == "inv.bin" || (name.contains("-inv") && name.ends_with(".bin")) {
+        if is_inv_filename(name) {
             return Ok(file_path.to_path_buf());
         }
     }
@@ -977,7 +975,7 @@ fn build_serial_decoder(path: &Path, output: Option<&Path>, json: bool) -> Resul
         let file_path = entry.path();
         let filename = file_path.file_name().and_then(|n| n.to_str()).unwrap_or("");
 
-        if !filename.contains("-inv") || !filename.ends_with(".bin") || filename.contains("inventory_container") {
+        if !is_inv_filename(filename) {
             continue;
         }
 
@@ -1223,7 +1221,7 @@ fn export_parts_manifest(path: &Path, output: Option<&Path>, json: bool) -> Resu
         let file_path = entry.path();
         let filename = file_path.file_name().and_then(|n| n.to_str()).unwrap_or("");
 
-        if !filename.contains("-inv") || !filename.ends_with(".bin") || filename.contains("inventory_container") {
+        if !is_inv_filename(filename) {
             continue;
         }
 
