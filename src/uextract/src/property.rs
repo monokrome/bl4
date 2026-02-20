@@ -157,7 +157,10 @@ pub fn read_fstring(data: &[u8], pos: usize) -> Option<(String, usize)> {
         return Some((String::new(), 4));
     }
 
-    let (str_len, is_utf16) = if len < 0 {
+    let (str_len, is_utf16) = if len == i32::MIN {
+        // i32::MIN (0x80000000) is a deleted/invalid entry sentinel — skip
+        return None;
+    } else if len < 0 {
         ((-len) as usize, true)
     } else {
         (len as usize, false)

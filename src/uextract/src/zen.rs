@@ -1,4 +1,4 @@
-//! Zen format parsing to JSON
+//! Zen format parsing
 
 use anyhow::Result;
 use retoc::{
@@ -12,8 +12,9 @@ use usmap::Usmap;
 use crate::property::{parse_export_properties, parse_export_properties_with_schema};
 use crate::types::{ZenAssetInfo, ZenExportInfo, ZenImportInfo};
 
+/// Parse raw Zen asset data into a structured `ZenAssetInfo`.
 #[allow(clippy::too_many_lines, clippy::too_many_arguments)]
-pub fn parse_zen_to_json(
+pub fn parse_zen_asset(
     data: &[u8],
     path: &str,
     toc_version: EIoStoreTocVersion,
@@ -21,7 +22,7 @@ pub fn parse_zen_to_json(
     usmap_schema: Option<&Arc<Usmap>>,
     class_lookup: Option<&Arc<HashMap<String, String>>>,
     verbose: bool,
-) -> Result<String> {
+) -> Result<ZenAssetInfo> {
     let mut cursor = Cursor::new(data);
 
     let header = FZenPackageHeader::deserialize(
@@ -101,7 +102,7 @@ pub fn parse_zen_to_json(
         })
         .collect();
 
-    let info = ZenAssetInfo {
+    Ok(ZenAssetInfo {
         path: path.to_string(),
         package_name: header.package_name(),
         package_flags: header.summary.package_flags,
@@ -112,7 +113,28 @@ pub fn parse_zen_to_json(
         names,
         imports,
         exports,
-    };
+    })
+}
 
+/// Parse raw Zen asset data and serialize to pretty-printed JSON.
+#[allow(clippy::too_many_arguments)]
+pub fn parse_zen_to_json(
+    data: &[u8],
+    path: &str,
+    toc_version: EIoStoreTocVersion,
+    container_header_version: EIoContainerHeaderVersion,
+    usmap_schema: Option<&Arc<Usmap>>,
+    class_lookup: Option<&Arc<HashMap<String, String>>>,
+    verbose: bool,
+) -> Result<String> {
+    let info = parse_zen_asset(
+        data,
+        path,
+        toc_version,
+        container_header_version,
+        usmap_schema,
+        class_lookup,
+        verbose,
+    )?;
     Ok(serde_json::to_string_pretty(&info)?)
 }

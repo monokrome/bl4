@@ -19,6 +19,7 @@ mod pak_extraction;
 mod pak_manifest;
 mod property_parsing;
 mod reference_data;
+mod uasset_extraction;
 
 // Re-export main types and functions
 pub use file_extraction::{
@@ -54,3 +55,5 @@ pub use reference_data::{
     manufacturer_info, rarity_tiers, weapon_type_info, ConsolidatedManifest, ElementType,
     GearTypeInfo, LegendaryItem, ManufacturerInfo, RarityTier, WeaponTypeInfo,
 };
+
+pub use uasset_extraction::{extract_uasset_manifest, UassetManifestSummary};
