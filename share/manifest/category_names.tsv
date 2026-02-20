@@ -1,137 +1,58 @@
 category_id	name
-1	Weapon
-2	Daedalus Pistol
-3	Jakobs Pistol
-4	Order Pistol
-5	Tediore Pistol
-6	Torgue Pistol
-7	Ripper Shotgun
-8	Daedalus Shotgun
-9	Jakobs Shotgun
 10	Maliwan Shotgun
-11	Tediore Shotgun
-12	Torgue Shotgun
-13	Daedalus AR
-14	Tediore AR
-15	Order AR
-16	Vladof Sniper
-17	Torgue AR
-18	Vladof AR
-19	Ripper SMG
-20	Daedalus SMG
-21	Maliwan SMG
-22	Vladof SMG
-23	Ripper Sniper
-24	Jakobs Sniper
-25	Maliwan Sniper
-26	Order Sniper
-27	Jakobs AR
-28	Inv Echologdefault
-29	Inv Contractitem Thresherliver
-30	Inv Contractitem Thresherbrain
-31	Inv Contractitem Powertools
-32	Inv Contractitem Ingot
-33	Inv Contractitem Firerod
-34	Inv Contractitem Cybercore
-35	Inv Contractitem Droneparts
-36	Inv Contractitem Cattail
-37	Inv Contractitem Catheart
-38	Inv Contractitem Bottle
-39	Inv Contractitem Beasthorn
-40	Inv Contractitem Beastbone
-41	Inv Contractitem Batwing
-42	Inv Contractitem Batkidney
-43	Inv Contractitem Tools
-44	Inv Contractitem Creepbrain
-45	Inv Contractitem Sparkplug
-46	Inv Contractitem Pangolinparts
-47	Inv Contractitem Creepparts
-48	Inv Contractitem Bloodpack
-49	Inv Contractitem Poster
-50	Inv Contractitem Base
-51	Invdef Booster
-52	Invdef Drillkey
-53	Invdef Pitchfork
-54	Invdef Scythe
-55	Invdef Shovel
-56	Invdef Gardenseeds
-57	Invdef Oxygencanister
-58	Invdef Key
-59	Inventorydef Elpisoxygenkit
-60	Invdef Package
-61	Invdef Missiontemp Pickup
-62	Invdef Accesscard
-63	Invdef Dronebrain
-64	Invdef Crawler Vehiclepart Sha 4
-65	Invdef Crawler Vehiclepart Sha 3
-66	Invdef Crawler Vehiclepart Sha 2
-67	Invdef Crawler Vehiclepart Sha 1
-68	Invdef Crawler Vehiclepart Gra 4
-69	Invdef Crawler Vehiclepart Gra 3
-70	Invdef Crawler Vehiclepart Mt 4
-71	Invdef Crawler Vehiclepart Mt 2
-72	Invdef Crawler Vehiclepart Mt 3
-73	Invdef Crawler Vehiclepart Mt 1
-74	Invdef Crawler Vehiclepart Gra 2
-75	Invdef Crawler Vehiclepart Gra 1
-76	Invdef Crawler Vehiclepart Parent
-77	Invdef Crawler Vehiclepart Demo
-78	Inventorydef Fishing Legendaryfish
-79	Inventorydef Fishing Rarefish
-80	Currency Eridium Multistack
-81	Currency Eridium Singlestack
-82	Currency Eridium
-83	Currency Money
-84	Currency Money Singlestack
-85	Currency Money Triplestack
-86	Ammo
-87	Ammo Assaultrifle
-88	Ammo Pistol
-89	Ammo Shotgun
-90	Ammo Smg
-91	Ammo Sniperrifle
-92	Health
-93	Mission Pickup
 100	Invdef Pickup Firstrepkit Intro
+10001	Barrel
+10002	Barrel Acc
+10003	Tediore Acc
+10004	Foregrip
+10005	Grip
+10006	Magazine
+10007	Magazine Acc
+10008	Tediore Secondary Acc
+10009	Secondary Ammo
+10010	Hyperion Secondary Acc
+10011	Rarity Component
+10012	Body
+10013	Payload
+10014	Class Mod Body
+10015	Primary Augment
+10016	Body Element
+10017	Unique
+10018	Scope
+10019	Payload Augment
+10020	Underbarrel
+10021	Underbarrel Acc
+10022	Firmware
 101	Invdef Pickup Grapplebox Intro
-102	Invdef Broombaplaceable
 103	Invdef Genivivcore
 104	Invdef Genconstructor
 105	Invdef Geniviv
 106	Invdef Broomba
-107	Invdef Genconstruct
-108	Invdef Pickup Thebossdrive
 109	Invdef Io Pickup Thresheregg
+11	Tediore Shotgun
 110	Invdef Ms Pickup Transponder
 111	Invdef Io Pickup Controlcircuit
-112	Invdef Efm1 Boomstickpickup
-113	Invdef Rocketmonters Catchtainerpickup
 114	Invdef Io Pickup Thresherfood
 115	Invdef Efm1 Detonatorpickup
 116	Invdef Efm1 Ripperexplosive
 117	Invdef Io Pickup Bmb Bolts Dropped
 118	Invdef Wni Chairmaterialpickup
-119	Invdef Io Pickup Ignitionsource
-120	Invdef Twwh Cavebombpickup
+12	Torgue Shotgun
 121	Invdef Twwh Votivepickup
 122	Invdef Pickup Mfaction4 Lictordrive
-123	Invdef Io Pickup Fueltank
 124	Invdef Pickup Mfaction4 Lictorvirus
 125	Invdef Io Pickup Transponderpack
 126	Invdef Pickup Mfaction4 Flashdrive
 127	Invdef Vendpicture
 128	Invdef Pickup Hof Nahelibolt
 129	Invdef Io Pickup Catglands
+13	Daedalus AR
 130	Invdef Io Pickup Electrobomb
-131	Invdef Efm3 Emppickup Part3
-132	Invdef Efm3 Emppickup Part1
-133	Invdef Efm3 Emppickup Part2
-134	Invdef Io Pickup Convoybomb
 135	Invdef Io Pickup Dronerocket
 136	Invdef Sl1 Pickup Toy
-137	Invdef Efm3 Pickup Empcomplete
 138	Invdef Sl1 Pickup Explosives
 139	Invdef Io Pickup Machinepart
+14	Tediore AR
 140	Invdef Agd Pickup Zadrakeycard
 141	Invdef Pickup Epilogue Sirenitem
 142	Pickup Bioengineeredseed Irradiated
@@ -141,58 +62,45 @@ category_id	name
 146	Def Sumofhisparts Eye
 147	Def Sumofhisparts Wheel
 148	Def Sumofhisparts Shell
-149	Newitem
+15	Order AR
 150	Invdef City1 B Ordonitepickup
 151	Invdef Cop Pickup Boatbomb
 152	Invdef Cop Pickup Keycard
 153	Invdef Io Pickup Grasslandscommanderbolt
 154	Invdef Cop Pickup Mask
 155	Invdef Yatlc Materialburdenspickup
-156	Invdef Io Pickup Detonator
 157	Invdef Cop Pickup Portrait
-158	Invdef Yatlc Trachbagpickup
 159	Invdef Cop Pickup Voicemodule
+16	Vladof Sniper
 160	Invdef Io Pickup Drinkcan03
 161	Invdef Io Pickup Drinkcan02
 162	Invdef Io Pickup Drinkcan01
-163	Invdef Io Pickup Missilebody
-164	Invdef Yatlc Trashcanlidpickup
 165	Invdef Io Pickup Scoutslog02
 166	Invdef Io Pickup Scoutslog01
-167	Invdef Yatlc Trashcanpickup
 168	Invdef Io Pickup Takeoutbox
 169	Invdef Io Pickup Beer
-170	Invdef Bfr Pickup Bolt
-171	Invdef Io Pickup Guidescore
+17	Torgue AR
 172	Invdef Brokenships2 Zanegiftpickup3
 173	Invdef Brokenships2 Zanegiftpickup2
 174	Invdef Brokenships2 Zanegiftpickup
-175	Invdef Io Pickup Missilecone
-176	Invdef Io Pickup Missilemiddle
-177	Invdef Brokenships Dronepiecepickup
 178	Invdef Io Pickup Missiletail
-179	Invdef Pickup Bolt
-180	Invdef Io Pickup Missilelaunchsystem
+18	Vladof AR
 181	Invdef Lifecoach Viberockpickup
 182	Invdef Sfl Pickup Bolt Callis
 183	Invdef Io Pickup Toolbox
-184	Invdef Efm2 Creepmeatpickup
 185	Invdef Sfl Pickup Bolt Lictor
 186	Invdef Efm2 Damagedusb
-187	Inventorydef Elpis Ozkit
-188	Invdef Pickup Zanzibolt
 189	Invdef Io Pickup Computercore
+19	Ripper SMG
 190	Invdef Sfl Pickup Bolt Sol
-191	Invdef Io Pickup Intel
 192	Invdef Io Pickup Books
-193	Invdef Io Pickup Glidepack
 194	Pickup Explosive Oldraymondpart1
 195	Invdef Io Pickup Orderpowercore
 196	Invdef Io Pickup Ripperkey
 197	Invdef Board
 198	Invdef Hoop
-199	Invdef Vaultpowerorb
-200	Invdef Io Pickup Towerbolt
+2	Daedalus Pistol
+20	Daedalus SMG
 201	Invdef Io Pickup Rations
 202	Invdef Pickup Mountains3 Brucecore
 203	Invdef Io Pickup Synthhead
@@ -202,17 +110,15 @@ category_id	name
 207	Pickup Devicepart Whatlurksbeneath
 208	Invdef Pickup Mfaction2 Crackeddevice
 209	Invdef Htbripperpbj Grossingredient
+21	Maliwan SMG
 210	Invdef Pickup Mfaction2 Cashcase
 211	Invdef Io Pickup Shatcommanderbolt
 212	Io Pickup Device Balloon
 213	Invdef Io Pickup Relic
 214	Invdef Efm2 Pangospitpickup
-215	Invdef Io Pickup Reactorpart
-216	Invdef Boosterplaceable
 217	Invdef Io Pickup Beacons
 218	Invdef Dynamite
-219	Invdef Io Pickup Giftbag
-220	Invdef Commanderdoor Boltkey
+22	Vladof SMG
 221	Invdef Io Pickup Ltbolt
 222	Invdef Pickup Mfaction3 Brutepart4
 223	Invdef Pickup Mfaction3 Brutepart3
@@ -221,40 +127,21 @@ category_id	name
 226	Invdef Io Pickup Antenna
 227	Invdef Pickup Efpmole Moledevice
 228	Invdef Io Pickup Vehiclepowercore
-229	Invdef Efpagri Cratepickup
+23	Ripper Sniper
 230	Inv Echologdefault Modified Terry
 231	Invdef Digidongle
-232	Inv Event Helpnpc Key
 233	Pickup Transmitter Resistance
-234	Class Mod
-235	Gadget
-236	Shield Armor Pickup
 237	Armor Shield
-238	Default Repair Kit
-239	Weapon Vehicle Mg
-240	Weapon Vehicle Rl
-241	Inv Contractitem Powertools C
-242	Inv Contractitem Powertools B
-243	Repair Kit
-244	Heavy Weapon Gadget
+24	Jakobs Sniper
 245	Grenade Gadget
-246	Shield
-247	Enhancement
 248	Energy Shield
-249	Magazine Refresher
-250	Overshield Booster Pickup
-251	Power Booster Pickup
-252	Health Booster Pickup
-253	Shield Booster Pickup
+25	Maliwan Sniper
 254	Class Mod Dark Siren
 255	Class Mod Paladin
 256	Class Mod Exo Soldier
-257	Weapon Pistol
-258	Weapon SMG
 259	Class Mod Gravitar
-260	Weapon Shotgun
+26	Order Sniper
 261	Torgue Repair Kit
-262	Weapon Sniper
 263	Maliwan Grenade Gadget
 264	Hyperion Enhancement
 265	Jakobs Repair Kit
@@ -262,13 +149,13 @@ category_id	name
 267	Jakobs Grenade Gadget
 268	Jakobs Enhancement
 269	Vladof Repair Kit
+27	Jakobs AR
 270	Daedalus Grenade Gadget
 271	Maliwan Enhancement
 272	Order Grenade Gadget
 273	Torgue Heavy Weapon
 274	Ripper Repair Kit
 275	Ripper Heavy Weapon
-276	Weapon AR
 277	Daedalus Repair Kit
 278	Ripper Grenade Gadget
 279	Maliwan Shield
@@ -292,6 +179,7 @@ category_id	name
 297	Terminal Gadget Healing
 298	Torgue Grenade Gadget
 299	Daedalus Enhancement
+3	Jakobs Pistol
 300	Ripper Shield
 301	Hover Drive
 302	Hover Drive Tests
@@ -373,25 +261,8 @@ category_id	name
 378	Torgue Turret Gadget
 379	Turret Weapon Beam
 380	Weapon Ai Custombase
-381	Weapon Soldier Sprayer
-382	Weapon Missionturret Chaingun
-383	Weapon Meathead Rocket
-384	Weapon Turret Chaingun
-385	Weapon Ripperturret Flamethrower
-386	Weapon Ripperturret Rocket
-387	Weapon Brute Facelaser
 388	Weapon Gunship Maingun
-389	Weapon Orderdrone
-390	Weapon Meathead Chaingun
-391	Weapon Meathead Flamethrower
-392	Weapon Splicearm Launcher
-393	Inv Contractitem Powertools A
-394	Inv Contractitem Tools C
-395	Inv Contractitem Tools B
-396	Inv Contractitem Tools A
-397	Currency Money Smallamount
-398	Invdef Thesupply Shammylog
-399	Weapon Splicespiderjumbo Rocketgun
+4	Order Pistol
 400	Io Pickup Powercell
 401	Io Pickup Flat Kairos
 403	Invdef Pickup Mfaction4 Lictordrive Child
@@ -400,27 +271,17 @@ category_id	name
 427	Invdef Io Pickup Lights
 428	Invdef Io Pickup Passwordlog
 445	Health Booster Pickup Healthraiser
-10001	Stat Group2
-10002	Stat Group3
-10003	Rarity Component
-10004	Firmware
-10005	Barrel
-10006	Barrel Acc
-10007	Tediore Acc
-10008	Foregrip
-10009	Grip
-10010	Magazine
-10011	Magazine Acc
-10012	Tediore Secondary Acc
-10013	Secondary Ammo
-10014	Hyperion Secondary Acc
-10015	Body
-10016	Payload
-10017	Class Mod Body
-10018	Primary Augment
-10019	Body Element
-10020	Unique
-10021	Scope
-10022	Payload Augment
-10023	Underbarrel
-10024	Underbarrel Acc
+5	Tediore Pistol
+51	Invdef Booster
+52	Invdef Drillkey
+53	Invdef Pitchfork
+54	Invdef Scythe
+55	Invdef Shovel
+58	Invdef Key
+59	Inventorydef Elpisoxygenkit
+6	Torgue Pistol
+60	Invdef Package
+62	Invdef Accesscard
+7	Ripper Shotgun
+8	Daedalus Shotgun
+9	Jakobs Shotgun
