@@ -8,7 +8,7 @@
 
 use once_cell::sync::Lazy;
 use serde::Deserialize;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 // Embed manifest files at compile time
 const CATEGORY_NAMES_TSV: &str = include_str!("../../../share/manifest/category_names.tsv");
@@ -16,6 +16,9 @@ const PARTS_DATABASE_TSV: &str = include_str!(concat!(env!("OUT_DIR"), "/parts_d
 const MANUFACTURERS_JSON: &str = include_str!("../../../share/manifest/manufacturers.json");
 const WEAPON_TYPES_JSON: &str = include_str!("../../../share/manifest/weapon_types.json");
 const DROP_POOLS_TSV: &str = include_str!("../../../share/manifest/drop_pools.tsv");
+const PART_POOLS_TSV: &str = include_str!("../../../share/manifest/part_pools.tsv");
+const BOSS_REPLAY_COSTS_TSV: &str =
+    include_str!("../../../share/manifest/data_tables/table_bossreplay_costs.tsv");
 
 // ============================================================================
 // Data Structures (JSON-based reference data only)
@@ -109,6 +112,61 @@ static DROP_POOLS: Lazy<HashMap<(String, String), DropPool>> = Lazy::new(|| {
         .collect()
 });
 
+/// Internal boss name -> display name (parsed from boss replay costs TSV)
+static BOSS_NAMES: Lazy<HashMap<String, String>> = Lazy::new(|| {
+    let mut names = HashMap::new();
+    for line in BOSS_REPLAY_COSTS_TSV.lines().skip(1) {
+        let cols: Vec<&str> = line.splitn(5, '\t').collect();
+        if cols.len() < 2 {
+            continue;
+        }
+        let row_name = cols[0];
+        let comment = cols[1];
+        // Parse comment: "Table_BossReplay_Costs, <UUID>, <DisplayName>"
+        if let Some(display_name) = parse_boss_comment(comment) {
+            names.insert(row_name.to_string(), display_name.to_string());
+        }
+    }
+    names
+});
+
+fn parse_boss_comment(comment: &str) -> Option<&str> {
+    if comment.is_empty() {
+        return None;
+    }
+    let mut parts = comment.splitn(3, ", ");
+    let _table = parts.next()?;
+    let uuid = parts.next()?;
+    if uuid.len() != 32 || !uuid.bytes().all(|b| b.is_ascii_hexdigit()) {
+        return None;
+    }
+    parts.next()
+}
+
+/// Strip manufacturer prefix from a part name.
+///
+/// `"DAD_PS.part_barrel_01"` → `"part_barrel_01"`, `"part_body"` → `"part_body"`
+fn normalize_part_name(name: &str) -> &str {
+    name.split('.').next_back().unwrap_or(name)
+}
+
+/// Category ID -> Set of normalized part names known in that category's pool
+static PART_POOL_MEMBERS: Lazy<HashMap<i64, HashSet<String>>> = Lazy::new(|| {
+    let mut pools: HashMap<i64, HashSet<String>> = HashMap::new();
+    for line in PART_POOLS_TSV.lines().skip(1) {
+        let mut cols = line.splitn(2, '\t');
+        let Some(cat) = cols.next().and_then(|s| s.parse::<i64>().ok()) else {
+            continue;
+        };
+        let Some(name) = cols.next() else { continue };
+        pools
+            .entry(cat)
+            .or_default()
+            .insert(normalize_part_name(name).to_string());
+    }
+    pools
+});
+
 /// Manufacturer Code -> Full Name
 static MANUFACTURERS: Lazy<HashMap<String, String>> = Lazy::new(|| {
     let mfrs: HashMap<String, Manufacturer> =
@@ -155,6 +213,15 @@ pub fn drop_pool(manufacturer_code: &str, gear_type_code: &str) -> Option<&'stat
     DROP_POOLS.get(&(manufacturer_code.to_string(), gear_type_code.to_string()))
 }
 
+/// Check if a part name exists in the known pool for a category.
+///
+/// Names are normalized (manufacturer prefix stripped) before comparison.
+/// Returns `None` if the category has no pool data, `Some(bool)` otherwise.
+pub fn is_part_in_pool(category: i64, part_name: &str) -> Option<bool> {
+    let pool = PART_POOL_MEMBERS.get(&category)?;
+    Some(pool.contains(normalize_part_name(part_name)))
+}
+
 /// Get the total number of legendaries in a world drop pool (e.g., all "Pistols")
 pub fn world_pool_legendary_count(world_pool_name: &str) -> u32 {
     DROP_POOLS
@@ -162,6 +229,16 @@ pub fn world_pool_legendary_count(world_pool_name: &str) -> u32 {
         .filter(|p| p.world_pool_name == world_pool_name)
         .map(|p| p.legendary_count)
         .sum()
+}
+
+/// Get the display name for a boss by its internal name
+pub fn boss_display_name(internal_name: &str) -> Option<&'static str> {
+    BOSS_NAMES.get(internal_name).map(|s| s.as_str())
+}
+
+/// Get all boss name mappings (internal_name -> display_name)
+pub fn all_boss_names() -> &'static HashMap<String, String> {
+    &BOSS_NAMES
 }
 
 /// Get all manufacturer codes for a weapon type
@@ -405,5 +482,43 @@ mod tests {
         assert_eq!(slot_from_part_name("JAK_SG.part_foregrip_03"), "foregrip");
         assert_eq!(slot_from_part_name("part_mag_1"), "mag");
         assert_eq!(slot_from_part_name("part_barrel"), "barrel");
+    }
+
+    #[test]
+    fn test_normalize_part_name() {
+        assert_eq!(normalize_part_name("DAD_PS.part_barrel_01"), "part_barrel_01");
+        assert_eq!(normalize_part_name("part_body"), "part_body");
+        assert_eq!(normalize_part_name("comp_01_common"), "comp_01_common");
+        assert_eq!(normalize_part_name("BOR_REPAIR_KIT.part_borg"), "part_borg");
+    }
+
+    #[test]
+    fn test_is_part_in_pool_known_category() {
+        // Category 2 (Daedalus Pistol) should have pool data
+        let result = is_part_in_pool(2, "part_barrel_01");
+        assert!(result.is_some(), "Category 2 should have pool data");
+    }
+
+    #[test]
+    fn test_is_part_in_pool_unknown_category() {
+        assert!(is_part_in_pool(99999, "part_body").is_none());
+    }
+
+    #[test]
+    fn test_is_part_in_pool_normalizes_prefix() {
+        // Should find prefixed names by stripping the prefix
+        let result = is_part_in_pool(2, "DAD_PS.part_barrel_01");
+        assert!(result.is_some());
+        // The normalized form "part_barrel_01" should be in the pool
+        if let Some(found) = result {
+            assert!(found, "DAD_PS.part_barrel_01 should be in category 2 pool");
+        }
+    }
+
+    #[test]
+    fn test_part_pool_stats() {
+        // Verify pool data loaded with reasonable counts
+        let total_categories = PART_POOL_MEMBERS.len();
+        assert!(total_categories > 50, "Expected 50+ categories, got {}", total_categories);
     }
 }
