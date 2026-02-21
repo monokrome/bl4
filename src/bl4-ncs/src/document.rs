@@ -114,13 +114,22 @@ pub struct SharedPart {
 /// Each entry with a serialindex defines a category (the serialindex IS the
 /// category ID). The entry's dep_entries are the parts in that category,
 /// with each dep_entry's serialindex as the part index.
+///
+/// Extension records (same key, no serialindex) contribute additional parts
+/// to the category established in a root record. This captures legendary
+/// barrels, comp_05_legendary identifiers, and other extension-only parts.
 pub fn extract_categorized_parts(doc: &Document) -> Vec<CategorizedPart> {
+    let category_keys = build_category_key_map(doc);
     let mut results = Vec::new();
 
     for table in doc.tables.values() {
         for record in &table.records {
             for entry in &record.entries {
-                let Some(category) = extract_index_from_value(&entry.value) else {
+                let category = if let Some(cat) = extract_index_from_value(&entry.value) {
+                    cat
+                } else if let Some(&cat) = category_keys.get(&entry.key) {
+                    cat
+                } else {
                     continue;
                 };
 
@@ -197,15 +206,19 @@ pub fn extract_all_entry_names(doc: &Document) -> HashMap<u32, String> {
 ///
 /// Parts in dep tables like "element", "stat_group2", "stat_group3", etc.
 /// are shared across all item categories. They come from entries without
-/// their own serialindex (unlike per-category parts captured by
-/// `extract_categorized_parts`).
+/// their own serialindex AND whose key doesn't match any categorized entry
+/// (extension entries belong to their category, not to the shared pool).
 pub fn extract_shared_parts(doc: &Document) -> Vec<SharedPart> {
+    let category_keys = build_category_key_map(doc);
     let mut results = Vec::new();
 
     for table in doc.tables.values() {
         for record in &table.records {
             for entry in &record.entries {
                 if extract_index_from_value(&entry.value).is_some() {
+                    continue;
+                }
+                if category_keys.contains_key(&entry.key) {
                     continue;
                 }
 
@@ -262,6 +275,24 @@ pub fn extract_serial_indices(doc: &Document) -> Vec<SerialIndexEntry> {
     }
 
     results
+}
+
+/// Build a map from entry key → category ID for entries that have a serialindex.
+///
+/// Used to resolve extension records (same key, no serialindex) back to
+/// their category. First-seen category wins per key.
+fn build_category_key_map(doc: &Document) -> HashMap<String, u32> {
+    let mut map = HashMap::new();
+    for table in doc.tables.values() {
+        for record in &table.records {
+            for entry in &record.entries {
+                if let Some(category) = extract_index_from_value(&entry.value) {
+                    map.entry(entry.key.clone()).or_insert(category);
+                }
+            }
+        }
+    }
+    map
 }
 
 fn extract_index_from_value(value: &Value) -> Option<u32> {
@@ -482,6 +513,66 @@ mod tests {
         assert_eq!(indices[0].part_name, "dep_key");
         assert_eq!(indices[0].index, 5);
         assert_eq!(indices[0].dep_table, "dep_table");
+    }
+
+    fn make_serialindex_value(index: u32) -> Value {
+        Value::Map(HashMap::from([(
+            "serialindex".to_string(),
+            Value::Map(HashMap::from([(
+                "index".to_string(),
+                Value::Leaf(index.to_string()),
+            )])),
+        )]))
+    }
+
+    #[test]
+    fn test_extension_records_merge_into_category() {
+        let doc = Document {
+            tables: HashMap::from([(
+                "inv".to_string(),
+                Table {
+                    name: "inv".to_string(),
+                    deps: vec!["dep".to_string()],
+                    records: vec![
+                        Record {
+                            tags: vec![],
+                            entries: vec![Entry {
+                                key: "jak_ps".to_string(),
+                                value: make_serialindex_value(3),
+                                dep_entries: vec![DepEntry {
+                                    dep_table_name: String::new(),
+                                    dep_index: 0,
+                                    key: "part_barrel_01".to_string(),
+                                    value: make_serialindex_value(7),
+                                }],
+                            }],
+                        },
+                        Record {
+                            tags: vec![],
+                            entries: vec![Entry {
+                                key: "jak_ps".to_string(),
+                                value: Value::Null,
+                                dep_entries: vec![DepEntry {
+                                    dep_table_name: String::new(),
+                                    dep_index: 0,
+                                    key: "comp_05_legendary_seventh_sense".to_string(),
+                                    value: make_serialindex_value(72),
+                                }],
+                            }],
+                        },
+                    ],
+                },
+            )]),
+        };
+
+        let parts = extract_categorized_parts(&doc);
+        assert_eq!(parts.len(), 2);
+        assert!(parts.iter().all(|p| p.category == 3));
+        assert!(parts.iter().any(|p| p.name == "part_barrel_01" && p.index == 7));
+        assert!(parts.iter().any(|p| p.name == "comp_05_legendary_seventh_sense" && p.index == 72));
+
+        let shared = extract_shared_parts(&doc);
+        assert!(shared.is_empty(), "extension entries should not appear as shared parts");
     }
 
     #[test]
