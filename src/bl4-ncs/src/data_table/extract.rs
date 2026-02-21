@@ -195,6 +195,35 @@ pub fn table_to_tsv(table: &DataTable) -> String {
     tsv
 }
 
+/// Parse a boss replay comment field into (uuid, display_name).
+///
+/// Format: `Table_BossReplay_Costs, <32-hex-UUID>, <DisplayName>`
+/// The display name may contain commas (e.g., "Frank the Furnace, Hank the Welder").
+pub fn parse_boss_replay_comment(comment: &str) -> Option<(&str, &str)> {
+    if comment.is_empty() {
+        return None;
+    }
+
+    let mut parts = comment.splitn(3, ", ");
+    let _table_name = parts.next()?;
+    let uuid = parts.next()?;
+    let display_name = parts.next()?;
+
+    if uuid.len() != 32 || !uuid.bytes().all(|b| b.is_ascii_hexdigit()) {
+        return None;
+    }
+
+    Some((uuid, display_name))
+}
+
+/// Parse a boss replay type field into the area type string.
+///
+/// Format: `Table_BossReplay_Costs, <32-hex-UUID>, <AreaType>`
+/// Returns the area type (Plot, Side, Mine, DrillSite, Bunker, Vault, etc.)
+pub fn parse_boss_replay_type(type_field: &str) -> Option<&str> {
+    parse_boss_replay_comment(type_field).map(|(_, area_type)| area_type)
+}
+
 /// Write all data tables as per-table TSV files to a directory.
 ///
 /// Creates one `{key}.tsv` file per table, plus an `index.tsv` summary.
@@ -406,5 +435,48 @@ mod tests {
         assert!(manifest.get("test_table").is_some());
         assert!(manifest.get("TEST_TABLE").is_some());
         assert_eq!(manifest.keys(), vec!["test_table"]);
+    }
+
+    #[test]
+    fn test_parse_boss_replay_comment_normal() {
+        let comment = "Table_BossReplay_Costs, 65ED26D7490D585FC02D278D23FD8758, Splashzone";
+        let (uuid, name) = parse_boss_replay_comment(comment).unwrap();
+        assert_eq!(uuid, "65ED26D7490D585FC02D278D23FD8758");
+        assert_eq!(name, "Splashzone");
+    }
+
+    #[test]
+    fn test_parse_boss_replay_comment_multi_comma() {
+        let comment = "Table_BossReplay_Costs, 61862B6A4578440E5C0E4286AF26A890, Foundry Freaks: Frank the Furnace, Hank the Welder, Sal the Engineer";
+        let (uuid, name) = parse_boss_replay_comment(comment).unwrap();
+        assert_eq!(uuid, "61862B6A4578440E5C0E4286AF26A890");
+        assert_eq!(
+            name,
+            "Foundry Freaks: Frank the Furnace, Hank the Welder, Sal the Engineer"
+        );
+    }
+
+    #[test]
+    fn test_parse_boss_replay_comment_empty() {
+        assert!(parse_boss_replay_comment("").is_none());
+    }
+
+    #[test]
+    fn test_parse_boss_replay_comment_too_few_parts() {
+        assert!(parse_boss_replay_comment("Table_BossReplay_Costs").is_none());
+        assert!(
+            parse_boss_replay_comment("Table_BossReplay_Costs, notahexuuid").is_none()
+        );
+    }
+
+    #[test]
+    fn test_parse_boss_replay_type() {
+        let type_field =
+            "Table_BossReplay_Costs, 6373124341BCD375BEDB7986820D90FD, Plot";
+        assert_eq!(parse_boss_replay_type(type_field), Some("Plot"));
+
+        let type_field =
+            "Table_BossReplay_Costs, C5A8B1CA40465DAD67976C8962D07283, DrillSite";
+        assert_eq!(parse_boss_replay_type(type_field), Some("DrillSite"));
     }
 }

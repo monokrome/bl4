@@ -349,11 +349,33 @@ pub fn handle_manifest(
     manifest::extract_manifest(&extract_dir, output)?;
     println!("\nManifest files written to {}", output.display());
 
-    // Generate drops manifest from NCS data if available
+    // Generate data tables and drops manifest from NCS data if available
     if ncs_dir.exists() {
+        // Extract data tables first (needed for boss name resolution in drops)
+        println!("\n=== Data Tables ===\n");
+        println!("Extracting UE data tables from NCS...");
+        let data_tables = match bl4_ncs::extract_data_tables_from_dir(&ncs_dir) {
+            Ok(dt_manifest) => {
+                let dt_dir = output.join("data_tables");
+                bl4_ncs::write_data_tables(&dt_manifest, &dt_dir)?;
+                println!(
+                    "  {} tables, {} rows → {}",
+                    dt_manifest.len(),
+                    dt_manifest.total_rows(),
+                    dt_dir.display()
+                );
+                Some(dt_manifest)
+            }
+            Err(e) => {
+                eprintln!("  Warning: Failed to extract data tables: {}", e);
+                None
+            }
+        };
+
+        // Generate drops manifest (uses data tables for boss names)
         println!("\n=== Drops Manifest ===\n");
         println!("Generating drops manifest from NCS data...");
-        match bl4_ncs::generate_drops_manifest(&ncs_dir) {
+        match bl4_ncs::generate_drops_manifest(&ncs_dir, data_tables.as_ref()) {
             Ok(drops_manifest) => {
                 let drops_path = output.join("drops.json");
                 let drops_json = serde_json::to_string_pretty(&drops_manifest)?;
@@ -372,24 +394,6 @@ pub fn handle_manifest(
             }
             Err(e) => {
                 eprintln!("  Warning: Failed to generate drops manifest: {}", e);
-            }
-        }
-
-        println!("\n=== Data Tables ===\n");
-        println!("Extracting UE data tables from NCS...");
-        match bl4_ncs::extract_data_tables_from_dir(&ncs_dir) {
-            Ok(dt_manifest) => {
-                let dt_dir = output.join("data_tables");
-                bl4_ncs::write_data_tables(&dt_manifest, &dt_dir)?;
-                println!(
-                    "  {} tables, {} rows → {}",
-                    dt_manifest.len(),
-                    dt_manifest.total_rows(),
-                    dt_dir.display()
-                );
-            }
-            Err(e) => {
-                eprintln!("  Warning: Failed to extract data tables: {}", e);
             }
         }
     }

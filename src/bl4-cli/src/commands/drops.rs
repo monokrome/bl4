@@ -123,7 +123,7 @@ fn generate(ncs_dir: &Path, output: &Path, manifest_dir: &Path) -> Result<()> {
 
     println!("Generating drops manifest from {}...", ncs_dir.display());
 
-    let manifest = generate_drops_manifest(ncs_dir).context("Failed to generate drops manifest")?;
+    let manifest = generate_drops_manifest(ncs_dir, None).context("Failed to generate drops manifest")?;
 
     // Ensure parent directory exists
     if let Some(parent) = output.parent() {

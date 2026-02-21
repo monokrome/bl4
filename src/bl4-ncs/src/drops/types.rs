@@ -19,9 +19,60 @@ impl BossNameMapping {
         Self::default_mapping()
     }
 
+    /// Build boss name mapping from table_bossreplay_costs DataTable.
+    /// Data table names are authoritative game display names.
+    pub fn from_data_table(table: &crate::data_table::DataTable) -> Self {
+        let mut boss_names = HashMap::new();
+        let mut aliases = HashMap::new();
+
+        for row in &table.rows {
+            let comment = match row.fields.get("comment") {
+                Some(c) => c.as_str(),
+                None => continue,
+            };
+
+            let display_name = match crate::data_table::parse_boss_replay_comment(comment) {
+                Some((_, name)) => name.to_string(),
+                None => continue,
+            };
+
+            boss_names.insert(row.row_name.clone(), display_name.clone());
+
+            // Build singular-form aliases for multi-boss entries
+            let row_lower = row.row_name.to_lowercase();
+            if row_lower == "foundryfreaks" {
+                aliases.insert("FoundryFreak".into(), display_name);
+            } else if row_lower == "meatheadriders" {
+                aliases.insert("MeatheadRider".into(), display_name);
+            } else if row_lower == "hovercarts" {
+                aliases.insert("Hovercart".into(), display_name);
+            } else if row_lower == "pangobango" {
+                aliases.insert("Pango".into(), display_name.clone());
+                aliases.insert("Bango".into(), display_name);
+            }
+        }
+
+        Self { boss_names, aliases }
+    }
+
+    /// Merge entries from `other` that aren't already present in `self`.
+    /// Used to add hardcoded fallback entries for bosses not in the data table.
+    pub fn merge_missing(&mut self, other: &BossNameMapping) {
+        for (key, value) in &other.boss_names {
+            if !self.boss_names.contains_key(key) {
+                self.boss_names.insert(key.clone(), value.clone());
+            }
+        }
+        for (key, value) in &other.aliases {
+            if !self.aliases.contains_key(key) {
+                self.aliases.insert(key.clone(), value.clone());
+            }
+        }
+    }
+
     /// Default mapping with all known boss names
     #[allow(clippy::too_many_lines)]
-    fn default_mapping() -> Self {
+    pub fn default_mapping() -> Self {
         let mut boss_names = HashMap::new();
         let mut aliases = HashMap::new();
 
@@ -39,15 +90,16 @@ impl BossNameMapping {
         boss_names.insert("Timekeeper_Guardian".into(), "Timekeeper Guardian".into());
 
         // Creature bosses
-        boss_names.insert("Backhive".into(), "The Backhive".into());
-        boss_names.insert("BattleWagon".into(), "The Battle Wagon".into());
+        boss_names.insert("Backhive".into(), "Backhive".into());
+        boss_names.insert("BattleWagon".into(), "Battle Wagon".into());
         boss_names.insert("Destroyer".into(), "Bramblesong".into());
-        boss_names.insert("BatMatriarch".into(), "Bat Matriarch".into());
-        boss_names.insert("CityCat".into(), "Shadowpelt".into());
+        boss_names.insert("BatMatriarch".into(), "Matriarch Nemesis".into());
+        boss_names.insert("CityCat".into(), "Axemaul".into());
         boss_names.insert("StealthPredator".into(), "Shadowpelt".into());
-        boss_names.insert("SpiderJumbo".into(), "Sidney Pointylegs".into());
+        boss_names.insert("SpiderJumbo".into(), "Sydney Pointylegs".into());
         boss_names.insert("SurpriseAttack".into(), "Voraxis".into());
-        boss_names.insert("TrashThresher".into(), "Trash Thresher".into());
+        boss_names.insert("TrashThresher".into(), "Sludgemaw".into());
+        boss_names.insert("BioArmorThresher".into(), "Bio Armored Omega Thresher".into());
         boss_names.insert("Thresher_BioArmoredBig".into(), "Bio-Thresher Omega".into());
         boss_names.insert("Pango".into(), "Pango".into());
         boss_names.insert("Bango".into(), "Bango".into());
@@ -57,30 +109,31 @@ impl BossNameMapping {
         boss_names.insert("Arjay".into(), "Arjay".into());
         boss_names.insert("CloningLeader".into(), "Divisioner".into());
         boss_names.insert("Drillerhole".into(), "Drillerhole".into());
-        boss_names.insert("DroneKeeper".into(), "Drone Keeper".into());
-        boss_names.insert("FirstCorrupt".into(), "First Corrupt".into());
+        boss_names.insert("DroneKeeper".into(), "Core Observer".into());
+        boss_names.insert("FirstCorrupt".into(), "Vile Prototype".into());
         boss_names.insert("FoundryFreak_MeatheadFrackingBoss".into(), "Foundry Freaks".into());
-        boss_names.insert("GlidePackPsycho".into(), "Glide Pack Psycho".into());
-        boss_names.insert("KOTOMotherbaseBrute".into(), "Motherbase Brute".into());
-        boss_names.insert("KotoLieutenant".into(), "KOTO Lieutenant".into());
+        boss_names.insert("GlidePackPsycho".into(), "Splashzone".into());
+        boss_names.insert("KOTOMotherbaseBrute".into(), "Bio-Bulkhead".into());
+        boss_names.insert("KotoLieutenant".into(), "Horace".into());
         boss_names.insert("MeatheadRider".into(), "Saddleback".into());
         boss_names.insert("MeatheadRider_Jockey".into(), "Jockey".into());
-        boss_names.insert("MeatPlantGunship".into(), "Meat Plant Gunship".into());
-        boss_names.insert("Redguard".into(), "Redguard".into());
-        boss_names.insert("RockAndRoll".into(), "Rock and Roll".into());
-        boss_names.insert("SoldierAncient".into(), "Ancient Soldier".into());
-        boss_names.insert("StrikerSplitter".into(), "Striker Splitter".into());
-        boss_names.insert("UpgradedElectiMole".into(), "Leader Electi".into());
-        boss_names.insert("BlasterBrute".into(), "Blaster Brute".into());
+        boss_names.insert("MeatPlantGunship".into(), "The Oppressor".into());
+        boss_names.insert("RedGuard".into(), "Directive-0".into());
+        boss_names.insert("RockAndRoll".into(), "Rocken Roller".into());
+        boss_names.insert("SoldierAncient".into(), "Genone".into());
+        boss_names.insert("StrikerSplitter".into(), "Mimicron".into());
+        boss_names.insert("UpgradedElectiMole".into(), "Leader Willem".into());
+        boss_names.insert("BlasterBrute".into(), "Callous Harbinger of Annihilating Death".into());
+        boss_names.insert("VileTed".into(), "Vile Ted & The Experiments".into());
+        boss_names.insert("LeaderHologram".into(), "Fractis".into());
 
         // DLC bosses
         boss_names.insert("Donk".into(), "Donk".into());
         boss_names.insert("MinisterScrew".into(), "Minister Screw".into());
         boss_names.insert("Bloomreaper".into(), "Bloomreaper".into());
 
-        // Additional bosses
+        // Additional bosses / variant entries
         boss_names.insert("Hovercart".into(), "Splice Hovercart".into());
-        boss_names.insert("LeaderHologram".into(), "Leader Hologram".into());
         boss_names.insert("SideCity_Psycho".into(), "Side City Psycho".into());
         boss_names.insert("FoundryFreak_Psycho".into(), "Foundry Freak Psycho".into());
         boss_names.insert("FoundryFreak_Splice".into(), "Foundry Freak Splice".into());
@@ -92,6 +145,7 @@ impl BossNameMapping {
         aliases.insert("Castilleia".into(), "Castilleia".into());
         aliases.insert("Mimicron".into(), "Mimicron".into());
         aliases.insert("Axemaul".into(), "Axemaul".into());
+        aliases.insert("Shadowpelt".into(), "Shadowpelt".into());
         aliases.insert("Tabnak".into(), "Tabnak, the Ripper Prince".into());
         aliases.insert("Harbinger".into(), "Callous Harbinger of Annihilating Death".into());
 
