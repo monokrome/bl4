@@ -47,6 +47,12 @@ pub const ELEMENT_TYPES: &[ElementType] = &[
         description: "Radiation damage, spreads to nearby enemies",
         color: "#FFFF00",
     },
+    ElementType {
+        code: "sonic",
+        name: "Sonic",
+        description: "Sonic damage",
+        color: "#9B59B6",
+    },
 ];
 
 /// Get element by code
@@ -62,5 +68,6 @@ mod tests {
     fn test_element_lookup() {
         assert_eq!(element_by_code("fire").map(|e| e.name), Some("Fire"));
         assert_eq!(element_by_code("cryo").map(|e| e.name), Some("Cryo"));
+        assert_eq!(element_by_code("sonic").map(|e| e.name), Some("Sonic"));
     }
 }
