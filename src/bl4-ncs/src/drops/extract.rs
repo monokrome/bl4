@@ -1,6 +1,7 @@
 //! Drop extraction from NCS data files
 
 use super::types::{BossNameMapping, DropEntry, DropProbabilities, DropsManifest, DropSource};
+use crate::data_table::DataTableManifest;
 use crate::document::Value;
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
@@ -391,8 +392,21 @@ fn generate_world_drops(existing_drops: &[DropEntry]) -> Vec<DropEntry> {
 ///
 /// Scans for itempoollist.bin and itempool.bin files and extracts all drops.
 #[allow(clippy::too_many_lines)]
-pub fn generate_drops_manifest<P: AsRef<Path>>(ncs_dir: P) -> Result<DropsManifest, std::io::Error> {
-    let boss_names = BossNameMapping::load();
+pub fn generate_drops_manifest<P: AsRef<Path>>(
+    ncs_dir: P,
+    data_tables: Option<&DataTableManifest>,
+) -> Result<DropsManifest, std::io::Error> {
+    let mut boss_names = if let Some(dt) = data_tables {
+        if let Some(table) = dt.get("table_bossreplay_costs") {
+            BossNameMapping::from_data_table(table)
+        } else {
+            BossNameMapping::default_mapping()
+        }
+    } else {
+        BossNameMapping::default_mapping()
+    };
+    // Always merge hardcoded as fallback (for DLC bosses, variants not in table)
+    boss_names.merge_missing(&BossNameMapping::default_mapping());
     let name_data = crate::name_data::extract_from_directory(ncs_dir.as_ref());
 
     let mut all_drops = Vec::new();
