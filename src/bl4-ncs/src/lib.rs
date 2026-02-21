@@ -24,6 +24,7 @@
 mod bit_reader;
 mod content;
 mod data;
+pub mod data_table;
 pub mod document;
 pub mod drops;
 mod extract;
@@ -41,6 +42,10 @@ mod unpack;
 
 // Re-export main types
 pub use content::{Content as NcsContent, Header as NcsContentHeader};
+pub use data_table::{
+    extract_data_tables, extract_data_tables_from_dir, tables_summary_tsv, DataTable,
+    DataTableManifest, DataTableRow,
+};
 pub use drops::{
     extract_drops_from_itempool, extract_drops_from_itempoollist, generate_drop_pools_tsv,
     generate_drops_manifest, DropEntry, DropLocation, DropProbabilities, DropSource, DropsDb,
