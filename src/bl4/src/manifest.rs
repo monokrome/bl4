@@ -50,8 +50,8 @@ static CATEGORY_NAMES: Lazy<HashMap<i64, String>> = Lazy::new(|| {
     parse_tsv_pairs(CATEGORY_NAMES_TSV)
 });
 
-/// (Category, Index) -> Part Name (parsed from TSV)
-static PARTS_BY_ID: Lazy<HashMap<(i64, i64), String>> = Lazy::new(|| {
+/// (Category, Index) -> (Part Name, Slot) parsed from TSV
+static PARTS_BY_ID: Lazy<HashMap<(i64, i64), (String, String)>> = Lazy::new(|| {
     parse_tsv_parts(PARTS_DATABASE_TSV)
 });
 
@@ -67,15 +67,16 @@ fn parse_tsv_pairs(tsv: &str) -> HashMap<i64, String> {
         .collect()
 }
 
-fn parse_tsv_parts(tsv: &str) -> HashMap<(i64, i64), String> {
+fn parse_tsv_parts(tsv: &str) -> HashMap<(i64, i64), (String, String)> {
     tsv.lines()
         .skip(1)
         .filter_map(|line| {
-            let mut cols = line.splitn(3, '\t');
+            let mut cols = line.splitn(4, '\t');
             let category = cols.next()?.parse::<i64>().ok()?;
             let index = cols.next()?.parse::<i64>().ok()?;
             let name = cols.next()?.to_string();
-            Some(((category, index), name))
+            let slot = cols.next().unwrap_or("unknown").to_string();
+            Some(((category, index), (name, slot)))
         })
         .collect()
 }
@@ -200,7 +201,16 @@ pub fn category_name(category_id: i64) -> Option<&'static str> {
 
 /// Get a part name by category and index
 pub fn part_name(category: i64, index: i64) -> Option<&'static str> {
-    PARTS_BY_ID.get(&(category, index)).map(|s| s.as_str())
+    PARTS_BY_ID
+        .get(&(category, index))
+        .map(|(name, _)| name.as_str())
+}
+
+/// Get the slot (vertical) name for a part by category and index
+pub fn part_slot(category: i64, index: i64) -> Option<&'static str> {
+    PARTS_BY_ID
+        .get(&(category, index))
+        .map(|(_, slot)| slot.as_str())
 }
 
 /// Get a manufacturer's full name from its code
@@ -217,9 +227,9 @@ pub fn drop_pool(manufacturer_code: &str, gear_type_code: &str) -> Option<&'stat
 ///
 /// Names are normalized (manufacturer prefix stripped) before comparison.
 /// Returns `None` if the category has no pool data, `Some(bool)` otherwise.
-pub fn is_part_in_pool(category: i64, part_name: &str) -> Option<bool> {
+pub fn is_part_in_pool(category: i64, name: &str) -> Option<bool> {
     let pool = PART_POOL_MEMBERS.get(&category)?;
-    Some(pool.contains(normalize_part_name(part_name)))
+    Some(pool.contains(normalize_part_name(name)))
 }
 
 /// Get the total number of legendaries in a world drop pool (e.g., all "Pistols")
@@ -258,33 +268,76 @@ pub fn all_manufacturers() -> impl Iterator<Item = (&'static str, &'static str)>
         .map(|(code, name)| (code.as_str(), name.as_str()))
 }
 
+/// Known slot prefixes for `part_*` names, ordered longest-first for matching.
+const SLOT_PREFIXES: &[&str] = &[
+    "secondary_elem",
+    "secondary_ammo",
+    "body_element",
+    "body_armor",
+    "body_bolt",
+    "body_energy",
+    "body_mag",
+    "barrel",
+    "body",
+    "firmware",
+    "foregrip",
+    "grip",
+    "mag",
+    "multi",
+    "passive",
+    "scope",
+    "secondary",
+    "shield",
+    "stat2",
+    "stat3",
+    "stat",
+    "underbarrel",
+    "unique",
+];
+
 /// Extract slot name from a manifest part name.
 ///
-/// Takes the segment after the last `.`, strips the `part_` prefix,
-/// and strips trailing `_NN` digit suffixes.
+/// Matches against known slot prefixes after stripping manufacturer prefix
+/// and `part_`. For `comp_*` / `base_comp_*` parts, returns `"rarity"`.
+/// For bare element names (fire, cryo, etc.), returns `"element"`.
 ///
 /// Examples:
-/// - `"DAD_PS.part_barrel_01"` → `"barrel"`
-/// - `"part_scope_02"` → `"scope"`
-/// - `"part_body"` → `"body"`
-/// - `"comp_03_rare"` → `"comp_03_rare"` (no `part_` prefix)
-pub fn slot_from_part_name(name: &str) -> &str {
+/// - `"DAD_PS.part_barrel_02_finnty"` → `"barrel"`
+/// - `"part_stat2_wt_ps_equipspeed"` → `"stat2"`
+/// - `"part_body_b"` → `"body"`
+/// - `"comp_05_legendary_stopgap"` → `"rarity"`
+/// - `"radiation"` → `"element"`
+pub fn slot_from_part_name(name: &str) -> &'static str {
     let segment = name.split('.').next_back().unwrap_or(name);
+
+    if segment.starts_with("comp_") || segment.starts_with("base_comp_") {
+        return "rarity";
+    }
+
+    match segment {
+        "fire" | "cryo" | "shock" | "corrosive" | "radiation" | "sonic" => return "element",
+        _ => {}
+    }
+
+    if segment.starts_with("exosoldier_") {
+        return "class_mod";
+    }
 
     let stripped = match segment.strip_prefix("part_") {
         Some(rest) => rest,
-        None => return segment,
+        None => return "unknown",
     };
 
-    // Strip trailing _NN (1-2 digits)
-    if let Some(pos) = stripped.rfind('_') {
-        let suffix = &stripped[pos + 1..];
-        if !suffix.is_empty() && suffix.len() <= 2 && suffix.chars().all(|c| c.is_ascii_digit()) {
-            return &stripped[..pos];
+    for prefix in SLOT_PREFIXES {
+        if stripped.starts_with(prefix) {
+            let rest = &stripped[prefix.len()..];
+            if rest.is_empty() || rest.starts_with('_') {
+                return prefix;
+            }
         }
     }
 
-    stripped
+    "unknown"
 }
 
 /// Category ID -> Maximum known part index in that category
@@ -474,14 +527,48 @@ mod tests {
     }
 
     #[test]
+    fn test_part_slot() {
+        // Category 2 (Daedalus Pistol) should have slot info for its parts
+        if let Some(slot) = part_slot(2, 1) {
+            assert!(!slot.is_empty());
+        }
+    }
+
+    #[test]
     fn test_slot_from_part_name() {
+        // Basic slots
         assert_eq!(slot_from_part_name("DAD_PS.part_barrel_01"), "barrel");
+        assert_eq!(slot_from_part_name("part_barrel_02_finnty"), "barrel");
+        assert_eq!(slot_from_part_name("part_barrel_licensed_ted_shooting"), "barrel");
         assert_eq!(slot_from_part_name("part_scope_02"), "scope");
         assert_eq!(slot_from_part_name("part_body"), "body");
-        assert_eq!(slot_from_part_name("comp_03_rare"), "comp_03_rare");
+        assert_eq!(slot_from_part_name("part_body_b"), "body");
+        assert_eq!(slot_from_part_name("part_body_mag_sg"), "body_mag");
         assert_eq!(slot_from_part_name("JAK_SG.part_foregrip_03"), "foregrip");
         assert_eq!(slot_from_part_name("part_mag_1"), "mag");
         assert_eq!(slot_from_part_name("part_barrel"), "barrel");
+        assert_eq!(slot_from_part_name("part_grip_04_hyp"), "grip");
+
+        // Stat mods
+        assert_eq!(slot_from_part_name("part_stat2_wt_ps_equipspeed"), "stat2");
+        assert_eq!(slot_from_part_name("part_stat3_statuseffect_chance"), "stat3");
+
+        // Rarity / comp
+        assert_eq!(slot_from_part_name("comp_05_legendary_stopgap"), "rarity");
+        assert_eq!(slot_from_part_name("base_comp_02_uncommon"), "rarity");
+        assert_eq!(slot_from_part_name("comp_03_rare"), "rarity");
+
+        // Elements
+        assert_eq!(slot_from_part_name("radiation"), "element");
+        assert_eq!(slot_from_part_name("cryo"), "element");
+
+        // Other
+        assert_eq!(slot_from_part_name("part_firmware_baker"), "firmware");
+        assert_eq!(slot_from_part_name("part_passive_blue_3_1_tier_1"), "passive");
+        assert_eq!(slot_from_part_name("part_secondary_ammo_sg"), "secondary_ammo");
+        assert_eq!(slot_from_part_name("part_secondary_elem_cryo_fire"), "secondary_elem");
+        assert_eq!(slot_from_part_name("part_shield_ammo"), "shield");
+        assert_eq!(slot_from_part_name("part_underbarrel_04_atlas_ball"), "underbarrel");
     }
 
     #[test]

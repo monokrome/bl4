@@ -579,6 +579,44 @@ fn extract_rarity(tokens: &[Token], is_varbit_first: bool) -> Option<Rarity> {
     }
 }
 
+/// Shared vertical category IDs for fallback part lookup.
+///
+/// When a part index doesn't resolve in the item's per-category parts,
+/// it may belong to a shared vertical (stat mods, barrels, grips, etc.)
+/// that uses the same index space across multiple item categories.
+const SHARED_VERTICAL_CATEGORIES: &[i64] = &[
+    10001, // stat_group2 (176-247) + barrel pool (1-94)
+    10002, // stat_group3 (104-175) + barrel_acc (61-78)
+    10003, // rarity_component (1-541) + tediore_acc (9-55)
+    10004, // firmware (27-248) + foregrip (21-82)
+    10005, // barrel pool alt (1-94) + grip (42-83)
+    10006, // barrel_acc alt (1-78) + magazine (1-87)
+    10007, // magazine_acc (27-89) + tediore_acc (9-55)
+    10008, // foregrip alt (21-82) + tediore_secondary_acc (14-17)
+    10009, // grip alt (42-83) + secondary_ammo (61-64)
+    1,     // base shared parts (rarity, elements, secondary elements)
+];
+
+/// Resolve a part index to a name, trying per-category first then shared verticals.
+fn resolve_part_name(category: i64, index: u64) -> Option<&'static str> {
+    // Try per-category lookup first (works for all item types)
+    if let Some(name) = crate::manifest::part_name(category, index as i64) {
+        return Some(name);
+    }
+
+    // Fall back to shared vertical categories
+    for &shared_cat in SHARED_VERTICAL_CATEGORIES {
+        if shared_cat == category {
+            continue;
+        }
+        if let Some(name) = crate::manifest::part_name(shared_cat, index as i64) {
+            return Some(name);
+        }
+    }
+
+    None
+}
+
 impl ItemSerial {
     /// Decode a Borderlands 4 item serial
     ///
@@ -824,27 +862,16 @@ impl ItemSerial {
     /// - name is the part name from the manifest (or None if not found)
     /// - values are any associated values
     ///
-    /// Note: Many indices won't resolve because:
-    /// - The parts database was extracted from memory and may be incomplete
-    /// - Serials may use a different indexing system than memory structures
-    /// - Indices 128-142 are element markers (shown separately via element_names())
+    /// Lookup order:
+    /// 1. Per-category parts (the item's own category)
+    /// 2. Shared verticals (stat mods, rarity, barrel/grip/etc. pools)
+    /// 3. Base shared parts (category 1)
     pub fn parts_with_names(&self) -> Vec<(u64, Option<&'static str>, Vec<u64>)> {
         let category = self.parts_category().unwrap_or(-1);
         self.parts()
             .into_iter()
             .map(|(index, values)| {
-                // For indices >= 128, bit 7 indicates scope:
-                //   Bit 7 = 0: Root scope (core parts like body, barrel, scope)
-                //   Bit 7 = 1: Sub scope (modular attachments like grips, foregrips)
-                // Strip bit 7 to get the actual part index
-                // (Indices 128-142 that resolve to elements are filtered separately in parts_summary)
-                let lookup_index = if index >= 128 {
-                    index & 0x7F  // Keep only lower 7 bits
-                } else {
-                    index
-                };
-
-                let name = crate::manifest::part_name(category, lookup_index as i64);
+                let name = resolve_part_name(category, index);
                 (index, name, values)
             })
             .collect()

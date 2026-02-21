@@ -141,11 +141,7 @@ pub enum ItemsDbCommand {
     },
 
     /// Decode all serials and populate item metadata
-    DecodeAll {
-        /// Also update items that already have decoded info
-        #[arg(long)]
-        force: bool,
-    },
+    DecodeAll,
 
     /// Decode items and populate item_values table
     Decode {

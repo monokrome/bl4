@@ -62,8 +62,9 @@ pub trait AsyncItemsRepository {
 
     // === Parts ===
 
-    /// Replace all parts for an item (delete existing + insert new)
-    async fn set_parts(&self, serial: &str, parts: &[NewItemPart]) -> AsyncRepoResult<()>;
+    /// Replace parts for an item from a specific source.
+    /// Only deletes and replaces parts with the matching source.
+    async fn set_parts(&self, serial: &str, parts: &[NewItemPart], source: &str) -> AsyncRepoResult<()>;
 
     // === Multi-source values ===
 
@@ -579,24 +580,26 @@ pub mod sqlite {
             Ok(())
         }
 
-        async fn set_parts(&self, serial: &str, parts: &[NewItemPart]) -> AsyncRepoResult<()> {
+        async fn set_parts(&self, serial: &str, parts: &[NewItemPart], source: &str) -> AsyncRepoResult<()> {
             let mut tx = self.pool.begin().await.map_err(|e| RepoError::Database(e.to_string()))?;
 
-            sqlx::query("DELETE FROM item_parts WHERE item_serial = ?")
+            sqlx::query("DELETE FROM item_parts WHERE item_serial = ? AND source = ?")
                 .bind(serial)
+                .bind(source)
                 .execute(&mut *tx)
                 .await
                 .map_err(|e| RepoError::Database(e.to_string()))?;
 
             for part in parts {
                 sqlx::query(
-                    "INSERT INTO item_parts (item_serial, slot, part_index, part_name, manufacturer) VALUES (?, ?, ?, ?, ?)",
+                    "INSERT INTO item_parts (item_serial, slot, part_index, part_name, manufacturer, source) VALUES (?, ?, ?, ?, ?, ?)",
                 )
                 .bind(serial)
                 .bind(&part.slot)
                 .bind(part.part_index)
                 .bind(&part.part_name)
                 .bind(&part.manufacturer)
+                .bind(source)
                 .execute(&mut *tx)
                 .await
                 .map_err(|e| RepoError::Database(e.to_string()))?;
@@ -1528,24 +1531,26 @@ pub mod postgres {
             Ok(())
         }
 
-        async fn set_parts(&self, serial: &str, parts: &[NewItemPart]) -> AsyncRepoResult<()> {
+        async fn set_parts(&self, serial: &str, parts: &[NewItemPart], source: &str) -> AsyncRepoResult<()> {
             let mut tx = self.pool.begin().await.map_err(|e| RepoError::Database(e.to_string()))?;
 
-            sqlx::query("DELETE FROM item_parts WHERE item_serial = $1")
+            sqlx::query("DELETE FROM item_parts WHERE item_serial = $1 AND source = $2")
                 .bind(serial)
+                .bind(source)
                 .execute(&mut *tx)
                 .await
                 .map_err(|e| RepoError::Database(e.to_string()))?;
 
             for part in parts {
                 sqlx::query(
-                    "INSERT INTO item_parts (item_serial, slot, part_index, part_name, manufacturer) VALUES ($1, $2, $3, $4, $5)",
+                    "INSERT INTO item_parts (item_serial, slot, part_index, part_name, manufacturer, source) VALUES ($1, $2, $3, $4, $5, $6)",
                 )
                 .bind(serial)
                 .bind(&part.slot)
                 .bind(part.part_index)
                 .bind(&part.part_name)
                 .bind(&part.manufacturer)
+                .bind(source)
                 .execute(&mut *tx)
                 .await
                 .map_err(|e| RepoError::Database(e.to_string()))?;

@@ -71,6 +71,7 @@ impl SqliteDb {
     /// Open or create the database
     pub fn open<P: AsRef<Path>>(path: P) -> Result<Self, rusqlite::Error> {
         let conn = Connection::open(path.as_ref())?;
+        conn.pragma_update(None, "journal_mode", "WAL")?;
         Ok(Self { conn })
     }
 
@@ -78,6 +79,27 @@ impl SqliteDb {
     pub fn open_in_memory() -> Result<Self, rusqlite::Error> {
         let conn = Connection::open_in_memory()?;
         Ok(Self { conn })
+    }
+
+    /// Begin a transaction. Caller must call `commit()` or `rollback()`.
+    pub fn begin(&self) -> RepoResult<()> {
+        self.conn
+            .execute_batch("BEGIN")
+            .map_err(|e| RepoError::Database(e.to_string()))
+    }
+
+    /// Commit the current transaction.
+    pub fn commit(&self) -> RepoResult<()> {
+        self.conn
+            .execute_batch("COMMIT")
+            .map_err(|e| RepoError::Database(e.to_string()))
+    }
+
+    /// Rollback the current transaction.
+    pub fn rollback(&self) -> RepoResult<()> {
+        self.conn
+            .execute_batch("ROLLBACK")
+            .map_err(|e| RepoError::Database(e.to_string()))
     }
 
     /// Check if migration from old schema is needed and perform it
@@ -369,6 +391,20 @@ impl SqliteDb {
             println!("SQLite: Applied migration 0002_rename_tables");
         }
 
+        // Migration 0003: Add source column to item_parts
+        if !self.is_migration_applied("0003_parts_source")? {
+            self.conn
+                .execute_batch(
+                    r#"
+                    ALTER TABLE item_parts ADD COLUMN source TEXT NOT NULL DEFAULT 'decoder';
+                    "#,
+                )
+                .map_err(|e| RepoError::Database(e.to_string()))?;
+
+            self.mark_migration_applied("0003_parts_source")?;
+            println!("SQLite: Applied migration 0003_parts_source");
+        }
+
         // Create indexes AFTER all migrations (on new table names)
         self.conn
             .execute_batch(
@@ -624,22 +660,22 @@ impl ItemsRepository for SqliteDb {
         Ok(parts)
     }
 
-    fn set_parts(&self, serial: &str, parts: &[NewItemPart]) -> RepoResult<()> {
+    fn set_parts(&self, serial: &str, parts: &[NewItemPart], source: &str) -> RepoResult<()> {
         let tx = self
             .conn
             .unchecked_transaction()
             .map_err(|e| RepoError::Database(e.to_string()))?;
 
         tx.execute(
-            "DELETE FROM item_parts WHERE item_serial = ?1",
-            params![serial],
+            "DELETE FROM item_parts WHERE item_serial = ?1 AND source = ?2",
+            params![serial, source],
         )
         .map_err(|e| RepoError::Database(e.to_string()))?;
 
         for part in parts {
             tx.execute(
-                "INSERT INTO item_parts (item_serial, slot, part_index, part_name, manufacturer) VALUES (?1, ?2, ?3, ?4, ?5)",
-                params![serial, part.slot, part.part_index, part.part_name, part.manufacturer],
+                "INSERT INTO item_parts (item_serial, slot, part_index, part_name, manufacturer, source) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+                params![serial, part.slot, part.part_index, part.part_name, part.manufacturer, source],
             )
             .map_err(|e| RepoError::Database(e.to_string()))?;
         }
