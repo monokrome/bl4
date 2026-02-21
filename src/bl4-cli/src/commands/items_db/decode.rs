@@ -37,23 +37,35 @@ fn build_item_parts(
         .collect()
 }
 
+/// Store a decoded value in item_values with Decoder source attribution
+fn set_decoded(
+    wdb: &bl4_idb::SqliteDb,
+    serial: &str,
+    field: &str,
+    value: &str,
+) -> Result<()> {
+    wdb.set_value(
+        serial,
+        field,
+        value,
+        bl4_idb::ValueSource::Decoder,
+        Some("bl4-cli"),
+        bl4_idb::Confidence::Inferred,
+    )?;
+    Ok(())
+}
+
 /// Handle `idb decode-all`
-pub fn decode_all(db: &Path, force: bool) -> Result<()> {
+pub fn decode_all(db: &Path) -> Result<()> {
     let wdb = bl4_idb::SqliteDb::open(db)?;
     wdb.init()?;
     let items = wdb.list_items(&bl4_idb::ItemFilter::default())?;
 
     let mut decoded = 0;
-    let mut skipped = 0;
     let mut failed = 0;
     let mut validated = [0u32; 3]; // [legal, illegal, unknown]
 
     for item in &items {
-        if !force && (item.manufacturer.is_some() || item.weapon_type.is_some()) {
-            skipped += 1;
-            continue;
-        }
-
         match bl4::ItemSerial::decode(&item.serial) {
             Ok(decoded_item) => {
                 let (mfg, wtype) = if let Some(mfg_id) = decoded_item.manufacturer {
@@ -67,53 +79,40 @@ pub fn decode_all(db: &Path, force: bool) -> Result<()> {
                     (None, None)
                 };
 
-                let level = decoded_item
+                if let Some(mfg) = &mfg {
+                    set_decoded(&wdb, &item.serial, "manufacturer", mfg)?;
+                }
+                if let Some(wtype) = &wtype {
+                    set_decoded(&wdb, &item.serial, "weapon_type", wtype)?;
+                }
+                if let Some(level) = decoded_item
                     .level
                     .and_then(bl4::parts::level_from_code)
-                    .map(|(capped, _raw)| capped as i32);
+                    .map(|(capped, _raw)| capped)
+                {
+                    set_decoded(&wdb, &item.serial, "level", &level.to_string())?;
+                }
+                if let Some(element) = decoded_item.element_names() {
+                    set_decoded(&wdb, &item.serial, "element", &element)?;
+                }
+                if let Some(rarity) = decoded_item.rarity_name() {
+                    set_decoded(&wdb, &item.serial, "rarity", rarity)?;
+                }
+                set_decoded(
+                    &wdb,
+                    &item.serial,
+                    "item_type",
+                    &decoded_item.item_type.to_string(),
+                )?;
 
-                // Extract element and rarity
-                let element = decoded_item.element_names();
-                let rarity = decoded_item.rarity_name().map(|s| s.to_string());
-
-                let update = bl4_idb::ItemUpdate {
-                    manufacturer: mfg.clone(),
-                    weapon_type: wtype,
-                    level,
-                    element,
-                    rarity,
-                    ..Default::default()
-                };
-                wdb.update_item(&item.serial, &update)?;
-                wdb.set_item_type(&item.serial, &decoded_item.item_type.to_string())?;
-
-                // Store parts summary as a value
                 let parts_summary = decoded_item.parts_summary();
                 if !parts_summary.is_empty() {
-                    let _ = wdb.set_value(
-                        &item.serial,
-                        "parts",
-                        &parts_summary,
-                        bl4_idb::ValueSource::Decoder,
-                        Some("bl4-cli"),
-                        bl4_idb::Confidence::Inferred,
-                    );
+                    set_decoded(&wdb, &item.serial, "parts", &parts_summary)?;
                 }
 
-                // Store structured parts
                 let new_parts = build_item_parts(&decoded_item, mfg.as_deref());
                 if !new_parts.is_empty() {
-                    let _ = wdb.set_parts(&item.serial, &new_parts);
-                }
-
-                // Validate and store legality
-                let validation = decoded_item.validate();
-                let legal = validation.to_legal_flag();
-                let _ = wdb.set_legal(&item.serial, legal);
-                match validation.legality {
-                    bl4::Legality::Legal => validated[0] += 1,
-                    bl4::Legality::Illegal => validated[1] += 1,
-                    bl4::Legality::Unknown => validated[2] += 1,
+                    let _ = wdb.set_parts(&item.serial, &new_parts, "decoder");
                 }
 
                 if item.verification_status == bl4_idb::VerificationStatus::Unverified {
@@ -123,6 +122,16 @@ pub fn decode_all(db: &Path, force: bool) -> Result<()> {
                         None,
                     )?;
                 }
+
+                let validation = decoded_item.validate();
+                let legality_str = validation.legality.to_string();
+                let _ = set_decoded(&wdb, &item.serial, "legal", &legality_str);
+                match validation.legality {
+                    bl4::Legality::Legal => validated[0] += 1,
+                    bl4::Legality::Illegal => validated[1] += 1,
+                    bl4::Legality::Unknown => validated[2] += 1,
+                }
+
                 decoded += 1;
             }
             Err(e) => {
@@ -131,10 +140,8 @@ pub fn decode_all(db: &Path, force: bool) -> Result<()> {
             }
         }
     }
-    println!(
-        "Decoded {} items, skipped {} (already decoded), {} failed",
-        decoded, skipped, failed
-    );
+    let total = decoded + failed;
+    println!("Decoded {} items, {} failed ({} total)", decoded, failed, total);
     println!(
         "Validation: {} legal, {} illegal, {} unknown",
         validated[0], validated[1], validated[2]
@@ -277,12 +284,12 @@ pub fn decode(db: &Path, serial: Option<String>, all: bool) -> Result<()> {
                 // Store structured parts
                 let new_parts = build_item_parts(&item, mfg_name.as_deref());
                 if !new_parts.is_empty() {
-                    wdb.set_parts(serial, &new_parts)?;
+                    wdb.set_parts(serial, &new_parts, "decoder")?;
                 }
 
                 // Validate and store legality
                 let validation = item.validate();
-                let _ = wdb.set_legal(serial, validation.to_legal_flag());
+                set_decoded(&wdb, serial, "legal", &validation.legality.to_string())?;
 
                 decoded_count += 1;
             }
@@ -371,47 +378,49 @@ pub fn import_save(
                     (None, None)
                 };
 
-                let level = decoded_item
+                if let Some(mfg) = &mfg {
+                    let _ = set_decoded(&wdb, &item.serial, "manufacturer", mfg);
+                }
+                if let Some(wtype) = &wtype {
+                    let _ = set_decoded(&wdb, &item.serial, "weapon_type", wtype);
+                }
+                if let Some(level) = decoded_item
                     .level
                     .and_then(bl4::parts::level_from_code)
-                    .map(|(capped, _)| capped as i32);
+                    .map(|(capped, _)| capped)
+                {
+                    let _ = set_decoded(&wdb, &item.serial, "level", &level.to_string());
+                }
+                if let Some(element) = decoded_item.element_names() {
+                    let _ = set_decoded(&wdb, &item.serial, "element", &element);
+                }
+                if let Some(rarity) = decoded_item.rarity_name() {
+                    let _ = set_decoded(&wdb, &item.serial, "rarity", rarity);
+                }
+                let _ = set_decoded(
+                    &wdb,
+                    &item.serial,
+                    "item_type",
+                    &decoded_item.item_type.to_string(),
+                );
 
-                // Extract element and rarity
-                let element = decoded_item.element_names();
-                let rarity = decoded_item.rarity_name().map(|s| s.to_string());
-
-                let update = bl4_idb::ItemUpdate {
-                    manufacturer: mfg.clone(),
-                    weapon_type: wtype,
-                    level,
-                    element,
-                    rarity,
-                    ..Default::default()
-                };
-                let _ = wdb.update_item(&item.serial, &update);
-
-                // Store parts summary as a value
                 let parts_summary = decoded_item.parts_summary();
                 if !parts_summary.is_empty() {
-                    let _ = wdb.set_value(
-                        &item.serial,
-                        "parts",
-                        &parts_summary,
-                        bl4_idb::ValueSource::Decoder,
-                        Some("bl4-cli"),
-                        bl4_idb::Confidence::Inferred,
-                    );
+                    let _ = set_decoded(&wdb, &item.serial, "parts", &parts_summary);
                 }
 
-                // Store structured parts
                 let new_parts = build_item_parts(&decoded_item, mfg.as_deref());
                 if !new_parts.is_empty() {
-                    let _ = wdb.set_parts(&item.serial, &new_parts);
+                    let _ = wdb.set_parts(&item.serial, &new_parts, "decoder");
                 }
 
-                // Validate and store legality
                 let validation = decoded_item.validate();
-                let _ = wdb.set_legal(&item.serial, validation.to_legal_flag());
+                let _ = set_decoded(
+                    &wdb,
+                    &item.serial,
+                    "legal",
+                    &validation.legality.to_string(),
+                );
 
                 if item.verification_status == bl4_idb::VerificationStatus::Unverified {
                     let _ = wdb.set_verification_status(
@@ -429,14 +438,17 @@ pub fn import_save(
     if legal {
         let mut marked = 0;
         for serial in &serials {
-            if let Ok(Some(item)) = wdb.get_item(serial) {
-                if item.legal != Some(true) {
-                    let _ = wdb.set_legal(&item.serial, Some(true));
-                    marked += 1;
-                }
-            }
+            let _ = wdb.set_value(
+                serial,
+                "legal",
+                "legal",
+                bl4_idb::ValueSource::InGame,
+                Some("import-save --legal"),
+                bl4_idb::Confidence::Verified,
+            );
+            marked += 1;
         }
-        println!("Marked {} items as legal", marked);
+        println!("Marked {} items as legal (source=ingame)", marked);
     }
 
     if let Some(src) = source {

@@ -155,7 +155,7 @@ pub fn dispatch_idb(db: PathBuf, command: ItemsDbCommand) -> Result<()> {
             status,
             notes,
         } => commands::items_db::verify(db, &serial, &status, notes),
-        ItemsDbCommand::DecodeAll { force } => commands::items_db::decode_all(db, force),
+        ItemsDbCommand::DecodeAll => commands::items_db::decode_all(db),
         ItemsDbCommand::Decode { serial, all } => commands::items_db::decode(db, serial, all),
         ItemsDbCommand::ImportSave {
             save,

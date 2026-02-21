@@ -82,8 +82,9 @@ pub trait ItemsRepository {
     /// Get parts for an item
     fn get_parts(&self, serial: &str) -> RepoResult<Vec<ItemPart>>;
 
-    /// Replace all parts for an item (delete existing + insert new)
-    fn set_parts(&self, serial: &str, parts: &[NewItemPart]) -> RepoResult<()>;
+    /// Replace parts for an item from a specific source.
+    /// Only deletes and replaces parts with the matching source.
+    fn set_parts(&self, serial: &str, parts: &[NewItemPart], source: &str) -> RepoResult<()>;
 
     // === Multi-source values ===
 

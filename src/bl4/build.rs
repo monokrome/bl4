@@ -8,7 +8,7 @@ fn main() {
 
     println!("cargo::rerun-if-changed=../../share/manifest/parts/");
 
-    let mut entries: Vec<(u32, String)> = Vec::new();
+    let mut entries: Vec<(u32, String, String)> = Vec::new();
 
     if parts_dir.is_dir() {
         for entry in fs::read_dir(parts_dir).expect("Failed to read parts directory") {
@@ -17,8 +17,8 @@ fn main() {
 
             if path.extension().is_some_and(|e| e == "tsv") {
                 let stem = path.file_stem().unwrap().to_str().unwrap();
-                let category: u32 = match parse_category_id(stem) {
-                    Some(id) => id,
+                let (category, slot) = match parse_filename(stem) {
+                    Some(pair) => pair,
                     None => continue,
                 };
 
@@ -27,32 +27,36 @@ fn main() {
 
                 for line in content.lines().skip(1) {
                     if !line.is_empty() {
-                        entries.push((category, line.to_string()));
+                        entries.push((category, slot.clone(), line.to_string()));
                     }
                 }
             }
         }
     }
 
-    entries.sort_by_key(|(cat, _)| *cat);
+    entries.sort_by_key(|(cat, _, _)| *cat);
 
-    let mut out = String::from("category\tindex\tname\n");
-    for (category, line) in &entries {
-        out.push_str(&format!("{}\t{}\n", category, line));
+    let mut out = String::from("category\tindex\tname\tslot\n");
+    for (category, slot, line) in &entries {
+        // line is "index\tname", append slot as 4th column
+        out.push_str(&format!("{}\t{}\t{}\n", category, line, slot));
     }
 
     fs::write(&out_path, &out)
         .unwrap_or_else(|e| panic!("Failed to write {}: {}", out_path.display(), e));
 }
 
-/// Extract category ID from a filename stem like "jakobs_pistol-3" or "10001"
-fn parse_category_id(stem: &str) -> Option<u32> {
-    // Try "{slug}-{id}" format first
+/// Extract category ID and slot name from a filename stem.
+///
+/// Formats: `"barrel-10001"` → `(10001, "barrel")`, `"stat_group2-10001"` → `(10001, "stat_group2")`
+fn parse_filename(stem: &str) -> Option<(u32, String)> {
     if let Some(pos) = stem.rfind('-') {
         if let Ok(id) = stem[pos + 1..].parse() {
-            return Some(id);
+            let slot = &stem[..pos];
+            return Some((id, slot.to_string()));
         }
     }
-    // Fall back to plain numeric
-    stem.parse().ok()
+    // Plain numeric filenames have no slot info
+    let id: u32 = stem.parse().ok()?;
+    Some((id, "unknown".to_string()))
 }
