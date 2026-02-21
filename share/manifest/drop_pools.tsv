@@ -1,23 +1,59 @@
 manufacturer_code	gear_type_code	legendary_count	boss_source_count	world_pool_name
-BOR	HW	1	1	Heavy Weapons
-BOR	SG	1	1	Shotguns
-BOR	SM	1	1	SMGs
-DAD	AR	2	2	Assault Rifles
+BOR	HW	2	2	Heavy Weapons
+BOR	REPAIR_KIT	1	1	Repair Kits
+BOR	RK	1	0	RK
+BOR	SG	3	2	Shotguns
+BOR	SHIELD	2	2	Shields
+BOR	SM	2	2	SMGs
+BOR	SR	2	2	Sniper Rifles
+BORG	GRENADE_GADGET	2	2	Grenades
+CLASSMOD	DARK_SIREN	6	6	DARK_SIREN
+CLASSMOD	EXO_SOLDIER	6	6	EXO_SOLDIER
+CLASSMOD	GRAVITAR	5	5	GRAVITAR
+CLASSMOD	PALADIN	6	6	PALADIN
+DAD	AR	3	3	Assault Rifles
+DAD	GRENADE_GADGET	2	2	Grenades
 DAD	PS	2	2	Pistols
+DAD	REPAIR_KIT	1	1	Repair Kits
 DAD	SG	2	2	Shotguns
-JAK	AR	1	1	Assault Rifles
-JAK	PS	3	3	Pistols
-JAK	SG	1	1	Shotguns
-JAK	SR	1	1	Sniper Rifles
-MAL	HW	1	1	Heavy Weapons
-MAL	SM	1	1	SMGs
-TED	AR	1	1	Assault Rifles
-TED	PS	1	1	Pistols
-TED	SG	1	1	Shotguns
-TOR	AR	1	1	Assault Rifles
+DAD	SHIELD	2	2	Shields
+DAD	SM	2	2	SMGs
+JAK	AR	2	1	Assault Rifles
+JAK	GRENADE_GADGET	1	1	Grenades
+JAK	PS	4	5	Pistols
+JAK	REPAIR_KIT	1	1	Repair Kits
+JAK	SG	4	4	Shotguns
+JAK	SHIELD	2	2	Shields
+JAK	SR	3	3	Sniper Rifles
+MAL	GRENADE_GADGET	2	2	Grenades
+MAL	HW	2	2	Heavy Weapons
+MAL	REPAIR_KIT	1	1	Repair Kits
+MAL	SG	2	2	Shotguns
+MAL	SM	2	2	SMGs
+MAL	SR	3	3	Sniper Rifles
+ORD	AR	2	2	Assault Rifles
+ORD	GRENADE_GADGET	2	2	Grenades
+ORD	PS	3	3	Pistols
+ORD	REPAIR_KIT	1	1	Repair Kits
+ORD	SHIELD	2	2	Shields
+ORD	SR	2	2	Sniper Rifles
+TED	AR	2	3	Assault Rifles
+TED	GRENADE_GADGET	2	3	Grenades
+TED	PS	3	3	Pistols
+TED	REPAIR_KIT	1	1	Repair Kits
+TED	SG	2	2	Shotguns
+TED	SHIELD	2	3	Shields
+TOR	AR	2	4	Assault Rifles
+TOR	GRENADE_GADGET	2	2	Grenades
 TOR	HW	1	1	Heavy Weapons
-TOR	SG	1	1	Shotguns
-VLA	AR	1	1	Assault Rifles
-VLA	HW	1	1	Heavy Weapons
-VLA	SM	1	1	SMGs
-VLA	SR	1	1	Sniper Rifles
+TOR	PS	2	2	Pistols
+TOR	REPAIR_KIT	1	2	Repair Kits
+TOR	SG	2	2	Shotguns
+TOR	SHIELD	2	2	Shields
+VLA	AR	4	5	Assault Rifles
+VLA	GRENADE_GADGET	2	2	Grenades
+VLA	HW	2	2	Heavy Weapons
+VLA	REPAIR_KIT	1	1	Repair Kits
+VLA	SHIELD	2	2	Shields
+VLA	SM	3	3	SMGs
+VLA	SR	2	2	Sniper Rifles

@@ -70,70 +70,91 @@ impl BossNameMapping {
         }
     }
 
-    /// Default mapping with all known boss names
-    #[allow(clippy::too_many_lines)]
+    /// Default mapping built from compiled-in data table + hardcoded fallbacks.
+    ///
+    /// Primary source: `table_bossreplay_costs.tsv` (authoritative game data).
+    /// Fallbacks cover DLC bosses, variant entries, and ItemPoolList key
+    /// differences (e.g., `GlidePackPsycho` vs data table's `GlidePack`).
     pub fn default_mapping() -> Self {
+        let mut mapping = Self::from_compiled_tsv();
+        mapping.merge_missing(&Self::hardcoded_fallbacks());
+        mapping
+    }
+
+    /// Parse boss names from the compiled-in boss replay costs TSV.
+    fn from_compiled_tsv() -> Self {
+        const TSV: &str = include_str!(
+            "../../../../share/manifest/data_tables/table_bossreplay_costs.tsv"
+        );
+
         let mut boss_names = HashMap::new();
         let mut aliases = HashMap::new();
 
-        // Primordial Guardians (main story bosses)
+        for line in TSV.lines().skip(1) {
+            let cols: Vec<&str> = line.splitn(5, '\t').collect();
+            if cols.len() < 2 {
+                continue;
+            }
+            let row_name = cols[0];
+            let comment = cols[1];
+
+            let display_name =
+                match crate::data_table::parse_boss_replay_comment(comment) {
+                    Some((_, name)) => name.to_string(),
+                    None => continue,
+                };
+
+            boss_names.insert(row_name.to_string(), display_name.clone());
+
+            // Singular-form aliases for multi-boss entries
+            let row_lower = row_name.to_lowercase();
+            if row_lower == "foundryfreaks" {
+                aliases.insert("FoundryFreak".into(), display_name);
+            } else if row_lower == "meatheadriders" {
+                aliases.insert("MeatheadRider".into(), display_name);
+            } else if row_lower == "hovercarts" {
+                aliases.insert("Hovercart".into(), display_name);
+            } else if row_lower == "pangobango" {
+                aliases.insert("Pango".into(), display_name.clone());
+                aliases.insert("Bango".into(), display_name);
+            }
+        }
+
+        Self { boss_names, aliases }
+    }
+
+    /// Hardcoded fallback entries for bosses not in the data table.
+    ///
+    /// Covers: ItemPoolList key variants (different from data table row_name),
+    /// DLC bosses, Primordial Guardians, and fuzzy-match aliases.
+    fn hardcoded_fallbacks() -> Self {
+        let mut boss_names = HashMap::new();
+        let mut aliases = HashMap::new();
+
+        // ItemPoolList keys that differ from data table row_names
         boss_names.insert("Grasslands_Commander".into(), "Primordial Guardian Inceptus".into());
         boss_names.insert("MountainCommander".into(), "Primordial Guardian Radix".into());
         boss_names.insert("ShatterlandsCommanderElpis".into(), "Primordial Guardian Origo".into());
         boss_names.insert("ShatterlandsCommanderFortress".into(), "Primordial Guardian Origo".into());
         boss_names.insert("Timekeeper_TKBoss".into(), "The Timekeeper".into());
-
-        // Vault Guardians
         boss_names.insert("Grasslands_Guardian".into(), "Grasslands Guardian".into());
         boss_names.insert("MountainGuardian".into(), "Mountain Guardian".into());
         boss_names.insert("ShatterlandsGuardian".into(), "Shatterlands Guardian".into());
         boss_names.insert("Timekeeper_Guardian".into(), "Timekeeper Guardian".into());
-
-        // Creature bosses
-        boss_names.insert("Backhive".into(), "Backhive".into());
-        boss_names.insert("BattleWagon".into(), "Battle Wagon".into());
-        boss_names.insert("Destroyer".into(), "Bramblesong".into());
-        boss_names.insert("BatMatriarch".into(), "Matriarch Nemesis".into());
-        boss_names.insert("CityCat".into(), "Axemaul".into());
-        boss_names.insert("StealthPredator".into(), "Shadowpelt".into());
-        boss_names.insert("SpiderJumbo".into(), "Sydney Pointylegs".into());
-        boss_names.insert("SurpriseAttack".into(), "Voraxis".into());
-        boss_names.insert("TrashThresher".into(), "Sludgemaw".into());
-        boss_names.insert("BioArmorThresher".into(), "Bio Armored Omega Thresher".into());
-        boss_names.insert("Thresher_BioArmoredBig".into(), "Bio-Thresher Omega".into());
-        boss_names.insert("Pango".into(), "Pango".into());
-        boss_names.insert("Bango".into(), "Bango".into());
-        boss_names.insert("SkullOrchid".into(), "Skull Orchid".into());
-
-        // Humanoid bosses
-        boss_names.insert("Arjay".into(), "Arjay".into());
-        boss_names.insert("CloningLeader".into(), "Divisioner".into());
-        boss_names.insert("Drillerhole".into(), "Drillerhole".into());
-        boss_names.insert("DroneKeeper".into(), "Core Observer".into());
-        boss_names.insert("FirstCorrupt".into(), "Vile Prototype".into());
-        boss_names.insert("FoundryFreak_MeatheadFrackingBoss".into(), "Foundry Freaks".into());
         boss_names.insert("GlidePackPsycho".into(), "Splashzone".into());
         boss_names.insert("KOTOMotherbaseBrute".into(), "Bio-Bulkhead".into());
         boss_names.insert("KotoLieutenant".into(), "Horace".into());
-        boss_names.insert("MeatheadRider".into(), "Saddleback".into());
+        boss_names.insert("FoundryFreak_MeatheadFrackingBoss".into(), "Foundry Freaks".into());
+        boss_names.insert("Thresher_BioArmoredBig".into(), "Bio-Thresher Omega".into());
         boss_names.insert("MeatheadRider_Jockey".into(), "Jockey".into());
-        boss_names.insert("MeatPlantGunship".into(), "The Oppressor".into());
-        boss_names.insert("RedGuard".into(), "Directive-0".into());
-        boss_names.insert("RockAndRoll".into(), "Rocken Roller".into());
-        boss_names.insert("SoldierAncient".into(), "Genone".into());
-        boss_names.insert("StrikerSplitter".into(), "Mimicron".into());
-        boss_names.insert("UpgradedElectiMole".into(), "Leader Willem".into());
-        boss_names.insert("BlasterBrute".into(), "Callous Harbinger of Annihilating Death".into());
-        boss_names.insert("VileTed".into(), "Vile Ted & The Experiments".into());
-        boss_names.insert("LeaderHologram".into(), "Fractis".into());
+        boss_names.insert("Redguard".into(), "Directive-0".into());
 
-        // DLC bosses
+        // DLC bosses (not in base game data table)
         boss_names.insert("Donk".into(), "Donk".into());
         boss_names.insert("MinisterScrew".into(), "Minister Screw".into());
         boss_names.insert("Bloomreaper".into(), "Bloomreaper".into());
 
-        // Additional bosses / variant entries
-        boss_names.insert("Hovercart".into(), "Splice Hovercart".into());
+        // Variant entries
         boss_names.insert("SideCity_Psycho".into(), "Side City Psycho".into());
         boss_names.insert("FoundryFreak_Psycho".into(), "Foundry Freak Psycho".into());
         boss_names.insert("FoundryFreak_Splice".into(), "Foundry Freak Splice".into());
@@ -159,17 +180,25 @@ impl BossNameMapping {
             return Some(name);
         }
 
-        // Try without underscores
-        let normalized = internal_name.replace('_', "");
+        // Try case-insensitive match
+        let name_lower = internal_name.to_lowercase();
         for (key, value) in &self.boss_names {
-            if key.replace('_', "") == normalized {
+            if key.to_lowercase() == name_lower {
                 return Some(value);
             }
         }
 
-        // Try aliases
+        // Try without underscores (case-insensitive)
+        let normalized = name_lower.replace('_', "");
+        for (key, value) in &self.boss_names {
+            if key.to_lowercase().replace('_', "") == normalized {
+                return Some(value);
+            }
+        }
+
+        // Try aliases (case-insensitive)
         for (alias, name) in &self.aliases {
-            if internal_name.to_lowercase().contains(&alias.to_lowercase()) {
+            if name_lower.contains(&alias.to_lowercase()) {
                 return Some(name);
             }
         }

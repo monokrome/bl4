@@ -119,11 +119,13 @@ fn list(manifest_path: &Path, list_sources: bool) -> Result<()> {
 }
 
 fn generate(ncs_dir: &Path, output: &Path, manifest_dir: &Path) -> Result<()> {
-    use bl4_ncs::{generate_drop_pools_tsv, DropSource};
+    use bl4_ncs::{extract_data_tables_from_dir, generate_drop_pools_tsv, DropSource};
 
     println!("Generating drops manifest from {}...", ncs_dir.display());
 
-    let manifest = generate_drops_manifest(ncs_dir, None).context("Failed to generate drops manifest")?;
+    let data_tables = extract_data_tables_from_dir(ncs_dir).ok();
+    let manifest = generate_drops_manifest(ncs_dir, data_tables.as_ref())
+        .context("Failed to generate drops manifest")?;
 
     // Ensure parent directory exists
     if let Some(parent) = output.parent() {

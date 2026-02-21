@@ -31,25 +31,31 @@ pub fn extract_drops_from_itempoollist(data: &[u8]) -> Vec<DropEntry> {
     let mut current_boss: Option<String> = None;
     let mut is_true_boss = false;
 
+    // NCS parser lowercases all entry keys. Leaf values retain original casing.
     for table in doc.tables.values() {
         for record in &table.records {
             for entry in &record.entries {
-                let name = &entry.key;
+                let key = &entry.key;
 
-                // Boss pool pattern: ItemPoolList_<BossName>
-                if name.starts_with("ItemPoolList_") && !name.contains("Enemy_BaseLoot") {
-                    if name.ends_with("_TrueBoss") {
+                // Boss pool pattern: itempoollist_<bossname> (keys are lowercase)
+                if key.starts_with("itempoollist_") && !key.contains("enemy_baseloot") {
+                    if key.ends_with("_trueboss") {
                         is_true_boss = true;
                     } else {
-                        current_boss = Some(name.replace("ItemPoolList_", ""));
+                        // Extract original-cased boss name from first leaf value
+                        let boss_name = extract_original_name(
+                            &entry.value,
+                            "ItemPoolList_",
+                        )
+                        .unwrap_or_else(|| key.replace("itempoollist_", ""));
+                        current_boss = Some(boss_name);
                         is_true_boss = false;
                     }
 
-                    // Extract items from entry value tree
                     let boss = current_boss.as_ref().unwrap();
                     for s in collect_leaf_strings(&entry.value) {
                         if s.to_lowercase().contains(".comp_05_legendary_")
-                            && !s.starts_with("itempool_")
+                            && !s.to_lowercase().starts_with("itempool_")
                         {
                             if let Some(mut drop_entry) =
                                 parse_legendary_item_id(boss, s, DropSource::Boss)
@@ -64,17 +70,15 @@ pub fn extract_drops_from_itempoollist(data: &[u8]) -> Vec<DropEntry> {
                     continue;
                 }
 
-                // Skip if no current boss
                 let boss = match &current_boss {
                     Some(b) => b.clone(),
                     None => continue,
                 };
 
-                // Check if this is a tier record with items in its value tree
-                if let Some(tier) = extract_tier_name(name) {
+                if let Some(tier) = extract_tier_name(key) {
                     for s in collect_leaf_strings(&entry.value) {
                         if s.to_lowercase().contains(".comp_05_legendary_")
-                            && !s.starts_with("itempool_")
+                            && !s.to_lowercase().starts_with("itempool_")
                         {
                             if let Some(mut drop_entry) =
                                 parse_legendary_item_id(&boss, s, DropSource::Boss)
@@ -91,11 +95,17 @@ pub fn extract_drops_from_itempoollist(data: &[u8]) -> Vec<DropEntry> {
                             }
                         }
                     }
-                }
-                // Check if entry key itself is a legendary item
-                else if name.to_lowercase().contains(".comp_05_legendary_") {
+                } else if key.contains(".comp_05_legendary_") {
+                    // Entry key itself is a legendary item (already lowercase)
+                    // Use leaf value for original casing
+                    let original = collect_leaf_strings(&entry.value)
+                        .into_iter()
+                        .find(|s| s.to_lowercase().contains(".comp_05_legendary_"))
+                        .map(|s| s.to_string())
+                        .unwrap_or_else(|| key.to_string());
+
                     if let Some(mut drop_entry) =
-                        parse_legendary_item_id(&boss, name, DropSource::Boss)
+                        parse_legendary_item_id(&boss, &original, DropSource::Boss)
                     {
                         if is_true_boss {
                             drop_entry.drop_tier = "TrueBoss".to_string();
@@ -103,10 +113,10 @@ pub fn extract_drops_from_itempoollist(data: &[u8]) -> Vec<DropEntry> {
                         drops.push(drop_entry);
                     }
 
-                    // Also extract nested items from this entry's value tree
                     for s in collect_leaf_strings(&entry.value) {
                         if s.to_lowercase().contains(".comp_05_legendary_")
-                            && !s.starts_with("itempool_")
+                            && !s.to_lowercase().starts_with("itempool_")
+                            && s.to_lowercase() != original.to_lowercase()
                         {
                             if let Some(mut drop_entry) =
                                 parse_legendary_item_id(&boss, s, DropSource::Boss)
@@ -126,16 +136,29 @@ pub fn extract_drops_from_itempoollist(data: &[u8]) -> Vec<DropEntry> {
     drops
 }
 
-/// Extract tier name from a tier reference string
+/// Extract the original-cased name from a value tree's leaf strings.
+///
+/// NCS keys are lowercased but value leaves retain original casing.
+/// Finds the first leaf string starting with `prefix` and strips it.
+fn extract_original_name(value: &Value, prefix: &str) -> Option<String> {
+    for leaf in collect_leaf_strings(value) {
+        if leaf.starts_with(prefix) && !leaf.ends_with("_TrueBoss") {
+            return Some(leaf[prefix.len()..].to_string());
+        }
+    }
+    None
+}
+
+/// Extract tier name from a tier reference string (keys are lowercase)
 fn extract_tier_name(s: &str) -> Option<String> {
     let tier_prefixes = [
-        ("Primary_", "Primary"),
-        ("Secondary_", "Secondary"),
-        ("Tertiary_", "Tertiary"),
-        ("Quaternary_", "Quaternary"),
-        ("Shiny_", "Shiny"),
-        ("TrueBoss_", ""),
-        ("TrueBossShiny_", "Shiny"),
+        ("primary_", "Primary"),
+        ("secondary_", "Secondary"),
+        ("tertiary_", "Tertiary"),
+        ("quaternary_", "Quaternary"),
+        ("shiny_", "Shiny"),
+        ("trueboss_", ""),
+        ("truebossshiny_", "Shiny"),
     ];
 
     for (prefix, tier) in tier_prefixes {
@@ -160,22 +183,32 @@ pub fn extract_drops_from_itempool(data: &[u8]) -> Vec<DropEntry> {
 
     let mut drops = Vec::new();
 
+    // NCS parser lowercases all entry keys. Leaf values retain original casing.
     for table in doc.tables.values() {
         for record in &table.records {
             for entry in &record.entries {
-                let name = &entry.key;
+                let key = &entry.key;
 
-                // Black Market items
-                if name.starts_with("ItemPool_BlackMarket_") {
-                    let item_part = name.replace("ItemPool_BlackMarket_Comp_", "");
+                // Black Market items (keys are lowercase)
+                if key.starts_with("itempool_blackmarket_") {
+                    // Extract original-cased part from leaf value
+                    let item_part = extract_original_name(
+                        &entry.value,
+                        "ItemPool_BlackMarket_Comp_",
+                    )
+                    .unwrap_or_else(|| key.replace("itempool_blackmarket_comp_", ""));
                     if let Some(drop_entry) = parse_black_market_item(&item_part) {
                         drops.push(drop_entry);
                     }
                 }
 
                 // Fish Collector rewards
-                if name.starts_with("ItemPool_FishCollector_Reward_") {
-                    let tier = name.replace("ItemPool_FishCollector_Reward_", "");
+                if key.starts_with("itempool_fishcollector_reward_") {
+                    let tier = extract_original_name(
+                        &entry.value,
+                        "ItemPool_FishCollector_Reward_",
+                    )
+                    .unwrap_or_else(|| key.replace("itempool_fishcollector_reward_", ""));
                     for s in collect_leaf_strings(&entry.value) {
                         if s.to_lowercase().contains(".comp_05_legendary_") {
                             if let Some(mut drop_entry) =
@@ -189,10 +222,15 @@ pub fn extract_drops_from_itempool(data: &[u8]) -> Vec<DropEntry> {
                 }
 
                 // Side mission rewards
-                if name.starts_with("ItemPool_SideMission_") && !name.ends_with("_TurretDrop") {
-                    let mission_name = name
-                        .replace("ItemPool_SideMission_", "")
-                        .replace('_', " ");
+                if key.starts_with("itempool_sidemission_") && !key.ends_with("_turretdrop") {
+                    let mission_name = extract_original_name(
+                        &entry.value,
+                        "ItemPool_SideMission_",
+                    )
+                    .map(|n| n.replace('_', " "))
+                    .unwrap_or_else(|| {
+                        key.replace("itempool_sidemission_", "").replace('_', " ")
+                    });
                     for s in collect_leaf_strings(&entry.value) {
                         if s.to_lowercase().contains(".comp_05_legendary_") {
                             if let Some(drop_entry) =
@@ -205,10 +243,15 @@ pub fn extract_drops_from_itempool(data: &[u8]) -> Vec<DropEntry> {
                 }
 
                 // Main mission rewards
-                if name.starts_with("ItemPool_MainMission_") {
-                    let mission_name = name
-                        .replace("ItemPool_MainMission_", "")
-                        .replace('_', " ");
+                if key.starts_with("itempool_mainmission_") {
+                    let mission_name = extract_original_name(
+                        &entry.value,
+                        "ItemPool_MainMission_",
+                    )
+                    .map(|n| n.replace('_', " "))
+                    .unwrap_or_else(|| {
+                        key.replace("itempool_mainmission_", "").replace('_', " ")
+                    });
                     for s in collect_leaf_strings(&entry.value) {
                         if s.to_lowercase().contains(".comp_05_legendary_") {
                             if let Some(drop_entry) =
@@ -259,7 +302,18 @@ fn parse_black_market_item(item_part: &str) -> Option<DropEntry> {
     })
 }
 
-fn parse_legendary_item_id(source: &str, item_id: &str, source_type: DropSource) -> Option<DropEntry> {
+/// Strip NCS ref wrappers like `inv'...'`, `Asset'...'` from a string
+fn strip_ref_wrapper(s: &str) -> &str {
+    if let Some(start) = s.find('\'') {
+        let inner = &s[start + 1..];
+        inner.strip_suffix('\'').unwrap_or(inner)
+    } else {
+        s
+    }
+}
+
+fn parse_legendary_item_id(source: &str, raw_item_id: &str, source_type: DropSource) -> Option<DropEntry> {
+    let item_id = strip_ref_wrapper(raw_item_id);
     let parts: Vec<&str> = item_id.split('.').collect();
     if parts.len() != 2 {
         return None;
@@ -420,10 +474,19 @@ pub fn generate_drops_manifest<P: AsRef<Path>>(
         let filename = path.file_name().map(|n| n.to_string_lossy());
 
         if let Some(name) = filename {
-            let drops = if name == "itempoollist.bin" {
+            let name_lower = name.to_ascii_lowercase();
+            let is_pool_list = name_lower == "itempoollist.bin"
+                || name_lower.contains("itempoollist")
+                    && name_lower.ends_with(".bin");
+            let is_pool = !is_pool_list
+                && (name_lower == "itempool.bin"
+                    || name_lower.contains("itempool")
+                        && !name_lower.contains("itempoollist")
+                        && name_lower.ends_with(".bin"));
+            let drops = if is_pool_list {
                 let data = std::fs::read(path)?;
                 extract_drops_from_itempoollist(&data)
-            } else if name == "itempool.bin" {
+            } else if is_pool {
                 let data = std::fs::read(path)?;
                 extract_drops_from_itempool(&data)
             } else {
@@ -610,21 +673,20 @@ mod tests {
 
     #[test]
     fn test_extract_tier_name() {
-        // Function checks for tier prefixes like "Primary_", "Shiny_" etc.
-        // followed by a digit and underscore
+        // NCS keys are lowercase
         assert_eq!(
-            extract_tier_name("Primary_01_SomePool"),
+            extract_tier_name("primary_01_somepool"),
             Some("Primary".to_string())
         );
         assert_eq!(
-            extract_tier_name("Shiny_42_Something"),
+            extract_tier_name("shiny_42_something"),
             Some("Shiny".to_string())
         );
         assert_eq!(
-            extract_tier_name("TrueBoss_1_Boss"),
+            extract_tier_name("trueboss_1_boss"),
             Some("".to_string())
         );
-        assert_eq!(extract_tier_name("SomethingElse"), None);
-        assert_eq!(extract_tier_name("Primary_NoDig"), None);
+        assert_eq!(extract_tier_name("somethingelse"), None);
+        assert_eq!(extract_tier_name("primary_nodig"), None);
     }
 }
