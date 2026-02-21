@@ -374,6 +374,25 @@ pub fn handle_manifest(
                 eprintln!("  Warning: Failed to generate drops manifest: {}", e);
             }
         }
+
+        println!("\n=== Data Tables ===\n");
+        println!("Extracting UE data tables from NCS...");
+        match bl4_ncs::extract_data_tables_from_dir(&ncs_dir) {
+            Ok(dt_manifest) => {
+                let dt_path = output.join("data_tables.json");
+                let dt_json = serde_json::to_string_pretty(&dt_manifest)?;
+                fs::write(&dt_path, &dt_json)?;
+                println!(
+                    "  {} tables, {} rows → {}",
+                    dt_manifest.len(),
+                    dt_manifest.total_rows(),
+                    dt_path.display()
+                );
+            }
+            Err(e) => {
+                eprintln!("  Warning: Failed to extract data tables: {}", e);
+            }
+        }
     }
 
     Ok(())
