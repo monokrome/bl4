@@ -1,0 +1,12 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+Thresher_SupriseAttack	2.500000	75.000000	20.000000	20.000000
+Thresher_SupriseAttack_TRUE	3.500000	150.000000	40.000000	40.000000
+Thresher_FrozenBadass	2.500000	20.000000	20.000000	20.000000
+Thresher_BioArmorBig	2.000000	12.000000	8.000000	6.000000
+Thresher_BioArmorBig_Runnable	2.000000	40.000000	30.000000	15.000000
+Thresher_BioArmorBig_TRUE	3.000000	80.000000	60.000000	25.000000
+Rancher_Male	2.000000	12.000000	12.000000	12.000000
+Rancher_Female		8.000000	8.000000	8.000000
+Thresher_Cargo	1.200000	18.000000	4.000000	4.000000
+Trash_Thresher	2.000000	75.000000	30.000000	30.000000
+Trash_Thresher_TRUE	3.000000	150.000000	40.000000	40.000000

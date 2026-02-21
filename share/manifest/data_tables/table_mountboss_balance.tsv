@@ -1,0 +1,6 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+MountBoss		50.000000	30.000000	0.000000
+MountBoss_TRUE	2.000000	100.000000	60.000000	0.000000
+ArmPillar				
+PhaseTraps		0.650000	0.500000	0.500000
+Limbs		1.800000		

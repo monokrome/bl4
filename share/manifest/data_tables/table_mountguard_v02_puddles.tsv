@@ -1,0 +1,6 @@
+row_name	comment	custom_01	custom_02	custom_03	custom_04
+Puddle_General	C01 = LifeSpan Phase1 // C02 = Radius Phase1	50.000000	600.000000		
+Puddle_Cryo					
+Puddle_Fire					
+Puddle_AerialBreath	C01 = DelayBetweenPuddleSpawns	0.500000			
+Puddle_GroundBreath	C01 = DelayBetweenPuddleSpawns // C02 = InitialDistanceFromBoss // C03 = DistanceIncrement // C04 = MaxDistanceLessEqualFromBoss	0.500000	200.000000	1000.000000	4000.000000

@@ -1,0 +1,14 @@
+row_name	angle	comment	cooldown	custom_01	custom_02	custom_03	custom_04	custom_05	dmgmultiplier	duration	halfheight	radius
+FallingRadiance				7.000000					50.000000			2250.000000
+Tetrahedron	10.000000	c = rot speed angle = lower cooldown	15.000000	30.000000	45.000000	60.000000			35.000000	15.000000		100.000000
+Pylon_Flash		C1 = health multiplier		2.000000					0.010000			10000.000000
+Pylon_Beam				1.000000					0.100000	5.000000		100.000000
+Judgment		Rad= dmg interval c01= lift damage mult		0.010000					0.800000	21.000000		0.100000
+RadiantWall	1250.000000	Rad= Height Angle=width HH=depth CD= dmg intervall	75.000000						25.000000	90.000000	25.000000	380.000000
+DashingRadiance									0.500000		250.000000	350.000000
+Blind			5.000000						0.200000			2000.000000
+Prism		radius = orbitRadius										1300.000000
+Tetrahedron_Judgment	10.000000	c = rot speed angle = lower cooldown	15.000000						1.500000	15.000000		0.000000
+Mines		C01 = MinNumberToSpawn, C02 = MaxNumberToSpawn, C03 = MinRangeFromTarget, C04 = MaxRangeFromTarget, C05 = MinSpacingBetweenThrowLocation		20.000000	25.000000	400.000000	2000.000000	400.000000	25.000000			
+TargetedBeam		C01 = MinPredictionTime, C02 = MaxPredictionTime		0.800000	1.200000				0.750000			100.000000
+LandingAOE				7.000000					10.000000			2250.000000

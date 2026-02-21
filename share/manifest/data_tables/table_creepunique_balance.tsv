@@ -1,0 +1,18 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+Mine_Boss_SkullOrchid		75.000000	30.000000	30.000000
+Mine_Boss_SkullOrchid_TRUE	2.000000	150.000000	60.000000	60.000000
+Boss_Castilleia		50.000000	12.000000	12.000000
+Boss_Castilleia_TRUE	2.000000	100.000000	24.000000	24.000000
+SideCity_ExperimentA	0.500000	12.000000	2.000000	2.000000
+SideCity_ExperimentA_Runnable	0.500000	35.000000	2.000000	2.000000
+SideCity_ExperimentA_TRUE		70.000000	4.000000	4.000000
+SideCity_ExperimentB		20.000000	2.000000	2.000000
+SideCity_ExperimentB_Runnable		35.000000	2.000000	2.000000
+SideCity_ExperimentB_TRUE	2.000000	70.000000	4.000000	4.000000
+Boss_Raid		30.000000		
+Boss_Raid_TRUE	2.000000	60.000000	2.000000	2.000000
+Boss_Queen		30.000000		
+Boss_Queen_TRUE	2.000000	60.000000	2.000000	2.000000
+Tim		15.000000	15.000000	10.000000
+Tim_Flamethrower	0.100000			
+Ore		10.000000	10.000000	10.000000

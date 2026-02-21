@@ -1,0 +1,6 @@
+row_name	comment	custom_01	custom_02	custom_03
+MaxAmount_Veil_And_Corrosion_In_Arena	C01 = Phase1 // C02 = Phase2 // C03 = Phase3	10.000000	14.000000	18.000000
+CanSpawn_Corrosion_If_Zones_LessEqual	C01 = Phase1 // C02 = Phase2 // C03 = Phase3			
+CanSpawn_Veil_If_Corrosion_MoreEqual_DEPRECATED	C01 = Phase1 // C02 = Phase2 // C03 = Phase3	2.000000	4.000000	6.000000
+MaxAmount_Corrosion_Projectiles_To_Throw	C01 = Phase1 // C02 = Phase2 // C03 = Phase3	10.000000	14.000000	18.000000
+MaxAmount_Veil_Projectiles_To_Throw_DEPRECATED	C01 = Phase1 // C02 = Phase2 // C03 = Phase3	4.000000	6.000000	9.000000
