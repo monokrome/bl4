@@ -6,5 +6,7 @@
 mod extract;
 mod types;
 
-pub use extract::{extract_data_tables, extract_data_tables_from_dir, tables_summary_tsv};
+pub use extract::{
+    extract_data_tables, extract_data_tables_from_dir, table_to_tsv, write_data_tables,
+};
 pub use types::{DataTable, DataTableManifest, DataTableRow};

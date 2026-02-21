@@ -1,0 +1,2 @@
+row_name	angle	comment	custom_01	custom_02	custom_03	dmgmultiplier	halfheight	radius
+PillarDestruction_Veil	1.500000	DmgDuration = Veil Duration // Radius = Max Enemy To Spawn // Angle = Delay Before Activation After Spawn // Height = Max Amount Veil In Arena // C_01 = MinRadius // C_02 = MaxRadius // C_03 = MinSpacingPoints	1000.000000	1200.000000	1000.000000	100000.000000	3.000000	2.000000

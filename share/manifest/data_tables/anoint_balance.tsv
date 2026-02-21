@@ -1,0 +1,63 @@
+row_name	comment	duration	maxvalue
+Reload_CompanionDamageCompanionRegen_Damage	Companion Damage	5.000000	0.500000
+Reload_CompanionDamageCompanionRegen_Regen	Companion Regen, Regen is 1/5 value of Damage 	5.000000	0.100000
+GunKill_MoveSpeedReloadSpeed_Move	Movespeed Value	10.000000	0.300000
+GunKill_MoveSpeedReloadSpeed_Reload	Reload Value	10.000000	-0.300000
+ConsecutiveHits_WeaponDamage	Weapon Damage scalar per consecutive hit	0.000000	0.015000
+WeaponCrit_VaultHunterTrait	20% chance to gain Value% Vault Hunter Trait	5.000000	0.650000
+GunKill_SplashDamageSplashRadius		5.000000	0.350000
+KilEnemyl_WeaponDamageReloadSpeed	Stacks up to x5, refreshes duration	15.000000	0.080000
+GunKill_SpecificElementDamage	Start with 5 stacks, lose a stack every 3 seconds, does not refresh, MaxValue is per stack	15.000000	0.150000
+GadgetUsed_Damage		10.000000	0.250000
+GadgetUsed_CompanionDamage	Gains a stack every 3 seconds, Stacks up to x5, does not refresh, MaxValue is per stack	15.000000	0.200000
+TurretActive_CritDamageFirerate	Only rolls on Turrets for Gadgets	0.000000	0.300000
+HeavyWeaponKill_ActionSkillCooldown	Only rolls on HW for Gadgets	5.000000	0.750000
+HeavyWeaponActive_Lifesteal	Only rolls on HW for Gadgets	0.000000	0.250000
+HeavyWeaponEquipped_SpecificElementDamage	Only rolls on HW for Gadgets, Stacks up to x5, gains a stack every 3 seconds, does not refresh	15.000000	0.150000
+TerminalActive_SpecificElementDamage	Only rolls on Terminals for Gadgets	0.000000	0.600000
+TerminalActive_SplashDamageSplashRadius	Only rolls on Terminals for Gadgets	0.000000	0.300000
+TerminalEnd_ElementalDamageElementalResist	Only rolls on Terminals for Gadgets	10.000000	0.200000
+GrenadeThrown_CriticalDamage	Only rolls on Grenades for Gadgets, lasts for 2 critical hits	0.000000	1.000000
+GrenadeKill_ActionSkillDamage	Only rolls on Grenades for Gadgets	10.000000	0.400000
+TurretKill_ActionSkillCooldown	Only rolls on Turrets for Gadgets	10.000000	0.500000
+VsElites_GrenadeDamage	Only rolls on Grenades for Gadgets	0.000000	0.450000
+VsElites_TurretDamage	Only rolls on Turrets for Gadgets	0.000000	0.300000
+ShieldBreak_CritDamage		10.000000	0.750000
+ShieldBreak_ElementalResist		10.000000	0.500000
+ShieldBreak_ShieldCapacityAmpDamage	next shot deals % of shield capacity as amp damage	0.000000	2.000000
+ShieldBreak_ElementalPower		10.000000	0.200000
+HealthFull_SplashDamageSplashRadius		0.000000	0.300000
+VsElites_DamageReduction		0.000000	0.250000
+Execute_WeaponDamage		10.000000	0.200000
+VsOrder_Damage		0.000000	0.350000
+VsOrder_DamageReduction		0.000000	0.200000
+KillOrder_ActionSkillCooldownGadgetCooldown		5.000000	0.250000
+VsRipper_Damage		0.000000	0.350000
+VsRipper_DamageReduction		0.000000	0.200000
+KillRipper_ActionSkillCooldownGadgetCooldown		5.000000	0.250000
+VsCreature_Damage		0.000000	1.000000
+VsCreature_DamageReduction		0.000000	1.000000
+KillCreature_ActionSkillCooldownGadgetCooldown		5.000000	0.250000
+VsHighHealth_ActionSkillDamage	Enemies over 70% health	0.000000	0.400000
+VsHighHealth_Damage	+50% damage, scales health threshold: enemies over (1-Value)% health	0.000000	0.250000
+RallyCharge_Overshield	Only rolls on Rally Shield	0.000000	0.300000
+RallyCharge_ElementalPowerElementalResist	Only rolls on Rally Shield	5.000000	0.300000
+RallyCharge_VaulthunterTrait	Only rolls on Rally Shield	15.000000	0.250000
+RallyCharge_ElementalPower	Only rolls on Rally Shield	5.000000	0.400000
+ArmorGained_Overshield	Only rolls on Armor Shield	0.000000	1.000000
+ArmorGained_ElementalPowerElementalResist	Only rolls on Armor Shield	5.000000	0.250000
+ArmorGained_VaultHunterTrait	Only rolls on Armor Shield	15.000000	0.300000
+ArmorGained_ElementalPower	Only rolls on Armor Shield	10.000000	0.250000
+ActionSkillStart_ElementalPower		10.000000	0.250000
+ActionSkillStart_GunDamage		10.000000	0.400000
+ActionSkillStart_GadgetCooldown		15.000000	0.400000
+ActionSkillStart_VaultHunterTrait		10.000000	0.600000
+ActionSkillActive_SpecificElementDamage		0.000000	0.750000
+ActionSkillActive_CompanionDamage		0.000000	0.500000
+ActionSkillActive_GadgetPotency		0.000000	0.400000
+ActionSkillActive_VaultHunterTrait		0.000000	0.400000
+ActionSkillEnd_CritDamage		10.000000	0.500000
+ActionSkillEnd_VaultHunterTrait		15.000000	0.500000
+ActionSkillEnd_ElementalDamage		10.000000	0.600000
+ActionSkillKill_GadgetCooldown		5.000000	0.500000
+ActionSkillKill_Damage		5.000000	0.300000

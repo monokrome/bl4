@@ -1,0 +1,18 @@
+row_name	angle	comment	cooldown	custom_01	custom_02	custom_03	custom_04	custom_05	custom_06	custom_07	custom_08	dmgmultiplier	duration	halfheight	radius
+Resonance		C01=Warmup C2,3,4 = rot speed c5=ticket c6=cooldown ultimate c7=crystal cluster radius c8=tetra to spawn per center	37.000000	45.000000	31.000000	30.000000	30.000000	3.000000	25.000000	1000.000000	4.000000	10.000000			750.000000
+RippleCrash		C01=Warmup C2= Delay Before Blast c3= ticket	45.000000	100.000000	2.500000	5.000000									
+MegaBeam	300.000000	C01=Warmup c2=ticket c3= cooldown otherphases c4= BeamBall warning delay	7.000000		2.000000	5.000000	0.350000						30.000000	750.000000	55.000000
+Prison	2500.000000	Rad= Height Angle=width HH=depth CD= dmg intervall c2=initial move time c3= additional move time c4=TimeBeforeSpawn c5=spawningtime c6=WarningDMGMult	90.000000	60.000000	0.250000	0.150000	3.500000	1.500000	1.000000			7.000000	8.000000	25.000000	380.000000
+GodRay		c2 = SpawnCrystalDelay	120.000000		15.000000							0.500000	30.000000	1750.000000	5000.000000
+TetraPort			30.000000	37.000000								8.000000			3300.000000
+Volley	750.000000	angle = resonance radius, C2= HomingDelay c3=velocityScale c4=TooCloseRange	10.000000	20.000000	0.500000	1.000000	2500.000000					8.000000	25.000000		350.000000
+Grab		DmgMult=GrabBlast;Radiius= sphere trap radius, c1= warmup, c2= Grab grip, c3=GrabSlam c4=attack range	15.000000		0.100000	0.500000	2000.000000					0.700000			700.000000
+Slam		DmgMult=GrabBlast;Radiius= sphere trap radius, c1= warmup, c2= Grab grip, c3=GrabSlam c4=attack range	5.000000		0.100000	0.500000	2000.000000					0.500000			700.000000
+Blast												0.500000		5000.000000	500.000000
+HolySandstorm												0.350000			5250.000000
+Ultimate			120.000000									0.150000	60.000000	100.000000	6500.000000
+TailGrab		c2=isInRange	35.000000	60.000000	3750.000000							0.100000		4250.000000	300.000000
+LeapBack	90.000000		60.000000	15.000000								0.000000		1000.000000	2000.000000
+MegaTetra		c1 = scale mult volley c2= scale mult prism c3= rotation speed		25.000000	1.000000	60.000000							6.000000		
+PrismPlatform		c2= max num megatetra c3 = rotation speed  c4= resonance duration c5= fusetime			1.000000	75.000000	45.000000	1.500000				5.000000	10.000000		500.000000
+GodRayCrystal		c1= pulse delay c2= Zoffset		5.000000	25.000000								5.000000		

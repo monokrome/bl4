@@ -43,7 +43,7 @@ mod unpack;
 // Re-export main types
 pub use content::{Content as NcsContent, Header as NcsContentHeader};
 pub use data_table::{
-    extract_data_tables, extract_data_tables_from_dir, tables_summary_tsv, DataTable,
+    extract_data_tables, extract_data_tables_from_dir, table_to_tsv, write_data_tables, DataTable,
     DataTableManifest, DataTableRow,
 };
 pub use drops::{

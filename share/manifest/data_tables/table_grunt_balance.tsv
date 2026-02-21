@@ -1,0 +1,8 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+Pistol				
+SMG				
+Shotgun				
+Assault	1.250000	1.250000	1.250000	1.250000
+Badass	1.500000	4.500000	2.500000	2.500000
+Corrupt	2.000000	8.000000	1.200000	1.750000
+BossAdd	0.100000	0.250000	0.250000	0.250000

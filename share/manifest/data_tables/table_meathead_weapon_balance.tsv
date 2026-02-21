@@ -1,0 +1,5 @@
+row_name	ai_accuracy	ai_accuracy_max	ai_accuracy_min	burstcount_value	burstdelay_value	bursttime_value	damage_scale	firerate_value	firerateaccelduration	maxdesiredrange	mindesiredrange	projectilespeed	radius_value	spread_value
+Chaingun	2.000000		1.000000	20.000000		4.000000		12.000000	1.000000			10000.000000		
+Rocket	3.000000	1.200000	1.000000	10.000000		2.500000	3.000000	3.500000				3100.000000	150.000000	2.000000
+Flamethrower			1.000000	10.000000		5.000000				1200.000000	400.000000	1.000000		
+GrenadeLauncher	1.000000	1.200000	1.000000	3.000000	3.000000	2.500000	3.000000	3.500000					400.000000	2.000000

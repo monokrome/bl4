@@ -1,0 +1,5 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+ShatterGuard_Normal	1.300000	36.666000	36.666000	26.666000
+ShatterGuard_TRUE	2.600000	72.000000	72.000000	52.000000
+MineField	30.000000	10.000000	10.000000	10.000000
+PangolinBasic	0.750000	0.750000	0.750000	0.750000

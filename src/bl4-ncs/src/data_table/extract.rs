@@ -159,16 +159,66 @@ pub fn extract_data_tables_from_dir<P: AsRef<std::path::Path>>(
     ))
 }
 
-/// Generate a summary TSV of all data tables.
-pub fn tables_summary_tsv(manifest: &DataTableManifest) -> String {
-    let mut tsv = String::from("key\tname\trow_struct\trow_count\n");
+/// Convert a single DataTable to TSV.
+///
+/// Columns are `row_name` followed by the sorted union of all field names
+/// across all rows. Missing fields produce empty cells.
+pub fn table_to_tsv(table: &DataTable) -> String {
+    use std::collections::BTreeSet;
+
+    let columns: BTreeSet<&str> = table
+        .rows
+        .iter()
+        .flat_map(|r| r.fields.keys().map(|k| k.as_str()))
+        .collect();
+
+    let columns: Vec<&str> = columns.into_iter().collect();
+
+    let mut tsv = String::from("row_name");
+    for col in &columns {
+        tsv.push('\t');
+        tsv.push_str(col);
+    }
+    tsv.push('\n');
+
+    for row in &table.rows {
+        tsv.push_str(&row.row_name);
+        for col in &columns {
+            tsv.push('\t');
+            if let Some(val) = row.fields.get(*col) {
+                tsv.push_str(val);
+            }
+        }
+        tsv.push('\n');
+    }
+
+    tsv
+}
+
+/// Write all data tables as per-table TSV files to a directory.
+///
+/// Creates one `{key}.tsv` file per table, plus an `index.tsv` summary.
+pub fn write_data_tables<P: AsRef<std::path::Path>>(
+    manifest: &DataTableManifest,
+    dir: P,
+) -> Result<(), std::io::Error> {
+    let dir = dir.as_ref();
+    std::fs::create_dir_all(dir)?;
 
     let mut keys: Vec<&str> = manifest.tables.keys().map(|s| s.as_str()).collect();
     keys.sort();
 
-    for key in keys {
-        let table = &manifest.tables[key];
-        tsv.push_str(&format!(
+    for key in &keys {
+        let table = &manifest.tables[*key];
+        let path = dir.join(format!("{}.tsv", key));
+        std::fs::write(&path, table_to_tsv(table))?;
+    }
+
+    // Write index summary
+    let mut index = String::from("key\tname\trow_struct\trow_count\n");
+    for key in &keys {
+        let table = &manifest.tables[*key];
+        index.push_str(&format!(
             "{}\t{}\t{}\t{}\n",
             table.key,
             table.name,
@@ -176,8 +226,9 @@ pub fn tables_summary_tsv(manifest: &DataTableManifest) -> String {
             table.rows.len()
         ));
     }
+    std::fs::write(dir.join("index.tsv"), index)?;
 
-    tsv
+    Ok(())
 }
 
 #[cfg(test)]
@@ -288,6 +339,42 @@ mod tests {
         assert_eq!(table.name, "My_Table");
         assert_eq!(table.rows.len(), 1);
         assert_eq!(table.rows[0].fields.get("cost_normal"), Some(&"600".to_string()));
+    }
+
+    #[test]
+    fn test_table_to_tsv() {
+        let table = DataTable {
+            key: "test".to_string(),
+            name: "Test".to_string(),
+            row_struct: String::new(),
+            rows: vec![
+                DataTableRow {
+                    row_name: "Alpha".to_string(),
+                    fields: {
+                        let mut f = HashMap::new();
+                        f.insert("damage".to_string(), "100".to_string());
+                        f.insert("speed".to_string(), "5.0".to_string());
+                        f
+                    },
+                },
+                DataTableRow {
+                    row_name: "Beta".to_string(),
+                    fields: {
+                        let mut f = HashMap::new();
+                        f.insert("damage".to_string(), "200".to_string());
+                        // speed missing — should produce empty cell
+                        f.insert("comment".to_string(), "high damage".to_string());
+                        f
+                    },
+                },
+            ],
+        };
+
+        let tsv = table_to_tsv(&table);
+        let lines: Vec<&str> = tsv.lines().collect();
+        assert_eq!(lines[0], "row_name\tcomment\tdamage\tspeed");
+        assert_eq!(lines[1], "Alpha\t\t100\t5.0");
+        assert_eq!(lines[2], "Beta\thigh damage\t200\t");
     }
 
     #[test]

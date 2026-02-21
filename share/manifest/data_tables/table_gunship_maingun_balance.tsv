@@ -1,0 +1,2 @@
+row_name	ai_accuracy	bursttime_value	firerate_value	firerateaccelduration	maxdesiredrange	mindesiredrange	projectilespeed	spread_value
+MainGun	3.250000	3.000000	15.000000	1.000000	7250.000000	750.000000	10000.000000	9.000000

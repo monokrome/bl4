@@ -1,0 +1,15 @@
+row_name	comment	cooldown	custom_01	custom_02	custom_03	custom_04	dmgmultiplier	duration	halfheight	radius
+WallProjectiles	C1= warmup c2=cooldown round 3	8.000000	8.000000	8.000000			0.700000			
+PhaseTraps	C1 = warmup c2 = ActivationDelay	12.000000	3.000000	2.500000						
+Limbs	dur = fuse duration c1= warmup c2=successTime c3=tutoticketTimer c4=limbProjDamage		15.000000	2.000000	7.000000	25.000000	2.000000	3.000000		625.000000
+LimbsSpawner	cooldown=DelayReset duration= spawn delay c1=numTotalTuto c2=numTotalAfterTuto	7.000000	2.000000	4.000000				11.000000		
+LimbsSuicide	c2= cocoonTicket c3=SuicideTicket			3.000000	8.000000		1.300000			
+ArmSlam		8.000000					1.600000		2500.000000	250.000000
+ArmSlamPortal							0.100000			325.000000
+ArmSlamSwipe										
+WorldShatter_Area								20.000000	100.000000	2350.000000
+WorldShatter_Explosion							1000.000000	0.800000		3500.000000
+EridiumFog	C01 = Scalar Increase Interval // C02 = Damage Scalar Increase Per Interval // C03 = Max Scalar Increase		0.500000	0.300000	3.000000		0.100000			
+ShivaProjectile							0.500000			
+LimbProjectile							1.200000			
+UltimateOrb							0.300000			500.000000

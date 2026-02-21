@@ -1,0 +1,8 @@
+row_name	about	infamypoints
+MissionMainMinor	NexusSerialized, 8B38F87F485A4A267371CFB6046F277C, Main missions that are short, are mostly filler/transition content, or are of lowest plot significance, or would 'aggravate' the antagonist the least.	15.000000
+MissionMainNormal	NexusSerialized, EF5C60EA4C7C000E34CCFF9B7E2D931F, Normal main missions.	40.000000
+MissionMainCapstone	NexusSerialized, 1F0CD3DF414FFF8842169DBFC45165E3, Only the most important main mission in a given zone; the MOST important, most escalating action in that area.	200.000000
+SideMissionMinor	NexusSerialized, 3B5905AB4C6B23E94906389AB23A2198, Side missions with reduced importance, content, or length.	10.000000
+SideMissionNormal	NexusSerialized, F33D9E984A8264A5EC554AB85E381175, Normal side missions.	25.000000
+POAMinor	NexusSerialized, BB70AE5C4764BA408264DBA613A441F9, One-time POA captures that have reduced significance or lower perceived 'aggression' against the antagonist.	15.000000
+POANormal	NexusSerialized, 187FEA434FD54011811849813CC90699, Normal one-time POA captures.	30.000000
