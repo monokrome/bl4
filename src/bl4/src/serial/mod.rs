@@ -31,6 +31,7 @@ pub enum Element {
     Corrosive, // ID 5
     Shock,     // ID 8
     Radiation, // ID 9
+    Sonic,     // ID unknown — confirmed in balance schemas, no serial data yet
     Cryo,      // ID 13
     Fire,      // ID 14
 }
@@ -56,6 +57,7 @@ impl Element {
             Element::Corrosive => "Corrosive",
             Element::Shock => "Shock",
             Element::Radiation => "Radiation",
+            Element::Sonic => "Sonic",
             Element::Cryo => "Cryo",
             Element::Fire => "Fire",
         }
