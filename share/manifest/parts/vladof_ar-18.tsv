@@ -1,4 +1,5 @@
 index	name
+1	part_barrel_01_lucian
 2	part_body
 3	part_body_a
 4	part_body_b
@@ -60,9 +61,14 @@ index	name
 60	part_secondary_ammo_sg
 61	part_secondary_ammo_sm
 62	part_secondary_ammo_sr
+63	comp_05_legendary_lucian
+64	part_barrel_01_wombocombo
+65	comp_05_legendary_wombocombo
 66	part_underbarrel_07_acc_vis
 67	part_underbarrel_07_b
 68	comp_05_legendary
+69	part_underbarrel_07_dualdamage
+70	part_barrel_01_dualdamage
 71	part_barrel_licensed_ted_combo
 72	part_barrel_01_a
 73	part_barrel_01_b
@@ -80,6 +86,13 @@ index	name
 85	part_underbarrel_06_malswitch
 86	part_underbarrel_07_secondbarrel
 87	part_underbarrel_02_shotgun
+88	comp_05_legendary_dualdamage
+89	part_underbarrel_overdrive_acc
+90	part_underbarrel_wf_overdrive
+91	part_underbarrel_scrap_acc
+92	part_underbarrel_02_wf_scrapcannon
+93	comp_05_legendary_wf
+94	part_barrel_wf
 95	comp_01_common
 96	comp_02_uncommon
 97	comp_03_rare

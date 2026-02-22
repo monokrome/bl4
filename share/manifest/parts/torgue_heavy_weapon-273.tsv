@@ -32,7 +32,11 @@ index	name
 31	comp_02_uncommon
 32	comp_03_rare
 33	comp_04_epic
+34	comp_05_legendary_javelin
+35	part_barrel_javelin
 36	comp_05_legendary_ravenfire
 37	part_unique_barrel_01_sidewinder
 38	comp_05_legendary_sidewinder
+39	comp_02_uncommon_unique_heavyturret
 40	part_unique_barrel_02_ravenfire
+41	part_barrel_01_ted_sg_heavyturret

@@ -1,4 +1,5 @@
 index	name
+1	comp_05_legendary_fisheye
 2	part_body
 3	part_body_a
 4	part_body_b
@@ -69,7 +70,14 @@ index	name
 69	part_mag_torgue_normal
 70	part_mag_torgue_sticky
 71	part_mag_03_tor
+72	part_barrel_02_symmetry
 73	comp_05_legendary
+74	part_mag_01_fisheye
+75	part_barrel_01_fisheye
+76	comp_05_legendary_symmetry
+77	part_underbarrel_03_seamstress
+78	part_barrel_01_seamstress
+79	comp_05_legendary_seamstress
 95	comp_01_common
 96	comp_02_uncommon
 97	comp_03_rare

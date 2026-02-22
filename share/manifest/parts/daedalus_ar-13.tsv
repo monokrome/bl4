@@ -55,6 +55,7 @@ index	name
 54	part_grip_02
 55	part_grip_03
 56	part_grip_04_hyp
+57	part_barrel_02_lumberjack
 58	part_underbarrel_04_atlas_ball
 59	part_underbarrel_04_atlas
 60	part_underbarrel_06_malswitch
@@ -69,6 +70,7 @@ index	name
 69	part_body_mag_smg
 70	part_body_mag_sg
 71	part_body_mag_sr
+72	comp_05_legendary_lumberjack
 73	comp_05_legendary_star_helix
 74	comp_ds_as_phaseshard_specter_weapon
 75	part_underbarrel_om_spacelaser
@@ -78,6 +80,8 @@ index	name
 79	part_shield_ricochet
 80	part_shield_ammo
 81	part_shield_amp
+84	part_barrel_01_firstimpression
+85	comp_05_legendary_firstimpression
 95	comp_01_common
 96	comp_02_uncommon
 97	comp_03_rare

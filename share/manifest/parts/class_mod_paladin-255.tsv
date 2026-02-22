@@ -1,4 +1,19 @@
 index	name
+1	body_02
+2	body_03
+3	body_04
+4	body_05
+5	body_06
+6	body_07
+7	body_08
+8	body_09
+9	body_10
+10	leg_body_01
+11	leg_body_02
+12	leg_body_03
+13	leg_body_04
+14	leg_body_05
+15	leg_body_06
 16	passive_blue_2_3_tier_4
 17	passive_blue_2_3_tier_3
 18	passive_blue_2_3_tier_2
@@ -48,6 +63,8 @@ index	name
 62	passive_green_1_3_tier_1
 63	passive_green_1_2_tier_1
 64	passive_green_1_1_tier_1
+65	body_01
+66	leg_body_raid1
 67	comp_04_epic
 68	comp_03_rare
 69	comp_02_uncommon
@@ -520,3 +537,4 @@ index	name
 536	passive_blue_right_5_3_tier_5
 537	passive_blue_right_6_1_tier_5
 538	passive_blue_right_6_3_tier_5
+539	comp_05_legendary_raid1

@@ -1,4 +1,5 @@
 index	name
+1	comp_05_legendary_linebacker
 2	part_body
 3	part_body_a
 4	part_body_b
@@ -53,6 +54,9 @@ index	name
 53	part_secondary_ammo_ar
 54	part_secondary_ammo_sr
 55	comp_05_legendary
+56	part_barrel_02_leadballoon
+57	comp_05_legendary_leadballoon
+58	part_barrel_01_linebacker
 61	part_barrel_01_a
 62	part_barrel_01_b
 63	part_barrel_01_c

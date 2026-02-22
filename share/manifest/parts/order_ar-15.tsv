@@ -1,4 +1,6 @@
 index	name
+1	part_scope_02_lens_02_gmr
+2	part_barrel_02_gmr
 3	part_body_a
 4	part_body_b
 5	part_body_c
@@ -68,8 +70,11 @@ index	name
 69	part_underbarrel_05_ammoswitcher
 70	part_foregrip_01
 71	part_mag_03_tor
+72	part_barrel_02_goalkeeper
 73	comp_05_legendary
 74	part_body
+75	comp_05_legendary_gmr
+76	comp_05_legendary_goalkeeper
 95	comp_01_common
 96	comp_02_uncommon
 97	comp_03_rare

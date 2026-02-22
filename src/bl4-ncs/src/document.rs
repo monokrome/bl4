@@ -205,20 +205,19 @@ pub fn extract_all_entry_names(doc: &Document) -> HashMap<u32, String> {
 /// Extract cross-category shared parts from named dependency tables
 ///
 /// Parts in dep tables like "element", "stat_group2", "stat_group3", etc.
-/// are shared across all item categories. They come from entries without
-/// their own serialindex AND whose key doesn't match any categorized entry
-/// (extension entries belong to their category, not to the shared pool).
+/// are shared across all item categories. They come from extension entries
+/// (no serialindex) whose dep_entries reference named dep tables.
+///
+/// Note: extension entries may also contribute per-category parts (captured
+/// by `extract_categorized_parts`). The overlap is intentional — the decoder
+/// uses per-category lookup first, with shared parts as fallback.
 pub fn extract_shared_parts(doc: &Document) -> Vec<SharedPart> {
-    let category_keys = build_category_key_map(doc);
     let mut results = Vec::new();
 
     for table in doc.tables.values() {
         for record in &table.records {
             for entry in &record.entries {
                 if extract_index_from_value(&entry.value).is_some() {
-                    continue;
-                }
-                if category_keys.contains_key(&entry.key) {
                     continue;
                 }
 
@@ -532,7 +531,7 @@ mod tests {
                 "inv".to_string(),
                 Table {
                     name: "inv".to_string(),
-                    deps: vec!["dep".to_string()],
+                    deps: vec!["inv_comp".to_string()],
                     records: vec![
                         Record {
                             tags: vec![],
@@ -540,7 +539,7 @@ mod tests {
                                 key: "jak_ps".to_string(),
                                 value: make_serialindex_value(3),
                                 dep_entries: vec![DepEntry {
-                                    dep_table_name: String::new(),
+                                    dep_table_name: "barrel".to_string(),
                                     dep_index: 0,
                                     key: "part_barrel_01".to_string(),
                                     value: make_serialindex_value(7),
@@ -552,12 +551,20 @@ mod tests {
                             entries: vec![Entry {
                                 key: "jak_ps".to_string(),
                                 value: Value::Null,
-                                dep_entries: vec![DepEntry {
-                                    dep_table_name: String::new(),
-                                    dep_index: 0,
-                                    key: "comp_05_legendary_seventh_sense".to_string(),
-                                    value: make_serialindex_value(72),
-                                }],
+                                dep_entries: vec![
+                                    DepEntry {
+                                        dep_table_name: "barrel".to_string(),
+                                        dep_index: 0,
+                                        key: "part_barrel_quickdraw".to_string(),
+                                        value: make_serialindex_value(72),
+                                    },
+                                    DepEntry {
+                                        dep_table_name: "element".to_string(),
+                                        dep_index: 0,
+                                        key: "element_fire".to_string(),
+                                        value: make_serialindex_value(98),
+                                    },
+                                ],
                             }],
                         },
                     ],
@@ -566,13 +573,16 @@ mod tests {
         };
 
         let parts = extract_categorized_parts(&doc);
-        assert_eq!(parts.len(), 2);
+        assert_eq!(parts.len(), 3);
         assert!(parts.iter().all(|p| p.category == 3));
         assert!(parts.iter().any(|p| p.name == "part_barrel_01" && p.index == 7));
-        assert!(parts.iter().any(|p| p.name == "comp_05_legendary_seventh_sense" && p.index == 72));
+        assert!(parts.iter().any(|p| p.name == "part_barrel_quickdraw" && p.index == 72));
+        assert!(parts.iter().any(|p| p.name == "element_fire" && p.index == 98));
 
         let shared = extract_shared_parts(&doc);
-        assert!(shared.is_empty(), "extension entries should not appear as shared parts");
+        assert_eq!(shared.len(), 2, "extension dep_table entries should appear as shared");
+        assert!(shared.iter().any(|p| p.dep_table == "barrel" && p.name == "part_barrel_quickdraw"));
+        assert!(shared.iter().any(|p| p.dep_table == "element" && p.name == "element_fire"));
     }
 
     #[test]

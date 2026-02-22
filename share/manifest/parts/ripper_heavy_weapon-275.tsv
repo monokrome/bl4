@@ -1,4 +1,5 @@
 index	name
+1	part_barrel_01_streamer
 2	part_barrel_01_dxa
 3	part_barrel_01_axd
 4	part_barrel_02_dxc
@@ -27,3 +28,8 @@ index	name
 27	comp_02_uncommon
 28	comp_03_rare
 29	comp_04_epic
+30	part_barrel_02_discjockey
+31	comp_05_legendary_discjockey
+32	comp_05_legendary_streamer
+35	part_barrel_02_jetset
+36	comp_05_legendary_jetset

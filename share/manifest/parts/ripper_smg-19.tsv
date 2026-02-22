@@ -1,4 +1,5 @@
 index	name
+1	comp_05_legendary_prince
 2	part_body
 3	part_body_a
 4	part_body_b
@@ -14,9 +15,11 @@ index	name
 14	part_mag_02
 15	part_mag_03_tor
 16	part_mag_04_cov
+17	part_barrel_02_prince
 18	comp_05_legendary
 19	comp_05_legendary_hellfire
 20	part_barrel_01_hellfire
+21	part_underbarrel_05_roil
 22	part_mag_ted_thrown_01
 23	part_mag_ted_thrown_02
 24	part_mag_ted_thrown_03_tor
@@ -51,6 +54,8 @@ index	name
 53	part_underbarrel_04_atlas_ball
 54	part_underbarrel_05_ammoswitcher
 55	part_foregrip_02
+56	comp_05_legendary_roil
+57	part_barrel_01_roil
 62	part_secondary_ammo_sg
 63	part_secondary_ammo_ar
 64	part_secondary_ammo_ps

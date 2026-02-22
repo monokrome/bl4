@@ -1,4 +1,5 @@
 index	name
+1	comp_05_legendary_boomslang
 2	part_body
 3	part_body_a
 4	part_body_b
@@ -69,6 +70,11 @@ index	name
 69	part_barrel_licensed_hyp
 70	part_secondary_ammo_sg
 71	comp_05_legendary
+72	part_barrel_ballista
+73	comp_05_legendary_ballista
+74	part_barrel_02_boomslang
+75	part_barrel_truck
+76	comp_05_legendary_truck
 95	comp_01_common
 96	comp_02_uncommon
 97	comp_03_rare
