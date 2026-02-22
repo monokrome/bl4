@@ -1,4 +1,5 @@
 index	name
+1	comp_moxxi_weapon
 2	part_body
 3	part_body_a
 4	part_body_b
@@ -69,7 +70,14 @@ index	name
 69	part_underbarrel_04_atlas_ball
 70	part_foregrip_01
 71	comp_zane_weapon
+72	part_barrel_quickdraw
+73	comp_cine_weapon
 74	comp_05_legendary
+75	part_barrel_02_kingsgambit
+76	comp_05_legendary_kingsgambit
+77	part_barrel_01_phantom_flame
+78	comp_05_legendary_phantom_flame
+79	comp_05_legendary_quickdraw
 80	part_barrel_01_seventh_sense
 81	comp_05_legendary_seventh_sense
 95	comp_01_common

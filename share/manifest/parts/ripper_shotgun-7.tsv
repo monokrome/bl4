@@ -1,4 +1,5 @@
 index	name
+1	part_barrel_02_goremaster
 2	part_body
 3	part_body_a
 4	part_body_b
@@ -14,6 +15,10 @@ index	name
 14	part_mag_03_tor
 15	part_mag_01
 16	part_mag_02
+17	part_mag_goldengod
+18	part_barrel_goldengod
+19	comp_05_legendary_goldengod
+20	comp_05_legendary_goremaster
 22	part_mag_ted_thrown_01
 23	part_mag_ted_thrown_02
 24	part_mag_ted_thrown_03_tor

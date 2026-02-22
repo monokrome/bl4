@@ -1,4 +1,5 @@
 index	name
+1	comp_05_legendary_onslaught
 2	part_body
 3	part_body_a
 4	part_body_b
@@ -63,8 +64,12 @@ index	name
 63	part_secondary_ammo_sg
 64	part_secondary_ammo_ar
 65	part_secondary_ammo_sr
+66	part_barrel_01_kaoson
+67	comp_05_legendary_kaoson
+68	part_barrel_01_onslaught
 69	part_barrel_02_d_c
 70	part_barrel_02_c_d
+71	part_mag_torgue_sticky_beegun
 72	part_barrel_01_a
 73	part_barrel_01_b
 74	part_barrel_01_c
@@ -79,6 +84,9 @@ index	name
 83	part_barrel_licensed_ted_mirv
 84	part_barrel_licensed_ted_combo
 85	part_barrel_licensed_hyp
+86	part_mag_torgue_normal_beegun
+87	part_barrel_beegun
+88	comp_05_legendary_beegun
 95	comp_01_common
 96	comp_02_uncommon
 97	comp_03_rare

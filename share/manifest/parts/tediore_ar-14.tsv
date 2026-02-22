@@ -1,4 +1,5 @@
 index	name
+1	part_mag_01_chuck
 2	part_body
 3	part_body_a
 4	part_body_b
@@ -31,8 +32,12 @@ index	name
 31	part_scope_acc_s01_l02_b
 32	part_scope_acc_s02_l02_a
 33	part_scope_acc_s02_l02_b
+34	part_barrel_02_chuck
+35	comp_05_legendary_chuck
+36	comp_05_legendary_dividedfocus
 37	comp_05_legendary
 38	comp_nudge_weapon
+39	part_barrel_01_dividedfocus
 40	part_barrel_licensed_ted_replicator_multi
 41	part_grip_05a_ted_legs
 42	part_grip_05b_ted_jav
@@ -42,6 +47,8 @@ index	name
 46	part_grip_02
 47	part_grip_03
 48	part_grip_05a_ted_legs_mirv
+49	part_mag_torgue_sticky_murder
+50	part_mag_torgue_normal_murder
 51	part_barrel_01_a
 52	part_barrel_01_b
 53	part_barrel_01_c
@@ -67,6 +74,8 @@ index	name
 73	part_secondary_ammo_sg
 74	part_secondary_ammo_ps
 75	part_secondary_ammo_sr
+76	part_barrel_01_murder
+77	comp_05_legendary_murder
 82	part_mag_01
 83	part_mag_02
 84	part_mag_03_tor

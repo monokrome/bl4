@@ -7,6 +7,10 @@ index	name
 6	comp_03_rare
 7	comp_04_epic
 8	comp_05_legendary
+9	comp_05_legendary_rubber
+10	part_payload_unique_rubber
 11	part_payload_unique_buoy
 12	comp_05_legendary_buoy
 13	part_02_divider_02_seeker_borg
+14	part_payload_unique_transmission
+15	comp_05_legendary_transmission

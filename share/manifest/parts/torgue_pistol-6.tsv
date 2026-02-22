@@ -1,4 +1,5 @@
 index	name
+1	comp_05_legendary_roach
 2	part_body
 3	part_body_a
 4	part_body_b
@@ -49,7 +50,12 @@ index	name
 49	part_secondary_ammo_sg
 50	part_secondary_ammo_ar
 51	part_secondary_ammo_sr
+52	part_barrel_02_queensrest
+53	comp_05_legendary_queensrest
+54	part_barrel_01_roach
 55	comp_05_legendary
+58	part_barrel_02_breadth
+59	comp_05_legendary_breadth
 60	part_barrel_01_a
 61	part_barrel_01_b
 62	part_barrel_01_c

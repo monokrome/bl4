@@ -1,4 +1,5 @@
 index	name
+1	comp_05_legendary_bugbear
 2	comp_05_legendary
 3	part_body_a
 4	part_body_b
@@ -50,6 +51,11 @@ index	name
 50	part_secondary_ammo_ps
 51	part_secondary_ammo_sr
 52	part_body
+53	comp_brenda_weapon
+54	part_barrel_02_bugbear
+55	part_barrel_coldshoulder
+56	comp_05_legendary_coldshoulder
+57	part_foregrip_01_pt
 58	part_barrel_01_a
 59	part_barrel_01_b
 60	part_barrel_01_c
@@ -67,6 +73,10 @@ index	name
 72	part_underbarrel_02_shotgun
 73	part_underbarrel_04_atlas
 74	part_foregrip_01
+75	part_foregrip_03_pt
+76	part_foregrip_02_pt
+77	part_barrel_potatothrower
+78	comp_05_legendary_potatothrower
 95	comp_01_common
 96	comp_02_uncommon
 97	comp_03_rare

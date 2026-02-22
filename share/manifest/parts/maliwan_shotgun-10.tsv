@@ -55,7 +55,10 @@ index	name
 54	part_secondary_ammo_ps
 55	part_secondary_ammo_sr
 56	part_barrel_01_kaleidosplode
+57	comp_05_legendary_sweet_embrace
+58	part_barrel_02_sweet_embrace
 59	part_foregrip_04
+62	part_barrel_02_mantra
 63	part_barrel_01_a
 64	part_barrel_01_b
 65	part_barrel_01_c
@@ -73,6 +76,7 @@ index	name
 77	part_mag_torgue_normal
 78	part_mag_torgue_sticky
 79	part_mag_03_tor
+80	comp_05_legendary_mantra
 95	comp_01_common
 96	comp_02_uncommon
 97	comp_03_rare

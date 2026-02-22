@@ -50,6 +50,13 @@ index	name
 49	part_foregrip_02
 50	part_underbarrel_03_mine
 51	part_underbarrel_04_atlas_ball
+52	part_barrel_01_bod
+53	comp_05_legendary_bod
+54	part_barrel_heartgun
+55	comp_05_legendary_heartgun
+56	part_underbarrel_01_misslaser
+57	part_barrel_misslaser
+58	comp_05_legendary_misslaser
 61	part_barrel_01_a
 62	part_barrel_01_b
 63	part_barrel_01_c

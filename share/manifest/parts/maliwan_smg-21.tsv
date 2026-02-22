@@ -57,6 +57,11 @@ index	name
 56	part_secondary_ammo_ps
 57	part_secondary_ammo_sr
 58	comp_01_common
+59	part_barrel_01_ohmigot
+60	comp_05_legendary_ohmigot
+61	part_barrel_02_d_plasmacoil
+62	part_barrel_02_plasmacoil
+63	comp_05_legendary_plasmacoil
 64	comp_amara_weapon
 65	part_barrel_01_a
 66	part_barrel_01_b
@@ -72,6 +77,8 @@ index	name
 76	part_barrel_licensed_ted_mirv
 77	part_barrel_licensed_ted_combo
 78	part_barrel_licensed_hyp
+82	part_barrel_02_firework
+83	comp_05_legendary_firework
 96	comp_02_uncommon
 97	comp_03_rare
 98	comp_04_epic

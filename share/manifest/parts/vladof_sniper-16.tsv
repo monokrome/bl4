@@ -1,4 +1,5 @@
 index	name
+1	part_barrel_02_finnty
 2	part_body
 3	part_body_d
 4	part_body_a
@@ -63,9 +64,13 @@ index	name
 63	part_secondary_ammo_sg
 64	part_secondary_ammo_ar
 65	part_secondary_ammo_ps
+66	comp_05_legendary_finnty
+67	comp_05_legendary_stopgap
 68	part_barrel_crowdsourced
 69	comp_05_legendary_crowdsourced
 70	comp_05_legendary
+71	part_grip_04_hyp_finnty
+72	part_barrel_01_stopgap
 73	part_barrel_01_a
 74	part_barrel_01_b
 75	part_barrel_01_c

@@ -1,4 +1,5 @@
 index	name
+1	part_barrel_01_zipgun
 2	part_body
 3	part_body_a
 4	part_body_b
@@ -51,10 +52,12 @@ index	name
 51	part_body_mag_smg
 52	part_body_mag_ar
 53	part_body_mag_sr
+54	comp_05_legendary_zipgun
 55	comp_first_gun
 56	comp_05_legendary
 57	part_mag_05_borg_barrel_02
 58	part_mag_05_borg_barrel_01
+59	comp_05_legendary_rangefinder
 60	part_barrel_01_a
 61	part_barrel_01_b
 62	part_barrel_01_c
@@ -73,6 +76,7 @@ index	name
 75	part_underbarrel_03_semtex
 76	part_foregrip_01
 77	part_body_mag_sg
+78	part_barrel_02_rangefinder
 95	comp_01_common
 96	comp_02_uncommon
 97	comp_03_rare
