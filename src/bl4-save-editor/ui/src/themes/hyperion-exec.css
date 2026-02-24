@@ -1,0 +1,41 @@
+/* @theme-name: Hyperion Exec */
+
+[data-theme="hyperion-exec"] {
+  --bg-gradient: linear-gradient(
+    35deg,
+    #0a0a10 0%,
+    #10101a 25%,
+    #151520 45%,
+    #10101a 65%,
+    #0a0a12 85%,
+    #060608 100%
+  );
+  --bg-glass-sheen: linear-gradient(
+    35deg,
+    transparent 0%,
+    rgba(160, 160, 200, 0.03) 30%,
+    rgba(200, 200, 240, 0.05) 50%,
+    rgba(160, 160, 200, 0.02) 70%,
+    transparent 100%
+  );
+  --bg-primary: #060608;
+  --bg-secondary: rgba(14, 14, 22, 0.85);
+  --bg-elevated: rgba(22, 22, 34, 0.75);
+  --bg-surface: rgba(30, 30, 46, 0.65);
+
+  --text-primary: #c8c8d8;
+  --text-secondary: #7878a0;
+  --text-muted: #404060;
+
+  --accent-primary: #e8c840;
+  --accent-secondary: #c8a830;
+  --accent-dark: rgba(30, 28, 10, 0.7);
+  --accent-glow: rgba(232, 200, 64, 0.2);
+
+  --border-color: rgba(100, 100, 140, 0.15);
+  --border-active: #e8c840;
+
+  --header-yellow: #e8c840;
+  --header-yellow-dark: #a89020;
+  --header-yellow-light: #f0d860;
+}

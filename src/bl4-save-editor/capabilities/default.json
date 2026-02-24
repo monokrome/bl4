@@ -1,0 +1,11 @@
+{
+  "identifier": "default",
+  "description": "Default permissions for BL4 Save Editor",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "dialog:default",
+    "dialog:allow-open",
+    "dialog:allow-save"
+  ]
+}

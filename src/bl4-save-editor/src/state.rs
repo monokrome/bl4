@@ -13,6 +13,7 @@ pub struct LoadedSave {
 }
 
 /// Shared application state.
+#[allow(dead_code)] // items_db used by server feature
 pub struct AppState {
     pub current_save: Mutex<Option<LoadedSave>>,
     pub items_db: Mutex<Option<SqliteDb>>,

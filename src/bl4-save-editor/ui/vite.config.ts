@@ -1,8 +1,9 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite'
+import { gonia } from 'gonia/vite'
+import { bellagonia } from 'bellagonia'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [gonia(), bellagonia()],
   clearScreen: false,
   server: {
     port: 5173,
@@ -15,4 +16,4 @@ export default defineConfig({
     sourcemap: !!process.env.TAURI_DEBUG,
     outDir: 'dist',
   },
-});
+})

@@ -75,27 +75,3 @@ export interface BankInfo {
   sdu_warning: boolean;
 }
 
-export interface DiscoveredCharacter {
-  slot: number;
-  name: string;
-  class: string;
-  level: number;
-  difficulty: string;
-}
-
-export interface DiscoveredProfile {
-  steam_id: string;
-  path: string;
-  characters: DiscoveredCharacter[];
-}
-
-export interface DiscoverResponse {
-  profiles: DiscoveredProfile[];
-}
-
-// API response wrapper
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}

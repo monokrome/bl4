@@ -1,0 +1,44 @@
+.field-row {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.field-row:last-child {
+  border-bottom: none;
+}
+
+.field-row label {
+  width: 160px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+.display-value {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.edit-inline {
+  flex: 1;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-inline input {
+  flex: 1;
+  padding: 0.25rem 0.5rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--accent-primary);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  clip-path: var(--clip-panel-sm);
+}

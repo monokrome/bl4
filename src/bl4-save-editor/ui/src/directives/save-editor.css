@@ -1,0 +1,202 @@
+/* App Layout — fixed viewport, no scrolling body */
+save-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/*
+ * Header — grungy yellow with knockout text.
+ * The title text appears as dark cutouts in the bottom edge of the
+ * yellow bar, revealing the body background through the letter shapes.
+ *
+ * Using background-clip:text so the dark body color fills only the
+ * glyph outlines — works reliably on WebKitGTK.
+ */
+.header {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0.25rem 1rem 0;
+  flex-shrink: 0;
+  background:
+    /* Subtle noise grain via SVG feTurbulence */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E"),
+    linear-gradient(
+      180deg,
+      var(--header-yellow-light) 0%,
+      var(--header-yellow) 60%,
+      var(--header-yellow-dark) 100%
+    );
+  overflow: visible;
+}
+
+.header h1 {
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  line-height: 1;
+  position: relative;
+  z-index: 2;
+  /* Push the title to sit on the bottom edge of the header */
+  margin-bottom: -1px;
+  padding: 0 2px;
+  /* Knockout: dark background visible only through letter shapes */
+  color: var(--bg-primary);
+  background: var(--bg-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  /* The text sits half below the header edge, clipped by the header overflow.
+     Use a pseudo-element to bridge the gap so the dark color connects
+     to the body background below. */
+}
+
+/* Dark strip behind the title that connects letter shapes to the body bg */
+.header h1::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: -2px;
+  right: -2px;
+  height: 4px;
+  background: var(--bg-primary);
+  z-index: -1;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 3px;
+}
+
+.header-right .save-path {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--bg-primary);
+  background: var(--bg-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header-right .muted {
+  font-size: 0.7rem;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.header .btn {
+  font-size: 0.65rem;
+  padding: 0.2rem 0.5rem;
+}
+
+.header .btn-warning {
+  background: var(--bg-primary);
+  border-color: var(--bg-primary);
+  color: var(--header-yellow);
+}
+
+.header .btn-ghost {
+  background: rgba(0, 0, 0, 0.15);
+  border-color: rgba(0, 0, 0, 0.2);
+  color: var(--bg-primary);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 0.5rem;
+  flex-shrink: 0;
+  backdrop-filter: blur(8px);
+}
+
+.tab {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.15s;
+}
+
+.tab:hover {
+  color: var(--text-secondary);
+}
+
+.tab.active {
+  color: var(--accent-primary);
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent-primary);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+/* Content area — scrolls internally */
+.content {
+  flex: 1;
+  padding: 1rem;
+  overflow: auto;
+  min-height: 0;
+}
+
+/* Theme picker */
+.theme-picker {
+  position: relative;
+}
+
+.theme-picker select {
+  appearance: none;
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  color: var(--bg-primary);
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.15rem 1.25rem 0.15rem 0.5rem;
+  cursor: pointer;
+  clip-path: var(--clip-panel-sm);
+}
+
+.theme-picker::after {
+  content: '\25BE';
+  position: absolute;
+  right: 0.375rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--bg-primary);
+  font-size: 0.6rem;
+}

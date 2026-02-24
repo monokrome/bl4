@@ -14,7 +14,7 @@ path = "src/main.rs"
 [features]
 default = []
 server = ["axum", "tower-http", "tokio", "tokio-stream", "dirs", "notify"]
-servo = ["winit", "libservo", "embedder_traits", "euclid", "url", "urlencoding", "tracing", "rustls"]
+tauri = ["dep:tauri", "dep:tauri-plugin-dialog", "dep:tauri-build"]
 
 [dependencies]
 bl4 = { path = "../bl4" }
@@ -31,19 +31,12 @@ tokio-stream = { version = "0.1", features = ["sync"], optional = true }
 dirs = { version = "6", optional = true }
 notify = { version = "8", optional = true }
 
-# Servo (GTK-free native)
-winit = { version = "0.30", optional = true }
-libservo = { git = "https://github.com/servo/servo", rev = "55c4f579c9235dd7860302eb828beaf4c459e569", optional = true }
-embedder_traits = { git = "https://github.com/servo/servo", rev = "55c4f579c9235dd7860302eb828beaf4c459e569", optional = true }
-euclid = { version = "0.22", optional = true }
-url = { version = "2.5", optional = true }
-urlencoding = { version = "2.1", optional = true }
-tracing = { version = "0.1", optional = true }
-rustls = { version = "0.23", optional = true }
+# Tauri
+tauri = { version = "2", features = ["wry"], optional = true }
+tauri-plugin-dialog = { version = "2", optional = true }
 
-# Native menus - macOS only (Linux/Windows use in-webview menus)
-[target.'cfg(target_os = "macos")'.dependencies]
-muda = { version = "0.16", optional = true }
+[build-dependencies]
+tauri-build = { version = "2", optional = true , features = [] }
 
 [lints]
 workspace = true

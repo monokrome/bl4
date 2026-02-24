@@ -1,5 +1,6 @@
 use crate::state::{AppState, LoadedSave};
 use bl4::{decrypt_sav, encrypt_sav, ItemSerial, SaveFile};
+#[cfg(feature = "server")]
 use bl4_idb::{ItemsRepository, SqliteDb};
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -416,7 +417,7 @@ pub fn get_item_detail_impl(_state: &AppState, serial: &str) -> Result<ItemDetai
 
     Ok(ItemDetail {
         serial: serial.to_string(),
-        item_type: decoded.item_type.to_string(),
+        item_type: decoded.format.to_string(),
         item_type_name: decoded.item_type_description().to_string(),
         manufacturer: mfg.map(String::from),
         weapon_type: wtype.map(String::from),
@@ -430,6 +431,7 @@ pub fn get_item_detail_impl(_state: &AppState, serial: &str) -> Result<ItemDetai
     })
 }
 
+#[cfg(feature = "server")]
 pub fn connect_db_impl(state: &AppState, path: String) -> Result<(), String> {
     let db = SqliteDb::open(&path).map_err(|e| format!("Failed to open database: {}", e))?;
     db.init()
@@ -444,6 +446,7 @@ pub fn connect_db_impl(state: &AppState, path: String) -> Result<(), String> {
     Ok(())
 }
 
+#[cfg(feature = "server")]
 pub fn sync_to_bank_impl(state: &AppState, serials: Vec<String>) -> Result<u32, String> {
     let db_lock = state
         .items_db
@@ -462,7 +465,7 @@ pub fn sync_to_bank_impl(state: &AppState, serials: Vec<String>) -> Result<u32, 
     Ok(count)
 }
 
-#[allow(dead_code)]
+#[cfg(feature = "server")]
 pub fn sync_from_bank_impl(_state: &AppState, _serials: Vec<String>) -> Result<u32, String> {
     // TODO: Implement adding items from bank to save inventory
     // This requires finding empty slots and using ChangeSet to add items

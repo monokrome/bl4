@@ -1,21 +1,75 @@
-/* Cyberpunk Purple Theme */
-:root {
-  --bg-primary: #0d0d14;
-  --bg-secondary: #13131f;
-  --bg-elevated: #1a1a2e;
+/* Vault Hunter's Terminal */
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
 
-  --text-primary: #e8e6f0;
-  --text-secondary: #9d9ab3;
-  --text-muted: #5c5a70;
+:root {
+  --font-display: 'Chakra Petch', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+
+  /* Glass-metallic purple gradient background */
+  --bg-gradient: linear-gradient(
+    35deg,
+    #1a0e2e 0%,
+    #2a1847 25%,
+    #352155 45%,
+    #2d1a4a 65%,
+    #1c0f33 85%,
+    #110a20 100%
+  );
+  --bg-glass-sheen: linear-gradient(
+    35deg,
+    transparent 0%,
+    rgba(180, 160, 220, 0.04) 30%,
+    rgba(220, 200, 255, 0.07) 50%,
+    rgba(180, 160, 220, 0.03) 70%,
+    transparent 100%
+  );
+  --bg-primary: #110a20;
+  --bg-secondary: rgba(18, 12, 32, 0.85);
+  --bg-elevated: rgba(28, 20, 48, 0.75);
+  --bg-surface: rgba(38, 28, 62, 0.65);
+
+  --text-primary: #d4dae5;
+  --text-secondary: #8a80a8;
+  --text-muted: #524a68;
 
   --accent-primary: #9d4edd;
   --accent-secondary: #7b2cbf;
-  --accent-dark: #2a1a3d;
-  --accent-glow: rgba(157, 78, 221, 0.3);
+  --accent-dark: rgba(30, 15, 48, 0.7);
+  --accent-glow: rgba(157, 78, 221, 0.25);
 
-  --border-color: #2a2a40;
+  --border-color: rgba(90, 60, 140, 0.2);
+  --border-active: #9d4edd;
 
-  --success: #00ff9f;
-  --warning: #ffbe0b;
-  --error: #ff006e;
+  /* Header */
+  --header-yellow: #c9a832;
+  --header-yellow-dark: #8a7420;
+  --header-yellow-light: #e8c840;
+
+  /* Rarity tiers */
+  --rarity-common: #8b95a5;
+  --rarity-uncommon: #3ddc84;
+  --rarity-rare: #4dabf7;
+  --rarity-epic: #be4bdb;
+  --rarity-legendary: #fbbf24;
+  --rarity-common-bg: rgba(139, 149, 165, 0.08);
+  --rarity-uncommon-bg: rgba(61, 220, 132, 0.08);
+  --rarity-rare-bg: rgba(77, 171, 247, 0.08);
+  --rarity-epic-bg: rgba(190, 75, 219, 0.08);
+  --rarity-legendary-bg: rgba(251, 191, 36, 0.08);
+
+  /* Elements */
+  --element-fire: #f97316;
+  --element-shock: #60a5fa;
+  --element-corrosive: #4ade80;
+  --element-cryo: #22d3ee;
+  --element-radiation: #a3e635;
+
+  /* Semantic */
+  --success: #3ddc84;
+  --warning: #fbbf24;
+  --error: #f43f5e;
+
+  /* Geometry */
+  --clip-panel: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  --clip-panel-sm: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
 }

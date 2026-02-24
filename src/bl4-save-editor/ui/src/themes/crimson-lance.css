@@ -1,0 +1,41 @@
+/* @theme-name: Crimson Lance */
+
+[data-theme="crimson-lance"] {
+  --bg-gradient: linear-gradient(
+    35deg,
+    #1a0808 0%,
+    #2a1010 25%,
+    #351515 45%,
+    #2d1010 65%,
+    #1c0a0a 85%,
+    #110505 100%
+  );
+  --bg-glass-sheen: linear-gradient(
+    35deg,
+    transparent 0%,
+    rgba(220, 100, 100, 0.03) 30%,
+    rgba(255, 140, 140, 0.05) 50%,
+    rgba(220, 100, 100, 0.02) 70%,
+    transparent 100%
+  );
+  --bg-primary: #110505;
+  --bg-secondary: rgba(32, 12, 12, 0.85);
+  --bg-elevated: rgba(48, 18, 18, 0.75);
+  --bg-surface: rgba(62, 24, 24, 0.65);
+
+  --text-primary: #e5d0d0;
+  --text-secondary: #a87070;
+  --text-muted: #684040;
+
+  --accent-primary: #dc2626;
+  --accent-secondary: #b91c1c;
+  --accent-dark: rgba(48, 10, 10, 0.7);
+  --accent-glow: rgba(220, 38, 38, 0.25);
+
+  --border-color: rgba(140, 50, 50, 0.2);
+  --border-active: #dc2626;
+
+  --header-yellow: #8b1a1a;
+  --header-yellow-dark: #5c1010;
+  --header-yellow-light: #b02020;
+}

@@ -1,0 +1,41 @@
+/* @theme-name: Pandora Sun */
+
+[data-theme="pandora-sun"] {
+  --bg-gradient: linear-gradient(
+    35deg,
+    #1a1208 0%,
+    #2a1e0e 25%,
+    #352812 45%,
+    #2d2010 65%,
+    #1c1509 85%,
+    #110e05 100%
+  );
+  --bg-glass-sheen: linear-gradient(
+    35deg,
+    transparent 0%,
+    rgba(220, 180, 100, 0.04) 30%,
+    rgba(255, 220, 140, 0.06) 50%,
+    rgba(220, 180, 100, 0.03) 70%,
+    transparent 100%
+  );
+  --bg-primary: #110e05;
+  --bg-secondary: rgba(32, 24, 10, 0.85);
+  --bg-elevated: rgba(48, 36, 16, 0.75);
+  --bg-surface: rgba(62, 48, 22, 0.65);
+
+  --text-primary: #e5dcc4;
+  --text-secondary: #a89870;
+  --text-muted: #685838;
+
+  --accent-primary: #d4910a;
+  --accent-secondary: #b87a08;
+  --accent-dark: rgba(48, 30, 8, 0.7);
+  --accent-glow: rgba(212, 145, 10, 0.25);
+
+  --border-color: rgba(140, 100, 40, 0.2);
+  --border-active: #d4910a;
+
+  --header-yellow: #d4910a;
+  --header-yellow-dark: #8a6008;
+  --header-yellow-light: #e8a820;
+}

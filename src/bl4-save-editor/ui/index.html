@@ -4,9 +4,67 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BL4 Save Editor</title>
+    <link rel="stylesheet" href="/src/styles/index.css" />
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <save-editor>
+      <div g-show="error" class="error-banner">
+        <span g-text="error"></span>
+        <button g-on="click: clearError">x</button>
+      </div>
+
+      <div g-show="loading" class="loading">Decrypting</div>
+
+      <div g-show="routeView === 'selector'" class="app">
+        <header class="header">
+          <h1>BL4 Save Editor</h1>
+          <div class="header-right">
+            <div g-show="themes.length > 1" class="theme-picker">
+              <select g-model="activeTheme" g-on="change: setTheme(activeTheme)">
+                <option g-for="t in themes" g-text="t.name" g-bind:value="t ? t.id : ''"></option>
+              </select>
+            </div>
+          </div>
+        </header>
+        <main class="content">
+          <save-selector></save-selector>
+        </main>
+      </div>
+
+      <div g-show="routeView !== 'selector'" class="app">
+        <header class="header">
+          <h1>BL4 Save Editor</h1>
+          <div class="header-right">
+            <span class="save-path" g-text="saveInfo ? (saveInfo.character_name || 'Unknown') : ''"></span>
+            <span g-show="saveInfo && saveInfo.character_class" class="muted" g-text="saveInfo ? saveInfo.character_class : ''"></span>
+            <button g-show="saveInfo && saveInfo.modified" class="btn btn-warning" g-on="click: handleSave">Save</button>
+            <button class="btn btn-ghost" g-on="click: handleClose">Close</button>
+            <div g-show="themes.length > 1" class="theme-picker">
+              <select g-model="activeTheme" g-on="change: setTheme(activeTheme)">
+                <option g-for="t in themes" g-text="t.name" g-bind:value="t ? t.id : ''"></option>
+              </select>
+            </div>
+          </div>
+        </header>
+        <nav class="tabs">
+          <button g-for="tab in tabs" class="tab"
+                  g-class="{ active: routeView === tab.id }"
+                  g-on="click: navigate(tab.path)"
+                  g-text="tab.label"></button>
+        </nav>
+        <main class="content">
+          <div g-show="routeView === 'character'">
+            <character-panel></character-panel>
+          </div>
+          <div g-show="routeView === 'inventory'">
+            <inventory-panel></inventory-panel>
+          </div>
+          <div g-show="routeView === 'bank'">
+            <inventory-panel data-mode="bank"></inventory-panel>
+          </div>
+        </main>
+      </div>
+    </save-editor>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
