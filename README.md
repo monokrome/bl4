@@ -17,10 +17,6 @@ Borderlands 4 reverse engineering toolkit — save editor, item serial decoder, 
 
 ## Installation
 
-```bash
-cargo install bl4-cli
-```
-
 From source:
 ```bash
 git clone https://github.com/monokrome/bl4.git
