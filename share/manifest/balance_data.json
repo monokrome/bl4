@@ -1,0 +1,67 @@
+{
+  "TED": {
+    "name": "TED",
+    "path": "OakGame/Content/Gear/Weapons/_Shared/BalanceData/TED",
+    "assets": []
+  },
+  "WeaponStats": {
+    "name": "WeaponStats",
+    "path": "OakGame/Content/Gear/Weapons/_Shared/BalanceData/WeaponStats",
+    "assets": []
+  },
+  "BarrelData": {
+    "name": "BarrelData",
+    "path": "OakGame/Content/Gear/Weapons/_Shared/BalanceData/BarrelData",
+    "assets": []
+  },
+  "Rarity": {
+    "name": "Rarity",
+    "path": "OakGame/Content/Gear/Weapons/_Shared/BalanceData/Rarity",
+    "assets": []
+  },
+  "ScopeData": {
+    "name": "ScopeData",
+    "path": "OakGame/Content/Gear/Weapons/_Shared/BalanceData/ScopeData",
+    "assets": []
+  },
+  "BorgChargeData": {
+    "name": "BorgChargeData",
+    "path": "OakGame/Content/Gear/Weapons/_Shared/BalanceData/BorgChargeData",
+    "assets": []
+  },
+  "UniqueData": {
+    "name": "UniqueData",
+    "path": "OakGame/Content/Gear/Weapons/_Shared/BalanceData/UniqueData",
+    "assets": []
+  },
+  "COV": {
+    "name": "COV",
+    "path": "OakGame/Content/Gear/Weapons/_Shared/BalanceData/COV",
+    "assets": []
+  },
+  "Elemental": {
+    "name": "Elemental",
+    "path": "OakGame/Content/Gear/Weapons/_Shared/BalanceData/Elemental",
+    "assets": []
+  },
+  "UnderbarrelData": {
+    "name": "UnderbarrelData",
+    "path": "OakGame/Content/Gear/Weapons/_Shared/BalanceData/UnderbarrelData",
+    "assets": []
+  },
+  "Order": {
+    "name": "Order",
+    "path": "OakGame/Content/Gear/Weapons/_Shared/BalanceData/Order",
+    "assets": []
+  },
+  "_BaseWeaponData": {
+    "name": "_BaseWeaponData",
+    "path": "OakGame/Content/Gear/Weapons/_Shared/BalanceData/_BaseWeaponData",
+    "assets": []
+  },
+  "MagazineData": {
+    "name": "MagazineData",
+    "path": "OakGame/Content/Gear/Weapons/_Shared/BalanceData/MagazineData",
+    "assets": []
+  }
+}

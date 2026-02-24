@@ -1,0 +1,14 @@
+{
+  "version": "0.6.0",
+  "source": "BL4 Game Files",
+  "extract_path": "/tmp/bl4_extract",
+  "files": {
+    "naming": "naming.json",
+    "elemental": "elemental.json",
+    "weapon_types": "weapon_types.json",
+    "balance_data": "balance_data.json",
+    "gear_types": "gear_types.json",
+    "manufacturers": "manufacturers.json",
+    "rarity": "rarity.json"
+  }
+}
