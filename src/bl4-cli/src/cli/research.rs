@@ -34,8 +34,8 @@ pub enum ExtractCommand {
         #[arg(short, long, default_value = "share/manifest/parts")]
         input: PathBuf,
 
-        /// Output part pools JSON
-        #[arg(short, long, default_value = "share/manifest/part_pools.json")]
+        /// Output part pools TSV
+        #[arg(short, long, default_value = "share/manifest/part_pools.tsv")]
         output: PathBuf,
     },
 

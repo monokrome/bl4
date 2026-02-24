@@ -26,9 +26,21 @@ pub enum SerialCommand {
         #[arg(short, long)]
         rarity: bool,
 
+        /// Compact single-line parts output
+        #[arg(short = 's', long)]
+        short: bool,
+
         /// Path to parts database (directory of per-category TSVs or single file)
         #[arg(long, default_value = "share/manifest/parts")]
         parts_db: PathBuf,
+
+        /// Remove a part by name (repeatable)
+        #[arg(long, action = clap::ArgAction::Append)]
+        remove: Vec<String>,
+
+        /// Add a part by name (repeatable)
+        #[arg(long, action = clap::ArgAction::Append)]
+        add: Vec<String>,
     },
 
     /// Re-encode a serial (for testing round-trip encoding)

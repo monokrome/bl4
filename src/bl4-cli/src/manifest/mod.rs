@@ -11,49 +11,27 @@
 //! - `items_database` - Generate consolidated items database
 //! - `reference_data` - Wrapper functions for bl4::reference data
 
-#![allow(dead_code)]
-
+#[allow(dead_code)]
 mod file_extraction;
+#[allow(dead_code)]
 mod items_database;
+#[allow(dead_code)]
 mod pak_extraction;
+#[allow(dead_code)]
 mod pak_manifest;
+#[allow(dead_code)]
 mod property_parsing;
+#[allow(dead_code)]
 mod reference_data;
 mod uasset_extraction;
 
-// Re-export main types and functions
-pub use file_extraction::{
-    extract_balance_data, extract_elemental_data, extract_gear_types, extract_manufacturers,
-    extract_naming_data, extract_rarity_data, extract_weapon_types, BalanceCategory, GearType,
-    Manufacturer, ManufacturerRef, WeaponType,
-};
+pub(crate) use items_database::extract_manifest;
 
-pub use items_database::{
-    extract_item_pools, extract_item_stats, extract_manifest, generate_items_database, ItemPool,
-    ItemStats, ItemsDatabase, ManifestIndex, StatModifier, StatsSummary,
-};
-
-pub use pak_extraction::{
+pub(crate) use pak_extraction::{
     extract_elements_from_pak, extract_gear_types_from_pak, extract_manufacturer_names_from_pak,
     extract_rarities_from_pak, extract_stats_from_pak, extract_weapon_types_from_pak,
-    manufacturer_names, ExtractedElement, ExtractedGearType, ExtractedManufacturer,
-    ExtractedRarity, ExtractedStat, ExtractedWeaponType,
 };
 
-pub use pak_manifest::{
-    generate_pak_manifest, ExtractedItem, PakManifest, StatValue, UextractAsset, UextractExport,
-    UextractProperty,
-};
+pub(crate) use pak_manifest::PakManifest;
 
-pub use property_parsing::{
-    extract_strings, parse_property_strings, parse_stat_properties, AssetInfo, PropertyEntry,
-    StatEntry, StatProperty,
-};
-
-pub use reference_data::{
-    element_types, gear_type_info, generate_reference_manifest, known_legendaries,
-    manufacturer_info, rarity_tiers, weapon_type_info, ConsolidatedManifest, ElementType,
-    GearTypeInfo, LegendaryItem, ManufacturerInfo, RarityTier, WeaponTypeInfo,
-};
-
-pub use uasset_extraction::{extract_uasset_manifest, UassetManifestSummary};
+pub(crate) use uasset_extraction::extract_uasset_manifest;

@@ -182,6 +182,52 @@ pub fn level_from_code(code: u64) -> Option<(u8, u8)> {
     }
 }
 
+/// Encode a level into a raw code value (reverse of `level_from_code`).
+///
+/// Uses direct encoding (code = level) for all levels 1-50.
+/// The high-code range (128+) is an alternative that only encodes even levels;
+/// `weapon_level_code()` uses those codes when rarity needs to be embedded.
+pub fn code_from_level(level: u8) -> Option<u64> {
+    if level == 0 || level > 50 {
+        return None;
+    }
+    Some(level as u64)
+}
+
+/// Encode a weapon level code with rarity (VarInt-first format).
+///
+/// For Common items, returns the plain level code.
+/// For Epic/Legendary, returns the known rarity-specific codes.
+pub fn weapon_level_code(level: u8, rarity: crate::serial::Rarity) -> Option<u64> {
+    use crate::serial::Rarity;
+    match rarity {
+        Rarity::Common | Rarity::Uncommon | Rarity::Rare => code_from_level(level),
+        Rarity::Epic => Some(192),
+        Rarity::Legendary => Some(200),
+    }
+}
+
+/// Reverse lookup: (manufacturer, weapon_type) → first VarInt ID.
+///
+/// Returns the first matching ID from WEAPON_INFO.
+pub fn first_varint_from_weapon_info(manufacturer: &str, weapon_type: &str) -> Option<u64> {
+    WEAPON_INFO.entries().find_map(|(id, (mfr, wtype))| {
+        if *mfr == manufacturer && *wtype == weapon_type {
+            Some(*id)
+        } else {
+            None
+        }
+    })
+}
+
+/// Encode a VarBit value from category ID and metadata remainder.
+///
+/// VarBit = category * divisor + metadata.
+/// Use `divisor` 8192 for weapon categories (16-31), 384 for equipment.
+pub fn varbit_from_category(category: i64, divisor: u64, metadata: u64) -> u64 {
+    category as u64 * divisor + metadata
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -276,5 +322,54 @@ mod tests {
         assert_eq!(weapon_type_from_first_varint(138), Some("SMG"));
         assert_eq!(weapon_type_from_first_varint(136), Some("AR"));
         assert_eq!(weapon_type_from_first_varint(999), None);
+    }
+
+    #[test]
+    fn test_code_from_level() {
+        // All valid levels encode directly
+        assert_eq!(code_from_level(1), Some(1));
+        assert_eq!(code_from_level(15), Some(15));
+        assert_eq!(code_from_level(16), Some(16));
+        assert_eq!(code_from_level(30), Some(30));
+        assert_eq!(code_from_level(50), Some(50));
+        // Invalid
+        assert_eq!(code_from_level(0), None);
+        assert_eq!(code_from_level(51), None);
+    }
+
+    #[test]
+    fn test_code_from_level_roundtrip() {
+        for level in 1..=50u8 {
+            let code = code_from_level(level).unwrap();
+            let (decoded, _) = level_from_code(code).unwrap();
+            assert_eq!(decoded, level, "roundtrip failed for level {}", level);
+        }
+    }
+
+    #[test]
+    fn test_first_varint_from_weapon_info() {
+        let id = first_varint_from_weapon_info("Jakobs", "Shotgun").unwrap();
+        assert_eq!(weapon_info_from_first_varint(id), Some(("Jakobs", "Shotgun")));
+
+        let id = first_varint_from_weapon_info("Vladof", "SMG").unwrap();
+        assert_eq!(weapon_info_from_first_varint(id), Some(("Vladof", "SMG")));
+
+        assert!(first_varint_from_weapon_info("FakeManufacturer", "Pistol").is_none());
+    }
+
+    #[test]
+    fn test_varbit_from_category_roundtrip() {
+        // Equipment: category 279 (Maliwan Shield), divisor 384
+        let varbit = varbit_from_category(279, 384, 0);
+        assert_eq!(category_from_varbit(varbit), 279);
+
+        // Weapon: category 22 (Vladof SMG), divisor 8192
+        let varbit = varbit_from_category(22, 8192, 0);
+        assert_eq!(category_from_varbit(varbit), 22);
+
+        // With metadata preserved
+        let varbit = varbit_from_category(22, 8192, 192); // Legendary metadata
+        assert_eq!(category_from_varbit(varbit), 22);
+        assert_eq!(varbit % 8192, 192);
     }
 }

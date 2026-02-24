@@ -823,7 +823,7 @@ async fn create_item(
 
     state
         .db
-        .set_item_type(&req.serial, &decoded.item_type.to_string())
+        .set_item_type(&req.serial, decoded.item_type_description())
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
@@ -884,7 +884,7 @@ fn validate_bulk_items(
 
         valid_items.push(ValidItem {
             serial: item.serial,
-            item_type: decoded.item_type.to_string(),
+            item_type: decoded.item_type_description().to_string(),
             source,
             uuid,
             name: item.name,
@@ -1086,7 +1086,7 @@ async fn decode_serial(
 
     Ok(Json(DecodeResponse {
         serial: req.serial,
-        item_type: item.item_type.to_string(),
+        item_type: item.format.to_string(),
         item_type_name: item.item_type_description().to_string(),
         manufacturer,
         weapon_type,

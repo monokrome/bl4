@@ -10,7 +10,11 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
-use super::PakManifest;
+use super::file_extraction::{
+    extract_elemental_data, extract_gear_types, extract_manufacturers, extract_naming_data,
+    extract_rarity_data, extract_weapon_types,
+};
+use super::pak_manifest::PakManifest;
 
 /// Manifest index for tracking extracted files
 #[derive(Debug, Serialize, Deserialize)]
@@ -99,49 +103,42 @@ pub fn extract_manifest(extract_dir: &Path, output_dir: &Path) -> Result<()> {
 
     // Manufacturers
     print!("Extracting manufacturers...");
-    let manufacturers = super::extract_manufacturers(extract_dir);
+    let manufacturers = extract_manufacturers(extract_dir);
     let mfr_path = output_dir.join("manufacturers.json");
     fs::write(&mfr_path, serde_json::to_string_pretty(&manufacturers)?)?;
     println!(" {} entries", manufacturers.len());
 
     // Weapon types
     print!("Extracting weapon types...");
-    let weapon_types = super::extract_weapon_types(extract_dir);
+    let weapon_types = extract_weapon_types(extract_dir);
     let wt_path = output_dir.join("weapon_types.json");
     fs::write(&wt_path, serde_json::to_string_pretty(&weapon_types)?)?;
     println!(" {} entries", weapon_types.len());
 
-    // Balance data
-    print!("Extracting balance data...");
-    let balance_data = super::extract_balance_data(extract_dir)?;
-    let bd_path = output_dir.join("balance_data.json");
-    fs::write(&bd_path, serde_json::to_string_pretty(&balance_data)?)?;
-    println!(" {} categories", balance_data.len());
-
     // Naming data
     print!("Extracting naming data...");
-    let naming_data = super::extract_naming_data(extract_dir)?;
+    let naming_data = extract_naming_data(extract_dir)?;
     let nd_path = output_dir.join("naming.json");
     fs::write(&nd_path, serde_json::to_string_pretty(&naming_data)?)?;
     println!(" {} entries", naming_data.len());
 
     // Gear types
     print!("Extracting gear types...");
-    let gear_types = super::extract_gear_types(extract_dir);
+    let gear_types = extract_gear_types(extract_dir);
     let gt_path = output_dir.join("gear_types.json");
     fs::write(&gt_path, serde_json::to_string_pretty(&gear_types)?)?;
     println!(" {} types", gear_types.len());
 
     // Rarity data
     print!("Extracting rarity data...");
-    let rarity_data = super::extract_rarity_data(extract_dir);
+    let rarity_data = extract_rarity_data(extract_dir);
     let rd_path = output_dir.join("rarity.json");
     fs::write(&rd_path, serde_json::to_string_pretty(&rarity_data)?)?;
     println!(" {} entries", rarity_data.len());
 
     // Elemental data
     print!("Extracting elemental data...");
-    let elemental_data = super::extract_elemental_data(extract_dir);
+    let elemental_data = extract_elemental_data(extract_dir);
     let ed_path = output_dir.join("elemental.json");
     fs::write(&ed_path, serde_json::to_string_pretty(&elemental_data)?)?;
     println!(" {} entries", elemental_data.len());
@@ -153,7 +150,6 @@ pub fn extract_manifest(extract_dir: &Path, output_dir: &Path) -> Result<()> {
         "manufacturers.json".to_string(),
     );
     files.insert("weapon_types".to_string(), "weapon_types.json".to_string());
-    files.insert("balance_data".to_string(), "balance_data.json".to_string());
     files.insert("naming".to_string(), "naming.json".to_string());
     files.insert("gear_types".to_string(), "gear_types.json".to_string());
     files.insert("rarity".to_string(), "rarity.json".to_string());

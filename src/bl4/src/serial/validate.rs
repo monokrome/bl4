@@ -4,7 +4,7 @@
 //! the parts could exist in an unmodified game. Returns tri-state results:
 //! Legal, Illegal, or Unknown (insufficient manifest data).
 
-use super::{ItemSerial, Rarity, Token};
+use super::{ItemSerial, Token};
 
 /// Tri-state legality result
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -54,9 +54,6 @@ impl ValidationResult {
     }
 }
 
-/// Shared firmware part indices (from dep_table `firmware` namespace)
-const FIRMWARE_INDICES: &[u64] = &[103, 112];
-
 /// Count Part tokens in a token stream
 fn count_parts(tokens: &[Token]) -> usize {
     tokens
@@ -86,12 +83,7 @@ fn check_level(item: &ItemSerial) -> ValidationCheck {
     }
 }
 
-/// Threshold below which part indices are category-specific.
-/// Indices at or above this are shared dep_table parts (elements, stats, rarity,
-/// firmware, payload) and cannot be bounds-checked against category manifests.
-const SHARED_PART_THRESHOLD: u64 = 96;
-
-/// Check part index bounds against manifest
+/// Check part index bounds: every Part token must be resolvable to a name.
 fn check_part_bounds(item: &ItemSerial) -> ValidationCheck {
     let inconclusive = |detail: String| ValidationCheck {
         name: "part_bounds",
@@ -103,41 +95,32 @@ fn check_part_bounds(item: &ItemSerial) -> ValidationCheck {
         Some(cat) => cat,
         None => return inconclusive("no category detected".to_string()),
     };
-    let max_known = match crate::manifest::max_part_index(category) {
-        Some(max) => max,
-        None => return inconclusive(format!("category {} not in manifest", category)),
-    };
+
+    let mut checked = 0u32;
 
     for token in &item.tokens {
         if let Token::Part { index, .. } = token {
-            if (128..=142).contains(index) {
+            if super::Element::from_index(*index).is_some() {
                 continue;
             }
-            // Strip bit 7 (scope flag) for high indices
-            let lookup_index = if *index >= 128 { *index & 0x7F } else { *index };
-
-            // Shared dep_table indices (elements, stats, rarity, firmware) —
-            // not category-specific, skip bounds checking
-            if lookup_index >= SHARED_PART_THRESHOLD {
-                continue;
-            }
-            if (lookup_index as i64) > max_known {
-                return ValidationCheck {
-                    name: "part_bounds",
-                    passed: Some(false),
-                    detail: format!(
-                        "part index {} exceeds max known {} for category {}",
-                        lookup_index, max_known, category
-                    ),
-                };
+            checked += 1;
+            if super::resolve_part_name(category, *index).is_none() {
+                return inconclusive(format!(
+                    "part index {} unresolvable for category {}",
+                    index, category
+                ));
             }
         }
+    }
+
+    if checked == 0 {
+        return inconclusive("no non-element parts to check".to_string());
     }
 
     ValidationCheck {
         name: "part_bounds",
         passed: Some(true),
-        detail: format!("all parts within bounds (max {} for category {})", max_known, category),
+        detail: format!("all {} parts resolved for category {}", checked, category),
     }
 }
 
@@ -146,27 +129,18 @@ fn check_part_count(item: &ItemSerial) -> ValidationCheck {
     let part_count = count_parts(&item.tokens);
 
     if part_count == 0 {
-        // Utility items (type 'u') and some class mods may have no Part tokens
-        let is_utility = item.item_type == 'u' || item.item_type == '!';
-        if is_utility {
-            return ValidationCheck {
-                name: "part_count",
-                passed: None,
-                detail: "0 parts (utility/class mod item, may be normal)".to_string(),
-            };
-        }
         return ValidationCheck {
             name: "part_count",
-            passed: Some(false),
-            detail: "0 parts on non-utility item".to_string(),
+            passed: None,
+            detail: "0 parts (serial may not use Part tokens)".to_string(),
         };
     }
 
     if part_count > 30 {
         return ValidationCheck {
             name: "part_count",
-            passed: Some(false),
-            detail: format!("{} parts exceeds maximum reasonable count of 30", part_count),
+            passed: None,
+            detail: format!("{} parts exceeds expected count of 30 (unverified limit)", part_count),
         };
     }
 
@@ -177,39 +151,63 @@ fn check_part_count(item: &ItemSerial) -> ValidationCheck {
     }
 }
 
-/// Check rarity-part consistency (firmware parts only on legendaries)
-fn check_rarity_consistency(item: &ItemSerial) -> ValidationCheck {
-    let rarity = match item.rarity {
-        Some(r) => r,
-        None => {
-            return ValidationCheck {
-                name: "rarity_consistency",
-                passed: None,
-                detail: "no rarity detected".to_string(),
-            };
-        }
+/// Check pool membership: are resolved parts in this item's loot pool?
+fn check_pool_membership(item: &ItemSerial) -> ValidationCheck {
+    let inconclusive = |detail: String| ValidationCheck {
+        name: "pool_membership",
+        passed: None,
+        detail,
     };
 
-    let has_firmware = item.tokens.iter().any(|t| {
-        if let Token::Part { index, .. } = t {
-            FIRMWARE_INDICES.contains(index)
-        } else {
-            false
-        }
-    });
+    let category = match item.parts_category() {
+        Some(cat) => cat,
+        None => return inconclusive("no category detected".to_string()),
+    };
 
-    if has_firmware && rarity == Rarity::Common {
-        return ValidationCheck {
-            name: "rarity_consistency",
-            passed: Some(false),
-            detail: "firmware part on Common item (firmware is legendary-only)".to_string(),
+    if crate::manifest::is_part_in_pool(category, "").is_none() {
+        return inconclusive(format!("no pool data for category {}", category));
+    }
+
+    let mut checked = 0u32;
+    let mut in_pool = 0u32;
+    let mut unnamed = 0u32;
+
+    for token in &item.tokens {
+        let Token::Part { index, .. } = token else { continue };
+
+        // Element markers are identified separately, not part of the loot pool
+        if super::Element::from_index(*index).is_some() {
+            continue;
+        }
+
+        let Some(name) = super::resolve_part_name(category, *index) else {
+            unnamed += 1;
+            continue;
         };
+
+        if let Some(found) = crate::manifest::is_part_in_pool(category, name) {
+            checked += 1;
+            if found {
+                in_pool += 1;
+            }
+        }
+    }
+
+    if unnamed > 0 {
+        return inconclusive(format!(
+            "{} parts unnamed (cannot verify pool membership)",
+            unnamed
+        ));
+    }
+
+    if checked == 0 {
+        return inconclusive("no parts could be checked against pool".to_string());
     }
 
     ValidationCheck {
-        name: "rarity_consistency",
+        name: "pool_membership",
         passed: Some(true),
-        detail: format!("{} rarity consistent with parts", rarity.name()),
+        detail: format!("{}/{} resolved parts in pool for category {}", in_pool, checked, category),
     }
 }
 
@@ -225,22 +223,21 @@ impl ItemSerial {
             check_level(self),
             check_part_bounds(self),
             check_part_count(self),
-            check_rarity_consistency(self),
+            check_pool_membership(self),
         ];
 
         let has_failure = checks.iter().any(|c| c.passed == Some(false));
-        let has_success = checks.iter().any(|c| c.passed == Some(true));
-        let all_conclusive_pass = checks
-            .iter()
-            .filter(|c| c.passed.is_some())
-            .all(|c| c.passed == Some(true));
+        let has_inconclusive = checks.iter().any(|c| c.passed.is_none());
+        let all_pass = checks.iter().all(|c| c.passed == Some(true));
 
         let legality = if has_failure {
             Legality::Illegal
-        } else if all_conclusive_pass && has_success {
+        } else if all_pass {
             Legality::Legal
-        } else {
+        } else if has_inconclusive {
             Legality::Unknown
+        } else {
+            Legality::Legal
         };
 
         ValidationResult { legality, checks }
@@ -324,15 +321,6 @@ mod tests {
     }
 
     #[test]
-    fn test_check_rarity_consistency_common() {
-        // A common weapon should not have firmware
-        let item = ItemSerial::decode("@Ugr$ZCm/&tH!t{KgK/Shxu>k").unwrap();
-        let check = check_rarity_consistency(&item);
-        // Should pass or be inconclusive, not fail (this is a real item)
-        assert_ne!(check.passed, Some(false));
-    }
-
-    #[test]
     fn test_validation_checks_all_present() {
         let item = ItemSerial::decode("@Ugr$ZCm/&tH!t{KgK/Shxu>k").unwrap();
         let result = item.validate();
@@ -342,6 +330,23 @@ mod tests {
         assert!(check_names.contains(&"level_range"));
         assert!(check_names.contains(&"part_bounds"));
         assert!(check_names.contains(&"part_count"));
-        assert!(check_names.contains(&"rarity_consistency"));
+        assert!(check_names.contains(&"pool_membership"));
     }
+
+    #[test]
+    fn test_pool_membership_not_illegal_on_known_items() {
+        // Known weapon serial — should not be flagged as illegal by pool check
+        let item = ItemSerial::decode("@Ugr$ZCm/&tH!t{KgK/Shxu>k").unwrap();
+        let check = check_pool_membership(&item);
+        assert_ne!(check.passed, Some(false), "Pool check failed: {}", check.detail);
+    }
+
+    #[test]
+    fn test_pool_membership_not_illegal_on_shield() {
+        // Known shield serial
+        let item = ItemSerial::decode("@Uge98>m/)}}!c5JeNWCvCXc7").unwrap();
+        let check = check_pool_membership(&item);
+        assert_ne!(check.passed, Some(false), "Pool check failed: {}", check.detail);
+    }
+
 }

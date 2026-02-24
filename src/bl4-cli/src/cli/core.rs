@@ -182,5 +182,22 @@ pub enum Commands {
         /// Skip memory dump extraction (usmap, parts)
         #[arg(long)]
         skip_memory: bool,
+
+        /// External command for Oodle decompression (cross-platform)
+        ///
+        /// Execute an external program for NCS decompression. The command is invoked as:
+        ///   <command> decompress <decompressed_size>
+        /// Compressed data is sent to stdin, decompressed data is read from stdout.
+        /// Use this to get full Oodle support (e.g., "wine /path/to/oodle_helper.exe").
+        #[arg(long, value_name = "COMMAND")]
+        oodle_exec: Option<String>,
+
+        /// Use FIFO-based protocol for external decompression (required for Wine)
+        ///
+        /// Creates named pipes for data transfer instead of stdin/stdout.
+        /// Use with --oodle-exec when the decompression command runs under Wine.
+        #[cfg(unix)]
+        #[arg(long, requires = "oodle_exec")]
+        oodle_fifo: bool,
     },
 }

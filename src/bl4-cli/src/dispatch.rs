@@ -69,8 +69,13 @@ pub fn dispatch_serial(command: SerialCommand) -> Result<()> {
             debug,
             analyze,
             rarity,
+            short,
             parts_db,
-        } => commands::serial::decode(&serial, verbose, debug, analyze, rarity, &parts_db),
+            remove,
+            add,
+        } => commands::serial::decode(
+            &serial, verbose, debug, analyze, rarity, short, &parts_db, &remove, &add,
+        ),
 
         SerialCommand::Encode { serial } => commands::serial::encode(&serial),
 

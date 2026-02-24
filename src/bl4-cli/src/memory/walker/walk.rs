@@ -74,7 +74,8 @@ pub fn walk_guobject_array(
 
         for item_idx in 0..items_in_chunk {
             let item_offset = item_idx * item_size;
-            let obj_ptr = LE::read_u64(&chunk_data[item_offset..item_offset + 8]) as usize;
+            let ptr_offset = item_offset + guobj_array.object_offset;
+            let obj_ptr = LE::read_u64(&chunk_data[ptr_offset..ptr_offset + 8]) as usize;
 
             if obj_ptr == 0 {
                 continue;
@@ -203,7 +204,8 @@ pub fn walk_guobject_array(
 
         for item_idx in 0..items_in_chunk {
             let item_offset = item_idx * item_size;
-            let obj_ptr = LE::read_u64(&chunk_data[item_offset..item_offset + 8]) as usize;
+            let ptr_offset = item_offset + guobj_array.object_offset;
+            let obj_ptr = LE::read_u64(&chunk_data[ptr_offset..ptr_offset + 8]) as usize;
 
             if obj_ptr == 0 {
                 continue;

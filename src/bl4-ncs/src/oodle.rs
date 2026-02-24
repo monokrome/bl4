@@ -464,16 +464,36 @@ impl OodleDecompressor for FifoExecBackend {
             Ok(())
         });
 
-        // Main thread: opens output FIFO and reads decompressed data.
-        // Blocks until the helper opens the FIFO for writing.
-        let output = std::fs::read(&self.output_fifo)
+        // Reader thread: opens output FIFO and reads decompressed data.
+        // If the helper crashes before opening the output FIFO, this blocks
+        // forever — the main thread detects the crash via wait() and opens
+        // the FIFO itself to unblock the reader with an empty result.
+        let output_path = self.output_fifo.clone();
+        let reader = std::thread::spawn(move || -> std::io::Result<Vec<u8>> {
+            std::fs::read(&output_path)
+        });
+
+        // Wait for the child to exit. If it crashes, open the output FIFO
+        // ourselves so the reader thread gets EOF instead of blocking forever.
+        let exit_result = self.check_exit(&mut child);
+        if exit_result.is_err() {
+            // Open the output FIFO for writing then immediately drop it,
+            // which delivers EOF to the blocked reader thread.
+            let _ = std::fs::OpenOptions::new()
+                .write(true)
+                .open(&self.output_fifo);
+        }
+
+        let output = reader
+            .join()
+            .map_err(|_| Error::Oodle("Reader thread panicked".into()))?
             .map_err(|e| Error::Oodle(format!("Failed to read from output FIFO: {}", e)))?;
 
         writer
             .join()
             .map_err(|_| Error::Oodle("Writer thread panicked".into()))??;
 
-        self.check_exit(&mut child)?;
+        exit_result?;
 
         if output.len() != decompressed_size {
             return Err(Error::DecompressionSize {

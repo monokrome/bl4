@@ -3,7 +3,6 @@
 //! Handlers for checking, decompressing, and extracting NCS files.
 
 use anyhow::Result;
-use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
@@ -442,52 +441,43 @@ pub fn handle_extract(input: &Path, output: &Path, decompress: bool) -> Result<(
     Ok(())
 }
 
-/// Build a map from lowercase type_name to clean manifest filename
-///
-/// Manifest entries like "Nexus-Data-achievement0.ncs" become:
-/// - Key: "achievement" (lowercase type_name)
-/// - Value: "achievement" (clean name for output file)
-fn build_manifest_map(
-    manifests: &[(usize, bl4_ncs::NcsManifest)],
-) -> HashMap<String, String> {
-    let mut map = HashMap::new();
-
-    for (_offset, manifest) in manifests {
-        for entry in &manifest.entries {
-            // Parse "Nexus-Data-{type_name}{N}.ncs" -> type_name
-            if let Some(clean_name) = parse_manifest_filename(&entry.filename) {
-                map.insert(clean_name.to_lowercase(), clean_name);
-            }
-        }
-    }
-
-    map
-}
-
-/// Parse manifest filename to extract clean type name
-///
-/// "Nexus-Data-achievement0.ncs" -> "achievement"
-/// "Nexus-Data-ItemPoolList0.ncs" -> "ItemPoolList"
-fn parse_manifest_filename(filename: &str) -> Option<String> {
-    // Strip "Nexus-Data-" prefix
-    let without_prefix = filename.strip_prefix("Nexus-Data-")?;
-
-    // Strip ".ncs" suffix
-    let without_ext = without_prefix.strip_suffix(".ncs")?;
-
-    // Strip trailing digit(s) (pak number)
-    let name = without_ext.trim_end_matches(|c: char| c.is_ascii_digit());
-
-    if name.is_empty() {
-        return None;
-    }
-
-    Some(name.to_string())
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashMap;
+
+    /// Build a map from lowercase type_name to clean manifest filename
+    fn build_manifest_map(
+        manifests: &[(usize, bl4_ncs::NcsManifest)],
+    ) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+
+        for (_offset, manifest) in manifests {
+            for entry in &manifest.entries {
+                if let Some(clean_name) = parse_manifest_filename(&entry.filename) {
+                    map.insert(clean_name.to_lowercase(), clean_name);
+                }
+            }
+        }
+
+        map
+    }
+
+    /// Parse manifest filename to extract clean type name
+    ///
+    /// "Nexus-Data-achievement0.ncs" -> "achievement"
+    /// "Nexus-Data-ItemPoolList0.ncs" -> "ItemPoolList"
+    fn parse_manifest_filename(filename: &str) -> Option<String> {
+        let without_prefix = filename.strip_prefix("Nexus-Data-")?;
+        let without_ext = without_prefix.strip_suffix(".ncs")?;
+        let name = without_ext.trim_end_matches(|c: char| c.is_ascii_digit());
+
+        if name.is_empty() {
+            return None;
+        }
+
+        Some(name.to_string())
+    }
 
     #[test]
     fn test_handle_ncs_check_missing_file() {

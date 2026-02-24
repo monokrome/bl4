@@ -321,6 +321,22 @@ pub const FNAME_OBJECT_INDEX: u32 = 86;
 /// Chunk size for GUObjectArray (objects per chunk)
 pub const GUOBJECTARRAY_CHUNK_SIZE: usize = 65536;
 
+// -- FUObjectItem Layout (UE5 unpacked mode) --
+// Source: UObjectArray.h lines 49-100
+//
+// struct FUObjectItem {
+//   int64_t FlagsAndRefCount;    // +0x00 (8 bytes) - flags + refcount, NOT a pointer
+//   UObjectBase* Object;          // +0x08 (8 bytes) - the actual UObject pointer
+//   int32_t SerialNumber;         // +0x10 (4 bytes)
+//   int32_t ClusterRootIndex;     // +0x14 (4 bytes)
+// }; // Size: 24 bytes
+//
+// IMPORTANT: Offset 0 is FlagsAndRefCount (a small integer like 0x0000000400000001),
+// NOT the Object pointer. The Object pointer lives at +0x08.
+
+/// Byte offset of Object* within FUObjectItem
+pub const FUOBJECTITEM_OBJECT_OFFSET: usize = 0x08;
+
 // -- UClass Metaclass --
 // With the VERIFIED SDK layout (ClassPrivate at +0x10, NamePrivate at +0x18),
 // we can now properly search for UClass metaclass using the correct offsets.

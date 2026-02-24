@@ -9,7 +9,6 @@ mod gear;
 mod manufacturers;
 mod types;
 
-pub use balance::{extract_balance_data, extract_naming_data};
-pub use gear::{extract_elemental_data, extract_gear_types, extract_rarity_data};
-pub use manufacturers::{extract_manufacturers, extract_weapon_types};
-pub use types::{BalanceCategory, GearType, Manufacturer, ManufacturerRef, WeaponType};
+pub(crate) use balance::extract_naming_data;
+pub(crate) use gear::{extract_elemental_data, extract_gear_types, extract_rarity_data};
+pub(crate) use manufacturers::{extract_manufacturers, extract_weapon_types};

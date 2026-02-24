@@ -12,15 +12,8 @@ mod attributes;
 mod manufacturers;
 mod weapon_gear;
 
-pub use attributes::{
-    extract_elements_from_pak, extract_rarities_from_pak, extract_stats_from_pak, ExtractedElement,
-    ExtractedRarity, ExtractedStat,
+pub(crate) use attributes::{
+    extract_elements_from_pak, extract_rarities_from_pak, extract_stats_from_pak,
 };
-#[allow(deprecated)]
-pub use manufacturers::{
-    extract_manufacturer_names_from_pak, manufacturer_names, ExtractedManufacturer,
-};
-pub use weapon_gear::{
-    extract_gear_types_from_pak, extract_weapon_types_from_pak, ExtractedGearType,
-    ExtractedWeaponType,
-};
+pub(crate) use manufacturers::extract_manufacturer_names_from_pak;
+pub(crate) use weapon_gear::{extract_gear_types_from_pak, extract_weapon_types_from_pak};
