@@ -328,10 +328,13 @@ pub fn handle_manifest(
             aes_key,
         ) {
             Ok(summary) => {
-                let total = summary.status_effects_count
-                    + summary.skill_params_count
-                    + summary.balance_structs_count;
-                println!("  UAsset scanning complete: {} assets extracted\n", total);
+                println!(
+                    "  UAsset scanning complete: {} skill params, {} status effects, {} balance assets across {} categories\n",
+                    summary.skill_params_count,
+                    summary.status_effects_count,
+                    summary.balance_assets,
+                    summary.balance_categories,
+                );
             }
             Err(e) => {
                 eprintln!("  Warning: UAsset scanning failed: {}\n", e);

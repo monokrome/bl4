@@ -1,9 +1,11 @@
 //! Part Extraction Functions
 //!
-//! Functions for extracting part definitions from memory.
+//! Extracts part definitions from memory by walking the GUObjectArray.
+//! Falls back to FName marker scanning if GUObjectArray walking fails.
 
 use super::part_defs::{get_category_for_part, PartDefinition};
 use crate::memory::constants::*;
+use crate::memory::discovery::discover_guobject_array;
 use crate::memory::fname::{FNamePool, FNameReader};
 use crate::memory::pattern::scan_pattern_fast;
 use crate::memory::source::MemorySource;
@@ -12,10 +14,309 @@ use crate::memory::ue5::GUObjectArray;
 use anyhow::{bail, Result};
 use byteorder::{ByteOrder, LE};
 
-/// Extract InventoryPartDef objects and their SerialIndex values
+/// Extract part definitions, trying GUObjectArray walking first then falling back to marker scan.
+pub fn extract_parts_from_fname_arrays(source: &dyn MemorySource) -> Result<Vec<PartDefinition>> {
+    match extract_parts_via_guobject_walk(source) {
+        Ok(parts) if !parts.is_empty() => return Ok(parts),
+        Ok(_) => eprintln!("GUObjectArray walk found 0 parts, falling back to marker scan..."),
+        Err(e) => eprintln!(
+            "GUObjectArray walk failed: {}, falling back to marker scan...",
+            e
+        ),
+    }
+
+    extract_parts_via_marker_scan(source)
+}
+
+/// Primary approach: walk GUObjectArray to find InventoryPartDef objects.
 ///
-/// The SerialIndex is a GbxSerialNumberIndex struct embedded in the object.
-/// We need to find its offset by examining the class properties or empirically.
+/// No pre-discovered metaclass address needed. Instead, we resolve each object's
+/// class FName and check if it matches inventory part patterns.
+fn extract_parts_via_guobject_walk(source: &dyn MemorySource) -> Result<Vec<PartDefinition>> {
+    eprintln!("Extracting parts via GUObjectArray walking...");
+
+    let pool = FNamePool::discover(source)?;
+    let mut fname_reader = FNameReader::new(pool);
+
+    // Discover GUObjectArray (SDK-first, fast)
+    let guobjects = match GUObjectArray::discover(source) {
+        Ok(g) => g,
+        Err(_) => discover_guobject_array(source, 0)?,
+    };
+
+    eprintln!("Walking {} objects...", guobjects.num_elements);
+
+    // First pass: find all part objects by walking GUObjectArray
+    let sample_objects = find_part_objects(source, &guobjects, &mut fname_reader)?;
+
+    if sample_objects.is_empty() {
+        bail!("No InventoryPartDef objects found in GUObjectArray");
+    }
+
+    // Probe for SerialIndex offset using sample objects
+    let serial_index_offset = probe_serial_index_offset(source, &sample_objects)?;
+    eprintln!("Detected SerialIndex offset: {:#x}", serial_index_offset);
+
+    // Extract parts from the collected objects
+    extract_parts_from_objects(source, &sample_objects, &mut fname_reader, serial_index_offset)
+}
+
+/// Walk GUObjectArray and collect all objects whose class is an inventory part type.
+fn find_part_objects(
+    source: &dyn MemorySource,
+    guobjects: &GUObjectArray,
+    fname_reader: &mut FNameReader,
+) -> Result<Vec<(usize, usize)>> {
+    let mut class_cache: std::collections::HashMap<usize, bool> =
+        std::collections::HashMap::new();
+    let mut class_names: std::collections::HashMap<String, usize> =
+        std::collections::HashMap::new();
+    let mut sample_objects: Vec<(usize, usize)> = Vec::new();
+    let mut scanned = 0usize;
+    let mut fname_errors = 0usize;
+
+    for (_idx, obj_ptr) in guobjects.iter_objects(source) {
+        if !(MIN_VALID_POINTER..=MAX_VALID_POINTER).contains(&obj_ptr) {
+            continue;
+        }
+
+        let header = match source.read_bytes(obj_ptr, UOBJECT_HEADER_SIZE) {
+            Ok(h) => h,
+            Err(_) => continue,
+        };
+
+        let class_ptr =
+            LE::read_u64(&header[UOBJECT_CLASS_OFFSET..UOBJECT_CLASS_OFFSET + 8]) as usize;
+        if !(MIN_VALID_POINTER..=MAX_VALID_POINTER).contains(&class_ptr) {
+            continue;
+        }
+
+        let is_part = match class_cache.get(&class_ptr) {
+            Some(&cached) => cached,
+            None => {
+                // Resolve class name and track it for diagnostics
+                let class_header = source.read_bytes(class_ptr, UOBJECT_HEADER_SIZE).ok();
+                if let Some(ch) = &class_header {
+                    let class_name_idx =
+                        LE::read_u32(&ch[UOBJECT_NAME_OFFSET..UOBJECT_NAME_OFFSET + 4]);
+                    match fname_reader.read_name(source, class_name_idx) {
+                        Ok(name) => {
+                            *class_names.entry(name).or_insert(0) += 1;
+                        }
+                        Err(_) => {
+                            fname_errors += 1;
+                        }
+                    }
+                }
+
+                let result = resolve_is_part_class(source, class_ptr, fname_reader);
+                class_cache.insert(class_ptr, result);
+                result
+            }
+        };
+
+        if is_part {
+            sample_objects.push((obj_ptr, class_ptr));
+        }
+
+        scanned += 1;
+        if scanned % 100_000 == 0 {
+            eprintln!(
+                "  Scanned {} objects, found {} part instances...",
+                scanned,
+                sample_objects.len()
+            );
+        }
+    }
+
+    // Diagnostic: show top class names found
+    if sample_objects.is_empty() && !class_names.is_empty() {
+        let mut top_classes: Vec<_> = class_names.iter().collect();
+        top_classes.sort_by(|a, b| b.1.cmp(a.1));
+        eprintln!("  Top 20 class names found (of {} unique):", top_classes.len());
+        for (name, count) in top_classes.iter().take(20) {
+            eprintln!("    {} ({}x)", name, count);
+        }
+        if fname_errors > 0 {
+            eprintln!("  FName resolution errors: {}", fname_errors);
+        }
+
+        // Check if any class name contains "part" or "inventory" (case-insensitive)
+        let part_classes: Vec<_> = class_names
+            .keys()
+            .filter(|n| {
+                let lower = n.to_lowercase();
+                lower.contains("part") || lower.contains("inventory") || lower.contains("weapon")
+            })
+            .collect();
+        if !part_classes.is_empty() {
+            eprintln!("  Classes containing 'part/inventory/weapon':");
+            for name in &part_classes {
+                eprintln!("    {}", name);
+            }
+        }
+    }
+
+    eprintln!(
+        "First pass: {} objects scanned, {} part instances",
+        scanned,
+        sample_objects.len()
+    );
+
+    Ok(sample_objects)
+}
+
+/// Resolve whether a class pointer represents an inventory part definition class.
+fn resolve_is_part_class(
+    source: &dyn MemorySource,
+    class_ptr: usize,
+    fname_reader: &mut FNameReader,
+) -> bool {
+    let class_header = match source.read_bytes(class_ptr, UOBJECT_HEADER_SIZE) {
+        Ok(h) => h,
+        Err(_) => return false,
+    };
+
+    let class_name_idx =
+        LE::read_u32(&class_header[UOBJECT_NAME_OFFSET..UOBJECT_NAME_OFFSET + 4]);
+    let class_name = match fname_reader.read_name(source, class_name_idx) {
+        Ok(n) => n,
+        Err(_) => return false,
+    };
+
+    let is_part = is_inventory_part_class(&class_name);
+    if is_part {
+        eprintln!("  Found part class: '{}' at {:#x}", class_name, class_ptr);
+    }
+    is_part
+}
+
+/// Extract PartDefinitions from a list of (obj_ptr, class_ptr) pairs.
+fn extract_parts_from_objects(
+    source: &dyn MemorySource,
+    objects: &[(usize, usize)],
+    fname_reader: &mut FNameReader,
+    serial_index_offset: usize,
+) -> Result<Vec<PartDefinition>> {
+    let mut parts = Vec::new();
+    let mut seen: std::collections::HashSet<(i64, i16)> = std::collections::HashSet::new();
+
+    for &(obj_ptr, _) in objects {
+        let header = match source.read_bytes(obj_ptr, UOBJECT_HEADER_SIZE) {
+            Ok(h) => h,
+            Err(_) => continue,
+        };
+
+        let name_index = LE::read_u32(&header[UOBJECT_NAME_OFFSET..UOBJECT_NAME_OFFSET + 4]);
+        let name = match fname_reader.read_name(source, name_index) {
+            Ok(n) => n,
+            Err(_) => continue,
+        };
+
+        let serial_data = match source.read_bytes(obj_ptr + serial_index_offset, 12) {
+            Ok(d) => d,
+            Err(_) => continue,
+        };
+
+        let category = LE::read_i64(&serial_data[0..8]);
+        let index = LE::read_i16(&serial_data[10..12]);
+
+        if category > 0 && category < 1000 && index >= 0 && index < 1000 {
+            let key = (category, index);
+            if !seen.insert(key) {
+                continue;
+            }
+
+            parts.push(PartDefinition {
+                name,
+                category,
+                index,
+                object_address: obj_ptr,
+            });
+        }
+    }
+
+    parts.sort_by_key(|p| (p.category, p.index));
+
+    eprintln!(
+        "GUObjectArray extraction: {} unique parts from {} instances",
+        parts.len(),
+        objects.len()
+    );
+
+    Ok(parts)
+}
+
+/// Check if a UClass name represents an inventory part definition
+fn is_inventory_part_class(class_name: &str) -> bool {
+    let lower = class_name.to_lowercase();
+    lower.contains("inventorypartdef")
+        || lower.contains("inventorypart")
+        || lower == "gbxinventorypartdef"
+        || (lower.contains("part") && lower.contains("def"))
+}
+
+/// Probe candidate offsets on sample objects to find GbxSerialNumberIndex
+fn probe_serial_index_offset(
+    source: &dyn MemorySource,
+    sample_objects: &[(usize, usize)],
+) -> Result<usize> {
+    let candidate_offsets: &[usize] = &[
+        0x28, 0x30, 0x38, 0x40, 0x48, 0x50, 0x58, 0x60, 0x68, 0x70, 0x78, 0x80, 0x88, 0x90,
+        0x98, 0xA0, 0xA8, 0xB0, 0xB8, 0xC0, 0xC8, 0xD0, 0xD8, 0xE0,
+    ];
+
+    let samples = sample_objects.len().min(100);
+    let mut offset_scores: std::collections::HashMap<usize, usize> =
+        std::collections::HashMap::new();
+
+    for &(obj_ptr, _) in sample_objects.iter().take(samples) {
+        let obj_data = match source.read_bytes(obj_ptr, 0x100) {
+            Ok(d) => d,
+            Err(_) => continue,
+        };
+
+        for &offset in candidate_offsets {
+            if offset + 12 > obj_data.len() {
+                continue;
+            }
+
+            let category = LE::read_i64(&obj_data[offset..offset + 8]);
+            let index = LE::read_i16(&obj_data[offset + 10..offset + 12]);
+
+            let is_valid_category = (2..=30).contains(&category)
+                || (244..=250).contains(&category)
+                || (279..=350).contains(&category)
+                || (400..=420).contains(&category);
+            let is_valid_index = (0..500).contains(&index);
+
+            if is_valid_category && is_valid_index {
+                *offset_scores.entry(offset).or_insert(0) += 1;
+            }
+        }
+    }
+
+    let best = offset_scores
+        .iter()
+        .max_by_key(|&(_, score)| score)
+        .map(|(&offset, &score)| (offset, score));
+
+    match best {
+        Some((offset, score)) => {
+            eprintln!(
+                "  Best offset {:#x} with score {}/{}",
+                offset, score, samples
+            );
+            Ok(offset)
+        }
+        None => {
+            eprintln!("  Warning: could not detect SerialIndex offset, defaulting to 0x30");
+            Ok(0x30)
+        }
+    }
+}
+
+/// Extract InventoryPartDef objects using a pre-discovered class pointer.
 #[allow(clippy::cognitive_complexity)]
 pub fn extract_part_definitions(
     source: &dyn MemorySource,
@@ -25,144 +326,53 @@ pub fn extract_part_definitions(
 ) -> Result<Vec<PartDefinition>> {
     eprintln!("Extracting InventoryPartDef objects...");
 
-    // Use FNameReader for proper multi-block FName resolution
     let pool = FNamePool::discover(source)?;
     let mut fname_reader = FNameReader::new(pool);
 
     let mut parts = Vec::new();
     let mut scanned = 0;
+    let mut sample_objects: Vec<(usize, usize)> = Vec::new();
 
-    // For empirical offset discovery, we'll look for Category values that
-    // match known patterns (small positive integers in the 2-500 range)
-    // GbxSerialNumberIndex is typically at a fixed offset from the UObject base
-
-    // Try common offsets for the SerialIndex property
-    // UObject base is 0x28 bytes, then class-specific data follows
-    // GbxSerialNumberAwareDef likely adds the SerialIndex early in its layout
-    let candidate_offsets = [
-        0x28, // Right after UObject
-        0x30, // Common first property offset
-        0x38, //
-        0x40, //
-        0x48, // After some padding
-        0x50, //
-        0x58, //
-        0x60, //
-        0x68, //
-        0x70, //
-        0x78, //
-        0x80, //
-        0x88, //
-        0x90, //
-        0x98, //
-        0xA0, //
-        0xA8, //
-        0xB0, //
-        0xB8, //
-        0xC0, //
-        0xC8, //
-        0xD0, //
-        0xD8, //
-        0xE0, //
-    ];
-
-    // First pass: find the correct offset by looking for valid Category patterns
-    let mut offset_scores: std::collections::HashMap<usize, usize> =
-        std::collections::HashMap::new();
-    let mut sample_count = 0;
-
+    // Collect sample objects for offset probing
     for (_idx, obj_ptr) in guobjects.iter_objects(source) {
-        if obj_ptr == 0 || obj_ptr < MIN_VALID_POINTER || obj_ptr > MAX_VALID_POINTER {
+        if obj_ptr < MIN_VALID_POINTER || obj_ptr > MAX_VALID_POINTER {
             continue;
         }
 
-        // Read UObject header
         let header = match source.read_bytes(obj_ptr, UOBJECT_HEADER_SIZE) {
             Ok(h) => h,
             Err(_) => continue,
         };
 
-        // Check if this object's class matches InventoryPartDef
         let class_ptr =
             LE::read_u64(&header[UOBJECT_CLASS_OFFSET..UOBJECT_CLASS_OFFSET + 8]) as usize;
         if class_ptr != inventory_part_def_class {
             continue;
         }
 
-        sample_count += 1;
-
-        // Read extended object data to check candidate offsets
-        if let Ok(obj_data) = source.read_bytes(obj_ptr, 0x100) {
-            for &offset in &candidate_offsets {
-                if offset + 12 > obj_data.len() {
-                    continue;
-                }
-
-                // GbxSerialNumberIndex layout:
-                // - Category: i64 (8 bytes)
-                // - scope: u8 (1 byte)
-                // - status: u8 (1 byte)
-                // - Index: i16 (2 bytes)
-                let category = LE::read_i64(&obj_data[offset..offset + 8]);
-                let index = LE::read_i16(&obj_data[offset + 10..offset + 12]);
-
-                // Valid category values are typically small positive integers
-                // Weapons: 2-29, Heavy: 244-247, Shields: 279-288, Gadgets: 300-330, Enhancements: 400-409
-                let is_valid_category = (category >= 2 && category <= 30)
-                    || (category >= 244 && category <= 250)
-                    || (category >= 279 && category <= 350)
-                    || (category >= 400 && category <= 420);
-
-                // Valid index values are typically 0-300
-                let is_valid_index = index >= 0 && index < 500;
-
-                if is_valid_category && is_valid_index {
-                    *offset_scores.entry(offset).or_insert(0) += 1;
-                }
-            }
-        }
-
-        if sample_count >= 100 {
-            break; // Enough samples to determine offset
+        sample_objects.push((obj_ptr, class_ptr));
+        if sample_objects.len() >= 100 {
+            break;
         }
     }
 
-    // Find the best offset
-    let best_offset = offset_scores
-        .iter()
-        .max_by_key(|&(_, score)| score)
-        .map(|(&offset, _)| offset);
+    let serial_index_offset = probe_serial_index_offset(source, &sample_objects)?;
+    eprintln!(
+        "Detected SerialIndex offset: {:#x}",
+        serial_index_offset
+    );
 
-    let serial_index_offset = match best_offset {
-        Some(offset) => {
-            eprintln!(
-                "Detected SerialIndex offset: {:#x} (score: {})",
-                offset,
-                offset_scores.get(&offset).unwrap_or(&0)
-            );
-            offset
-        }
-        None => {
-            eprintln!("Warning: Could not detect SerialIndex offset, trying 0x30");
-            0x30
-        }
-    };
-
-    eprintln!("Offset scores: {:?}", offset_scores);
-
-    // Second pass: extract all parts with the detected offset
+    // Full extraction pass
     for (idx, obj_ptr) in guobjects.iter_objects(source) {
-        if obj_ptr == 0 || obj_ptr < MIN_VALID_POINTER || obj_ptr > MAX_VALID_POINTER {
+        if obj_ptr < MIN_VALID_POINTER || obj_ptr > MAX_VALID_POINTER {
             continue;
         }
 
-        // Read UObject header
         let header = match source.read_bytes(obj_ptr, UOBJECT_HEADER_SIZE) {
             Ok(h) => h,
             Err(_) => continue,
         };
 
-        // Check if this object's class matches InventoryPartDef
         let class_ptr =
             LE::read_u64(&header[UOBJECT_CLASS_OFFSET..UOBJECT_CLASS_OFFSET + 8]) as usize;
         if class_ptr != inventory_part_def_class {
@@ -171,21 +381,16 @@ pub fn extract_part_definitions(
 
         scanned += 1;
 
-        // Get object name using FNameReader (supports all blocks)
         let name_index = LE::read_u32(&header[UOBJECT_NAME_OFFSET..UOBJECT_NAME_OFFSET + 4]);
         let name = match fname_reader.read_name(source, name_index) {
             Ok(n) => n,
             Err(_) => continue,
         };
 
-        // Read SerialIndex at the detected offset
         if let Ok(obj_data) = source.read_bytes(obj_ptr + serial_index_offset, 12) {
             let category = LE::read_i64(&obj_data[0..8]);
-            let _scope = obj_data[8];
-            let _status = obj_data[9];
             let index = LE::read_i16(&obj_data[10..12]);
 
-            // Filter out invalid entries
             if category > 0 && category < 1000 && index >= 0 && index < 1000 {
                 parts.push(PartDefinition {
                     name,
@@ -196,8 +401,7 @@ pub fn extract_part_definitions(
             }
         }
 
-        // Progress indicator
-        if idx % 100000 == 0 && idx > 0 {
+        if idx % 100_000 == 0 && idx > 0 {
             eprintln!("  Scanned {} objects, found {} parts...", idx, parts.len());
         }
     }
@@ -211,32 +415,12 @@ pub fn extract_part_definitions(
     Ok(parts)
 }
 
-/// Extract part definitions using the discovered FName array pattern.
-///
-/// The game registers parts in internal arrays with a specific structure:
-/// - Part Array Entry (24 bytes):
-///   - FName Index (4 bytes) - References the part name in FNamePool
-///   - Padding (4 bytes) - Always zero
-///   - Pointer (8 bytes) - Address of the part's UObject
-///   - Marker (4 bytes) - 0xFFFFFFFF sentinel value
-///   - Priority (4 bytes) - Selection priority (not the serial index!)
-///
-/// - UObject at Pointer (offset +0x28):
-///   - Scope (1 byte) - EGbxSerialNumberIndexScope (Root=1, Sub=2)
-///   - (reserved 1 byte)
-///   - Index (2 bytes, Int16) - THE SERIAL INDEX we need!
-///
-/// The Part Group ID (category) is derived from the part name prefix, as it's not
-/// stored directly in the UObject structure at a fixed offset.
+/// Fallback: extract parts by scanning for 0xFFFFFFFF markers in memory.
 #[allow(clippy::cognitive_complexity)]
-pub fn extract_parts_from_fname_arrays(source: &dyn MemorySource) -> Result<Vec<PartDefinition>> {
-    eprintln!("Extracting parts via FName array pattern...");
+fn extract_parts_via_marker_scan(source: &dyn MemorySource) -> Result<Vec<PartDefinition>> {
+    eprintln!("Extracting parts via FName array pattern (marker scan)...");
 
-    // Discover FNamePool for name resolution
     let pool = FNamePool::discover(source)?;
-
-    // Step 1: Build a set of all part FName indices for quick lookup
-    eprintln!("Step 1: Building FName lookup table from FNamePool...");
     let part_fnames = search_fname_pool_for_parts(source, &pool)?;
     eprintln!("Found {} FNames containing '.part_'", part_fnames.len());
 
@@ -244,11 +428,7 @@ pub fn extract_parts_from_fname_arrays(source: &dyn MemorySource) -> Result<Vec<
         bail!("No part FNames found in FNamePool");
     }
 
-    // Create a HashMap for quick FName index -> name lookup
     let fname_to_name: std::collections::HashMap<u32, String> = part_fnames.into_iter().collect();
-
-    // Step 2: Scan for 0xFFFFFFFF markers in targeted memory regions
-    eprintln!("Step 2: Scanning for part array entries...");
 
     let marker_pattern = [0xFF, 0xFF, 0xFF, 0xFF];
     let mask = vec![1u8; 4];
@@ -256,13 +436,9 @@ pub fn extract_parts_from_fname_arrays(source: &dyn MemorySource) -> Result<Vec<
     let mut parts = Vec::new();
     let mut seen_keys: std::collections::HashSet<(i64, i16, String)> =
         std::collections::HashSet::new();
-
     let mut processed_regions = 0;
-    let mut total_markers = 0;
 
-    // Process memory regions in chunks
     for region in source.regions() {
-        // Skip very small or very large regions
         if region.size() < 1024 || region.size() > 500 * 1024 * 1024 {
             continue;
         }
@@ -279,18 +455,14 @@ pub fn extract_parts_from_fname_arrays(source: &dyn MemorySource) -> Result<Vec<
             );
         }
 
-        // Read the region
         let region_data = match source.read_bytes(region.start, region.size()) {
             Ok(d) => d,
             Err(_) => continue,
         };
 
-        // Scan for markers using SIMD-accelerated search
         let marker_offsets = scan_pattern_fast(&region_data, &marker_pattern, &mask);
-        total_markers += marker_offsets.len();
 
         for &marker_offset in &marker_offsets {
-            // Entry structure: FName(4) + padding(4) + pointer(8) + marker(4) + priority(4)
             if marker_offset < 16 {
                 continue;
             }
@@ -300,49 +472,38 @@ pub fn extract_parts_from_fname_arrays(source: &dyn MemorySource) -> Result<Vec<
             }
 
             let entry_data = &region_data[entry_offset..entry_offset + 24];
-
             let fname_idx = LE::read_u32(&entry_data[0..4]);
             let padding = LE::read_u32(&entry_data[4..8]);
             let pointer = LE::read_u64(&entry_data[8..16]) as usize;
             let marker = LE::read_u32(&entry_data[16..20]);
 
-            // Validate entry structure
-            if marker != 0xFFFFFFFF {
+            if marker != 0xFFFFFFFF || padding != 0 {
                 continue;
             }
-            if padding != 0 {
-                continue;
-            }
-            if pointer < MIN_VALID_POINTER || pointer > MAX_VALID_POINTER {
+            if !(MIN_VALID_POINTER..=MAX_VALID_POINTER).contains(&pointer) {
                 continue;
             }
 
-            // Check if this FName is a known part name
             let name = match fname_to_name.get(&fname_idx) {
                 Some(n) => n.clone(),
                 None => continue,
             };
 
-            // Read index at UObject+0x2A (skipping scope bytes at +0x28-0x29)
             let serial_data = match source.read_bytes(pointer + 0x28, 4) {
                 Ok(d) => d,
                 Err(_) => continue,
             };
 
             let index = LE::read_i16(&serial_data[2..4]);
-
-            // Validate index
-            if index < 0 || index > 1000 {
+            if !(0..=1000).contains(&index) {
                 continue;
             }
 
-            // Derive category from part name prefix
             let category = match get_category_for_part(&name) {
                 Some(c) => c,
-                None => continue, // Unknown prefix, skip
+                None => continue,
             };
 
-            // Skip duplicates
             let key = (category, index, name.clone());
             if seen_keys.contains(&key) {
                 continue;
@@ -359,19 +520,16 @@ pub fn extract_parts_from_fname_arrays(source: &dyn MemorySource) -> Result<Vec<
     }
 
     eprintln!(
-        "Extraction complete: processed {} regions, {} markers, extracted {} parts",
+        "Marker scan: {} regions processed, {} parts extracted",
         processed_regions,
-        total_markers,
         parts.len()
     );
 
-    // Sort by category and index
     parts.sort_by_key(|p| (p.category, p.index));
-
     Ok(parts)
 }
 
-/// List all FNames containing ".part_" from the FNamePool (public wrapper for debugging)
+/// List all FNames containing ".part_" from the FNamePool
 pub fn list_all_part_fnames(source: &dyn MemorySource) -> Result<Vec<String>> {
     let pool = FNamePool::discover(source)?;
     let fnames = search_fname_pool_for_parts(source, &pool)?;
@@ -391,50 +549,43 @@ fn search_fname_pool_for_parts(
             continue;
         }
 
-        // Read block data (64KB per block)
         let block_data = match source.read_bytes(block_addr, 64 * 1024) {
             Ok(d) => d,
             Err(_) => continue,
         };
 
-        // Search for ".part_" pattern within the block
         for (pos, window) in block_data.windows(search_pattern.len()).enumerate() {
-            if window == search_pattern {
-                // Found potential match - try to find the entry start
-                // Walk backwards to find the header (length byte)
-                let mut entry_start = None;
-                for back in 1..64 {
-                    if pos < back + 2 {
-                        break;
-                    }
-                    let header_pos = pos - back;
-                    let header = &block_data[header_pos..header_pos + 2];
-                    let header_val = LE::read_u16(header);
-                    let len = (header_val >> 6) as usize;
+            if window != search_pattern {
+                continue;
+            }
 
-                    // Check if this looks like a valid header
-                    if len > 0 && len <= 1024 && header_pos + 2 + len <= block_data.len() {
-                        // Verify the string contains our pattern
-                        let name_bytes = &block_data[header_pos + 2..header_pos + 2 + len];
-                        if let Ok(name_str) = std::str::from_utf8(name_bytes) {
-                            if name_str.to_lowercase().contains(".part_") {
-                                // Valid entry found
-                                let byte_offset = header_pos;
-                                // FName index = (block_idx << 16) | (byte_offset / 2)
-                                let fname_index =
-                                    ((block_idx as u32) << 16) | ((byte_offset / 2) as u32);
-                                entry_start = Some((fname_index, name_str.to_string()));
-                                break;
-                            }
+            let mut entry_start = None;
+            for back in 1..64 {
+                if pos < back + 2 {
+                    break;
+                }
+                let header_pos = pos - back;
+                let header = &block_data[header_pos..header_pos + 2];
+                let header_val = LE::read_u16(header);
+                let len = (header_val >> 6) as usize;
+
+                if len > 0 && len <= 1024 && header_pos + 2 + len <= block_data.len() {
+                    let name_bytes = &block_data[header_pos + 2..header_pos + 2 + len];
+                    if let Ok(name_str) = std::str::from_utf8(name_bytes) {
+                        if name_str.to_lowercase().contains(".part_") {
+                            let byte_offset = header_pos;
+                            let fname_index =
+                                ((block_idx as u32) << 16) | ((byte_offset / 2) as u32);
+                            entry_start = Some((fname_index, name_str.to_string()));
+                            break;
                         }
                     }
                 }
+            }
 
-                if let Some((fname_idx, name)) = entry_start {
-                    // Avoid duplicates from overlapping pattern matches
-                    if !results.iter().any(|(idx, _)| *idx == fname_idx) {
-                        results.push((fname_idx, name));
-                    }
+            if let Some((fname_idx, name)) = entry_start {
+                if !results.iter().any(|(idx, _)| *idx == fname_idx) {
+                    results.push((fname_idx, name));
                 }
             }
         }

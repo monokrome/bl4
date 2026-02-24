@@ -34,7 +34,14 @@ fn fill_map(
     zone: Option<&str>,
     fill: u8,
 ) -> Result<usize, SaveError> {
-    let foddatas = data
+    // In real saves, foddatas lives under gbx_discovery_pc; fall back to root.
+    let has_discovery = data.get("gbx_discovery_pc").is_some();
+    let container = if has_discovery {
+        data.get_mut("gbx_discovery_pc").unwrap()
+    } else {
+        data
+    };
+    let foddatas = container
         .get_mut("foddatas")
         .and_then(|v| v.as_sequence_mut())
         .ok_or_else(|| SaveError::KeyNotFound("foddatas".to_string()))?;

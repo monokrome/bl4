@@ -85,7 +85,15 @@ fn main() -> Result<()> {
             skip_extract,
             extracted,
             skip_memory,
+            oodle_exec,
+            #[cfg(unix)]
+            oodle_fifo,
         } => {
+            #[cfg(unix)]
+            let oodle_fifo_val = oodle_fifo;
+            #[cfg(not(unix))]
+            let oodle_fifo_val = false;
+
             commands::extract::handle_manifest(
                 dump.as_deref(),
                 &paks,
@@ -95,6 +103,8 @@ fn main() -> Result<()> {
                 skip_extract,
                 extracted,
                 skip_memory,
+                oodle_exec.as_deref(),
+                oodle_fifo_val,
             )?;
         }
     }

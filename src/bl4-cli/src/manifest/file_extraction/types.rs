@@ -40,14 +40,6 @@ pub struct ManufacturerRef {
     pub path: String,
 }
 
-/// Category of balance data assets
-#[derive(Debug, Serialize, Deserialize)]
-pub struct BalanceCategory {
-    pub name: String,
-    pub path: String,
-    pub assets: Vec<AssetInfo>,
-}
-
 /// Gear type (shields, grenades, gadgets, etc.) with associated data
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GearType {

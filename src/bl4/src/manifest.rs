@@ -55,6 +55,17 @@ static PARTS_BY_ID: Lazy<HashMap<(i64, i64), (String, String)>> = Lazy::new(|| {
     parse_tsv_parts(PARTS_DATABASE_TSV)
 });
 
+/// (Category, Normalized Part Name) -> Index (reverse lookup)
+static PARTS_BY_NAME: Lazy<HashMap<(i64, String), i64>> = Lazy::new(|| {
+    PARTS_BY_ID
+        .iter()
+        .map(|(&(cat, idx), (name, _))| {
+            let bare = normalize_part_name(name).to_string();
+            ((cat, bare), idx)
+        })
+        .collect()
+});
+
 fn parse_tsv_pairs(tsv: &str) -> HashMap<i64, String> {
     tsv.lines()
         .skip(1)
@@ -329,8 +340,7 @@ pub fn slot_from_part_name(name: &str) -> &'static str {
     };
 
     for prefix in SLOT_PREFIXES {
-        if stripped.starts_with(prefix) {
-            let rest = &stripped[prefix.len()..];
+        if let Some(rest) = stripped.strip_prefix(prefix) {
             if rest.is_empty() || rest.starts_with('_') {
                 return prefix;
             }
@@ -358,9 +368,75 @@ pub fn max_part_index(category: i64) -> Option<i64> {
     MAX_PART_INDEX.get(&category).copied()
 }
 
+/// Shared vertical category IDs for fallback part lookup.
+///
+/// When a part index doesn't resolve in the item's per-category parts,
+/// it may belong to a shared vertical (stat mods, barrels, grips, etc.)
+/// that uses the same index space across multiple item categories.
+pub const SHARED_VERTICAL_CATEGORIES: &[i64] = &[
+    10001, // stat_group2 (176-247) + barrel pool (1-94)
+    10002, // stat_group3 (104-175) + barrel_acc (61-78)
+    10003, // rarity_component (1-541) + tediore_acc (9-55)
+    10004, // firmware (27-248) + foregrip (21-82)
+    10005, // barrel pool alt (1-94) + grip (42-83)
+    10006, // barrel_acc alt (1-78) + magazine (1-87)
+    10007, // magazine_acc (27-89) + tediore_acc (9-55)
+    10008, // foregrip alt (21-82) + tediore_secondary_acc (14-17)
+    10009, // grip alt (42-83) + secondary_ammo (61-64)
+    1,     // base shared parts (rarity, elements, secondary elements)
+];
+
+/// Get a part's index by category and name (reverse lookup).
+///
+/// Tries the item's own category first, then falls back to shared
+/// vertical categories. Names are normalized (manufacturer prefix stripped).
+pub fn part_index(category: i64, name: &str) -> Option<i64> {
+    let bare = normalize_part_name(name).to_string();
+    if let Some(&idx) = PARTS_BY_NAME.get(&(category, bare.clone())) {
+        return Some(idx);
+    }
+    for &shared_cat in SHARED_VERTICAL_CATEGORIES {
+        if shared_cat == category {
+            continue;
+        }
+        if let Some(&idx) = PARTS_BY_NAME.get(&(shared_cat, bare.clone())) {
+            return Some(idx);
+        }
+    }
+    None
+}
+
 /// Get the number of known parts for a category.
 pub fn category_part_count(category: i64) -> usize {
     PARTS_BY_ID.keys().filter(|(cat, _)| *cat == category).count()
+}
+
+/// Find a legendary barrel alias in per-category NCS metadata.
+///
+/// Some legendaries (e.g., Seventh Sense) use a generic barrel in their serial
+/// encoding but have a legendary-specific entry in the per-category NCS data.
+/// Given category 3 and `barrel_base = "barrel_01"`, this finds
+/// `"part_barrel_01_seventh_sense"` at NCS index 80.
+///
+/// Returns None if no legendary alias exists for the given barrel base.
+pub fn legendary_barrel_alias(category: i64, barrel_base: &str) -> Option<&'static str> {
+    let target_prefix = format!("part_{}_", barrel_base);
+    PARTS_BY_ID
+        .iter()
+        .filter(|(&(cat, _), _)| cat == category)
+        .find_map(|(&(_, _), (name, _))| {
+            if name.starts_with(&target_prefix) && name.len() > target_prefix.len() {
+                let suffix = &name[target_prefix.len()..];
+                // Skip single-letter sub-variants (a, b, c, d)
+                if suffix.len() == 1 && suffix.chars().all(|c| c.is_ascii_lowercase()) {
+                    None
+                } else {
+                    Some(name.as_str())
+                }
+            } else {
+                None
+            }
+        })
 }
 
 /// Check if manifest data is loaded (forces initialization)
@@ -599,6 +675,30 @@ mod tests {
         // The normalized form "part_barrel_01" should be in the pool
         if let Some(found) = result {
             assert!(found, "DAD_PS.part_barrel_01 should be in category 2 pool");
+        }
+    }
+
+    #[test]
+    fn test_part_index_reverse_lookup() {
+        // If we can find a name by (category, index), reverse lookup should return the same index
+        if let Some(name) = part_name(2, 7) {
+            let idx = part_index(2, name);
+            assert_eq!(idx, Some(7), "Reverse lookup for '{}' in category 2", name);
+        }
+    }
+
+    #[test]
+    fn test_part_index_unknown() {
+        assert!(part_index(2, "nonexistent_part_xyz").is_none());
+    }
+
+    #[test]
+    fn test_part_index_normalizes_prefix() {
+        // Should work with manufacturer-prefixed names
+        if let Some(name) = part_name(2, 7) {
+            let prefixed = format!("MFR_PS.{}", name);
+            let idx = part_index(2, &prefixed);
+            assert_eq!(idx, Some(7), "Should normalize prefix for '{}'", prefixed);
         }
     }
 

@@ -6,6 +6,260 @@ use std::fs;
 use std::io::Write;
 use std::path::Path;
 
+/// Display groups and the slot types that map to each, in display order.
+const DISPLAY_GROUPS: &[(&str, &[&str])] = &[
+    ("Barrel", &["barrel"]),
+    ("Underbarrel", &["underbarrel"]),
+    ("Body", &["body", "body_armor", "body_bolt", "body_element", "body_mag"]),
+    ("Grip", &["grip"]),
+    ("Foregrip", &["foregrip"]),
+    ("Scope", &["scope"]),
+    ("Magazine", &["mag"]),
+    ("Element", &["element", "secondary_elem"]),
+    ("Ammo", &["secondary_ammo", "secondary"]),
+    ("Shield", &["shield"]),
+    ("Rarity", &["rarity"]),
+    ("Stats", &["stat", "stat2", "stat3"]),
+    ("Firmware", &["firmware"]),
+    ("Passive", &["passive"]),
+    ("Class Mod", &["class_mod"]),
+    ("Multi", &["multi"]),
+    ("Unique", &["unique"]),
+    ("Unknown", &["unknown"]),
+];
+
+/// A resolved part ready for display.
+struct ResolvedPart {
+    slot: &'static str,
+    display: String,
+    index: u64,
+}
+
+/// Resolve parts list into display-ready structs.
+fn resolve_parts(parts: &[(u64, Option<&'static str>, Vec<u64>)]) -> Vec<ResolvedPart> {
+    let mut resolved = Vec::new();
+    for (index, name, _values) in parts {
+        if *index == 0 {
+            continue;
+        }
+        if let Some(element) = bl4::serial::Element::from_index(*index) {
+            resolved.push(ResolvedPart {
+                slot: "element",
+                display: element.name().to_string(),
+                index: *index,
+            });
+        } else if let Some(n) = name {
+            let short_name = n.split('.').next_back().unwrap_or(n);
+            let slot = bl4::manifest::slot_from_part_name(n);
+            resolved.push(ResolvedPart {
+                slot,
+                display: short_name.to_string(),
+                index: *index,
+            });
+        } else {
+            resolved.push(ResolvedPart {
+                slot: "unknown",
+                display: format!("[{}]", index),
+                index: *index,
+            });
+        }
+    }
+    resolved
+}
+
+/// Try to resolve a legendary name from the parts list.
+///
+/// Three-pass resolution:
+/// 1. Look for `comp_05_legendary_*` suffix in resolved comp parts
+/// 2. Look for legendary barrel names (`part_barrel_*_<suffix>`)
+/// 3. If legendary with generic barrel, check per-category NCS metadata
+fn resolve_legendary_name(
+    parts: &[(u64, Option<&'static str>, Vec<u64>)],
+    category: Option<i64>,
+    is_legendary: bool,
+) -> Option<String> {
+    if let Some(name) = resolve_from_legendary_comp(parts) {
+        return Some(name);
+    }
+
+    let (barrel_result, generic_barrel_base) = resolve_from_barrel_parts(parts);
+    if let Some(name) = barrel_result {
+        return Some(name);
+    }
+
+    if is_legendary {
+        return resolve_from_category_metadata(category, generic_barrel_base);
+    }
+
+    None
+}
+
+/// Pass 1: scan parts for `comp_05_legendary_*` suffix.
+fn resolve_from_legendary_comp(
+    parts: &[(u64, Option<&'static str>, Vec<u64>)],
+) -> Option<String> {
+    for (_index, name, _values) in parts {
+        if let Some(n) = name {
+            let segment = n.split('.').next_back().unwrap_or(n);
+            if let Some(suffix) = segment.strip_prefix("comp_05_legendary_") {
+                if !suffix.is_empty() {
+                    return match_legendary_suffix(suffix);
+                }
+            }
+        }
+    }
+    None
+}
+
+/// Pass 2: scan barrel parts for legendary suffixes.
+/// Returns (legendary_name, generic_barrel_base) where the barrel base
+/// is needed for pass 3 if no legendary barrel was found.
+fn resolve_from_barrel_parts(
+    parts: &[(u64, Option<&'static str>, Vec<u64>)],
+) -> (Option<String>, Option<&'static str>) {
+    let mut generic_barrel_base: Option<&str> = None;
+    let mut barrel_candidates: Vec<&str> = Vec::new();
+
+    for (_index, name, _values) in parts {
+        if let Some(n) = name {
+            let segment = n.split('.').next_back().unwrap_or(n);
+            if let Some(suffix) = legendary_barrel_suffix(segment) {
+                barrel_candidates.push(suffix);
+            }
+            if generic_barrel_base.is_none() {
+                generic_barrel_base = generic_barrel_base_name(segment);
+            }
+        }
+    }
+
+    if barrel_candidates.is_empty() {
+        return (None, generic_barrel_base);
+    }
+
+    // If the weapon has a generic barrel (part_barrel_01/02), the legendary
+    // identity likely comes from per-category NCS metadata (pass 3), not the
+    // shared barrel namespace. Shared barrel indices collide across legendaries,
+    // so defer to pass 3 when a generic barrel is also present.
+    if generic_barrel_base.is_some() {
+        return (None, generic_barrel_base);
+    }
+
+    // Prefer a candidate that matches KNOWN_LEGENDARIES
+    if let Some(known) = best_known_legendary(&barrel_candidates) {
+        return (Some(known), generic_barrel_base);
+    }
+
+    // Prefer last candidate (later serial positions are more weapon-specific)
+    let name = match_legendary_suffix(barrel_candidates.last().unwrap());
+    (name, generic_barrel_base)
+}
+
+/// Check barrel suffixes against KNOWN_LEGENDARIES for a match.
+fn best_known_legendary(candidates: &[&str]) -> Option<String> {
+    for suffix in candidates {
+        let suffix_lower = suffix.to_lowercase();
+        for leg in bl4::KNOWN_LEGENDARIES {
+            let leg_segment = leg.internal.split('.').next_back().unwrap_or(leg.internal);
+            if let Some(leg_suffix) = leg_segment.strip_prefix("comp_05_legendary_") {
+                if leg_suffix.to_lowercase() == suffix_lower {
+                    return Some(leg.name.to_string());
+                }
+            }
+        }
+    }
+    None
+}
+
+/// Pass 3: check per-category NCS metadata for legendary barrel alias.
+fn resolve_from_category_metadata(
+    category: Option<i64>,
+    generic_barrel_base: Option<&str>,
+) -> Option<String> {
+    let cat = category?;
+    let barrel_base = generic_barrel_base?;
+    let alias = bl4::manifest::legendary_barrel_alias(cat, barrel_base)?;
+    let segment = alias.split('.').next_back().unwrap_or(alias);
+    let prefix = format!("part_{}_", barrel_base);
+    let suffix = segment.strip_prefix(&prefix)?;
+    match_legendary_suffix(suffix)
+}
+
+/// Extract legendary suffix from a barrel part name.
+///
+/// Returns Some(suffix) for legendary barrels like:
+/// - `part_barrel_01_seamstress` → "seamstress"
+/// - `part_barrel_goldengod` → "goldengod"
+///
+/// Returns None for generic/sub-variant/licensed barrels.
+fn legendary_barrel_suffix(name: &str) -> Option<&str> {
+    let rest = name.strip_prefix("part_barrel_")?;
+
+    if rest.starts_with("licensed_") {
+        return None;
+    }
+
+    for prefix in ["01_", "02_"] {
+        if let Some(suffix) = rest.strip_prefix(prefix) {
+            // Single-letter sub-variants (a, b, c, d) are barrel accessories, not legendaries
+            if suffix.len() == 1 && suffix.chars().all(|c| c.is_ascii_lowercase()) {
+                return None;
+            }
+            return Some(suffix);
+        }
+    }
+
+    // Bare "01" or "02" = generic barrel
+    if rest == "01" || rest == "02" {
+        return None;
+    }
+
+    // part_barrel_<suffix> (no 01/02 prefix, e.g., part_barrel_goldengod)
+    Some(rest)
+}
+
+/// Extract the generic barrel base from a barrel part name.
+///
+/// Returns Some("barrel_01") for `part_barrel_01`, Some("barrel_02") for `part_barrel_02`.
+fn generic_barrel_base_name(name: &str) -> Option<&str> {
+    let rest = name.strip_prefix("part_")?;
+    if rest == "barrel_01" || rest == "barrel_02" {
+        Some(rest)
+    } else {
+        None
+    }
+}
+
+/// Match a legendary suffix against KNOWN_LEGENDARIES, falling back to title-case.
+fn match_legendary_suffix(suffix: &str) -> Option<String> {
+    let suffix_lower = suffix.to_lowercase();
+
+    for leg in bl4::KNOWN_LEGENDARIES {
+        let leg_segment = leg.internal.split('.').next_back().unwrap_or(leg.internal);
+        if let Some(leg_suffix) = leg_segment.strip_prefix("comp_05_legendary_") {
+            if leg_suffix.to_lowercase() == suffix_lower {
+                return Some(leg.name.to_string());
+            }
+        }
+    }
+
+    // No known match — title-case the suffix
+    let title = suffix
+        .split('_')
+        .map(|w| {
+            let mut chars = w.chars();
+            match chars.next() {
+                Some(c) => {
+                    let upper: String = c.to_uppercase().collect();
+                    format!("{}{}", upper, chars.as_str())
+                }
+                None => String::new(),
+            }
+        })
+        .collect::<Vec<_>>()
+        .join(" ");
+    Some(title)
+}
+
 /// Handle `serial decode` command
 #[allow(
     clippy::too_many_lines,
@@ -19,24 +273,86 @@ pub fn decode(
     debug: bool,
     analyze: bool,
     rarity: bool,
+    short: bool,
     parts_db: &Path,
+    remove: &[String],
+    add: &[String],
 ) -> Result<()> {
     let item = bl4::ItemSerial::decode(serial).context("Failed to decode serial")?;
 
-    println!("Serial: {}", item.original);
-    println!(
-        "Item type: {} ({})",
-        item.item_type,
-        item.item_type_description()
-    );
+    // Part editing: modify tokens, re-encode, and decode the result
+    if !remove.is_empty() || !add.is_empty() {
+        let category = item
+            .parts_category()
+            .context("Cannot edit parts: unable to determine item category")?;
 
-    // Show weapon info based on format type
-    if let Some((mfr, weapon_type)) = item.weapon_info() {
-        println!("Weapon: {} {}", mfr, weapon_type);
+        let mut new_tokens = item.tokens.clone();
+
+        for name in remove {
+            let target_index = bl4::manifest::part_index(category, name)
+                .with_context(|| format!("part '{}' not found in category {}", name, category))?;
+            let before = new_tokens.len();
+            new_tokens.retain(|t| {
+                !matches!(t, bl4::serial::Token::Part { index, .. } if *index == target_index as u64)
+            });
+            if new_tokens.len() == before {
+                bail!(
+                    "part '{}' (index {}) not present in serial tokens",
+                    name,
+                    target_index
+                );
+            }
+        }
+
+        for name in add {
+            let index = if let Ok(raw) = name.parse::<i64>() {
+                raw
+            } else {
+                bl4::manifest::part_index(category, name)
+                    .with_context(|| format!("part '{}' not found in category {}", name, category))?
+            };
+            new_tokens.push(bl4::serial::Token::Part {
+                index: index as u64,
+                values: vec![],
+            });
+        }
+
+        let modified = item.with_tokens(new_tokens);
+        let new_serial = modified.encode_from_tokens();
+        println!("Modified serial: {}\n", new_serial);
+        return decode(
+            &new_serial, verbose, debug, analyze, rarity, short, parts_db, &[], &[],
+        );
+    }
+
+    let parts = item.parts_with_names();
+
+    // Build header with optional legendary name
+    let is_legendary = item
+        .rarity
+        .map(|r| r == bl4::serial::Rarity::Legendary)
+        .unwrap_or(false);
+    let legendary_name = resolve_legendary_name(&parts, item.parts_category(), is_legendary);
+    let base_name = if let Some((mfr, weapon_type)) = item.weapon_info() {
+        format!("{} {}", mfr, weapon_type)
     } else if let Some(group_id) = item.part_group_id() {
-        let category_name =
-            bl4::category_name(group_id).unwrap_or("Unknown");
-        println!("Category: {} ({})", category_name, group_id);
+        let category_name = bl4::category_name(group_id).unwrap_or("Unknown");
+        format!("{} ({})", category_name, group_id)
+    } else {
+        item.item_type_description().to_string()
+    };
+
+    let validation = item.validate();
+    let legality_icon = match validation.legality {
+        bl4::serial::Legality::Legal => "✓",
+        bl4::serial::Legality::Illegal => "✗",
+        bl4::serial::Legality::Unknown => "?",
+    };
+
+    if let Some(ref leg) = legendary_name {
+        println!("{} ({}) {}", base_name, leg, legality_icon);
+    } else {
+        println!("{} {}", base_name, legality_icon);
     }
 
     // Show elements if detected
@@ -45,20 +361,11 @@ pub fn decode(
     }
 
     // Show rarity if detected
-    if let Some(rarity) = item.rarity_name() {
-        println!("Rarity: {}", rarity);
+    if let Some(rarity_name) = item.rarity_name() {
+        println!("Rarity: {}", rarity_name);
     }
 
-    // Show raw manufacturer ID if we couldn't resolve it
-    if item.weapon_info().is_none() {
-        if let Some(mfr) = item.manufacturer_name() {
-            println!("Manufacturer: {}", mfr);
-        } else if let Some(mfr_id) = item.manufacturer {
-            println!("Manufacturer ID: {} (unknown)", mfr_id);
-        }
-    }
-
-    // Show level and seed for VarInt-first format
+    // Show level
     if let Some(level) = item.level {
         if let Some(raw) = item.raw_level {
             if raw > level {
@@ -73,56 +380,42 @@ pub fn decode(
             println!("Level: {}", level);
         }
     }
-    if let Some(seed) = item.seed {
-        println!("Seed: {}", seed);
-    }
 
-    println!("Decoded bytes: {}", item.raw_bytes.len());
-    println!("Hex: {}", item.hex_dump());
-    println!("Tokens: {}", item.format_tokens());
-
-    // Show resolved parts using compiled-in manifest data
-    let parts_summary = item.parts_summary();
-    if !parts_summary.is_empty() {
-        println!("\nParts: {}", parts_summary);
-    }
-
-    // Show detailed parts with full names if verbose
-    let parts = item.parts_with_names();
-    if !parts.is_empty() && verbose {
-        println!("\nResolved parts ({}):", item.parts_category().unwrap_or(-1));
-        for (index, name, values) in &parts {
-            let extra = if values.is_empty() {
-                String::new()
-            } else if values.len() == 1 {
-                format!(" (value: {})", values[0])
-            } else {
-                format!(" (values: {:?})", values)
-            };
-
-            // Check if this is an element marker first (128-142 range)
-            if *index >= 128 && *index <= 142 {
-                let elem_id = index - 128;
-                let elem_name = match elem_id {
-                    0 => "Kinetic",
-                    5 => "Corrosive",
-                    8 => "Shock",
-                    9 => "Radiation",
-                    13 => "Cryo",
-                    14 => "Fire",
-                    _ => "Unknown Element",
-                };
-                println!("  [{:3}] <element: {}>{}", index, elem_name, extra);
-            } else if let Some(n) = name {
-                println!("  [{:3}] {}{}", index, n, extra);
-            } else {
-                println!("  [{:3}] <unknown>{}", index, extra);
-            }
+    // Show raw manufacturer ID if we couldn't resolve it
+    if item.weapon_info().is_none() {
+        if let Some(mfr) = item.manufacturer_name() {
+            println!("Manufacturer: {}", mfr);
+        } else if let Some(mfr_id) = item.manufacturer {
+            println!("Manufacturer ID: {} (unknown)", mfr_id);
         }
     }
 
-    // For backwards compatibility, also check parts_db file for additional parts
-    let _ = parts_db; // Suppress unused warning - kept for API compatibility
+    // Verbose: serial internals
+    if verbose {
+        println!("\nSerial: {}", item.original);
+        println!(
+            "Format: {} ({})",
+            item.format,
+            item.item_type_description()
+        );
+        if let Some(seed) = item.seed {
+            println!("Seed: {}", seed);
+        }
+        println!("Decoded bytes: {}", item.raw_bytes.len());
+        println!("Hex: {}", item.hex_dump());
+        println!("Tokens: {}", item.format_tokens());
+    }
+
+    // Parts display
+    if !parts.is_empty() {
+        if short {
+            print_parts_short(&item);
+        } else {
+            print_parts_grouped(&parts, verbose);
+        }
+    }
+
+    let _ = parts_db;
 
     if verbose {
         println!("\n{}", item.detailed_dump());
@@ -144,6 +437,78 @@ pub fn decode(
     Ok(())
 }
 
+/// Print parts in short (compact) format: comma-separated on one line.
+fn print_parts_short(item: &bl4::ItemSerial) {
+    let summary = item.parts_summary();
+    if !summary.is_empty() {
+        println!("\nParts: {}", summary);
+    }
+}
+
+/// Print parts grouped by display group.
+fn print_parts_grouped(parts: &[(u64, Option<&'static str>, Vec<u64>)], verbose: bool) {
+    let resolved = resolve_parts(parts);
+    if resolved.is_empty() {
+        return;
+    }
+
+    println!();
+
+    // Build groups: map group_name → Vec<ResolvedPart>
+    let mut groups: Vec<(&str, Vec<&ResolvedPart>)> = Vec::new();
+    for (group_name, slots) in DISPLAY_GROUPS {
+        let members: Vec<&ResolvedPart> = resolved
+            .iter()
+            .filter(|p| slots.contains(&p.slot))
+            .collect();
+        if !members.is_empty() {
+            groups.push((group_name, members));
+        }
+    }
+
+    // Catch any slots not covered by DISPLAY_GROUPS → Unknown
+    let known_slots: Vec<&str> = DISPLAY_GROUPS
+        .iter()
+        .flat_map(|(_, slots)| slots.iter().copied())
+        .collect();
+    let uncovered: Vec<&ResolvedPart> = resolved
+        .iter()
+        .filter(|p| !known_slots.contains(&p.slot))
+        .collect();
+    if !uncovered.is_empty() {
+        // Merge into existing Unknown group or add new one
+        if let Some(existing) = groups.iter_mut().find(|(name, _)| *name == "Unknown") {
+            existing.1.extend(uncovered);
+        } else {
+            groups.push(("Unknown", uncovered));
+        }
+    }
+
+    for (group_name, mut members) in groups {
+        members.sort_by(|a, b| a.display.cmp(&b.display));
+
+        if verbose {
+            // Verbose: show index within group
+            if members.len() == 1 {
+                let p = members[0];
+                println!("{}: [{:3}] {} ({})", group_name, p.index, p.display, p.slot);
+            } else {
+                println!("{}:", group_name);
+                for p in &members {
+                    println!("  - [{:3}] {} ({})", p.index, p.display, p.slot);
+                }
+            }
+        } else if members.len() == 1 {
+            println!("{:<12} {}", format!("{}:", group_name), members[0].display);
+        } else {
+            println!("{}:", group_name);
+            for p in &members {
+                println!("  - {}", p.display);
+            }
+        }
+    }
+}
+
 /// Analyze the first token for group ID research
 fn analyze_first_token(item: &bl4::ItemSerial) -> Result<()> {
     use bl4::serial::Token;
@@ -163,42 +528,32 @@ fn analyze_first_token(item: &bl4::ItemSerial) -> Result<()> {
             println!("Binary: {:024b}", value);
             println!();
 
-            // Decode Part Group ID based on item type
+            // Decode Part Group ID based on format and token value
             println!("Part Group ID decoding:");
-            match item.item_type {
-                'r' | 'a'..='d' | 'f' | 'g' | 'v'..='z' => {
-                    let group_id = value / 8192;
-                    let offset = value % 8192;
-                    println!("  Formula: group_id = value / 8192 (weapons)");
-                    println!("  Group ID: {} (offset {})", group_id, offset);
-
-                    let group_name = bl4::category_name(group_id as i64).unwrap_or("Unknown");
-                    println!("  Identified: {}", group_name);
+            match first_token {
+                Token::VarBit(v) => {
+                    if let Some(cat) = item.part_group_id() {
+                        let divisor = if *v >= 131_072 { 8192 } else { 384 };
+                        let offset = value % divisor;
+                        println!("  Formula: category = varbit / {} ({})", divisor,
+                            if divisor == 8192 { "weapons" } else { "equipment" });
+                        println!("  Category: {} (offset {})", cat, offset);
+                        let name = bl4::category_name(cat).unwrap_or("Unknown");
+                        println!("  Identified: {}", name);
+                    }
                 }
-                'e' => {
-                    let group_id = value / 384;
-                    let offset = value % 384;
-                    println!("  Formula: group_id = value / 384 (equipment)");
-                    println!("  Group ID: {} (offset {})", group_id, offset);
-
-                    let group_name =
-                        bl4::category_name(group_id as i64).unwrap_or("Unknown Equipment");
-                    println!("  Identified: {}", group_name);
+                Token::VarInt(_) => {
+                    if let Some((mfr, wtype)) = item.weapon_info() {
+                        println!("  VarInt-first: serial ID {} → {} {}", value, mfr, wtype);
+                    } else {
+                        println!("  VarInt-first: serial ID {} (not in WEAPON_INFO)", value);
+                    }
+                    if let Some(cat) = item.parts_category() {
+                        let name = bl4::category_name(cat).unwrap_or("Unknown");
+                        println!("  Parts category: {} ({})", cat, name);
+                    }
                 }
-                'u' => {
-                    println!("  Utility items - encoding formula not yet determined");
-                    println!("  Raw value: {}", value);
-                }
-                '!' | '#' => {
-                    println!("  Class mods - encoding formula not yet determined");
-                    println!("  Raw value: {}", value);
-                }
-                _ => {
-                    println!(
-                        "  Unknown item type '{}' - encoding formula not determined",
-                        item.item_type
-                    );
-                }
+                _ => {}
             }
 
             println!();
@@ -348,8 +703,8 @@ pub fn compare(serial1: &str, serial2: &str) -> Result<()> {
     println!("=== SERIAL 1 ===");
     println!("Serial: {}", item1.original);
     println!(
-        "Type: {} ({})",
-        item1.item_type,
+        "Format: {} ({})",
+        item1.format,
         item1.item_type_description()
     );
     if let Some((mfr, wtype)) = item1.weapon_info() {
@@ -367,8 +722,8 @@ pub fn compare(serial1: &str, serial2: &str) -> Result<()> {
     println!("=== SERIAL 2 ===");
     println!("Serial: {}", item2.original);
     println!(
-        "Type: {} ({})",
-        item2.item_type,
+        "Format: {} ({})",
+        item2.format,
         item2.item_type_description()
     );
     if let Some((mfr, wtype)) = item2.weapon_info() {

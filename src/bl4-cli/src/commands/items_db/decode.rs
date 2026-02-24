@@ -102,7 +102,7 @@ pub fn decode_all(db: &Path) -> Result<()> {
                     &wdb,
                     &item.serial,
                     "item_type",
-                    &decoded_item.item_type.to_string(),
+                    decoded_item.item_type_description(),
                 )?;
 
                 let parts_summary = decoded_item.parts_summary();
@@ -234,7 +234,7 @@ pub fn decode(db: &Path, serial: Option<String>, all: bool) -> Result<()> {
                 wdb.set_value(
                     serial,
                     "item_type",
-                    &item.item_type.to_string(),
+                    item.item_type_description(),
                     bl4_idb::ValueSource::Decoder,
                     Some("bl4-cli"),
                     bl4_idb::Confidence::Inferred,
@@ -401,7 +401,7 @@ pub fn import_save(
                     &wdb,
                     &item.serial,
                     "item_type",
-                    &decoded_item.item_type.to_string(),
+                    decoded_item.item_type_description(),
                 );
 
                 let parts_summary = decoded_item.parts_summary();

@@ -11,7 +11,7 @@ use std::fs;
 use std::path::Path;
 use walkdir::WalkDir;
 
-use super::ManifestIndex;
+use super::items_database::ManifestIndex;
 
 /// Get manufacturer names from bl4::reference
 /// DEPRECATED: Use `extract_manufacturer_names_from_pak` for authoritative data.

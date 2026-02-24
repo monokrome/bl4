@@ -15,6 +15,16 @@ pub fn mirror_byte(byte: u8) -> u8 {
 
 /// Decode Base85 with custom BL4 alphabet
 pub fn decode_base85(input: &str) -> Result<Vec<u8>, SerialError> {
+    // Strip backslashes — shells (zsh/bash) insert `\!` for `!` even in single
+    // quotes; `\` is not in the base85 alphabet so any occurrence is pollution.
+    let cleaned: String;
+    let input = if input.contains('\\') {
+        cleaned = input.replace('\\', "");
+        &cleaned
+    } else {
+        input
+    };
+
     // Build reverse lookup table
     let mut lookup = [0u8; 256];
     for (i, &ch) in BL4_BASE85_ALPHABET.iter().enumerate() {

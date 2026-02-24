@@ -45,13 +45,11 @@ impl BitReader {
         let mut result = 0u64;
         let mut shift = 0;
 
-        // Max 4 nibbles (16 bits total)
         for _ in 0..4 {
             let nibble = self.read_bits(4)?;
             result |= nibble << shift;
             shift += 4;
 
-            // Read continuation bit (1 = continue, 0 = stop)
             let cont = self.read_bits(1)?;
             if cont == 0 {
                 return Some(result);

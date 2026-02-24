@@ -15,7 +15,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
-use super::ManifestIndex;
+use super::items_database::ManifestIndex;
 
 // ============================================================================
 // Serializable Wrapper Types

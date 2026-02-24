@@ -164,6 +164,7 @@ impl ItemSerial {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::serial::SerialFormat;
 
     #[test]
     fn test_rarity_tier_number() {
@@ -206,8 +207,9 @@ mod tests {
         let serial = ItemSerial {
             original: String::new(),
             raw_bytes: Vec::new(),
-            item_type: 'r',
+            format: SerialFormat::VarIntFirst,
             tokens: Vec::new(),
+            token_bit_offsets: Vec::new(),
             manufacturer: None,
             level: None,
             raw_level: None,
@@ -223,8 +225,9 @@ mod tests {
         let serial = ItemSerial {
             original: String::new(),
             raw_bytes: Vec::new(),
-            item_type: 'r',
+            format: SerialFormat::VarIntFirst,
             tokens: Vec::new(),
+            token_bit_offsets: Vec::new(),
             manufacturer: None,
             level: Some(10),
             raw_level: Some(10),

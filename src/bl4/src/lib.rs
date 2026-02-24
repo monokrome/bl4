@@ -54,13 +54,14 @@ pub use backup::{smart_backup, update_after_edit, BackupError};
 pub use crypto::{decrypt_sav, derive_key, encrypt_sav, CryptoError};
 #[doc(inline)]
 pub use parts::{
-    category_from_varbit, category_name, level_from_code, manufacturer_name,
-    serial_id_to_parts_category, varbit_divisor,
+    category_from_varbit, category_name, code_from_level, first_varint_from_weapon_info,
+    level_from_code, manufacturer_name, serial_id_to_parts_category, varbit_divisor,
+    varbit_from_category, weapon_level_code,
 };
 #[doc(inline)]
 pub use save::{ChangeSet, SaveError, SaveFile, StateFlags};
 #[doc(inline)]
-pub use serial::{ItemSerial, Legality, RarityEstimate, SerialError, ValidationCheck, ValidationResult};
+pub use serial::{ItemSerial, Legality, RarityEstimate, SerialError, SerialFormat, ValidationCheck, ValidationResult};
 
 // Manifest data lookups
 #[doc(inline)]
