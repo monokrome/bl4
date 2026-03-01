@@ -28,43 +28,26 @@ const DISPLAY_GROUPS: &[(&str, &[&str])] = &[
     ("Unknown", &["unknown"]),
 ];
 
-/// A resolved part ready for display.
+/// A CLI-specific resolved part with display formatting.
 struct ResolvedPart {
     slot: &'static str,
     display: String,
     index: u64,
 }
 
-/// Resolve parts list into display-ready structs.
-fn resolve_parts(parts: &[(u64, Option<&'static str>, Vec<u64>)]) -> Vec<ResolvedPart> {
-    let mut resolved = Vec::new();
-    for (index, name, _values) in parts {
-        if *index == 0 {
-            continue;
-        }
-        if let Some(element) = bl4::serial::Element::from_index(*index) {
-            resolved.push(ResolvedPart {
-                slot: "element",
-                display: element.name().to_string(),
-                index: *index,
-            });
-        } else if let Some(n) = name {
-            let short_name = n.split('.').next_back().unwrap_or(n);
-            let slot = bl4::manifest::slot_from_part_name(n);
-            resolved.push(ResolvedPart {
-                slot,
-                display: short_name.to_string(),
-                index: *index,
-            });
-        } else {
-            resolved.push(ResolvedPart {
-                slot: "unknown",
-                display: format!("[{}]", index),
-                index: *index,
-            });
+impl From<bl4::ResolvedPart> for ResolvedPart {
+    fn from(p: bl4::ResolvedPart) -> Self {
+        Self {
+            slot: p.slot,
+            display: p.short_name,
+            index: p.index,
         }
     }
-    resolved
+}
+
+/// Resolve parts list into display-ready structs using core library.
+fn resolve_parts(item: &bl4::ItemSerial) -> Vec<ResolvedPart> {
+    item.resolved_parts().into_iter().map(ResolvedPart::from).collect()
 }
 
 /// Try to resolve a legendary name from the parts list.
@@ -411,7 +394,7 @@ pub fn decode(
         if short {
             print_parts_short(&item);
         } else {
-            print_parts_grouped(&parts, verbose);
+            print_parts_grouped(&item, verbose);
         }
     }
 
@@ -446,8 +429,8 @@ fn print_parts_short(item: &bl4::ItemSerial) {
 }
 
 /// Print parts grouped by display group.
-fn print_parts_grouped(parts: &[(u64, Option<&'static str>, Vec<u64>)], verbose: bool) {
-    let resolved = resolve_parts(parts);
+fn print_parts_grouped(item: &bl4::ItemSerial, verbose: bool) {
+    let resolved = resolve_parts(item);
     if resolved.is_empty() {
         return;
     }
