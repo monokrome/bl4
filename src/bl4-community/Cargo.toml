@@ -7,6 +7,10 @@ license.workspace = true
 repository.workspace = true
 description = "Community API server for Borderlands 4 items database"
 
+[lib]
+name = "bl4_community"
+path = "src/lib.rs"
+
 [[bin]]
 name = "bl4-community"
 path = "src/main.rs"
@@ -43,6 +47,11 @@ uuid = { version = "1.11", features = ["v4"] }
 
 # Image resizing
 image = "0.25"
+
+[dev-dependencies]
+http-body-util = "0.1"
+serde_json = { workspace = true }
+tower = { version = "0.5", features = ["util"] }
 
 [lints]
 workspace = true
