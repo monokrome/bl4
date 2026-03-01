@@ -202,6 +202,30 @@ pub enum Token {
     String(String),                        // 111 + length + ascii
 }
 
+/// A fully-resolved part from a decoded serial.
+#[derive(Debug, Clone)]
+pub struct ResolvedPart {
+    /// Raw part index from the serial bitstream
+    pub index: u64,
+    /// Full manifest name (e.g., "DAD_PS.part_barrel_02"), or None if unresolved
+    pub name: Option<&'static str>,
+    /// Display-ready short name (e.g., "part_barrel_02", element name, or "[index]")
+    pub short_name: String,
+    /// Part slot (barrel, grip, scope, element, unknown, etc.)
+    pub slot: &'static str,
+    /// True if this part index is an element marker (indices 128-142)
+    pub is_element: bool,
+}
+
+/// A decoded string token containing a UE asset path.
+#[derive(Debug, Clone)]
+pub struct ResolvedString {
+    /// Full UE asset path (e.g., "MAL_SM.comp_05_legendary_firework")
+    pub asset_path: String,
+    /// Last segment of the path for display
+    pub short_name: String,
+}
+
 /// Decoded item serial information
 #[derive(Debug, Clone)]
 pub struct ItemSerial {
@@ -1085,6 +1109,74 @@ impl ItemSerial {
             output.push(part_str);
         }
         output.join(", ")
+    }
+
+    /// Resolve all parts to display-ready structs with names, slots, and element flags.
+    ///
+    /// Skips zero-index parts. For each part:
+    /// - Element markers (128-142) get slot "element" and the element name
+    /// - Named parts get their manifest name and slot from `manifest::slot_from_part_name`
+    /// - Unknown parts get slot "unknown" and display as "[index]"
+    pub fn resolved_parts(&self) -> Vec<ResolvedPart> {
+        let parts = self.parts_with_names();
+        let mut resolved = Vec::new();
+
+        for (index, name, _values) in parts {
+            if index == 0 {
+                continue;
+            }
+
+            if let Some(element) = Element::from_index(index) {
+                resolved.push(ResolvedPart {
+                    index,
+                    name: None,
+                    short_name: element.name().to_string(),
+                    slot: "element",
+                    is_element: true,
+                });
+            } else if let Some(n) = name {
+                let short_name = n.split('.').next_back().unwrap_or(n);
+                let slot = crate::manifest::slot_from_part_name(n);
+                resolved.push(ResolvedPart {
+                    index,
+                    name: Some(n),
+                    short_name: short_name.to_string(),
+                    slot,
+                    is_element: false,
+                });
+            } else {
+                resolved.push(ResolvedPart {
+                    index,
+                    name: None,
+                    short_name: format!("[{}]", index),
+                    slot: "unknown",
+                    is_element: false,
+                });
+            }
+        }
+
+        resolved
+    }
+
+    /// Extract all string tokens (UE asset paths) from the token stream.
+    pub fn string_tokens(&self) -> Vec<ResolvedString> {
+        self.tokens
+            .iter()
+            .filter_map(|t| {
+                if let Token::String(s) = t {
+                    let short_name = s.split('.')
+                        .next_back()
+                        .unwrap_or(s)
+                        .to_string();
+                    Some(ResolvedString {
+                        asset_path: s.clone(),
+                        short_name,
+                    })
+                } else {
+                    None
+                }
+            })
+            .collect()
     }
 
     /// Display detailed byte-by-byte breakdown
