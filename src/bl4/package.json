@@ -1,6 +1,6 @@
 {
-  "name": "bl4",
-  "version": "0.2.0",
+  "name": "borderlands",
+  "version": "0.6.0",
   "description": "Borderlands 4 save editor library - decrypt, modify, and encrypt save files",
   "license": "BSD-2-Clause",
   "repository": {

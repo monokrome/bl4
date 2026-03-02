@@ -1,7 +1,7 @@
 [package]
 name = "bl4-preload"
-version = "0.6.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
 
 [lib]
 crate-type = ["cdylib"]
