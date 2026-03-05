@@ -1,0 +1,2 @@
+asset_name	ChargeTime	HeatImpulseScale	LoadedShotAdditionalProjectile	LoadedShotDamageRadiusScale	LoadedShotDamageScale	LoadedShotHeatImpulseScale	LoadedShotProjSpeedScale	LoadedShotRecoilScale	LoadedShotSpreadScale	MaxLoadedShots
+Struct_Order_Firing	1	0.2	0.3	0.3	0	0.05	0.5	1	0	20

@@ -1,0 +1,2 @@
+asset_name	Accuracy_Scale	Damage_Scale	FireRate_Scale	HeatImpulse_Value	Recoil_Scale	ReloadCompletePercent	ReloadTime_Value	Spread_Scale	Sway_Scale	ThrownReloadCompletePercent	ThrownReloadTime_Value
+Struct_Weapon_Magazine_Init	1	1	1	1	0	0.75	2	1	0	0.75	1

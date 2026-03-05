@@ -35,6 +35,32 @@
       }
     ]
   },
+  "SMG": {
+    "name": "SMG",
+    "path": "OakGame/Content/Gear/Weapons/SMG",
+    "manufacturers": [
+      {
+        "code": "VLA",
+        "name": "Vladof",
+        "path": "OakGame/Content/Gear/Weapons/SMG/VLA"
+      },
+      {
+        "code": "MAL",
+        "name": "Maliwan",
+        "path": "OakGame/Content/Gear/Weapons/SMG/MAL"
+      },
+      {
+        "code": "BOR",
+        "name": "Ripper",
+        "path": "OakGame/Content/Gear/Weapons/SMG/BOR"
+      },
+      {
+        "code": "DAD",
+        "name": "Daedalus",
+        "path": "OakGame/Content/Gear/Weapons/SMG/DAD"
+      }
+    ]
+  },
   "Pistols": {
     "name": "Pistols",
     "path": "OakGame/Content/Gear/Weapons/Pistols",
@@ -63,32 +89,6 @@
         "code": "TOR",
         "name": "Torgue",
         "path": "OakGame/Content/Gear/Weapons/Pistols/TOR"
-      }
-    ]
-  },
-  "SMG": {
-    "name": "SMG",
-    "path": "OakGame/Content/Gear/Weapons/SMG",
-    "manufacturers": [
-      {
-        "code": "VLA",
-        "name": "Vladof",
-        "path": "OakGame/Content/Gear/Weapons/SMG/VLA"
-      },
-      {
-        "code": "MAL",
-        "name": "Maliwan",
-        "path": "OakGame/Content/Gear/Weapons/SMG/MAL"
-      },
-      {
-        "code": "BOR",
-        "name": "Ripper",
-        "path": "OakGame/Content/Gear/Weapons/SMG/BOR"
-      },
-      {
-        "code": "DAD",
-        "name": "Daedalus",
-        "path": "OakGame/Content/Gear/Weapons/SMG/DAD"
       }
     ]
   },
