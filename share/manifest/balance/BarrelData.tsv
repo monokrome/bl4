@@ -1,0 +1,3 @@
+asset_name	AccDelay_Value	AccImpulse_Value	AccRegen_Value	CritDamage_Add	DamageRadius_Value	Damage_Scale	FireRate_Scale	FireRate_Value	Impact_Force_Scale	Impact_Force_Value	Part_Value	ProjectilesPerShot_Value	Spread_Value	StatusChance_Scale	StatusDamage_Scale
+Struct_Weapon_AIScalars						1	1		1						
+Struct_Weapon_Barrel_Init	0.2	1	0.5	1	-8			0		1	1	1	0	20000	1

@@ -1,0 +1,716 @@
+[
+  {
+    "name": "SkillParam_Exo_70_BoomingBusiness_Rank",
+    "path": "../../../OakGame/Content/PlayerCharacters/ExoSoldier/Passives/Gimmick/Data/SkillParam_Exo_70_BoomingBusiness_Rank.uasset",
+    "variant": 3,
+    "guid": "c7e42b2c-38f3-41b9-afb3-d8b8d8b63c6f"
+  },
+  {
+    "name": "SkillParam_Paladin_WeaponMaster_MoltenSlam_Target",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/WeaponMaster/Data/SkillParam_Paladin_WeaponMaster_MoltenSlam_Target.uasset",
+    "variant": 4,
+    "guid": "40ed9efe-c520-400f-9f55-57ce6deae1ab"
+  },
+  {
+    "name": "SkillParam_DS_P_ConstantCompanion",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/Passives/Duplicate/SkillTree/Data/SkillParam_DS_P_ConstantCompanion.uasset",
+    "variant": 1,
+    "guid": "a9048aac-b4a0-4269-8af8-7d871f44ef72"
+  },
+  {
+    "name": "SkillParam_DS_P_SoulOrb_2",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/Passives/Domination/SkillTree/Data/SkillParam_DS_P_SoulOrb_2.uasset",
+    "variant": 1,
+    "guid": "7498e48b-615b-438b-aaf4-9e606c797ee9"
+  },
+  {
+    "name": "Param_Grav_Terminal_CommandRing",
+    "path": "../../../OakGame/Content/PlayerCharacters/Gravitar/ActionSkillsSM/Terminal2/Data/Param_Grav_Terminal_CommandRing.uasset",
+    "variant": 7,
+    "guid": "8c6aa0ba-9790-4cc1-a19b-246a1c900776"
+  },
+  {
+    "name": "Param_Grav_CM_Driver_Health",
+    "path": "../../../OakGame/Content/PlayerCharacters/Gravitar/ClassMods/Data/Param_Grav_CM_Driver_Health.uasset",
+    "variant": 3,
+    "guid": "113d0b25-b3ab-4216-881a-c5a220dc860b"
+  },
+  {
+    "name": "SkillParam_Hunter_Skill_3",
+    "path": "../../../OakGame/Content/PlayerCharacters/_Shared/Skills/Specializations/Script/Hunter/SkillParam_Hunter_Skill_3.uasset",
+    "variant": 3,
+    "guid": "bfec6f38-2752-401d-9938-5b23f0e5fb77"
+  },
+  {
+    "name": "Param_Grav_CM_LegendaryGravitar",
+    "path": "../../../OakGame/Content/PlayerCharacters/Gravitar/ClassMods/Data/Param_Grav_CM_LegendaryGravitar.uasset",
+    "variant": 1,
+    "guid": "b4dabad9-c10d-4a8a-a596-8a93a13f0b2f"
+  },
+  {
+    "name": "SkillParam_Paladin_Warforge_Cap_3",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Cybernetics/Data/SkillParam_Paladin_Warforge_Cap_3.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseFamiliar_ApexMarkedTarget",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Demonology/Data/SkillParam_DarkSiren_PhaseFamiliar_ApexMarkedTarget.uasset",
+    "variant": 7,
+    "guid": "7b3f4990-a796-4d98-a6db-d53ccb0e4683"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseShard_Aug_4",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Duplicate/Data/SkillParam_DarkSiren_PhaseShard_Aug_4.uasset",
+    "variant": 1,
+    "guid": "a40eab81-84e2-4f65-a2d7-1f141f2db0be"
+  },
+  {
+    "name": "SkillParam_DS_P_ExtraCursed",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/Passives/Duplicate/SkillTree/Data/SkillParam_DS_P_ExtraCursed.uasset",
+    "variant": 1,
+    "guid": "db83d120-563d-4966-b921-b12af94e489b"
+  },
+  {
+    "name": "SkillParam_PLD_P_SplitEchoes",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/Passives/Vengeance/SkillTree/Data/SkillParam_PLD_P_SplitEchoes.uasset",
+    "variant": 1,
+    "guid": "3aca63d8-19ab-4b25-b3a6-80216c36ee26"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseShard_Cap_1",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Duplicate/Data/SkillParam_DarkSiren_PhaseShard_Cap_1.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "SkillParam_Exo_ClassMod_Filantropo",
+    "path": "../../../OakGame/Content/PlayerCharacters/ExoSoldier/ClassMods/Data/SkillParam_Exo_ClassMod_Filantropo.uasset",
+    "variant": 1,
+    "guid": "4a4c6388-13d3-4f1c-a494-2fd38172e562"
+  },
+  {
+    "name": "Param_Exo_40_ProprietaryIncendiary_DamageScalar",
+    "path": "../../../OakGame/Content/PlayerCharacters/ExoSoldier/Passives/RemoteAgent/Data/Param_Exo_40_ProprietaryIncendiary_DamageScalar.uasset",
+    "variant": 3,
+    "guid": "5880fc48-b8bd-407b-9297-cb085da213f6"
+  },
+  {
+    "name": "SkillParam_Paladin_Warforge_Aug_1",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Cybernetics/Data/SkillParam_Paladin_Warforge_Aug_1.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "Param_HA3_ChargeBurst_StoredDamage",
+    "path": "../../../OakGame/Content/PlayerCharacters/ExoSoldier/ActionSkillsSM/HeavyArms3/Data/Param_HA3_ChargeBurst_StoredDamage.uasset",
+    "variant": 3,
+    "guid": "74bd1159-b793-4f2f-9a8d-c9a2edf4400b"
+  },
+  {
+    "name": "SkillParam_Exo_AutoLock3_ManualTarget",
+    "path": "../../../OakGame/Content/PlayerCharacters/ExoSoldier/ActionSkillsSM/AutoLock3/Data/SkillParam_Exo_AutoLock3_ManualTarget.uasset",
+    "variant": 7,
+    "guid": "3487a9c4-b09f-4677-a7d8-3fc6ec9d97df"
+  },
+  {
+    "name": "SkillParam_PLD_P_TwinnedArmaments",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/Passives/Cybernetics/SkillTree/Data/SkillParam_PLD_P_TwinnedArmaments.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "SkillParam_PLD_P_HighVoltage",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/Passives/Vengeance/SkillTree/Data/SkillParam_PLD_P_HighVoltage.uasset",
+    "variant": 1,
+    "guid": "3aca63d8-19ab-4b25-b3a6-80216c36ee26"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseShard_Aug_2",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Duplicate/Data/SkillParam_DarkSiren_PhaseShard_Aug_2.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseAvatar_ClassMod_Technomancer",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Death/Data/SkillParam_DarkSiren_PhaseAvatar_ClassMod_Technomancer.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "SkillParam_Paladin_WeaponMaster_DashMelee_Target",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/WeaponMaster/Data/SkillParam_Paladin_WeaponMaster_DashMelee_Target.uasset",
+    "variant": 7,
+    "guid": "5ec045c5-7d03-4dfd-9c36-77b7aa934d4d"
+  },
+  {
+    "name": "SkillParam_DS_P_PhaseDagger_Extra",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/Passives/Duplicate/SkillTree/Data/SkillParam_DS_P_PhaseDagger_Extra.uasset",
+    "variant": 1,
+    "guid": "db83d120-563d-4966-b921-b12af94e489b"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseFamiliar_Aug_5",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Demonology/Data/SkillParam_DarkSiren_PhaseFamiliar_Aug_5.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "Param_Grav_Stasis3_PreTarget",
+    "path": "../../../OakGame/Content/PlayerCharacters/Gravitar/ActionSkillsSM/Stasis2/Data/Param_Grav_Stasis3_PreTarget.uasset",
+    "variant": 7,
+    "guid": "776fbcf6-f3b6-4cd1-bc8b-b6f364ff4d11"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseAvatar_Aug_5",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Death/Data/SkillParam_DarkSiren_PhaseAvatar_Aug_5.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseFamiliar_Aug_2",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Demonology/Data/SkillParam_DarkSiren_PhaseFamiliar_Aug_2.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseFamiliar_Cap_2",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Demonology/Data/SkillParam_DarkSiren_PhaseFamiliar_Cap_2.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "SkillParam_Paladin_Scourge_Smite_Target",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Vengeance/Data/Capstones/SkillParam_Paladin_Scourge_Smite_Target.uasset",
+    "variant": 7,
+    "guid": "5ec045c5-7d03-4dfd-9c36-77b7aa934d4d"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseFamiliar_Cap_3",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Demonology/Data/SkillParam_DarkSiren_PhaseFamiliar_Cap_3.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "SkillParam_Paladin_WeaponMaster_Cap_2",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/WeaponMaster/Data/SkillParam_Paladin_WeaponMaster_Cap_2.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseShard_ClassMod_Illusionist",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Duplicate/Data/SkillParam_DarkSiren_PhaseShard_ClassMod_Illusionist.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "SkillParam_Exo_Buster_ChargesStored",
+    "path": "../../../OakGame/Content/PlayerCharacters/ExoSoldier/ActionSkillsSM/BunkerBuster2/Data/SkillParam_Exo_Buster_ChargesStored.uasset",
+    "variant": 2,
+    "guid": "705d28f2-7f96-4a62-8d40-dac87ae652b2"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseShard_Aug_3",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Duplicate/Data/SkillParam_DarkSiren_PhaseShard_Aug_3.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "SkillParam_Paladin_WeaponMaster_Aug_4",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/WeaponMaster/Data/SkillParam_Paladin_WeaponMaster_Aug_4.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseAvatar_Cap_3",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Death/Data/SkillParam_DarkSiren_PhaseAvatar_Cap_3.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "SkillParam_PLD_CM_Forgemaster",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/_Shared/Trait/Data/SkillParam_PLD_CM_Forgemaster.uasset",
+    "variant": 1,
+    "guid": "15414a65-d699-4769-97fe-1062ba84734b"
+  },
+  {
+    "name": "SkillParam_Paladin_Scourge_Aug_1",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Vengeance/Data/SkillParam_Paladin_Scourge_Aug_1.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "SkillParam_Paladin_WeaponMaster_CM_Furnace",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/WeaponMaster/Data/ClassMods/SkillParam_Paladin_WeaponMaster_CM_Furnace.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseFamiliar_BadassTarget_Vector",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Demonology/Data/SkillParam_DarkSiren_PhaseFamiliar_BadassTarget_Vector.uasset",
+    "variant": 4,
+    "guid": "02265bab-25bf-4586-8bd7-92afd6b1848c"
+  },
+  {
+    "name": "SkillParam_PLD_CM_Forgemaster_Used",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/_Shared/Trait/Data/SkillParam_PLD_CM_Forgemaster_Used.uasset",
+    "variant": 1,
+    "guid": "84258c8c-461a-476b-89f2-a3453376c68b"
+  },
+  {
+    "name": "SkillParam_Grav_InPerpetuity",
+    "path": "../../../OakGame/Content/PlayerCharacters/Gravitar/ActionSkillsSM/Stasis2/Data/SkillParam_Grav_InPerpetuity.uasset",
+    "variant": 2,
+    "guid": "110addc2-e204-4787-b450-d387f400eb95"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseFamiliar_Cap_1",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Demonology/Data/SkillParam_DarkSiren_PhaseFamiliar_Cap_1.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "SkillParam_Paladin_Warforge_Cap_2",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Cybernetics/Data/SkillParam_Paladin_Warforge_Cap_2.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "SkillParam_Paladin_Trait_NumSegments",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/_Shared/Trait/Data/SkillParam_Paladin_Trait_NumSegments.uasset",
+    "variant": 2,
+    "guid": "02f32ee8-7d75-45f8-bb88-8be16e314e12"
+  },
+  {
+    "name": "Param_Grav_Terminal_Primary",
+    "path": "../../../OakGame/Content/PlayerCharacters/Gravitar/ActionSkillsSM/Terminal2/Data/Param_Grav_Terminal_Primary.uasset",
+    "variant": 7,
+    "guid": "1400c046-2023-49b7-aa85-c52ede30d1bf"
+  },
+  {
+    "name": "Param_HA3_ChargeBurst_DamageTaken",
+    "path": "../../../OakGame/Content/PlayerCharacters/ExoSoldier/ActionSkillsSM/HeavyArms3/Data/Param_HA3_ChargeBurst_DamageTaken.uasset",
+    "variant": 3,
+    "guid": "74bd1159-b793-4f2f-9a8d-c9a2edf4400b"
+  },
+  {
+    "name": "Param_Exo_16_DroneDefense_DamageShare",
+    "path": "../../../OakGame/Content/PlayerCharacters/ExoSoldier/Passives/PeoplePerson/Data/Param_Exo_16_DroneDefense_DamageShare.uasset",
+    "variant": 3,
+    "guid": "3caa4741-933e-415d-ad46-e3f818a67fd8"
+  },
+  {
+    "name": "SkillParam_Paladin_Warforge_TwinForge_HomingLoc",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Cybernetics/Data/SkillParam_Paladin_Warforge_TwinForge_HomingLoc.uasset",
+    "variant": 4,
+    "guid": "6fc2cbdf-58a5-4776-9c36-1096c5dbe259"
+  },
+  {
+    "name": "SkillParam_Exo_AutoLock3_MortarTargetLoc2",
+    "path": "../../../OakGame/Content/PlayerCharacters/ExoSoldier/ActionSkillsSM/AutoLock3/Data/SkillParam_Exo_AutoLock3_MortarTargetLoc2.uasset",
+    "variant": 4,
+    "guid": "1f862ca7-850e-4d1b-bf94-f26cde6c55cf"
+  },
+  {
+    "name": "SkillParam_DS_P_HuntTheWeak",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/Passives/Death/SkillTree/Data/SkillParam_DS_P_HuntTheWeak.uasset",
+    "variant": 1,
+    "guid": "a9048aac-b4a0-4269-8af8-7d871f44ef72"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseFamiliar_Aug_1",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Demonology/Data/SkillParam_DarkSiren_PhaseFamiliar_Aug_1.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "SkillParam_Paladin_Warforge_PendingPickup",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Cybernetics/Data/SkillParam_Paladin_Warforge_PendingPickup.uasset",
+    "variant": 7,
+    "guid": "e2ca7943-4670-488e-ac4d-470f27c127fb"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseAvatar_EldritchBlastTarget",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Death/Data/SkillParam_DarkSiren_PhaseAvatar_EldritchBlastTarget.uasset",
+    "variant": 7,
+    "guid": "37f33953-9ff0-4b11-911c-7159ae0e66c3"
+  },
+  {
+    "name": "SkillParam_PLD_P_OrdainedHammer",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/Passives/Cybernetics/SkillTree/Data/SkillParam_PLD_P_OrdainedHammer.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "SkillParam_Paladin_Warforge_Cap_1",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Cybernetics/Data/SkillParam_Paladin_Warforge_Cap_1.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseFamiliar_Command_TargetEnemy",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Demonology/Data/SkillParam_DarkSiren_PhaseFamiliar_Command_TargetEnemy.uasset",
+    "variant": 7,
+    "guid": "403e0590-0efe-4a87-8b16-b4cc89898fa5"
+  },
+  {
+    "name": "SkillParam_Exo_AutoLock3_CooldownRestore",
+    "path": "../../../OakGame/Content/PlayerCharacters/ExoSoldier/ActionSkillsSM/AutoLock3/Data/SkillParam_Exo_AutoLock3_CooldownRestore.uasset",
+    "variant": 3,
+    "guid": "0c3b1fa2-67f4-4bf0-aba7-e76ac256ccdf"
+  },
+  {
+    "name": "SkillParam_Paladin_Warforge_Aug_5",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Cybernetics/Data/SkillParam_Paladin_Warforge_Aug_5.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "SkillParam_Paladin_Scourge_Aug_5",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Vengeance/Data/SkillParam_Paladin_Scourge_Aug_5.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "Param_HA3_DurationRemainingPercent",
+    "path": "../../../OakGame/Content/PlayerCharacters/ExoSoldier/ActionSkillsSM/HeavyArms3/Data/Param_HA3_DurationRemainingPercent.uasset",
+    "variant": 3,
+    "guid": "7f8c276f-7b23-4fcc-89fb-c0dc754f3584"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseAvatar_Aug_1",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Death/Data/SkillParam_DarkSiren_PhaseAvatar_Aug_1.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "Param_Paladin_ActionSkill_Warforge",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Cybernetics/Data/Param_Paladin_ActionSkill_Warforge.uasset",
+    "variant": 1,
+    "guid": "e31b0f9d-094b-4417-bf3f-9a18e8972d71"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseShard_Cap_3",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Duplicate/Data/SkillParam_DarkSiren_PhaseShard_Cap_3.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseShard_Aug_1",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Duplicate/Data/SkillParam_DarkSiren_PhaseShard_Aug_1.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "SkillParam_Paladin_WeaponMaster_Aug_1",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/WeaponMaster/Data/SkillParam_Paladin_WeaponMaster_Aug_1.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseAvatar_Cap_2",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Death/Data/SkillParam_DarkSiren_PhaseAvatar_Cap_2.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseFamiliar_Aug_4",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Demonology/Data/SkillParam_DarkSiren_PhaseFamiliar_Aug_4.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "Param_Grav_CM_Pundit",
+    "path": "../../../OakGame/Content/PlayerCharacters/Gravitar/ClassMods/Data/Param_Grav_CM_Pundit.uasset",
+    "variant": 1,
+    "guid": "b4dabad9-c10d-4a8a-a596-8a93a13f0b2f"
+  },
+  {
+    "name": "SkillParam_PLD_CM_Viking",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Cybernetics/Data/ClassMods/SkillParam_PLD_CM_Viking.uasset",
+    "variant": 1,
+    "guid": "15414a65-d699-4769-97fe-1062ba84734b"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseAvatar_Cap_1",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Death/Data/SkillParam_DarkSiren_PhaseAvatar_Cap_1.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "SkillParam_Paladin_Warforge_Aug_3",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Cybernetics/Data/SkillParam_Paladin_Warforge_Aug_3.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "SkillParam_DS_P_UndeadEye",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/Passives/Death/SkillTree/Data/SkillParam_DS_P_UndeadEye.uasset",
+    "variant": 1,
+    "guid": "a9048aac-b4a0-4269-8af8-7d871f44ef72"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseFamiliar_Aug_3",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Demonology/Data/SkillParam_DarkSiren_PhaseFamiliar_Aug_3.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseAvatar_Aug_2",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Death/Data/SkillParam_DarkSiren_PhaseAvatar_Aug_2.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "Param_Grav_Exodus_Dynamism_RedirectTarget",
+    "path": "../../../OakGame/Content/PlayerCharacters/Gravitar/ActionSkillsSM/Exodus2/Data/Param_Grav_Exodus_Dynamism_RedirectTarget.uasset",
+    "variant": 7,
+    "guid": "accd4094-4bfd-465d-904a-a78b34297bae"
+  },
+  {
+    "name": "SkillParam_Paladin_WeaponMaster_Aug_2",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/WeaponMaster/Data/SkillParam_Paladin_WeaponMaster_Aug_2.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "SkillParam_Paladin_Scourge_Cap_2",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Vengeance/Data/SkillParam_Paladin_Scourge_Cap_2.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "SkillParam_PLD_P_Attenuation",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/Passives/Calamity/SkillTree/Data/SkillParam_PLD_P_Attenuation.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "SkillParam_Grav_Stasis_ControlledChaos_Divisor",
+    "path": "../../../OakGame/Content/PlayerCharacters/Gravitar/ActionSkillsSM/Stasis2/Data/SkillParam_Grav_Stasis_ControlledChaos_Divisor.uasset",
+    "variant": 2,
+    "guid": "54929d38-8e7d-4dfa-a009-cea08d171558"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseShard_GrimReaper",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Duplicate/Data/SkillParam_DarkSiren_PhaseShard_GrimReaper.uasset",
+    "variant": 7,
+    "guid": "556721e3-988a-41bc-bda1-a36fdcefb6bb"
+  },
+  {
+    "name": "SkillParam_PLD_P_SeeingRed",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/Passives/Calamity/SkillTree/Data/SkillParam_PLD_P_SeeingRed.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "Param_Grav_Exodus_TemporalLoop_Damage",
+    "path": "../../../OakGame/Content/PlayerCharacters/Gravitar/ActionSkillsSM/Exodus2/Data/Param_Grav_Exodus_TemporalLoop_Damage.uasset",
+    "variant": 3,
+    "guid": "607dd579-a8df-4ebe-a157-a992f529943c"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseAvatar_Aug_4",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Death/Data/SkillParam_DarkSiren_PhaseAvatar_Aug_4.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "SkillParam_Paladin_Scourge_Barrier_SpawnLocation",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Vengeance/Data/SkillParam_Paladin_Scourge_Barrier_SpawnLocation.uasset",
+    "variant": 4,
+    "guid": "1feda876-3bd4-478e-99b1-932629fa1698"
+  },
+  {
+    "name": "SkillParam_Paladin_Warforge_Aug_4",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Cybernetics/Data/SkillParam_Paladin_Warforge_Aug_4.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "SkillParam_Exo_AutoLock3_TurretColorEmissive",
+    "path": "../../../OakGame/Content/PlayerCharacters/ExoSoldier/ActionSkillsSM/AutoLock3/Data/SkillParam_Exo_AutoLock3_TurretColorEmissive.uasset",
+    "variant": 2,
+    "guid": "bcefcdce-39f0-44e0-bd7c-639e163956c2"
+  },
+  {
+    "name": "Param_Grav_Exodus_UnstableEnergyPocket",
+    "path": "../../../OakGame/Content/PlayerCharacters/Gravitar/ActionSkillsSM/Exodus2/Data/Param_Grav_Exodus_UnstableEnergyPocket.uasset",
+    "variant": 7,
+    "guid": "39c0af26-cc27-4451-b6fb-6946be7ec12f"
+  },
+  {
+    "name": "SkillParam_PLD_CM_ShatterWight",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Vengeance/Data/ClassMods/SkillParam_PLD_CM_ShatterWight.uasset",
+    "variant": 1,
+    "guid": "15414a65-d699-4769-97fe-1062ba84734b"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseAvatar_Aug_3",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Death/Data/SkillParam_DarkSiren_PhaseAvatar_Aug_3.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "SkillParam_Paladin_WeaponMaster_Cap_1",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/WeaponMaster/Data/SkillParam_Paladin_WeaponMaster_Cap_1.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "Param_HA3_Lunge_Target",
+    "path": "../../../OakGame/Content/PlayerCharacters/ExoSoldier/ActionSkillsSM/HeavyArms3/Data/Param_HA3_Lunge_Target.uasset",
+    "variant": 7,
+    "guid": "6585b183-7d75-4a76-a565-b24e4d1d40bc"
+  },
+  {
+    "name": "Param_Grav_Stasis3_FlingLocFound",
+    "path": "../../../OakGame/Content/PlayerCharacters/Gravitar/ActionSkillsSM/Stasis2/Data/Param_Grav_Stasis3_FlingLocFound.uasset",
+    "variant": 1,
+    "guid": "b406fb72-1d51-4575-83cc-859c05a49169"
+  },
+  {
+    "name": "SkillParam_Exo_AutoLock3_MortarTargetLoc",
+    "path": "../../../OakGame/Content/PlayerCharacters/ExoSoldier/ActionSkillsSM/AutoLock3/Data/SkillParam_Exo_AutoLock3_MortarTargetLoc.uasset",
+    "variant": 4,
+    "guid": "1f862ca7-850e-4d1b-bf94-f26cde6c55cf"
+  },
+  {
+    "name": "SkillParam_Paladin_WeaponMaster_Cap_3",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/WeaponMaster/Data/SkillParam_Paladin_WeaponMaster_Cap_3.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "SkillParam_Paladin_WeaponMaster_Aug_5",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/WeaponMaster/Data/SkillParam_Paladin_WeaponMaster_Aug_5.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "Param_Exo_16_DroneDefense",
+    "path": "../../../OakGame/Content/PlayerCharacters/ExoSoldier/Passives/PeoplePerson/Data/Param_Exo_16_DroneDefense.uasset",
+    "variant": 7,
+    "guid": "ae0578a6-11c4-4a38-be1d-b6ec79ea81a9"
+  },
+  {
+    "name": "SkillParam_Paladin_Scourge_Aug_2",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Vengeance/Data/SkillParam_Paladin_Scourge_Aug_2.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "SkillParam_DS_P_ShadowFiends",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/Passives/Duplicate/SkillTree/Data/SkillParam_DS_P_ShadowFiends.uasset",
+    "variant": 1,
+    "guid": "a9048aac-b4a0-4269-8af8-7d871f44ef72"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseFamiliar_TailWhip",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Demonology/Data/SkillParam_DarkSiren_PhaseFamiliar_TailWhip.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "SkillParam_DS_P_SoulOrb_3",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/Passives/Domination/SkillTree/Data/SkillParam_DS_P_SoulOrb_3.uasset",
+    "variant": 1,
+    "guid": "db83d120-563d-4966-b921-b12af94e489b"
+  },
+  {
+    "name": "SkillParam_Paladin_Scourge_Cap_3",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Vengeance/Data/SkillParam_Paladin_Scourge_Cap_3.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "SkillParam_Paladin_Warforge_Aug_2",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Cybernetics/Data/SkillParam_Paladin_Warforge_Aug_2.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "SkillParam_Exo_AutoLock3_TurretDeployLoc",
+    "path": "../../../OakGame/Content/PlayerCharacters/ExoSoldier/ActionSkillsSM/AutoLock3/Data/SkillParam_Exo_AutoLock3_TurretDeployLoc.uasset",
+    "variant": 4,
+    "guid": "efeb557d-6a45-4b57-95a2-a34ee43acfa3"
+  },
+  {
+    "name": "Param_Grav_Stasis2_Aug2_ControlledChaos_StoredDamage",
+    "path": "../../../OakGame/Content/PlayerCharacters/Gravitar/ActionSkillsSM/Stasis2/Data/Param_Grav_Stasis2_Aug2_ControlledChaos_StoredDamage.uasset",
+    "variant": 21,
+    "guid": "356a972b-8f96-40bc-ab08-8762a7db650b"
+  },
+  {
+    "name": "Param_Grav_Terminal_Pos",
+    "path": "../../../OakGame/Content/PlayerCharacters/Gravitar/ActionSkillsSM/Terminal2/Data/Param_Grav_Terminal_Pos.uasset",
+    "variant": 4,
+    "guid": "62db3586-e62b-4dfc-a06c-d04283258cd1"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseShard_Aug_5",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Duplicate/Data/SkillParam_DarkSiren_PhaseShard_Aug_5.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "SkillParam_Paladin_Scourge_Aug_4",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Vengeance/Data/SkillParam_Paladin_Scourge_Aug_4.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "SkillParam_Paladin_Scourge_Aug_3",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Vengeance/Data/SkillParam_Paladin_Scourge_Aug_3.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "Param_Grav_Passive_56_AltFuelSource_ShieldDrain",
+    "path": "../../../OakGame/Content/PlayerCharacters/Gravitar/Passives/CreativeBursts/Data/Param_Grav_Passive_56_AltFuelSource_ShieldDrain.uasset",
+    "variant": 3,
+    "guid": "ea39e07e-9464-4c87-a8d1-b8a4cbebaa56"
+  },
+  {
+    "name": "SkillParam_Paladin_Scourge_Cap_1",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/Vengeance/Data/SkillParam_Paladin_Scourge_Cap_1.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "SkillParam_Paladin_WeaponMaster_Aug_3",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/ActionSkills/WeaponMaster/Data/SkillParam_Paladin_WeaponMaster_Aug_3.uasset",
+    "variant": 1,
+    "guid": "b6bd36d0-6717-49f1-be7f-b9b57bda28a0"
+  },
+  {
+    "name": "Param_Grav_Stasis3_FlingLoc",
+    "path": "../../../OakGame/Content/PlayerCharacters/Gravitar/ActionSkillsSM/Stasis2/Data/Param_Grav_Stasis3_FlingLoc.uasset",
+    "variant": 4,
+    "guid": "22cb6d3c-e483-4764-9c89-2532844b284f"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseEcho_Spawn_Target",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Duplicate/Data/SkillParam_DarkSiren_PhaseEcho_Spawn_Target.uasset",
+    "variant": 4,
+    "guid": "cd198c0a-9d76-4a7f-9873-067db07a043a"
+  },
+  {
+    "name": "Param_HA3_ChargeBurst_Scalar",
+    "path": "../../../OakGame/Content/PlayerCharacters/ExoSoldier/ActionSkillsSM/HeavyArms3/Data/Param_HA3_ChargeBurst_Scalar.uasset",
+    "variant": 3,
+    "guid": "74bd1159-b793-4f2f-9a8d-c9a2edf4400b"
+  },
+  {
+    "name": "SkillParam_DarkSiren_PhaseShard_Cap_2",
+    "path": "../../../OakGame/Content/PlayerCharacters/DarkSiren/ActionSkills/Duplicate/Data/SkillParam_DarkSiren_PhaseShard_Cap_2.uasset",
+    "variant": 1,
+    "guid": "58b5d980-170d-4279-aa94-fa436a6e4820"
+  },
+  {
+    "name": "Param_Grav_Stasis3_UnstableScalar",
+    "path": "../../../OakGame/Content/PlayerCharacters/Gravitar/ActionSkillsSM/Stasis2/Data/Param_Grav_Stasis3_UnstableScalar.uasset",
+    "variant": 3,
+    "guid": "20615fec-b789-4ce3-97b0-d6bdbcf9f548"
+  }
+]

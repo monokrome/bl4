@@ -1,0 +1,6 @@
+asset_name	AccMax	AccWeight	Accuracy	Borg	BurstCount	BurstDelay	BurstTime	CritDamage_Add	Daedalus	DamageScale	Damage_Scale	ElementalChance_Scale	ElementalChance_Value	ElementalDamage_Scale	EquipTime_Scale	EquipTime_Value	ImpactScale	ImpulseMax	ImpulseWeight	Jakobs	Maliwan	MaxAccuracyScaleRange	MaxDesiredRange	MinAccuracy	MinAccuracyScaleRange	MinDesiredRange	ModeSwitchTime_Value	MovementAccuracyMaxValue	Order	PreferredRange	ProjectileSpeed	PutDownTime_Scale	PutDownTime_Value	SpreadMax	SpreadWeight	StandingAccuracyPenaltyPercent	SwayMax	SwayWeight	Tediore	Torgue	Vladof	WeaponHitForce	WeaponHitForce_Scale	ZoomTime_Scale
+Struct_WeaponManufacturer				1					1											1	1								1										1	1	1			
+Struct_BaseWeaponInitialization								1.5			1		1	1		0											1.15	1					0			1						0.45		
+Struct_ManufacturerInitialization								1				1		1	1																	1											1	1
+Struct_Weapon_AI_Defaults			4.5		5	2	1			1							1					1	5000	0.25	0.5	400				2000	0.4													
+Struct_WeaponAcc	1	1																1	1															1	1		1	1						

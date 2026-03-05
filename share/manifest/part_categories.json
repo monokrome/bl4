@@ -17,12 +17,20 @@
       "prefix": "BOR_HW"
     },
     {
+      "category": 320,
+      "prefix": "BOR_REPAIR_KIT"
+    },
+    {
       "category": 12,
       "prefix": "BOR_SG"
     },
     {
       "category": 21,
       "prefix": "BOR_SM"
+    },
+    {
+      "category": 330,
+      "prefix": "BOR_TERMINAL_BARRIER"
     },
     {
       "category": 408,
@@ -53,16 +61,20 @@
       "prefix": "DAD_SM"
     },
     {
-      "category": 330,
-      "prefix": "DAD_TERMINAL_COMBAT"
-    },
-    {
       "category": 400,
       "prefix": "Enhancement"
     },
     {
+      "category": 400,
+      "prefix": "HYP_Enhancement"
+    },
+    {
       "category": 14,
       "prefix": "JAK_AR"
+    },
+    {
+      "category": 402,
+      "prefix": "JAK_Enhancement"
     },
     {
       "category": 3,
@@ -75,6 +87,10 @@
     {
       "category": 26,
       "prefix": "JAK_SR"
+    },
+    {
+      "category": 330,
+      "prefix": "JAK_TERMINAL_COMBAT"
     },
     {
       "category": 403,
@@ -105,16 +121,16 @@
       "prefix": "ORD_AR"
     },
     {
+      "category": 404,
+      "prefix": "ORD_Enhancement"
+    },
+    {
       "category": 6,
       "prefix": "ORD_PS"
     },
     {
       "category": 28,
       "prefix": "ORD_SR"
-    },
-    {
-      "category": 330,
-      "prefix": "ORD_TERMINAL_HEALING"
     },
     {
       "category": 279,
@@ -125,20 +141,12 @@
       "prefix": "TED_AR"
     },
     {
-      "category": 405,
-      "prefix": "TED_Enhancement"
-    },
-    {
       "category": 4,
       "prefix": "TED_PS"
     },
     {
       "category": 10,
       "prefix": "TED_SG"
-    },
-    {
-      "category": 330,
-      "prefix": "TED_TERMINAL_BARRIER"
     },
     {
       "category": 16,
@@ -159,6 +167,10 @@
     {
       "category": 11,
       "prefix": "TOR_SG"
+    },
+    {
+      "category": 330,
+      "prefix": "TOR_TERMINAL_COMBAT"
     },
     {
       "category": 330,
@@ -185,8 +197,8 @@
       "prefix": "VLA_SR"
     },
     {
-      "category": 310,
-      "prefix": "Weapon_Ripperturret_Rocket"
+      "category": 330,
+      "prefix": "VLA_TERMINAL_BARRIER"
     },
     {
       "category": 310,
@@ -217,6 +229,14 @@
       "prefix": "dad_repair_kit"
     },
     {
+      "category": 281,
+      "prefix": "dad_shield"
+    },
+    {
+      "category": 300,
+      "prefix": "dad_turret_gadget"
+    },
+    {
       "category": 279,
       "prefix": "energy_shield"
     },
@@ -227,6 +247,10 @@
     {
       "category": 300,
       "prefix": "heavy_weapon_gadget"
+    },
+    {
+      "category": 300,
+      "prefix": "jak_grenade_gadget"
     },
     {
       "category": 320,
@@ -246,11 +270,15 @@
     },
     {
       "category": 300,
-      "prefix": "ord_grenade_gadget"
+      "prefix": "mal_turret_gadget"
     },
     {
-      "category": 285,
-      "prefix": "ord_shield"
+      "category": 320,
+      "prefix": "ord_repair_kit"
+    },
+    {
+      "category": 300,
+      "prefix": "ord_turret_gadget"
     },
     {
       "category": 320,
@@ -261,36 +289,20 @@
       "prefix": "ted_grenade_gadget"
     },
     {
-      "category": 286,
-      "prefix": "ted_shield"
+      "category": 320,
+      "prefix": "ted_repair_kit"
     },
     {
-      "category": 300,
-      "prefix": "ted_turret_gadget"
+      "category": 286,
+      "prefix": "ted_shield"
     },
     {
       "category": 300,
       "prefix": "terminal_gadget_barrier"
     },
     {
-      "category": 300,
-      "prefix": "terminal_gadget_healing"
-    },
-    {
-      "category": 300,
-      "prefix": "tor_grenade_gadget"
-    },
-    {
       "category": 320,
       "prefix": "tor_repair_kit"
-    },
-    {
-      "category": 287,
-      "prefix": "tor_shield"
-    },
-    {
-      "category": 300,
-      "prefix": "tor_turret_gadget"
     },
     {
       "category": 310,
@@ -298,7 +310,19 @@
     },
     {
       "category": 310,
+      "prefix": "turret_weapon_basic"
+    },
+    {
+      "category": 310,
+      "prefix": "turret_weapon_beam"
+    },
+    {
+      "category": 310,
       "prefix": "turret_weapon_chaingun"
+    },
+    {
+      "category": 310,
+      "prefix": "turret_weapon_longrifle"
     },
     {
       "category": 310,
