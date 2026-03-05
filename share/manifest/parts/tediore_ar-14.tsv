@@ -76,6 +76,8 @@ index	name
 75	part_secondary_ammo_sr
 76	part_barrel_01_murder
 77	comp_05_legendary_murder
+78	part_barrel_01_laserdisc
+79	comp_05_legendary_laserdisc
 82	part_mag_01
 83	part_mag_02
 84	part_mag_03_tor

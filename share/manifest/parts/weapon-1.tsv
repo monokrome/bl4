@@ -49,3 +49,14 @@ index	name
 48	part_secondary_elem_fire_shock_mal
 49	part_secondary_elem_fire_shock
 50	base_comp_01_common
+51	pearl_damage
+52	pearl_reload
+53	pearl_firerate
+54	pearl_handling
+55	pearl_normal
+56	pearl_shock
+57	pearl_radiation
+58	pearl_corrosive
+59	pearl_cryo
+60	pearl_fire
+61	base_comp_06_pearlescent

@@ -73,6 +73,11 @@ index	name
 74	part_underbarrel_04_atlas
 75	part_underbarrel_02_blowback
 76	part_foregrip_01
+77	part_barrel_02_handcannon
+78	comp_05_legendary_handcannon
+79	part_foregrip_03_handcannon
+80	part_foregrip_02_handcannon
+81	part_foregrip_01_handcannon
 95	comp_01_common
 96	comp_02_uncommon
 97	comp_03_rare

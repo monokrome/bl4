@@ -51,6 +51,8 @@ index	name
 51	part_foregrip_03
 52	part_underbarrel_05_ammoswitcher
 53	part_underbarrel_06_malswitch
+55	part_unique_barrel_02_demo
+56	comp_05_legendary_demo
 60	part_secondary_ammo_smg
 61	part_secondary_ammo_ar
 62	part_secondary_ammo_ps
