@@ -285,6 +285,21 @@ fn decompress_pak_index(
 
         if raw {
             let out_path = output_dir.join(format!("{}.bin", type_name));
+            // Don't overwrite existing files — multiple PAK layers may contain
+            // the same NCS type (e.g., base inv0.ncs + patch inv0.ncs).
+            // Downstream consumers (parts manifest extraction) merge all files.
+            let out_path = if out_path.exists() {
+                let mut n = 1u32;
+                loop {
+                    let candidate = output_dir.join(format!("{}_{}.bin", type_name, n));
+                    if !candidate.exists() {
+                        break candidate;
+                    }
+                    n += 1;
+                }
+            } else {
+                out_path
+            };
             fs::write(&out_path, &decompressed)?;
             success += 1;
         } else if let Some(doc) = parse_ncs_binary(&decompressed) {
