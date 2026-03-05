@@ -20,6 +20,7 @@ index	name
 19	comp_05_legendary_stray
 20	part_barrel_01_stray
 21	part_barrel_02_vamoose
+22	part_barrel_01_tankbuster
 23	part_mag_ted_thrown_01
 24	part_mag_ted_thrown_02
 25	part_mag_ted_thrown_03_tor
@@ -53,6 +54,7 @@ index	name
 53	part_underbarrel_05_ammoswitcher
 54	part_underbarrel_04_atlas_ball
 55	part_underbarrel_03_marked
+56	comp_05_legendary_tankbuster
 57	comp_05_legendary_rainmaker
 58	part_barrel_02_rainmaker
 62	part_secondary_ammo_smg

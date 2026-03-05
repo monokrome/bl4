@@ -1,4 +1,6 @@
 index	name
+1	part_barrel_licensed_conglomerate
+2	part_barrel_02_conglomerate
 3	part_body_a
 4	part_body_b
 5	part_body_c
@@ -55,6 +57,7 @@ index	name
 56	part_body_mag_ar
 57	part_body_mag_sr
 58	part_body_mag_sg
+59	comp_05_legendary_conglomerate
 60	part_barrel_01_luty
 61	comp_05_legendary
 62	part_body

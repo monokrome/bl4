@@ -87,6 +87,10 @@ index	name
 86	part_mag_torgue_normal_beegun
 87	part_barrel_beegun
 88	comp_05_legendary_beegun
+89	part_mag_torgue_sticky_mercury
+90	part_mag_torgue_normal_mercury
+91	part_barrel_mercury
+92	comp_05_legendary_mercury
 95	comp_01_common
 96	comp_02_uncommon
 97	comp_03_rare

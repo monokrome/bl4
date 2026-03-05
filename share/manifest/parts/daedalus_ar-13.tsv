@@ -80,8 +80,12 @@ index	name
 79	part_shield_ricochet
 80	part_shield_ammo
 81	part_shield_amp
+82	part_barrel_01_mercredi
+83	comp_05_legendary_mercredi
 84	part_barrel_01_firstimpression
 85	comp_05_legendary_firstimpression
+89	part_underbarrel_04_atlas_ball_mercredi
+90	part_underbarrel_04_atlas_mercredi
 95	comp_01_common
 96	comp_02_uncommon
 97	comp_03_rare
