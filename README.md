@@ -2,6 +2,12 @@
 
 Borderlands 4 reverse engineering toolkit — save editor, item serial decoder, NCS parser, items database, drop rate analysis, and memory tools.
 
+## Disclaimer
+
+These are unofficial tools. Borderlands and related trademarks are property of
+Gearbox Software and 2K. This project is not affiliated with or endorsed by
+Gearbox or 2K, nor does it claim to be.
+
 ## Crates
 
 | Crate | Description |
@@ -285,12 +291,13 @@ cargo test
 cargo clippy --workspace
 ```
 
-## Disclaimer
-
-Unofficial tools. Borderlands and related trademarks are property of
-Gearbox Software and 2K. Not affiliated with or endorsed by Gearbox or 2K.
-
 **Use at your own risk.**
+
+## Special thanks
+
+- [glacierpiece](https://github.com/glacierpiece) for figuring out the save file crypto
+- [Cr4nkSt4r](https://github.com/Cr4nkSt4r) for helping me understand the NCS format
+- [trumank](https://github.com/trumank) for their work on [retoc](https://github.com/trumank/retoc)
 
 ## License
 

@@ -1,5 +1,9 @@
 # Summary
 
+[Special Thanks](special-thanks.md)
+
+---
+
 [Introduction](00-introduction.md)
 
 # Core Concepts
