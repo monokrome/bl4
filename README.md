@@ -291,7 +291,7 @@ cargo test
 cargo clippy --workspace
 ```
 
-**Use at your own risk.**
+**Use at your own risk. Always back up your saves before editing.**
 
 ## Special thanks
 
