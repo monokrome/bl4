@@ -869,7 +869,7 @@ fn extract_serial_indices_ncs_cmd(path: &Path, output: Option<&Path>, json: bool
         raw_data
     };
 
-    let doc = bl4_ncs::parse::parse(&data)
+    let doc = bl4_ncs::parse::parse_from_reader(&mut std::io::Cursor::new(&data))
         .context("Failed to parse NCS binary data")?;
 
     eprintln!("Tables: {}", doc.tables.len());
@@ -917,7 +917,7 @@ fn extract_binary_native(path: &Path, output: Option<&Path>, json: bool) -> Resu
         raw_data
     };
 
-    let doc = bl4_ncs::parse::parse(&data)
+    let doc = bl4_ncs::parse::parse_from_reader(&mut std::io::Cursor::new(&data))
         .context("Failed to parse NCS binary data")?;
 
     eprintln!("Tables: {}", doc.tables.len());
@@ -1001,7 +1001,7 @@ fn build_serial_decoder(path: &Path, output: Option<&Path>, json: bool) -> Resul
             raw_data
         };
 
-        let doc = match bl4_ncs::parse::parse(&data) {
+        let doc = match bl4_ncs::parse::parse_from_reader(&mut std::io::Cursor::new(&data)) {
             Some(d) => d,
             None => {
                 eprintln!("  Warning: Failed to parse");
@@ -1174,7 +1174,7 @@ fn parse_ncs_file(path: &Path) -> Option<bl4_ncs::document::Document> {
         raw_data
     };
 
-    let doc = bl4_ncs::parse::parse(&data);
+    let doc = bl4_ncs::parse::parse_from_reader(&mut std::io::Cursor::new(&data));
     if doc.is_none() {
         eprintln!("  Skipping {}: parse failed", filename);
     }

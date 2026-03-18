@@ -1,7 +1,7 @@
 //! NCS show command
 
 use anyhow::{Context, Result};
-use bl4_ncs::{decompress_ncs, is_ncs, parse_ncs_binary, NcsContent};
+use bl4_ncs::{decompress_ncs, is_ncs, parse_ncs_binary_from_reader, NcsContent};
 use std::fs;
 use std::path::Path;
 
@@ -27,7 +27,7 @@ pub fn show_file(path: &Path, all_strings: bool, hex: bool, json: bool, tsv: boo
 
     // For JSON output, use the structured parser
     if json {
-        if let Some(doc) = parse_ncs_binary(&decompressed) {
+        if let Some(doc) = parse_ncs_binary_from_reader(&mut std::io::Cursor::new(&decompressed)) {
             println!("{}", serde_json::to_string_pretty(&doc)?);
             return Ok(());
         }
@@ -36,7 +36,7 @@ pub fn show_file(path: &Path, all_strings: bool, hex: bool, json: bool, tsv: boo
 
     // For TSV output, use the structured parser
     if tsv {
-        if let Some(doc) = parse_ncs_binary(&decompressed) {
+        if let Some(doc) = parse_ncs_binary_from_reader(&mut std::io::Cursor::new(&decompressed)) {
             output_tsv(&doc);
             return Ok(());
         }

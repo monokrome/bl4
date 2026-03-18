@@ -1012,7 +1012,7 @@ mod test_new_parser {
         }
 
         // Step 5: try full parse
-        let doc = parse::parse(&data);
+        let doc = parse::parse_from_reader(&mut std::io::Cursor::new(&data));
         println!("Full parse: {:?}", doc.is_some());
         if let Some(doc) = &doc {
             println!("  tables: {:?}", doc.tables.keys().collect::<Vec<_>>());
@@ -1030,7 +1030,7 @@ mod test_new_parser {
         };
 
         let data = std::fs::read(dir.join("Nexus-Data-achievement0.bin")).unwrap();
-        let doc = parse::parse(&data).expect("Failed to parse achievement0");
+        let doc = parse::parse_from_reader(&mut std::io::Cursor::new(&data)).expect("Failed to parse achievement0");
 
         // achievement0 should have one table named "achievement"
         assert!(doc.tables.contains_key("achievement"),
@@ -1060,7 +1060,7 @@ mod test_new_parser {
         };
 
         let data = std::fs::read(dir.join("Nexus-Data-inv0.bin")).unwrap();
-        let doc = parse::parse(&data).expect("Failed to parse inv0");
+        let doc = parse::parse_from_reader(&mut std::io::Cursor::new(&data)).expect("Failed to parse inv0");
 
         // inv0 should have an "inv" table with deps
         assert!(doc.tables.contains_key("inv"),
@@ -1109,7 +1109,7 @@ mod test_new_parser {
                 let name = path.file_name().unwrap().to_string_lossy().to_string();
                 let data = std::fs::read(&path).unwrap();
 
-                match parse::parse(&data) {
+                match parse::parse_from_reader(&mut std::io::Cursor::new(&data)) {
                     Some(doc) => {
                         let total_tables = doc.tables.len();
                         let total_records: usize = doc.tables.values()
@@ -1151,7 +1151,7 @@ mod test_new_parser {
             let path = entry.path();
             if path.extension().map_or(false, |e| e == "bin") {
                 let data = std::fs::read(&path).unwrap();
-                if let Some(doc) = parse::parse(&data) {
+                if let Some(doc) = parse::parse_from_reader(&mut std::io::Cursor::new(&data)) {
                     let mut file_tags = 0;
                     for table in doc.tables.values() {
                         for record in &table.records {
@@ -1198,7 +1198,7 @@ mod test_new_parser {
         };
 
         let data = std::fs::read(dir.join("Nexus-Data-inv0.bin")).unwrap();
-        let doc = parse::parse(&data).expect("Failed to parse inv0");
+        let doc = parse::parse_from_reader(&mut std::io::Cursor::new(&data)).expect("Failed to parse inv0");
 
         let mut with_si = 0;
         let mut without_si = 0;
