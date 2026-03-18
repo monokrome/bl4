@@ -1,5 +1,7 @@
 # bl4
 
+> **Pre-alpha / prototype.** Do not use in production. Expect breaking changes, incorrect decoding, and incomplete features. Back up your saves.
+
 Borderlands 4 reverse engineering toolkit — save editor, item serial decoder, NCS parser, items database, drop rate analysis, and memory tools.
 
 ## Disclaimer
