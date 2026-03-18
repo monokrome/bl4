@@ -7,8 +7,6 @@
 use super::blob::parse_null_terminated_strings;
 
 /// Map a type code character to its global bit position.
-///
-/// Reference: `try_get_global_type_bit()` in ncs_type_code_table.cpp
 fn global_type_bit(ch: char) -> Option<u8> {
     match ch {
         'a' => Some(0),

@@ -81,8 +81,6 @@ fn read_value(
 }
 
 /// Decode a node recursively based on type flags
-///
-/// Reference: decode_node() in ncs_table_data_decoder.cpp
 fn decode_node(
     reader: &mut BitReader,
     ctx: &DecodeContext,
