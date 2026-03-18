@@ -8,7 +8,7 @@ use super::util::print_hex;
 
 #[allow(clippy::cognitive_complexity)]
 pub fn debug_file(path: &Path, show_hex: bool, do_parse: bool, _show_offsets: bool) -> Result<()> {
-    use bl4_ncs::{parse_ncs_binary, NcsContent};
+    use bl4_ncs::{parse_ncs_binary_from_reader, NcsContent};
 
     let data = fs::read(path).context("Failed to read file")?;
     println!("File: {}", path.display());
@@ -86,7 +86,7 @@ pub fn debug_file(path: &Path, show_hex: bool, do_parse: bool, _show_offsets: bo
         }
 
         // Full document parse
-        match parse_ncs_binary(&data) {
+        match parse_ncs_binary_from_reader(&mut std::io::Cursor::new(&data)) {
             Some(doc) => {
                 println!("\nParsed {} tables:", doc.tables.len());
                 for (name, table) in &doc.tables {

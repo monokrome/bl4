@@ -22,7 +22,7 @@ fn collect_leaf_strings(value: &Value) -> Vec<&str> {
 /// Parses itempoollist.bin content and extracts boss → legendary mappings.
 #[allow(clippy::cognitive_complexity, clippy::too_many_lines)]
 pub fn extract_drops_from_itempoollist(data: &[u8]) -> Vec<DropEntry> {
-    let doc = match crate::parse::parse(data) {
+    let doc = match crate::parse::parse_from_reader(&mut std::io::Cursor::new(data)) {
         Some(d) => d,
         None => return Vec::new(),
     };
@@ -176,7 +176,7 @@ fn extract_tier_name(s: &str) -> Option<String> {
 /// Parses itempool.bin content and extracts black market, fish collector, and mission drops
 #[allow(clippy::cognitive_complexity, clippy::too_many_lines)]
 pub fn extract_drops_from_itempool(data: &[u8]) -> Vec<DropEntry> {
-    let doc = match crate::parse::parse(data) {
+    let doc = match crate::parse::parse_from_reader(&mut std::io::Cursor::new(data)) {
         Some(d) => d,
         None => return Vec::new(),
     };

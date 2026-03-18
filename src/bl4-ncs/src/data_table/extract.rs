@@ -109,7 +109,7 @@ fn extract_table(key: &str, value: &Value) -> Option<DataTable> {
 
 /// Parse a gbx_ue_data_table NCS binary and extract all data tables.
 pub fn extract_data_tables(data: &[u8]) -> Option<DataTableManifest> {
-    let doc = crate::parse::parse(data)?;
+    let doc = crate::parse::parse_from_reader(&mut std::io::Cursor::new(data))?;
 
     let mut tables = HashMap::new();
 
