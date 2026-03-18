@@ -13,6 +13,8 @@
 //! Each block decompresses to up to 256KB (BLOCK_DECOMP_SIZE), except the last
 //! block which may be smaller.
 
+use std::io::{self, Read};
+
 use memchr::memmem;
 
 use crate::oodle::{OodleDecompressor, OozextractBackend};
@@ -29,6 +31,9 @@ const BLOCK_DECOMP_SIZE: usize = 0x40000;
 
 // Inner header field offsets
 const INNER_BLOCK_COUNT: usize = 0x0c;
+
+// Inner header format flags offset (bytes 0x08-0x0b)
+const INNER_FORMAT_FLAGS: usize = 0x08;
 
 /// NCS file header (16 bytes)
 #[derive(Debug, Clone, Copy)]
@@ -77,14 +82,76 @@ impl Header {
     }
 }
 
-/// Decompress an NCS chunk using the default backend (oozextract)
-pub fn decompress(data: &[u8]) -> Result<Vec<u8>> {
-    let backend = OozextractBackend::new();
-    decompress_with(data, &backend)
+/// Block descriptor for streaming decompression
+enum BlockDesc<'a> {
+    Raw(&'a [u8]),
+    Compressed { data: &'a [u8], decomp_size: usize },
 }
 
-/// Decompress an NCS chunk using a specific Oodle backend
-pub fn decompress_with(data: &[u8], decompressor: &dyn OodleDecompressor) -> Result<Vec<u8>> {
+/// Streaming reader that decompresses NCS data block-by-block.
+///
+/// Implements `std::io::Read`, lazily decompressing Oodle blocks on demand
+/// rather than materializing the entire payload into memory at once.
+pub struct DecompressReader<'a> {
+    decompressor: &'a dyn OodleDecompressor,
+    blocks: Vec<BlockDesc<'a>>,
+    next_block: usize,
+    buffer: Vec<u8>,
+    buffer_pos: usize,
+}
+
+impl<'a> DecompressReader<'a> {
+    fn load_next_block(&mut self) -> io::Result<bool> {
+        if self.next_block >= self.blocks.len() {
+            return Ok(false);
+        }
+
+        match &self.blocks[self.next_block] {
+            BlockDesc::Raw(data) => {
+                self.buffer.clear();
+                self.buffer.extend_from_slice(data);
+            }
+            BlockDesc::Compressed { data, decomp_size } => {
+                self.buffer = self.decompressor
+                    .decompress_block(data, *decomp_size)
+                    .map_err(|e| io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        format!("block {}: {}", self.next_block, e),
+                    ))?;
+            }
+        }
+
+        self.buffer_pos = 0;
+        self.next_block += 1;
+        Ok(true)
+    }
+}
+
+impl io::Read for DecompressReader<'_> {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        if self.buffer_pos >= self.buffer.len() {
+            if !self.load_next_block()? {
+                return Ok(0);
+            }
+        }
+
+        let available = &self.buffer[self.buffer_pos..];
+        let n = available.len().min(buf.len());
+        buf[..n].copy_from_slice(&available[..n]);
+        self.buffer_pos += n;
+        Ok(n)
+    }
+}
+
+/// Create a streaming decompression reader for NCS data.
+///
+/// Returns a `DecompressReader` that implements `std::io::Read` and lazily
+/// decompresses Oodle blocks as bytes are consumed. Only one block (~256KB)
+/// is held in memory at a time.
+pub fn decompress_reader_with<'a>(
+    data: &'a [u8],
+    decompressor: &'a dyn OodleDecompressor,
+) -> Result<DecompressReader<'a>> {
     let header = Header::from_bytes(data)?;
 
     let payload = &data[HEADER_SIZE..];
@@ -98,25 +165,23 @@ pub fn decompress_with(data: &[u8], decompressor: &dyn OodleDecompressor) -> Res
     let compressed = &payload[..header.compressed_size as usize];
 
     if !header.is_compressed() {
-        return Ok(compressed.to_vec());
+        return Ok(DecompressReader {
+            decompressor,
+            blocks: vec![BlockDesc::Raw(compressed)],
+            next_block: 0,
+            buffer: Vec::new(),
+            buffer_pos: 0,
+        });
     }
 
-    decompress_inner(compressed, header.decompressed_size as usize, decompressor)
+    build_compressed_reader(compressed, header.decompressed_size as usize, decompressor)
 }
 
-// Inner header format flags offset (bytes 0x08-0x0b)
-const INNER_FORMAT_FLAGS: usize = 0x08;
-
-/// Decompress the inner Oodle-compressed payload
-///
-/// The inner format has two variants based on bytes 0x08-0x0b:
-/// - Multi-block (0x03030812): Block sizes at 0x40, data follows
-/// - Single-block (0x00000000): Data directly at 0x40
-fn decompress_inner(
-    compressed: &[u8],
+fn build_compressed_reader<'a>(
+    compressed: &'a [u8],
     decompressed_size: usize,
-    decompressor: &dyn OodleDecompressor,
-) -> Result<Vec<u8>> {
+    decompressor: &'a dyn OodleDecompressor,
+) -> Result<DecompressReader<'a>> {
     if compressed.len() < INNER_HEADER_MIN {
         return Err(Error::DataTooShort {
             needed: INNER_HEADER_MIN,
@@ -124,14 +189,12 @@ fn decompress_inner(
         });
     }
 
-    // Validate Oodle magic
     let inner_magic =
         u32::from_be_bytes([compressed[0], compressed[1], compressed[2], compressed[3]]);
     if inner_magic != OODLE_MAGIC {
         return Err(Error::InvalidInnerMagic(inner_magic));
     }
 
-    // Check format flags at 0x08-0x0b to determine inner format
     let format_flags = u32::from_be_bytes([
         compressed[INNER_FORMAT_FLAGS],
         compressed[INNER_FORMAT_FLAGS + 1],
@@ -139,47 +202,41 @@ fn decompress_inner(
         compressed[INNER_FORMAT_FLAGS + 3],
     ]);
 
-    // Single-block format: format flags are 0, data starts at 0x40
-    if format_flags == 0 {
-        return decompress_single_block(compressed, decompressed_size, decompressor);
-    }
+    let blocks = if format_flags == 0 {
+        build_single_block(compressed, decompressed_size)?
+    } else {
+        build_multi_block(compressed, decompressed_size)?
+    };
 
-    // Multi-block format: block count at 0x0c, table at 0x40
-    decompress_multi_block(compressed, decompressed_size, decompressor)
+    Ok(DecompressReader {
+        decompressor,
+        blocks,
+        next_block: 0,
+        buffer: Vec::new(),
+        buffer_pos: 0,
+    })
 }
 
-/// Decompress single-block format (format flags = 0)
-///
-/// Two cases:
-/// - If data after header equals decompressed_size: data is uncompressed (raw)
-/// - Otherwise: data is Oodle-compressed single block
-fn decompress_single_block(
-    compressed: &[u8],
+fn build_single_block<'a>(
+    compressed: &'a [u8],
     decompressed_size: usize,
-    decompressor: &dyn OodleDecompressor,
-) -> Result<Vec<u8>> {
-    let data_start = INNER_HEADER_MIN;
-    let block_data = &compressed[data_start..];
+) -> Result<Vec<BlockDesc<'a>>> {
+    let block_data = &compressed[INNER_HEADER_MIN..];
 
-    // If data size matches decompressed size, it's uncompressed (raw)
     if block_data.len() == decompressed_size {
-        return Ok(block_data.to_vec());
+        Ok(vec![BlockDesc::Raw(block_data)])
+    } else {
+        Ok(vec![BlockDesc::Compressed {
+            data: block_data,
+            decomp_size: decompressed_size,
+        }])
     }
-
-    // Otherwise, decompress as single Oodle block
-    decompressor.decompress_block(block_data, decompressed_size)
 }
 
-/// Decompress multi-block format (format flags = 0x03030812)
-///
-/// Block count at 0x0c, block sizes at 0x40, data follows table.
-#[allow(clippy::too_many_lines)]
-fn decompress_multi_block(
-    compressed: &[u8],
+fn build_multi_block<'a>(
+    compressed: &'a [u8],
     decompressed_size: usize,
-    decompressor: &dyn OodleDecompressor,
-) -> Result<Vec<u8>> {
-    // Block count is at offset 0x0c (big-endian)
+) -> Result<Vec<BlockDesc<'a>>> {
     let block_count = u32::from_be_bytes([
         compressed[INNER_BLOCK_COUNT],
         compressed[INNER_BLOCK_COUNT + 1],
@@ -187,7 +244,6 @@ fn decompress_multi_block(
         compressed[INNER_BLOCK_COUNT + 3],
     ]) as usize;
 
-    // Read block sizes from table at 0x40
     let block_table_start = INNER_HEADER_MIN;
     let block_table_size = block_count * 4;
     let data_start = block_table_start + block_table_size;
@@ -199,54 +255,63 @@ fn decompress_multi_block(
         });
     }
 
-    // Parse block sizes (each is 4 bytes big-endian)
-    let mut block_sizes = Vec::with_capacity(block_count);
+    let mut blocks = Vec::with_capacity(block_count);
+    let mut offset = data_start;
+    let mut remaining = decompressed_size;
+
     for i in 0..block_count {
-        let off = block_table_start + i * 4;
-        let size = u32::from_be_bytes([
-            compressed[off],
-            compressed[off + 1],
-            compressed[off + 2],
-            compressed[off + 3],
+        let table_off = block_table_start + i * 4;
+        let block_size = u32::from_be_bytes([
+            compressed[table_off],
+            compressed[table_off + 1],
+            compressed[table_off + 2],
+            compressed[table_off + 3],
         ]) as usize;
-        block_sizes.push(size);
-    }
 
-    // Decompress each block
-    let mut output = Vec::with_capacity(decompressed_size);
-    let mut current_offset = data_start;
-
-    for (i, &block_size) in block_sizes.iter().enumerate() {
-        if current_offset + block_size > compressed.len() {
+        if offset + block_size > compressed.len() {
             return Err(Error::DataTooShort {
-                needed: current_offset + block_size,
+                needed: offset + block_size,
                 actual: compressed.len(),
             });
         }
 
-        let block_data = &compressed[current_offset..current_offset + block_size];
-
-        // Calculate expected decompressed size for this block
-        // Last block may be smaller than BLOCK_DECOMP_SIZE
-        let remaining = decompressed_size.saturating_sub(output.len());
         let block_decomp_size = remaining.min(BLOCK_DECOMP_SIZE);
+        blocks.push(BlockDesc::Compressed {
+            data: &compressed[offset..offset + block_size],
+            decomp_size: block_decomp_size,
+        });
 
-        let block_output = decompressor
-            .decompress_block(block_data, block_decomp_size)
-            .map_err(|e| Error::Oodle(format!("block {}: {}", i, e)))?;
-
-        output.extend_from_slice(&block_output);
-        current_offset += block_size;
+        remaining = remaining.saturating_sub(block_decomp_size);
+        offset += block_size;
     }
 
-    if output.len() != decompressed_size {
+    Ok(blocks)
+}
+
+/// Decompress an NCS chunk using the default backend (oozextract)
+pub fn decompress(data: &[u8]) -> Result<Vec<u8>> {
+    let backend = OozextractBackend::new();
+    decompress_with(data, &backend)
+}
+
+/// Decompress an NCS chunk using a specific Oodle backend
+pub fn decompress_with(data: &[u8], decompressor: &dyn OodleDecompressor) -> Result<Vec<u8>> {
+    let header = Header::from_bytes(data)?;
+    let expected = header.decompressed_size as usize;
+
+    let mut reader = decompress_reader_with(data, decompressor)?;
+    let mut buf = Vec::with_capacity(expected);
+    reader.read_to_end(&mut buf)
+        .map_err(|e| Error::Oodle(e.to_string()))?;
+
+    if header.is_compressed() && buf.len() != expected {
         return Err(Error::DecompressionSize {
-            expected: decompressed_size,
-            actual: output.len(),
+            expected,
+            actual: buf.len(),
         });
     }
 
-    Ok(output)
+    Ok(buf)
 }
 
 /// Valid NCS version byte - only 0x01 is known to be valid
@@ -258,20 +323,17 @@ pub fn scan(data: &[u8]) -> Vec<(usize, Header)> {
     let mut results = Vec::new();
 
     for offset in finder.find_iter(data) {
-        // NCS magic is at bytes 1-3, version byte is at offset-1
         if offset == 0 {
             continue;
         }
 
         let start = offset - 1;
 
-        // Skip if this is actually a manifest (_NCS/)
         if start > 0 && data[start - 1] == b'_' {
             continue;
         }
 
         if let Ok(header) = Header::from_bytes(&data[start..]) {
-            // Only version 0x01 is valid - other versions are false positives
             if header.version != VALID_VERSION {
                 continue;
             }
@@ -288,8 +350,8 @@ pub fn scan(data: &[u8]) -> Vec<(usize, Header)> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::io::Read;
 
-    /// Create a valid NCS header with given parameters
     fn make_ncs_header(
         version: u8,
         compression_flag: u32,
@@ -369,7 +431,6 @@ mod tests {
 
     #[test]
     fn test_decompress_payload_too_short() {
-        // Header says 100 bytes of payload but we only provide 16 bytes
         let data = make_ncs_header(1, 0, 100, 100);
         let result = decompress(&data);
         assert!(result.is_err());
@@ -378,7 +439,6 @@ mod tests {
 
     #[test]
     fn test_decompress_uncompressed_data() {
-        // Create uncompressed NCS data (compression_flag = 0)
         let payload = b"Hello, World!";
         let mut data = make_ncs_header(1, 0, payload.len() as u32, payload.len() as u32);
         data.extend_from_slice(payload);
@@ -389,9 +449,8 @@ mod tests {
 
     #[test]
     fn test_decompress_inner_too_short() {
-        // Compressed flag = 1, but inner data is too short for Oodle header
         let mut data = make_ncs_header(1, 1, 100, 32);
-        data.extend_from_slice(&[0u8; 32]); // Too short for INNER_HEADER_MIN (0x40)
+        data.extend_from_slice(&[0u8; 32]);
 
         let result = decompress(&data);
         assert!(result.is_err());
@@ -403,11 +462,9 @@ mod tests {
 
     #[test]
     fn test_decompress_inner_invalid_magic() {
-        // Compressed with wrong inner magic
         let mut data = make_ncs_header(1, 1, 100, 0x50);
-        // Wrong magic (should be 0xb7756362)
         data.extend_from_slice(&[0x00, 0x00, 0x00, 0x00]);
-        data.extend_from_slice(&[0u8; 0x4C]); // Padding to reach INNER_HEADER_MIN
+        data.extend_from_slice(&[0u8; 0x4C]);
 
         let result = decompress(&data);
         assert!(result.is_err());
@@ -417,8 +474,37 @@ mod tests {
         ));
     }
 
-    // Note: test_decompress_inner_raw_data removed - the "raw data" path was based
-    // on incorrect format assumptions. All NCS files use multi-block Oodle compression.
+    #[test]
+    fn test_decompress_reader_uncompressed() {
+        let payload = b"streaming test data";
+        let mut data = make_ncs_header(1, 0, payload.len() as u32, payload.len() as u32);
+        data.extend_from_slice(payload);
+
+        let backend = OozextractBackend::new();
+        let mut reader = decompress_reader_with(&data, &backend).unwrap();
+        let mut buf = Vec::new();
+        reader.read_to_end(&mut buf).unwrap();
+        assert_eq!(buf, payload);
+    }
+
+    #[test]
+    fn test_decompress_reader_partial_reads() {
+        let payload = b"abcdefghijklmnopqrstuvwxyz";
+        let mut data = make_ncs_header(1, 0, payload.len() as u32, payload.len() as u32);
+        data.extend_from_slice(payload);
+
+        let backend = OozextractBackend::new();
+        let mut reader = decompress_reader_with(&data, &backend).unwrap();
+
+        let mut buf = [0u8; 4];
+        let n = reader.read(&mut buf).unwrap();
+        assert_eq!(n, 4);
+        assert_eq!(&buf, b"abcd");
+
+        let n = reader.read(&mut buf).unwrap();
+        assert_eq!(n, 4);
+        assert_eq!(&buf, b"efgh");
+    }
 
     #[test]
     fn test_scan_empty_data() {
@@ -435,7 +521,6 @@ mod tests {
 
     #[test]
     fn test_scan_ncs_at_start() {
-        // NCS magic at offset 0 should be skipped (needs version byte before it)
         let mut data = vec![];
         data.extend_from_slice(&NCS_MAGIC);
         data.extend_from_slice(&[0u8; 20]);
@@ -446,11 +531,11 @@ mod tests {
 
     #[test]
     fn test_scan_valid_ncs() {
-        let mut data = vec![0u8; 10]; // Padding before NCS
+        let mut data = vec![0u8; 10];
         let ncs_data = make_ncs_header(1, 0, 8, 8);
         let ncs_start = data.len();
         data.extend_from_slice(&ncs_data);
-        data.extend_from_slice(&[0u8; 8]); // Payload
+        data.extend_from_slice(&[0u8; 8]);
 
         let results = scan(&data);
         assert_eq!(results.len(), 1);
@@ -460,19 +545,10 @@ mod tests {
 
     #[test]
     fn test_scan_skip_manifest() {
-        // _NCS/ should be skipped (it's a manifest, not data)
-        // The scan looks for "NCS" magic at bytes 1-3, so version byte is at offset-1
-        // For "_NCS/", the NCS is at bytes 1-3, but there's underscore at byte 0
-        // So when NCS magic is found at offset 1, start = 0, and data[start-1] check fails
-        // Actually the check is: if start > 0 && data[start - 1] == b'_'
-        // So we need proper structure
-
-        // Build: [padding][_NCS/][rest]
-        let mut data = vec![0u8; 5]; // Padding so start > 0
-        data.push(b'_'); // This will be at start-1
-                         // Now add version + NCS magic (the scan finds NCS at offset 7, start = 6)
-        data.push(0x01); // Version byte (this is "start")
-        data.extend_from_slice(&NCS_MAGIC); // NCS magic
+        let mut data = vec![0u8; 5];
+        data.push(b'_');
+        data.push(0x01);
+        data.extend_from_slice(&NCS_MAGIC);
         data.push(b'/');
         data.extend_from_slice(&[0u8; 20]);
 
@@ -484,15 +560,12 @@ mod tests {
     fn test_scan_multiple_ncs() {
         let mut data = vec![];
 
-        // First NCS chunk
         let ncs1 = make_ncs_header(1, 0, 4, 4);
         data.extend_from_slice(&ncs1);
         data.extend_from_slice(&[0u8; 4]);
 
-        // Some padding
         data.extend_from_slice(&[0xFFu8; 20]);
 
-        // Second NCS chunk (also version 1)
         let ncs2_start = data.len();
         let ncs2 = make_ncs_header(1, 0, 8, 8);
         data.extend_from_slice(&ncs2);
@@ -510,33 +583,29 @@ mod tests {
     fn test_scan_ignores_other_versions() {
         let mut data = vec![];
 
-        // Version 1 - should be found
         let ncs1 = make_ncs_header(1, 0, 4, 4);
         data.extend_from_slice(&ncs1);
         data.extend_from_slice(&[0u8; 4]);
 
         data.extend_from_slice(&[0xFFu8; 20]);
 
-        // Version 2 - should be ignored
         let ncs2 = make_ncs_header(2, 0, 8, 8);
         data.extend_from_slice(&ncs2);
         data.extend_from_slice(&[0u8; 8]);
 
         let results = scan(&data);
-        assert_eq!(results.len(), 1); // Only version 1
+        assert_eq!(results.len(), 1);
         assert_eq!(results[0].1.version, 1);
     }
 
     #[test]
     fn test_scan_ncs_truncated() {
-        // NCS header says 100 bytes but file is truncated
         let ncs = make_ncs_header(1, 0, 100, 100);
-        let mut data = vec![0u8; 5]; // Padding
+        let mut data = vec![0u8; 5];
         data.extend_from_slice(&ncs);
-        // No payload - total_size exceeds data length
 
         let results = scan(&data);
-        assert!(results.is_empty()); // Should not include truncated NCS
+        assert!(results.is_empty());
     }
 
     #[test]

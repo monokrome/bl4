@@ -9,10 +9,13 @@ pub mod decode;
 pub mod remap;
 pub mod typecodes;
 
+use std::io::Read;
+
+use crate::bit_reader::StreamingBitReader;
 use crate::document::Document;
-use blob::{extract_header_strings, BlobHeader};
-use decode::{decode_table_data, DecodeInput};
-use typecodes::parse_type_code_table;
+use blob::{extract_header_strings, read_header_strings, BlobHeader};
+use decode::{decode_table_data, decode_tables, DecodeInput};
+use typecodes::{parse_type_code_table, parse_type_code_table_from_reader};
 
 /// Parse decompressed NCS data into a Document
 ///
@@ -49,6 +52,40 @@ pub fn parse(data: &[u8]) -> Option<Document> {
         row_flags: &tct.header.row_flags,
         binary_offset: body_offset + tct.data_offset,
     })
+}
+
+/// Parse NCS data from a streaming reader into a Document
+///
+/// Streaming variant of `parse()`. Reads the blob header, header strings,
+/// type code table, and binary data sequentially from the reader without
+/// buffering the entire payload.
+pub fn parse_from_reader(reader: &mut impl Read) -> Option<Document> {
+    let blob = BlobHeader::from_reader(reader)?;
+    let header_strings = read_header_strings(reader, &blob)?;
+
+    if header_strings.is_empty() {
+        return None;
+    }
+
+    let tct = parse_type_code_table_from_reader(reader)?;
+
+    let mut bit_reader = StreamingBitReader::new(reader);
+
+    decode_tables(
+        &mut bit_reader,
+        &DecodeInput {
+            data: &[],
+            header_strings: &header_strings,
+            value_strings: &tct.value_strings,
+            value_strings_declared: tct.value_strings_declared_count,
+            value_kinds: &tct.value_kinds,
+            value_kinds_declared: tct.value_kinds_declared_count,
+            key_strings: &tct.key_strings,
+            key_strings_declared: tct.key_strings_declared_count,
+            row_flags: &tct.header.row_flags,
+            binary_offset: 0,
+        },
+    )
 }
 
 /// Extract dependency info from blob header strings

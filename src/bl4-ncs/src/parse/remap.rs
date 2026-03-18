@@ -3,7 +3,7 @@
 //! Used to remap indices in the NCS binary section. Each table has two
 //! remap arrays: one for key strings (pair_vec) and one for value strings.
 
-use crate::bit_reader::{bit_width, BitReader};
+use crate::bit_reader::{bit_width, BitRead};
 
 /// Fixed-width integer array with 24-bit count + 8-bit width header
 #[derive(Debug, Clone, Default)]
@@ -20,7 +20,7 @@ impl FixedWidthIntArray {
     }
 
     /// Read from bit stream: 24-bit count, 8-bit width, then count values
-    pub fn read(reader: &mut BitReader) -> Option<Self> {
+    pub fn read(reader: &mut impl BitRead) -> Option<Self> {
         let count = reader.read_bits(24)?;
         let value_bit_width = reader.read_bits(8)? as u8;
         let index_bit_width = if count > 0 { bit_width(count) } else { 0 };
@@ -75,6 +75,7 @@ impl FixedWidthIntArray {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::bit_reader::BitReader;
 
     #[test]
     fn test_fixed_width_array_read() {

@@ -52,8 +52,8 @@ pub use drops::{
     DropsManifest,
 };
 pub use data::{
-    decompress as decompress_ncs, decompress_with as decompress_ncs_with, scan as scan_for_ncs,
-    Header as NcsHeader,
+    decompress as decompress_ncs, decompress_reader_with as decompress_ncs_reader_with,
+    decompress_with as decompress_ncs_with, scan as scan_for_ncs, DecompressReader, Header as NcsHeader,
 };
 pub use extract::{extract_from_pak, ExtractionResult, NcsFile};
 pub use field::{known as fields, Field, Type as FieldType};
@@ -73,7 +73,7 @@ pub use inventory::{
 pub use pak::{
     extract_from_directory, is_ncs_file, type_from_filename, DirectoryReader, ExtractedNcs,
 };
-pub use bit_reader::{bit_width, BitReader};
+pub use bit_reader::{bit_width, BitRead, BitReader, StreamingBitReader};
 pub use document::{
     extract_serial_indices as extract_document_serial_indices,
     extract_categorized_parts, extract_category_names,
@@ -83,6 +83,7 @@ pub use document::{
     CategorizedPart,
 };
 pub use parse::parse as parse_ncs_binary;
+pub use parse::parse_from_reader as parse_ncs_binary_from_reader;
 pub use types::{UnpackedString, UnpackedValue};
 pub use unpack::{find_packed_strings, unpack_string};
 

@@ -2,7 +2,7 @@
 //!
 //! Implements the NCS table data decode algorithm: tables → records → entries.
 
-use crate::bit_reader::{bit_width, BitReader};
+use crate::bit_reader::{bit_width, BitRead, BitReader};
 use crate::document::{DepEntry, Document, Entry, Record, Table, Tag, Value};
 use crate::parse::remap::FixedWidthIntArray;
 use std::collections::HashMap;
@@ -38,7 +38,7 @@ fn remap_index(remap: Option<&FixedWidthIntArray>, raw: u32, default_bits: u8) -
 
 /// Read a key string using the pair_vec remap
 fn read_pair_vec_string(
-    reader: &mut BitReader,
+    reader: &mut impl BitRead,
     ctx: &DecodeContext,
     remap: Option<&FixedWidthIntArray>,
 ) -> Option<String> {
@@ -55,7 +55,7 @@ fn read_pair_vec_string(
 
 /// Read a leaf value string using the value_string remap + kind
 fn read_value(
-    reader: &mut BitReader,
+    reader: &mut impl BitRead,
     ctx: &DecodeContext,
     value_remap: Option<&FixedWidthIntArray>,
 ) -> Option<String> {
@@ -82,7 +82,7 @@ fn read_value(
 
 /// Decode a node recursively based on type flags
 fn decode_node(
-    reader: &mut BitReader,
+    reader: &mut impl BitRead,
     ctx: &DecodeContext,
     tctx: &TableContext,
     record_end_bit: usize,
@@ -104,7 +104,7 @@ fn decode_node(
 
 /// Decode the value portion of a node based on kind
 fn decode_node_value(
-    reader: &mut BitReader,
+    reader: &mut impl BitRead,
     ctx: &DecodeContext,
     tctx: &TableContext,
     record_end_bit: usize,
@@ -152,7 +152,7 @@ fn wrap_with_self_key(self_key: String, value: Value) -> Option<Value> {
 
 /// Read a packed name list (used by tags d/e/f)
 fn read_packed_name_list(
-    reader: &mut BitReader,
+    reader: &mut impl BitRead,
     ctx: &DecodeContext,
     pair_remap: Option<&FixedWidthIntArray>,
 ) -> Option<Vec<String>> {
@@ -169,7 +169,7 @@ fn read_packed_name_list(
 
 /// Read an entry or dep_entry value based on a 2-bit opcode
 fn decode_op_value(
-    reader: &mut BitReader,
+    reader: &mut impl BitRead,
     ctx: &DecodeContext,
     tctx: &TableContext,
     record_end_bit: usize,
@@ -188,7 +188,7 @@ fn decode_op_value(
 
 /// Parse record tags until 'z' marker, capturing metadata
 fn parse_tags(
-    reader: &mut BitReader,
+    reader: &mut impl BitRead,
     ctx: &DecodeContext,
     tctx: &TableContext,
     record_end_bit: usize,
@@ -237,7 +237,7 @@ fn parse_tags(
 
 /// Parse entries from a record's entry section
 fn parse_entries(
-    reader: &mut BitReader,
+    reader: &mut impl BitRead,
     ctx: &DecodeContext,
     tctx: &TableContext,
     record_end_bit: usize,
@@ -273,7 +273,7 @@ fn parse_entries(
 
 /// Parse dependency entries following a main entry
 fn parse_dep_entries(
-    reader: &mut BitReader,
+    reader: &mut impl BitRead,
     ctx: &DecodeContext,
     tctx: &TableContext,
     record_end_bit: usize,
@@ -324,7 +324,7 @@ fn parse_dep_entries(
 
 /// Parse all records from a table's record section
 fn parse_records(
-    reader: &mut BitReader,
+    reader: &mut impl BitRead,
     ctx: &DecodeContext,
     tctx: &TableContext,
 ) -> Vec<Record> {
@@ -387,7 +387,11 @@ pub fn decode_table_data(input: &DecodeInput) -> Option<Document> {
 
     let binary_data = &input.data[input.binary_offset..];
     let mut reader = BitReader::new(binary_data);
+    decode_tables(&mut reader, input)
+}
 
+/// Decode all table data from any BitRead source
+pub fn decode_tables(reader: &mut impl BitRead, input: &DecodeInput) -> Option<Document> {
     let ctx = DecodeContext {
         value_strings: input.value_strings,
         value_kinds: input.value_kinds,
@@ -412,10 +416,10 @@ pub fn decode_table_data(input: &DecodeInput) -> Option<Document> {
         let table_name = input.header_strings.get(table_id as usize)?.clone();
 
         let (dep_names, dep_count) =
-            read_table_deps(&mut reader, table_id_bits, input.header_strings);
+            read_table_deps(reader, table_id_bits, input.header_strings);
 
-        let remap_a = FixedWidthIntArray::read(&mut reader)?;
-        let remap_b = FixedWidthIntArray::read(&mut reader)?;
+        let remap_a = FixedWidthIntArray::read(reader)?;
+        let remap_b = FixedWidthIntArray::read(reader)?;
 
         let tctx = TableContext {
             pair_remap: if remap_a.is_active() { Some(&remap_a) } else { None },
@@ -430,7 +434,7 @@ pub fn decode_table_data(input: &DecodeInput) -> Option<Document> {
 
         reader.align_byte();
 
-        let records = parse_records(&mut reader, &ctx, &tctx);
+        let records = parse_records(reader, &ctx, &tctx);
 
         tables.insert(
             table_name.clone(),
@@ -447,7 +451,7 @@ pub fn decode_table_data(input: &DecodeInput) -> Option<Document> {
 
 /// Read dependency table IDs until a 0-terminator
 fn read_table_deps(
-    reader: &mut BitReader,
+    reader: &mut impl BitRead,
     table_id_bits: u8,
     header_strings: &[String],
 ) -> (Vec<String>, usize) {
