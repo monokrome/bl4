@@ -3,6 +3,8 @@
 //! The decompressed NCS payload begins with a 16-byte header followed by
 //! null-terminated header strings, then the body (type code table + data).
 
+use std::io::Read;
+
 /// Blob header at start of decompressed NCS data (16 bytes)
 #[derive(Debug, Clone, Copy)]
 pub struct BlobHeader {
@@ -40,6 +42,13 @@ impl BlobHeader {
         Some(header)
     }
 
+    /// Parse blob header from a stream (reads exactly 16 bytes)
+    pub fn from_reader(reader: &mut impl Read) -> Option<Self> {
+        let mut buf = [0u8; Self::SIZE];
+        reader.read_exact(&mut buf).ok()?;
+        Self::parse(&buf)
+    }
+
     pub fn string_table_offset(&self) -> usize {
         Self::SIZE
     }
@@ -60,6 +69,14 @@ pub fn extract_header_strings(data: &[u8], blob: &BlobHeader) -> Vec<String> {
 
     let block = &data[start..end];
     parse_null_terminated_strings(block)
+}
+
+/// Read header strings from a stream (reads exactly `string_bytes` bytes)
+pub fn read_header_strings(reader: &mut impl Read, blob: &BlobHeader) -> Option<Vec<String>> {
+    let len = blob.string_bytes as usize;
+    let mut buf = vec![0u8; len];
+    reader.read_exact(&mut buf).ok()?;
+    Some(parse_null_terminated_strings(&buf))
 }
 
 /// Parse null-terminated strings from a byte block
@@ -126,5 +143,49 @@ mod tests {
         let data = b"";
         let strings = parse_null_terminated_strings(data);
         assert!(strings.is_empty());
+    }
+
+    #[test]
+    fn test_blob_header_from_reader() {
+        let mut data = vec![0u8; 32];
+        data[0] = 5; // entry_count
+        data[8] = 10; // string_bytes
+
+        let mut cursor = std::io::Cursor::new(&data);
+        let header = BlobHeader::from_reader(&mut cursor).unwrap();
+        assert_eq!(header.entry_count, 5);
+        assert_eq!(header.string_bytes, 10);
+        // Cursor should have advanced past the header
+        assert_eq!(cursor.position(), 16);
+    }
+
+    #[test]
+    fn test_read_header_strings() {
+        let blob = BlobHeader {
+            entry_count: 1,
+            flags: 0,
+            string_bytes: 12,
+            reserved: 0,
+        };
+        let data = b"hello\0world\0";
+        let mut cursor = std::io::Cursor::new(&data[..]);
+        let strings = read_header_strings(&mut cursor, &blob).unwrap();
+        assert_eq!(strings, vec!["hello", "world"]);
+    }
+
+    #[test]
+    fn test_from_reader_matches_parse() {
+        let mut data = vec![0u8; 32];
+        data[0] = 3; // entry_count
+        data[8] = 20; // string_bytes
+
+        let from_slice = BlobHeader::parse(&data).unwrap();
+        let mut cursor = std::io::Cursor::new(&data);
+        let from_reader = BlobHeader::from_reader(&mut cursor).unwrap();
+
+        assert_eq!(from_slice.entry_count, from_reader.entry_count);
+        assert_eq!(from_slice.flags, from_reader.flags);
+        assert_eq!(from_slice.string_bytes, from_reader.string_bytes);
+        assert_eq!(from_slice.reserved, from_reader.reserved);
     }
 }
