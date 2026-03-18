@@ -194,10 +194,6 @@ fn read_string_block(buf: &[u8], pos: usize) -> Option<(StringBlock, usize)> {
     let mut strings = parse_null_terminated_strings(&buf[data_start..data_start + byte_len]);
 
     let target = declared_count as usize;
-    if strings.len() < target {
-        try_repair_merged_numeric_prefix_strings(&mut strings, target);
-    }
-
     if strings.len() > target {
         strings.truncate(target);
     }
@@ -215,52 +211,6 @@ fn read_string_block(buf: &[u8], pos: usize) -> Option<(StringBlock, usize)> {
     Some((block, pos + 16 + byte_len))
 }
 
-/// Repair strings that were merged due to missing null terminators
-///
-/// Some strings get concatenated like "123FooBar" where "123" and "FooBar"
-/// should be separate entries. Split at digit→alpha boundaries.
-fn try_repair_merged_numeric_prefix_strings(strings: &mut Vec<String>, target_count: usize) {
-    for _ in 0..64 {
-        if strings.len() >= target_count {
-            break;
-        }
-
-        let mut candidate = None;
-        let mut split_byte_pos = 0;
-
-        for (i, s) in strings.iter().enumerate() {
-            if s.is_empty() {
-                continue;
-            }
-            let chars: Vec<char> = s.chars().collect();
-            let mut p = 0;
-            while p < chars.len() && chars[p].is_ascii_digit() {
-                p += 1;
-            }
-            if p < 2 || p >= chars.len() {
-                continue;
-            }
-            if !chars[p].is_ascii_alphabetic() {
-                continue;
-            }
-            // Found a split point
-            let byte_pos = s.char_indices().nth(p).map(|(idx, _)| idx).unwrap_or(s.len());
-            candidate = Some(i);
-            split_byte_pos = byte_pos;
-            break;
-        }
-
-        if let Some(idx) = candidate {
-            let original = strings[idx].clone();
-            let left = original[..split_byte_pos].to_string();
-            let right = original[split_byte_pos..].to_string();
-            strings[idx] = left;
-            strings.insert(idx + 1, right);
-        } else {
-            break;
-        }
-    }
-}
 
 #[cfg(test)]
 mod tests {
@@ -273,20 +223,6 @@ mod tests {
         assert_eq!(global_type_bit('j'), Some(9));
         assert_eq!(global_type_bit('m'), Some(24));
         assert_eq!(global_type_bit('z'), None);
-    }
-
-    #[test]
-    fn test_string_repair() {
-        let mut strings = vec!["123Hello".to_string(), "world".to_string()];
-        try_repair_merged_numeric_prefix_strings(&mut strings, 3);
-        assert_eq!(strings, vec!["123", "Hello", "world"]);
-    }
-
-    #[test]
-    fn test_string_repair_no_split_needed() {
-        let mut strings = vec!["hello".to_string(), "world".to_string()];
-        try_repair_merged_numeric_prefix_strings(&mut strings, 2);
-        assert_eq!(strings, vec!["hello", "world"]);
     }
 
     #[test]
