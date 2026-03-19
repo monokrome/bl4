@@ -1,0 +1,90 @@
+row_name	description	description 2	description 3	modifier 1	modifier 2	modifier 3	skill name
+GravPassive_01	Max Overshield	Max shield		0.100000	0.050000		Extra-Galactic
+GravPassive_02	Melee Damage	Entangle Chance		0.060000	0.060000		Personal Observation
+GravPassive_03	E Chance			0.100000			Action At A Distance
+GravPassive_04	Crit Damage	Duration		0.050000	12.000000		Momentum
+GravPassive_05	Reload Speed			-0.030000			Mass Function
+GravPassive_06	Gun Damage	Duration	Max Stacks	0.020000	12.000000	5.000000	Neutron Decay
+GravPassive_07	Freeze Rate			0.100000			Heat Death
+GravPassive_08	Enemies			1.000000			Butterfly effect
+GravPassive_09	Action Skill Damage	Duration	Max Stacks	0.030000	8.000000	5.000000	Resonance Cascade
+GravPassive_10	CDR			0.005000			Confirmative Reality
+GravPassive_11	Duration	Max Stacks/Rank		0.800000	1.000000		Zero Point
+GravPassive_12	Cryo Damage	Rad Damage		0.100000	0.100000		Blueshift
+GravPassive_13	Bonus Damage	Terminal Bonus		0.050000	0.030000		Decoherence
+GravPassive_14	Damage Scalar			0.100000			Latent Charge
+GravPassive_15	Action Skill Power	Duration	Max Stacks	0.020000	8.000000	5.000000	Cluster
+GravPassive_16	EE Chance			0.250000			Runaway Reaction
+GravPassive_17	Amp Damage			0.100000			Gamma Ray Burst
+GravPassive_18	Accuracy	Accuracy per Enemy		0.100000	0.030000		Harlowe's Certainty Principle
+GravPassive_19							Superposition
+GravPassive_20	Bullets	Chance		1.000000	0.150000		Amplifier at Will
+GravPassive_21	EE Chance			0.200000			Exposed Core
+GravPassive_22	Cryo Damage	Rad Damage		0.070000	0.080000		Meltdown
+GravPassive_23	Ricochet Chance	Damage Mod		0.060000	0.500000		Grave Wave
+GravPassive_24	Crit Damage			0.070000			Excited State
+GravPassive_25	Life Steal			0.030000			Absoprtion
+GravPassive_26	Shield Restore	Max Distance		0.060000	4096.000000		Distribution Function
+GravPassive_27	Fire Rate	Reload Speed		0.070000	0.070000		Supercooled Barrels
+GravPassive_28	Grenade Rate			7.000000			Annihilation
+GravPassive_29	Fire Rate			0.040000			Cyclotron
+GravPassive_30	Shield Capacity	Shield Recharge Rate		0.060000	0.060000		PPE
+GravPassive_31	EE Chance			0.100000			Fuzzy Math
+GravPassive_32	Skill Damage			0.060000			Field Ready Prototype
+GravPassive_33	Reload Speed			-0.050000			Bleeding Edge
+GravPassive_34	Elemental Damage	Status Effect Damage		0.040000	0.040000		Elementary
+GravPassive_35	CDR	Duration		0.070000	8.000000		Test Subjects
+GravPassive_36	Move Speed	Duration		0.060000	8.000000		Propulsion
+GravPassive_37	Damage Scalar	Cooldown		0.150000	16.000000		Elephant's Foot
+GravPassive_38	EE Duration			0.120000			Everstorm
+GravPassive_39	Rad Damage			0.070000			Mad Rads
+GravPassive_40	Skill Damage			0.070000			Practical Applications
+GravPassive_41	Entangle Chance			0.100000			Carry the One
+GravPassive_42	Life Steal			0.050000			Core Sample
+GravPassive_43							Break the Ice
+GravPassive_44	CDR	Duration	Max Stacks	0.040000	16.000000	10.000000	Opposing Force
+GravPassive_45	Damage Scalar	Duration	Interval	0.070000	8.000000	0.500000	Cold Welding
+GravPassive_46	Rad Damage	Rad Chance		0.060000	0.120000		Poisoned Sun
+GravPassive_47	Crit Chance			0.050000			Glow Up
+GravPassive_48	Damage Scalar	Cooldown		0.120000	2.000000		Fissile Launcher
+GravPassive_49	Bonus Damage			0.060000			Chain Reactor
+GravPassive_50	Scalar			0.500000			Unraveled
+GravPassive_51	Damage Scalar	Radius	Cooldown	0.400000	512.000000	2.000000	Dirty Bomb
+GravPassive_52	Shield Restore			0.080000			Highly Efficienct
+GravPassive_53	Skill Damage	Duration	Max Stacks	0.020000	12.000000	5.000000	Mechanical Brilliance
+GravPassive_54	Cooldown			40.000000			Eureka!
+GravPassive_55	Gun Damage	Duration	Max Stacks	0.020000	14.000000	5.000000	Rounding Up
+GravPassive_56	Shield Drain			0.100000			Relative Ease
+GravPassive_57	Cooldown	Damage Scalar	Radius	40.000000	0.650000	512.000000	QED
+GravPassive_57_Move	Move Speed	CM Speed	Duration	-0.850000	3500.000000	3.000000	QED
+GravPassive_58	Health Regen/Enemy	Duration		0.010000	8.000000		Quantum Immortality
+GravPassive_59	Crit Chance	Additional	Duration	0.020000	0.010000	8.000000	Make Extrodinary
+GravPassive_59_Stacks	Max Stacks			10.000000			
+GravPassive_60	Gun Damage	Duration		0.060000	8.000000		Parellel Circuit
+GravPassive_61	CDR			0.050000			Pulse Drive
+GravPassive_62	Elemental Damage	Status Effect Chance	Cryo Effectiveness	0.040000	0.040000	0.030000	Ignition
+GravPassive_63	Fire Rate	Duration		0.060000	8.000000		Bright Future
+GravPassive_64	Accuracy	Stasis Bonus	Max Stacks	0.130000	2.000000	99.000000	Negentropy
+GravPassive_65	Cryo Damage			0.070000			Cryodynamics
+GravPassive_66	Radius	Damage Scalar	Gun Damage	768.000000	0.400000	0.120000	Creative Overflow
+GravPassive_67	Crit Damage			0.100000			Precision Engineering
+GravPassive_68	CDR	Duration		0.070000	4.000000		Too Cool For Schoolant
+GravPassive_69	Duration per Enemy			0.030000			Concurrence
+GravPassive_70	Move Speed	Duration		0.080000	8.000000		Slingshot
+GravPassive_71	CDR Restore	Duration Restore		0.030000	0.020000		Control Group
+GravPassive_72	Speed Scale	Duration	Max Stacks	0.100000	7.000000	20.000000	Force of Will
+GravPassive_73	Bonus Damage	Max Stacks		0.100000	10.000000		Freeze Frame
+GravPassive_74	Duration	Cooldown		5.000000	10.000000		Snapshot
+GravPassive_75	Bonus Damage	Duration		0.070000	8.000000		Unstable Ice-otope
+GravPassive_76	Life Steal	Overshield Steal		0.030000	0.040000		Keep Ice on That
+GravPassive_77	Damage Scalar	Cooldown	Duration	0.040000	4.000000	2.000000	Endothermic Reaction
+GravPassive_77_BonusDamage	Bonus Damage			0.050000			
+GravPassive_78	Freeze Chance	Duration		0.300000	8.000000		Flash Freeze
+GravPassive_79	CDR	Duration		0.090000	8.000000		Heat Sink
+GravPassive_80	Absolute Zero	Cryo Mult		0.150000	2.000000		Triple Point
+GravPassive_81	Radius Damage			0.070000			Indiscrete Mathematics
+GravPassive_82	Damage Scalar	Cooldown	RAdius	0.090000	4.000000	256.000000	Experimentation
+GravPassive_83	Chance	Cooldown		0.150000	2.000000		Reproduce Findings
+GravPassive_84	Duration			0.050000			Sustained Reaction
+GravPassive_85	Chance			0.070000			Gordian Knot
+GravPassive_Wasted	Hazard Damage Multiplier	Hazard Duration		0.030000	5.000000		

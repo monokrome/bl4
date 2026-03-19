@@ -1,0 +1,5 @@
+row_name	absoluteceiling	absolutefloor	relativefloor
+Normal	6	3	-3
+Medium	10	5	-3
+Hard	12	10	-2
+SuperHard	16	13	-1

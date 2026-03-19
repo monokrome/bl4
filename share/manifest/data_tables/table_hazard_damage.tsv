@@ -1,0 +1,10 @@
+row_name	comment	value
+Hazard_Corrosive_DamageMultiplier	This happens 5 times a second, and is relative to the standard Health Formula.	0.033000
+Hazard_Cryo_DamageMultiplier	This happens 5 times a second, and is relative to the standard Health Formula.	0.033000
+Hazard_Fire_DamageMultiplier	This happens 5 times a second, and is relative to the standard Health Formula.	0.033000
+Hazard_Radiation_DamageMultiplier	This happens 5 times a second, and is relative to the standard Health Formula.	0.033000
+Hazard_Shock_DamageMultiplier	This happens 5 times a second, and is relative to the standard Health Formula.	0.033000
+Hazard_Eridium_DamageMultiplier	This hazard type cannot be represented with a puddle, it's for statically built environmental hazards only and as such should be more punishing.	0.066000
+Hazard_Ordinite_DamageMultiplier	This hazard type cannot be represented with a puddle, it's for statically built environmental hazards only and as such should be more punishing.	0.066000
+Hazard_NonElemental_DamageMultiplier	This hazard type cannot be represented with a puddle, it's for statically built environmental hazards only and as such should be more punishing.	0.009000
+Hazard_AcidPool_DamageMultiplier	This hazard type cannot be represented with a puddle, it's for statically built environmental hazards only and as such should be more punishing.	0.200000

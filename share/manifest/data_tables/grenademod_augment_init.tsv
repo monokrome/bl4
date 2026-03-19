@@ -1,0 +1,46 @@
+row_name	cooldown_scale	customdesc1	customdesc2	customvalue1	customvalue2	damage_payload_scale	damage_scale	radius_scale
+MIRV		MIRVDamageMulti		0.500000		0.500000		
+MIRV_Children						0.500000		
+MIRV_Bouncer						0.500000		
+MIRV_Micro-Mirv		MicroMIRVDamageMulti		0.750000		0.375000		
+MIRV_Spring						0.500000		
+MIRV_Swarm								
+Divider		DivDamageMulti		1.000000				
+Divider_Children		use main dmg scale for div augs						
+Divider_Seeker								
+Divider_Singularity						0.500000		
+Divider_Repeater		DivDamageMulti		0.500000				
+Divider_Spring						0.500000		
+Spring		SpringDamageMulti		1.000000		0.500000		
+Spring_ExtraSpringy						0.500000		
+Spring_Apex						0.500000		
+Spring_Compound							0.625000	
+Spring_Bouncer						0.500000		
+Spring_Loaded		ChildSpringScale		0.500000		0.500000		
+Artillery		Duration	ArtilleryDamageMulti	6.000000	1.000000	0.100000		
+Artillery_Duration		Duration		9.000000				
+Artillery_Ricochet								
+Artillery_MicroMissiles						5.000000		
+Artillery_MagLock								
+Artillery_MortarStrike						6.000000		
+Singularity		Duration		4.000000				
+Singularity_Duration		Duration		6.000000				
+Singularity_Lingering		DamageScale		0.200000				
+Singularity_Collapsing		Duration		1.500000				
+Singularity_Repulsor		Duration		4.000000				
+Singularity_ZeroG		Duration		4.000000				
+Lingering		Duration	LingeringDamageMulti	6.000000	1.000000			
+Lingering_Fire							0.100000	
+Lingering_Corrosive							0.100000	
+Lingering_Shock							0.100000	
+Lingering_Cryo							0.075000	
+Lingering_Radiation		Child Dmg Scale		0.200000				
+Lingering_Duration		Duration		9.000000				
+Lingering_Pulse						0.200000		
+Lingering_SplatPack						0.100000		
+Lingering_Fracture						0.650000		
+Lingering_Alchemic		ChanceScaleAdd		3.000000			0.650000	0.650000
+DamageAmp		Duration	DmgAmpScale	10.000000	0.150000			
+DamageAmp_BouncingBlade						0.750000		
+DamageAmp_Suppressor			EnemyDmgScale		-0.250000			
+DamageAmp_Penetrator	1.500000	Duration	DmgAmpScale_Penetrator	5.000000	0.150000			

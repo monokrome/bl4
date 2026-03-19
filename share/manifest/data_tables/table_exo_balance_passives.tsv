@@ -1,0 +1,85 @@
+row_name	description	description 2	description 3	modifier 1	modifier 2	modifier 3	skill name
+ExoPassive_01	Reload Speed			-0.040000			Rinse
+ExoPassive_02	Ammo Regen Rate			0.005000			Las Jaras
+ExoPassive_03	Fire Rate	Active Fire Rate		0.030000	0.020000		The Thrill
+ExoPassive_04	CDR	Duration	Max Stacks	0.030000	6.000000	3.000000	Prepardo
+ExoPassive_05	Health Regen	Duration		0.010000	7.000000		Pa Dentro
+ExoPassive_06	Ordnance CDR	Duration		0.070000	10.000000		Arriba
+ExoPassive_07	Damage			0.100000			First Impression
+ExoPassive_08	Accuracy/s	Max Stacks		0.010000	100.000000		Al Centro
+ExoPassive_09	Duration			2.000000			Metal Management
+ExoPassive_10	CDR	Duration		0.070000	10.000000		Abajo
+ExoPassive_11	Critical Hit Chance	Duration		0.030000	8.000000		Brain Dump
+ExoPassive_12	EE Chance	Shock Chance		0.060000	0.070000		Conductivo
+ExoPassive_13	Bonus Damage	Crit Damage	Duration	0.070000	0.070000	6.000000	El Catrin
+ExoPassive_14	Duration			2.000000			Awe
+ExoPassive_15	Duration			0.500000			Fiesta
+ExoPassive_16	Drones	Drone Health	Spawn Cooldown	3.000000	0.150000	1.000000	Drone Defense
+ExoPassive_16_Damage	Damage Share	Explosion	Radius	0.080000	0.200000	512.000000	
+ExoPassive_17	Gun Damage			0.060000			El Soldado
+ExoPassive_18	Gadget Damage	Duration	Max Stacks	0.100000	8.000000	5.000000	The Right Tools
+ExoPassive_19	Base Damage Scalar	Additional Damage	Additional Radius	0.040000	0.030000	0.020000	Debtonation
+ExoPassive_19_Damage	Damage Shared			0.080000			Debtonation
+ExoPassive_19_Tokens	Max	Duration		10.000000	12.000000		Debtonation
+ExoPassive_20							Drone Assault
+ExoPassive_21	Overdrive Bonus	Max Stacks		0.005000	20.000000		Jacque
+ExoPassive_22	Accuracy			0.120000			La Garza
+ExoPassive_23	CDR	Max Stacks		0.005000	20.000000		Mate
+ExoPassive_24	Fire Rate	Reload Speed		0.030000	0.050000		Deadline
+ExoPassive_25	Chance			0.050000			Per My Last
+ExoPassive_26	Gun Damage			0.050000			Sitiar
+ExoPassive_27	Fire Rate			0.040000			Deft Hands
+ExoPassive_28	Shield Rate	Recharge Delay		0.080000	-0.080000		Shield Barriest
+ExoPassive_29	Duration Restore	Cooldown		0.030000	4.000000		Juerga
+ExoPassive_30	Shield Restore			0.150000			Field Repairs
+ExoPassive_31	Overshield			0.040000			CYA
+ExoPassive_32	Damage Reduction			-0.083330			Resiliencia
+ExoPassive_33	Skill Damage			0.090000			Maestro
+ExoPassive_34							Vengaza
+ExoPassive_35	Damage	Bonus		0.100000	2.000000		El Valiente
+ExoPassive_36	Indirect Proj Damage			0.090000			Assymetric Warfare
+ExoPassive_37	Bonus Fire Damage	Fire Bonus		0.080000	2.000000		Errant Spark
+ExoPassive_38	Life Steal			0.100000			Hostile Acquisition
+ExoPassive_39	Chance	Bonus		0.070000	1.000000		Rolling Stone
+ExoPassive_40	Max Damage	Radius	Cooldown	0.475000	384.000000	28.000000	Proprietary Incendiary
+ExoPassive_41	Ricochet Chance			0.250000			Lateral Plinking
+ExoPassive_42	Bonus Damage			0.080000			Confeti
+ExoPassive_43	Amp Damage			0.110000			Virtiol
+ExoPassive_44	Chance			0.030000			Pain Reaction
+ExoPassive_45	Bonus Damage	Additional Bonus Damage	Max Stacks	0.020000	0.005000	20.000000	Concentrated Build Up
+ExoPassive_46	Effect Chance	Duration		0.350000	8.000000		El Alacran
+ExoPassive_47	AS CDR	AS Duration	Duration	0.030000	0.030000	8.000000	Inspirado
+ExoPassive_47_MaxStacks	Max Stacks			5.000000			
+ExoPassive_48	AoE Enemy			0.070000			Barrage
+ExoPassive_49	Overdrive Duration			0.070000			Everdrive
+ExoPassive_50	Move Speed	Health Regen		0.060000	0.005000		Devil May Care
+ExoPassive_50_Inactive	Damage Increase	CDR		0.040000	0.040000		Devil May Care
+ExoPassive_51	Increased Damage	Decreased Accuracy		0.010000	0.010000		Temerario
+ExoPassive_52	Overdrive Bonus	Duration		1.000000	8.000000		Soltado
+ExoPassive_53	Melee Damage	Gun Damage		0.070000	0.030000		Handshake Deal
+ExoPassive_54	Bonus Damage	Max Stacks		0.010000	10.000000		Midnight Oil
+ExoPassive_55	Ground Speed			0.050000			Expedite
+ExoPassive_56	Crit Chance	Max Stacks		0.040000	5.000000		Dial In
+ExoPassive_57	Health	Shields		0.070000	0.140000		El Corazon
+ExoPassive_58	Gun Damage	Max Stacks		0.020000	20.000000		Diamond Hands
+ExoPassive_59	Health Steal			0.060000			Saldar
+ExoPassive_60	Duration			1.000000			In the Zone
+ExoPassive_61	Gun Damage	Skill Damage		0.060000	0.060000		To the Last
+ExoPassive_62	Shield Restore	Cooldown	Kill Bonus	0.100000	20.000000	0.200000	Hard Sell
+ExoPassive_63	Tick Period	Projectiles per Tick	Cooldown	6.000000	1.000000	4.000000	Blowout
+ExoPassive_63_Projectile	Damage Scalar	Radius	Max Projectiles	0.050000	256.000000	6.000000	Blowout
+ExoPassive_64	Area Damage	Crit Chance		0.070000	0.020000		El Paraguas
+ExoPassive_65	RAdius	Shield Drain		1024.000000	0.100000		Protector Pulse
+ExoPassive_66	Bonus Damage			0.080000			Shock Market
+ExoPassive_67	Radius	Duration	Damage Multiplier	512.000000	8.000000	0.042000	Liquidation
+ExoPassive_68	Ordnance Cooldown Rate			0.060000			Artilleria
+ExoPassive_69	Bonus Damage			0.060000			Collaborative Ignition
+ExoPassive_70	Free Grenade Chance	Cooldown	Cooldown/Rank	0.100000	14.000000	-2.000000	Booming Business
+ExoPassive_71	Gun Damage	Melee Damage	Duration	0.020000	0.030000	12.000000	Sinergia
+ExoPassive_72	Health Cost			0.200000			Hemolitions
+ExoPassive_73	Bonus Damage			0.100000			El Diabilito
+ExoPassive_74	Shock Damage	Max Stacks		0.010000	10.000000		El Borrocho
+ExoPassive_75	Skill Duration			0.060000			Empuje
+ExoPassive_76	Health Regen			0.004000			Sustainable Energy
+ExoPassive_77	Overdrive Duration Rate	Max Stacks		0.040000	5.000000		Motivar
+ExoPassive_78	Skill Damage	Max Stacks		0.010000	20.000000		Cruel Accrual

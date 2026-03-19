@@ -1,0 +1,7 @@
+row_name	description	description 2	modifier 1	modifier 2	skill name
+BunkerBuster_Single	Kills needed		10.000000		Kill x or more enemies with single BB activation
+BunkerBuster_Tiered					
+HeavyArms_Single	Overdrive time		120.000000		Keep Overdrive active for x seconds
+HeavyArms_Tiered					
+AutoLock_Single	Grenade Timeout	Kills Needed	2.000000	8.000000	KIll y enemies with grenades within x seconds of each other
+AutoLock_Tiered					

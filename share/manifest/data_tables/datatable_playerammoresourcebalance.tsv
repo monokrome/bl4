@@ -1,0 +1,9 @@
+row_name	above_threshold_chance	below_threshold_max	below_threshold_min	resource_threshold
+Health	0.050000	1.000000	0.100000	0.800000
+Grenade_Ammo	0.050000	0.300000	0.100000	0.600000
+AssaultRifle_Ammo	0.020000	5.000000	1.000000	0.400000
+Heavy_Ammo		1.000000	0.300000	0.250000
+Pistol_Ammo	0.020000	5.000000	1.000000	0.400000
+Shotgun_Ammo	0.020000	5.000000	1.000000	0.400000
+SMG_Ammo	0.020000	5.000000	1.000000	0.400000
+Sniper_Ammo	0.010000	3.000000	0.500000	0.300000

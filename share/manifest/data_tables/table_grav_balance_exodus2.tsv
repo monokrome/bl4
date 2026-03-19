@@ -1,0 +1,19 @@
+row_name	description	description 2	description 3	modifier 1	modifier 2	modifier 3	skill name
+Skill_Exodus	Cooldown	Duration	Cooldown Refund	38.000000	8.000000		Exodus
+Skill_Exodus_EnergyField	Damage Scalar	Radius	Slow Speed Scale	0.400000	256.000000	0.400000	
+Skill_Exodus_Detonation	Damage Scalar	Radius	Prime Time	1.000000	1280.000000	1.000000	
+Cap_Devastation	Damage Scalar	Number of Projectiles	Fire Interval	0.500000	2.000000	0.500000	Devastation
+Cap_Devastation_AS	Cooldown Override	Duration Override		42.000000	8.000000		
+Cap_Dynamism	Cooldown Override	Radius	Duration Override	38.000000	384.000000	16.000000	Dynamism
+Cap_Destruction	Duration Override	Cooldown Override	Refund per Charge	21.000000	50.000000	0.100000	Destruction
+Cap_Destruction_Charges	Max Charges	Cooldown		5.000000			
+Cap_Destruction_Damage	Scalar	Radius		0.500000	640.000000		
+Aug_Entanglement							Entanglement
+Aug_BigCrunch	Damage Scalar	Radius	CDR	0.600000	256.000000	0.150000	Big Crunch
+Aug_Demi	Health Drain	Max Drain Scalar	Freeze Duration	0.300000	1.500000	4.000000	Demi
+Aug_SpecialPurposeMagnets	Damage Scalar	Min Radius	Max Radius	0.110000	128.000000	1024.000000	Special Purpose Magnets
+Aug_Anachrony	Cooldown Restore	Damage Scalar		0.150000	0.200000		Anachrony
+Aug_Inflation	Projectiles	Radius	Damage Scalar	5.000000	512.000000	0.330000	Inflation
+Aug_Inflation_Tiny	Tiny Radius			192.000000			
+Aug_Inflation_MIRV	Damage Scalar			0.250000			
+Aug_TemporalLoop	Damage Transferred	Duration		0.040000	8.000000		Temporal Loop

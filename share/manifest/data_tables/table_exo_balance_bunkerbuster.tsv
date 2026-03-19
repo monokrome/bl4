@@ -1,0 +1,27 @@
+row_name	description	description 2	description 3	modifier 1	modifier 2	modifier 3	skill name
+----------------TRAIT----------------	--------------------	--------------------	--------------------				--------------------
+----------------ActionSkill----------------	--------------------	--------------------	--------------------				--------------------
+BunkerBuster_Skill	Cooldown	Charges	Duration	38.000000	3.000000	24.000000	
+BunkerBuster_Refund	Rate			0.330000			
+BunkerBuster_Shockwave	Damage Scalar	Charge Scalar	Base Charge Speed Scalar	0.525000	1.400000		
+BunkerBuster_Shockwave_Movement	Speed	Lifetime	Charge Time Scalar	3000.000000	1.500000	3.500000	
+Bunkerbuster_Shockwave_ProxyRadius	Charge 1	Charge 2	Charge 3	350.000000	500.000000	700.000000	
+BunkerBusteR_Shockwave_ChargeScalar	Level 1	Level 2	Level 3	2.500000	4.000000	5.500000	Charge Damage Scalars
+BunkerBuster_Shockwave_SpeedScalar	Level 1	Level 2	Level 3	0.350000	0.700000	1.400000	Speed Scalars
+BunkerBuster_Shockwave_Charge4	Speed Scalar	Charge Damage Scalar	Proxy Radius	2.800000	7.000000	1000.000000	
+BunkerBuster_Mark	Duration	Damage Taken Multiplier		8.000000	0.200000		
+BunkerBuster_UseEffects	Accuracy	Move Speed		-0.750000	-0.100000		
+BunkerBuster_ActiveEffects	Accuracy	Move Speed		-0.500000			
+----------------CAPSTONES----------------	--------------------	--------------------	--------------------				--------------------
+TaserFace	Damage Scalar	Radius	Angle	0.050000	608.000000	120.000000	
+TaserFace_DamageScaling	Damage Scalar	Interval	Charge Time Scalar	0.100000	1.000000	1.250000	
+LaserFocused	Damage Scalar	Damage Increase	Charge Time Scalar	0.600000	0.050000	2.000000	
+LaserFocused_BeamChain	Delay	4 Charges	Child Scalar	0.500000	3.000000	0.250000	
+LaserFocused_BeamChainAmount	0 Charges	1 Charge	2 Charge	1.000000	1.000000	2.000000	
+HazardousPayload	Damage Scalar	Radius	Charge Timer Scalar	0.664000	512.000000	2.500000	
+HazardousPayload_Hazard	Hazard Damage			0.080000			
+----------------AUGMENTS----------------	--------------------	--------------------	--------------------				--------------------
+Stabilizer	Crit Chance	Duration	Bonus	0.250000	8.000000	0.250000	
+ExtraBatteries	Charge Increase	Active Time	Potency	1.000000	14.000000	0.500000	
+EfficiencyEngine	CDR	Duration	Max Stacks	0.250000	8.000000	4.000000	
+MagRails	Size	Travel Speed	Chains	0.250000	0.500000	2.000000	

@@ -1,0 +1,49 @@
+row_name	description	description2	description3	modifier1	modifier2	modifier3	skillname
+---------------TRAIT-------	---------------------	---------------------	---------------------	-1.000000	-1.000000	-1.000000	---------------------
+Overdrive	Move Speed	Damage	Duration	0.250000	0.150000	12.000000	Overdrive
+--------ACTION_SKILLS----	---------------------	---------------------	---------------------	-1.000000	-1.000000	-1.000000	---------------------
+AutoLock_Skill	Cooldown	Duration	Skill Refund	25.000000	22.000000	0.500000	Auto Lock
+AutoLock_Weapon	MaxAmmo	FireRate	Shot Cost	20.000000	0.150000	1.000000	
+AutoLock_Turret	Damage Scalar			0.023000	0.000000	0.000000	
+AutoLock_Shotgun	Damage Scalar	Fire Rate	Pellets	0.028000	0.300000	6.000000	
+AutoLock_Beam	Damage Scalar	Fire Rate		0.080000	1.000000	0.000000	
+AutoLock_Rocket	Damage Scalar	Fire Rate	Damage Radius	0.320000	0.500000	128.000000	
+HeavyArms_Skill	Cooldown	Duration	Killed Enemy Refund	21.000000	30.000000	0.150000	Heavy Arms
+HeavyArms_Skill_Inactive	Recharge Rate			0.050000	0.000000	0.000000	
+HeavyArms_Melee	Damage Scalar			0.250000	0.000000	0.000000	
+HeavyARms_Lunge	Damage Scalar	Cooldown	Chain Cooldown	0.300000	8.000000	2.500000	
+HeavyArms_BladeFury	Damage Scalar	Radius	Cooldown	0.750000	640.000000	5.000000	
+HeavyArms_BladeFuryBeam	DamageScalar			0.100000	0.000000	0.000000	
+HeavyArms_BladeFuryWave	Damage Scalar			0.300000	0.000000	0.000000	
+HeavyArms__MarkScalar	Damage per Mark	Max Marks	Damage Increase per Mark	0.200000	100.000000	0.100000	
+Buster_Skill	Cooldown	Charges		16.000000	3.000000	0.000000	Bunker Buster
+Buster_Shockwave	Damage Scalar	Damage Increase	Duration	0.150000	0.500000	12.000000	
+Buster_Shockwave_Charged	Charge Level Scalar			1.200000	0.000000	0.000000	
+Buster_Rocket	Damage Scalar	Duration Drain	Radius	0.400000	8.000000	320.000000	
+Buster_MiniRocket	Damage Scalar		Radius	0.250000	0.000000	128.000000	
+FrontlineFighter_Skill	Cooldown Time		Duration Time	25.000000	0.000000	30.000000	Frontline Fighter
+FrontlineFighter_ShockwaveStream	Beam Damage Scalar	Duration Drain	Pulse Damage Scalar	0.020000	0.000000	0.300000	
+FrontlineFighter_ShowaveCannon	Damage Scalar	Duration Drain		0.330000	0.000000	0.000000	
+FrontlineFighter_PulseCannon	Damage Scalar	Duration Drain		0.150000	1.000000	0.000000	
+--------------STATS--------------	---------------------	---------------------	---------------------	-1.000000	-1.000000	-1.000000	---------------------
+--------------AUGS--------------	---------------------	---------------------	---------------------	-1.000000	-1.000000	-1.000000	---------------------
+AutoLock_Augment1_MissileFlurry	Duration Drain	Max Missiles		0.150000	6.000000	0.000000	Augment 1: Missile Flurry
+AutoLock_Augment2_Conduit_Critical	Critical Hit Chance	Retrigger Bonus	Retrigger Duration	0.250000	2.000000	8.000000	Augment 2: Conduit
+AutoLock_Augment2_Conduit_Duration	Duration Drain	Duration Return	Retrigger Bonus	0.100000	0.200000	2.000000	
+AutoLock_Augment3_BurningBright	Self Damage Scalar	Bonus Fire Damage	Fire Rate	0.010000	0.250000	0.150000	
+Buster_Augment5_EfficiencyEngine	Duration	Cooldown Rate		8.000000	0.200000	0.000000	
+--------------CAPS--------------	---------------------	---------------------	---------------------	-1.000000	-1.000000	-1.000000	---------------------
+AutoLock_Capstone1_Rockets	Damage Scalar	Radius	Fire Rate	0.150000	128.000000	0.500000	
+AutoLock_Capstone1_Barrage	Max Angle	Number of Rockets	Action Skill Penalty	90.000000	6.000000	6.000000	
+AutoLock_Capstone3_Nuke	Damage Scalar	Radius	Duration Cost	0.800000	1024.000000	12.000000	
+FLF_Capstone1	Duration Cost			4.000000	0.000000	0.000000	
+FLF_Capstone1_Damage	Damage Scalar			0.050000	0.000000	0.000000	
+FLF_Capstone2	Duration Cost			6.000000	0.000000	0.000000	
+FLF_Capstone2_Damage	Damage Scalar	Radius		0.450000	512.000000	0.000000	
+FLF_Capstone2_AoEEffect	Damage Scalar	Radius	Duration	0.150000	1024.000000	8.000000	
+FLF_Capstone3	Duration Cost			2.000000	0.000000	0.000000	
+FLF_Capstone3_Damage	Damage Scalar	Radius		0.600000	768.000000	0.000000	
+HeavyArms_Capstone1	Damage Scalar	Additional Damage per Tick	Move Speed Penalty	0.500000	0.150000	-0.350000	Whirlwind
+HeavyArms_Capstone1_2	Radius	Duration Penalty		288.000000	0.000000	0.000000	
+HeavyArms_Capstone2	Melee Scalar	Burst Scalar	Self Damage Scalar	0.800000	0.600000	0.050000	
+Buster_Capstone1_TriRockets	Damage Scalar	Num Rockets		0.350000	3.000000	0.000000	

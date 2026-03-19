@@ -1,0 +1,10 @@
+row_name	description	description 2	description 3	modifier 1	modifier 2	modifier 3	skill name
+L01	Shot Scalar	Bullet Speed	Radius	0.450000	-5.000000	128.000000	Legendary Gravitar
+L01_2	Cooldown			0.200000			
+L02	Max Stacks	Move Speed	Duration	10.000000	0.020000	8.000000	Slider
+L02_Proc	Scalar	Duration		0.200000	12.000000		
+L03	Duration Adjustment	Skill Damage	Max Stacks	0.500000	2.000000	10.000000	Generator
+L04	Life Steal			0.200000			Driver
+L05	Max Targets	Damage Scalar	Cooldown Return	4.000000	0.200000	0.050000	Pundit
+L06	Cooldown	Max Targets	Max Distance	4.000000	4.000000	2400.000000	Scientist
+L06_Damage	Scalar			0.150000			

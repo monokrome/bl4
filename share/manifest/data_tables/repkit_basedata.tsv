@@ -1,0 +1,11 @@
+row_name	cooldown_scale	healing_scale
+Common		
+Uncommon	0.900000	1.100000
+Rare	0.800000	1.200000
+Epic	0.700000	1.300000
+Legendary	0.700000	1.300000
+--		
+Payload_Small	0.750000	0.750000
+Payload_Medium		
+Payload_Large	1.250000	1.250000
+Payload_Huge	1.500000	1.500000

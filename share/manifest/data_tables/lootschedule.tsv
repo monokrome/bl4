@@ -1,0 +1,56 @@
+row_name	mingamestage
+Element_Corrosive	5
+Element_Cryo	10
+Element_Fire	3
+Element_Radiation	5
+Element_Shock	3
+Manufacturer_Borg	10
+Manufacturer_Daedalus	
+Manufacturer_Jakobs	
+Manufacturer_Maliwan	3
+Manufacturer_Order	4
+Manufacturer_Tediore	5
+Manufacturer_Torgue	7
+Manufacturer_Vladof	
+WeaponType_Pistol	
+WeaponType_AssaultRifle	3
+WeaponType_SMG	
+WeaponType_Shotgun	3
+WeaponType_Sniper	5
+ShieldType_Energy	
+ShieldType_Armor	9
+Gadget_Grenade	2
+Gadget_HeavyWeapon	10
+RepKit	3
+Enhancement	15
+Enhancement_Tier1	15
+Enhancement_Tier2	20
+Enhancement_Tier3	25
+ClassMod	20
+LicensedPart_JakobsRicochet	20
+LicensedPart_HyperionShield	25
+LicensedPart_HyperionGrip	25
+LicensedPart_TedioreReload_TopAcc	20
+LicensedPart_TedioreReload_Grip	20
+LicensedPart_TedioreReload_TedioreAcc	20
+LicensedPart_TorgueMag	20
+LicensedPart_ForgeMag	25
+LicensedPart_BorgMag	20
+LicensedPart_WeaponSpecific_UB_Tier0_VLA	
+LicensedPart_WeaponSpecific_UB_Tier1	11
+LicensedPart_WeaponSpecific_UB_Tier2	11
+LicensedPart_WeaponSpecific_UB_Tier3	11
+LicensedPart_WeaponSpecific_UB_Tier4	11
+LicensedPart_Daedalus_UB	20
+LicensedPart_Maliwan_UB	20
+LicensedPart_Atlas_UB	25
+Firmware	25
+Shield_Borg	10
+Shield_Daedalus	
+Shield_Jakobs	5
+Shield_Maliwan	3
+Shield_Order	4
+Shield_Tediore	5
+Shield_Torgue	7
+Shield_Vladof	9
+Currency_Eridium	2

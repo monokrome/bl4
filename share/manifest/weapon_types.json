@@ -1,66 +1,4 @@
 {
-  "AssaultRifles": {
-    "name": "AssaultRifles",
-    "path": "OakGame/Content/Gear/Weapons/AssaultRifles",
-    "manufacturers": [
-      {
-        "code": "TOR",
-        "name": "Torgue",
-        "path": "OakGame/Content/Gear/Weapons/AssaultRifles/TOR"
-      },
-      {
-        "code": "ORD",
-        "name": "Order",
-        "path": "OakGame/Content/Gear/Weapons/AssaultRifles/ORD"
-      },
-      {
-        "code": "VLA",
-        "name": "Vladof",
-        "path": "OakGame/Content/Gear/Weapons/AssaultRifles/VLA"
-      },
-      {
-        "code": "DAD",
-        "name": "Daedalus",
-        "path": "OakGame/Content/Gear/Weapons/AssaultRifles/DAD"
-      },
-      {
-        "code": "JAK",
-        "name": "Jakobs",
-        "path": "OakGame/Content/Gear/Weapons/AssaultRifles/JAK"
-      },
-      {
-        "code": "TED",
-        "name": "Tediore",
-        "path": "OakGame/Content/Gear/Weapons/AssaultRifles/TED"
-      }
-    ]
-  },
-  "SMG": {
-    "name": "SMG",
-    "path": "OakGame/Content/Gear/Weapons/SMG",
-    "manufacturers": [
-      {
-        "code": "VLA",
-        "name": "Vladof",
-        "path": "OakGame/Content/Gear/Weapons/SMG/VLA"
-      },
-      {
-        "code": "MAL",
-        "name": "Maliwan",
-        "path": "OakGame/Content/Gear/Weapons/SMG/MAL"
-      },
-      {
-        "code": "BOR",
-        "name": "Ripper",
-        "path": "OakGame/Content/Gear/Weapons/SMG/BOR"
-      },
-      {
-        "code": "DAD",
-        "name": "Daedalus",
-        "path": "OakGame/Content/Gear/Weapons/SMG/DAD"
-      }
-    ]
-  },
   "Pistols": {
     "name": "Pistols",
     "path": "OakGame/Content/Gear/Weapons/Pistols",
@@ -76,11 +14,6 @@
         "path": "OakGame/Content/Gear/Weapons/Pistols/ORD"
       },
       {
-        "code": "DAD",
-        "name": "Daedalus",
-        "path": "OakGame/Content/Gear/Weapons/Pistols/DAD"
-      },
-      {
         "code": "TED",
         "name": "Tediore",
         "path": "OakGame/Content/Gear/Weapons/Pistols/TED"
@@ -89,6 +22,11 @@
         "code": "TOR",
         "name": "Torgue",
         "path": "OakGame/Content/Gear/Weapons/Pistols/TOR"
+      },
+      {
+        "code": "DAD",
+        "name": "Daedalus",
+        "path": "OakGame/Content/Gear/Weapons/Pistols/DAD"
       }
     ]
   },
@@ -102,6 +40,11 @@
         "path": "OakGame/Content/Gear/Weapons/Shotguns/TOR"
       },
       {
+        "code": "JAK",
+        "name": "Jakobs",
+        "path": "OakGame/Content/Gear/Weapons/Shotguns/JAK"
+      },
+      {
         "code": "MAL",
         "name": "Maliwan",
         "path": "OakGame/Content/Gear/Weapons/Shotguns/MAL"
@@ -110,11 +53,6 @@
         "code": "TED",
         "name": "Tediore",
         "path": "OakGame/Content/Gear/Weapons/Shotguns/TED"
-      },
-      {
-        "code": "JAK",
-        "name": "Jakobs",
-        "path": "OakGame/Content/Gear/Weapons/Shotguns/JAK"
       },
       {
         "code": "DAD",
@@ -128,6 +66,68 @@
       }
     ]
   },
+  "SMG": {
+    "name": "SMG",
+    "path": "OakGame/Content/Gear/Weapons/SMG",
+    "manufacturers": [
+      {
+        "code": "VLA",
+        "name": "Vladof",
+        "path": "OakGame/Content/Gear/Weapons/SMG/VLA"
+      },
+      {
+        "code": "DAD",
+        "name": "Daedalus",
+        "path": "OakGame/Content/Gear/Weapons/SMG/DAD"
+      },
+      {
+        "code": "BOR",
+        "name": "Ripper",
+        "path": "OakGame/Content/Gear/Weapons/SMG/BOR"
+      },
+      {
+        "code": "MAL",
+        "name": "Maliwan",
+        "path": "OakGame/Content/Gear/Weapons/SMG/MAL"
+      }
+    ]
+  },
+  "AssaultRifles": {
+    "name": "AssaultRifles",
+    "path": "OakGame/Content/Gear/Weapons/AssaultRifles",
+    "manufacturers": [
+      {
+        "code": "TOR",
+        "name": "Torgue",
+        "path": "OakGame/Content/Gear/Weapons/AssaultRifles/TOR"
+      },
+      {
+        "code": "TED",
+        "name": "Tediore",
+        "path": "OakGame/Content/Gear/Weapons/AssaultRifles/TED"
+      },
+      {
+        "code": "DAD",
+        "name": "Daedalus",
+        "path": "OakGame/Content/Gear/Weapons/AssaultRifles/DAD"
+      },
+      {
+        "code": "VLA",
+        "name": "Vladof",
+        "path": "OakGame/Content/Gear/Weapons/AssaultRifles/VLA"
+      },
+      {
+        "code": "ORD",
+        "name": "Order",
+        "path": "OakGame/Content/Gear/Weapons/AssaultRifles/ORD"
+      },
+      {
+        "code": "JAK",
+        "name": "Jakobs",
+        "path": "OakGame/Content/Gear/Weapons/AssaultRifles/JAK"
+      }
+    ]
+  },
   "Sniper": {
     "name": "Sniper",
     "path": "OakGame/Content/Gear/Weapons/Sniper",
@@ -138,24 +138,24 @@
         "path": "OakGame/Content/Gear/Weapons/Sniper/MAL"
       },
       {
-        "code": "ORD",
-        "name": "Order",
-        "path": "OakGame/Content/Gear/Weapons/Sniper/ORD"
-      },
-      {
         "code": "JAK",
         "name": "Jakobs",
         "path": "OakGame/Content/Gear/Weapons/Sniper/JAK"
       },
       {
-        "code": "BOR",
-        "name": "Ripper",
-        "path": "OakGame/Content/Gear/Weapons/Sniper/BOR"
+        "code": "ORD",
+        "name": "Order",
+        "path": "OakGame/Content/Gear/Weapons/Sniper/ORD"
       },
       {
         "code": "VLA",
         "name": "Vladof",
         "path": "OakGame/Content/Gear/Weapons/Sniper/VLA"
+      },
+      {
+        "code": "BOR",
+        "name": "Ripper",
+        "path": "OakGame/Content/Gear/Weapons/Sniper/BOR"
       }
     ]
   }

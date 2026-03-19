@@ -1,0 +1,32 @@
+row_name	description	description 2	description 3	modifier 1	modifier 2	modifier 3	skill name
+----------------TRAIT----------------	--------------------	--------------------	--------------------				--------------------
+Overdrive	Ground Speed	Damage	Duration	0.250000	0.100000	12.000000	Overdrive
+----------------ActionSkill----------------	--------------------	--------------------	--------------------				--------------------
+HeavyArms_Skill	Cooldown	Duration	Mark Increased Damage	45.000000	25.000000	0.060000	Heavy Arms
+HeavyArms_Mark	Damage Reduction	Explode Scalar	Max Marks	-0.500000	0.200000	4.000000	
+HeavyArms_Melee	Damage Scalar	Forward Distance	Heavy Damage Scalar	0.285000	896.000000	0.050000	
+HeavyArms_Melee2	Max Melee Angle			30.000000			
+HeavyArms_MeleeClose	MaxRange	MaxAngle		250.000000	60.000000		
+HeavyArms_Lunge	Cooldown	Damage	Max Lunges	3.000000	0.650000	4.000000	
+HeavyArms_Lunge2	Radius			450.000000			
+HeavyArms_BladeFury	Damage Scalar			0.750000			
+----------------CAPSTONES----------------	--------------------	--------------------	--------------------				--------------------
+Whirlwind	Damage Scalar	Damage per tick	Radius	0.452000	0.200000	512.000000	Whirlwind
+Whirlwind_Skill	Duration Rate Increase	Pull Radius	Move Speed	1.250000	1024.000000	0.300000	
+Whirlwind_Reflect	Chance	Damage Mod		0.500000	0.500000		
+Whirlwind_CDR	Cooldown per Kill			0.080000			
+ChargeBurst	Bonus Damage Scalar	Damage share	Max Scalar	0.800000	0.200000	0.500000	Charge Burst
+ChargeBurst_Health	Total Health Drain per second	Heath Return	Radius	0.010000	0.250000	512.000000	
+ViolentFrenzy	Damage Scalar	per mark bonus	Radius	0.250000	0.080000	768.000000	Violent Frenzy
+ViolentFrenzy_Drones	Max Drones			8.000000			
+ViolentFrenzy_SmallBeam	Damage Scalar	Per mark bonus		0.040000	0.020000		
+ViolentFrenzy_Duration	Duration Restore	Diminish Rate		0.050000	0.025000		
+----------------AUGMENTS----------------	--------------------	--------------------	--------------------				--------------------
+CausticLeap	Damage Scalar	Radius	Cooldown	0.782000	768.000000	3.000000	Caustic Leap
+CausticLeap_MarkRemoved	Damage Scalar	Radius	Hazard Damage	0.200000	192.000000	0.030000	
+DeadManWalking	Overshield Percent	Health Drain	Additional Health Drain	0.150000	-0.030000	-0.002000	Dead Man Walking
+ExcessiveEnergy	Area Damage Multiplier			0.350000			Execssive Energy
+AdrenalineJunkie	Health Scalar	Radius	Max Stacks	0.080000	768.000000	10.000000	
+AdrenalineJunkie_Buff	Bonus Damage	Move Speed	Duration	0.100000	0.100000	16.000000	
+PartingGift	Default Grenade Scalar	Default Grenade Radius	Cooldown	0.700000	400.000000	0.100000	
+PartingGift_Marks	Max Marks			8.000000			

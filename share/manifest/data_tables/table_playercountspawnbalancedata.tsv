@@ -1,0 +1,7 @@
+row_name	comment
+Default	no modification of base spawn values
+2P+_add1	add 1 enemy in 2-, 3-, and 4-player
+2P+_add1_&_4P_add2	add 1 enemy in 2- and 3-player, add 2 enemies in 4-player
+2P+_add2_&_4P_add3	add 2 enemies in 2- and 3-player, add 3 enemies in 4-player
+3P+_add1	add 1 enemy in 3- and 4-player
+add1_per_additional_player	add one 1 enemy per additonal player

@@ -1,0 +1,32 @@
+row_name	borg	daedalus	default	jakobs	maliwan	order	tediore	torgue	vladof
+---POWER---			0.000000						
+Damage			0.075000			1.200000		1.200000	
+Fire_Rate	1.150000		0.050000						1.250000
+Burst_Fire_Delay	1.150000		0.050000						1.200000
+Charge_Time	1.250000		0.100000		1.400000				
+Melee_Damage			0.200000						
+---PRECISION---			0.000000						
+Max_Accuracy		1.150000	0.075000	1.300000	1.200000	1.200000			
+Accuracy_Impulse			0.015000			1.100000			
+Accuracy_Burst_Impulse			0.015000						
+Spread		1.050000	0.075000	1.150000		1.200000			
+Recoil_Height		1.150000	0.075000		1.200000	1.100000			
+Recoil_Width		1.150000	0.075000		1.200000	1.100000			
+Acc_Sway_Scale		1.150000	0.075000			1.100000			
+Projectile_Speed			0.150000	1.250000				1.200000	
+Critical_Damage			0.200000	1.150000					
+Damage_Radius			0.150000		1.100000		1.200000	1.350000	
+Zoom_Speed		1.150000	0.200000						
+Zoom_FootSpeed_Scale		1.150000	0.200000						
+Sway_Scale		1.150000	0.300000						
+---TACTICAL---			0.000000						
+Max_Loaded_Ammo			0.150000				1.200000		1.250000
+Heat_Per_Shot			0.150000						1.250000
+Reload_Time		1.200000	0.060000				1.200000		
+Taped_Reload_Time			0.060000						
+Status_Damage	1.150000		0.100000		1.350000				
+Status_Chance	1.400000		0.200000		1.200000				
+CryoImpact			0.125000						
+Equip_Time		1.100000	0.100000						
+PutDown_Time		1.100000	0.100000						
+ModeSwitch_Time		1.150000	0.100000		1.150000				

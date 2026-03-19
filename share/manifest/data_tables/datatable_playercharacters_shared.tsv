@@ -1,0 +1,29 @@
+row_name	comment	value
+Shared_HoldDuration_Action	Standard Duration for an "Action" via Hold	0.500000
+Shared_HoldDuration	Standard Duration for "exiting" a state via Hold	1.000000
+PlayerSlamAreaRangeBase	Base Range of Ground Slam AOE - applied in GroundSlam_Default def in charactermovement.yml and used/sclaed via attribute ground_slam_range (for any upgrades)	400.000000
+PlayerSlamAreaHeightBase	Base Height of the Ground Slam AOE	512.000000
+Player_Overshield_Duration	Base duration of Overshield before expiring	8.000000
+Player_Frozen_DamageBonus_Melee	Melee Damage	2.000000
+Player_Frozen_DamageBonuse_Gadget	Gadget Damage	1.000000
+Player_Accuracy_Multiplier_Max	Multiplies a value of the shared Player_Accuracy attribute and convert it into accuracy_resource_max_value	-1.000000
+Player_Accuracy_Multiplier_Spread	Multiplies a value of the shared Player_Accuracy attribute and convert it into weapon_spread	-1.000000
+Player_Accuracy_Multiplier_Impulse	Multiplies a value of the shared Player_Accuracy attribute and convert it into weapon_accuracy_impulse	-0.200000
+Player_Accuracy_Multiplier_Burst_Impulse	Multiplies a value of the shared Player_Accuracy attribute and convert it into weapon_burst_accuracy_impulse_scale	-0.200000
+Player_Accuracy_Multiplier_Recoil	Multiplies a value of the shared Player_Accuracy attribute and convert it into weapon_recoil_scale	-1.000000
+Player_Accuracy_Multiplier_Projectile_Speed	Multiplies a value of the shared Player_Accuracy attribute and convert it into weapon_projectile_speed_scale	1.000000
+Player_Accuracy_Multiplier_Sway_Zoom	Multiplies a value of the shared Player_Accuracy attribute and convert it into weapon_sway_zoom_scale	0.500000
+Player_Accuracy_Multiplier_Sway_Accuracy	Multiplies a value of the shared Player_Accuracy attribute and convert it into weapon_sway_accuracy_scale	0.500000
+Player_Accuracy_Multiplier_Sway_Accuracy_Zoom	Multiplies a value of the shared Player_Accuracy attribute and convert it into weapon_sway_zoom_accuracy_scale	0.500000
+Player_StatusEffect_DoT_Interval		0.330000
+Player_StatusEffect_DoT_StackLimit		20.000000
+Player_StatusEffect_Radiation_Radius		768.000000
+Player_StatusEffect_Radiation_Explosion_DamageMultiplier	Multiplies the DPS value	3.000000
+Player_StatusEffect_Cryo_MaxHP_DoT	This deals Max HP as damage per tick (based on intveral)	0.010000
+Player_LevelUp_Bonus_Duration		10.000000
+Player_LevelUp_Bonus_DamageMultiplier	This is a damage MULTIPLIER, not additive	1.500000
+Player_ClassMods_StatUnlock_Group0		1.000000
+Player_ClassMods_StatUnlock_Group1		25.000000
+Player_ClassMods_StatUnlock_Group2		30.000000
+Player_ClassMods_StatUnlock_Group3		35.000000
+Player_ClassMods_StatUnlock_Group4		40.000000

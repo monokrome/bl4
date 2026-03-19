@@ -1,0 +1,5 @@
+row_name	damage_scale	health_scale	radius_value
+MortarStrike	3.000000	1.000000	300.000000
+DeployedDetonation	8.000000	1.000000	500.000000
+RailgunBlast	6.000000	1.000000	50.000000
+GrenadeVolley	5.000000	1.000000	200.000000

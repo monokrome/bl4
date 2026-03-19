@@ -1,0 +1,6 @@
+row_name	comment	value
+Elementalist_MovementSpeed_PerAffinityStack		0.030000
+BlackSmith_RefillDuration_Forgedrones		0.050000
+BlackSmith_GunDamage_PerForgedrone		0.100000
+Viking_DamageReduction	Negative Scale Math. 50%	-1.000000
+Viking_Warforge_Duration		1.000000
