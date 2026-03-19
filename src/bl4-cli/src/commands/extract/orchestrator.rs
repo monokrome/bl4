@@ -54,6 +54,9 @@ fn extract_ncs_from_paks(
     }
 
     let bl4_exe = std::env::current_exe().context("Failed to get current executable path")?;
+    if ncs_output.exists() {
+        fs::remove_dir_all(ncs_output).context("Failed to clear existing NCS output directory")?;
+    }
     fs::create_dir_all(ncs_output).context("Failed to create NCS output directory")?;
 
     let backend_name = if oodle_exec.is_some() {
