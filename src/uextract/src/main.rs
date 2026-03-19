@@ -19,6 +19,7 @@ mod filter;
 use cli::{Args, Commands, OutputFormat};
 use filter::matches_filters;
 use uextract::commands;
+use uextract::pak;
 use uextract::zen::parse_zen_to_json;
 
 #[allow(clippy::too_many_lines)]
@@ -218,6 +219,64 @@ fn main() -> Result<()> {
     let success = results.iter().filter(|r| r.is_ok()).count();
     let failed = results.len() - success;
     eprintln!("Extracted: {}, Failed: {}", success, failed);
+
+    // Also extract PAK contents into the same output directory
+    let pak_files = pak::find_pak_files(&input).unwrap_or_default();
+    if !pak_files.is_empty() {
+        eprintln!("Found {} PAK files in input directory", pak_files.len());
+        let mut pak_extracted = 0;
+        let mut pak_failed = 0;
+
+        for pak_path in &pak_files {
+            let mut reader = match pak::PakReader::open(pak_path) {
+                Ok(r) => r,
+                Err(e) => {
+                    if args.verbose {
+                        eprintln!("Skipping PAK {:?}: {}", pak_path.file_name().unwrap_or_default(), e);
+                    }
+                    continue;
+                }
+            };
+
+            let files = reader.files();
+            let mount = reader.mount_point().to_string();
+
+            for filename in &files {
+                if !matches_filters(filename, &args) {
+                    continue;
+                }
+
+                let data = match reader.read(filename) {
+                    Ok(d) => d,
+                    Err(e) => {
+                        if args.verbose {
+                            eprintln!("Failed to read PAK entry {}: {}", filename, e);
+                        }
+                        pak_failed += 1;
+                        continue;
+                    }
+                };
+
+                let clean_name = filename
+                    .trim_start_matches(&mount)
+                    .trim_start_matches('/')
+                    .trim_start_matches("../");
+
+                let out_path = args.output.join(clean_name);
+                if let Some(parent) = out_path.parent() {
+                    let _ = std::fs::create_dir_all(parent);
+                }
+                let _ = std::fs::write(&out_path, &data);
+                pak_extracted += 1;
+            }
+        }
+
+        if pak_extracted > 0 || pak_failed > 0 {
+            eprintln!("PAK: Extracted {}, Failed: {}", pak_extracted, pak_failed);
+        }
+    }
+
+    eprintln!("Found {} script objects", store.chunks().count());
 
     Ok(())
 }
