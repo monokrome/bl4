@@ -219,7 +219,7 @@ Quick reference for terms used throughout this guide. Page references indicate t
 ## R
 
 **Root/Sub Scope**
-: In BL4's serial format, bit 7 of a part token index encodes whether a part is Root scope (core item type, bit 7 = 0) or Sub scope (attachment part, bit 7 = 1). The actual index is `token & 0x7F`. See [Chapter 8](#sec-parts-system).
+: In BL4's part system, the `GbxSerialNumberIndex.scope` field distinguishes Root (core item structure) from Sub (modular attachment) parts. In serials, part indices map directly to the parts database — no bit manipulation needed. See [Chapter 8](#sec-parts-system).
 
 **Rarity**
 : Item quality tier (Common, Uncommon, Rare, Epic, Legendary). See [Appendix B](#sec-weapon-parts).
