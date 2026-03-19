@@ -1,5 +1,26 @@
 //! Bitstream reader and writer for variable-length token parsing.
 
+/// Reverse the bit order within an N-bit value.
+///
+/// The bitstream reads bits MSB-first, but data values (VarInt nibbles,
+/// VarBit lengths/values) are encoded LSB-first. This function converts
+/// between the two orderings.
+///
+/// Example (width=4): 0b1000 (8) -> 0b0001 (1), 0b1100 (12) -> 0b0011 (3)
+#[inline]
+fn reverse_bits_in_width(val: u64, width: usize) -> u64 {
+    if width == 0 {
+        return 0;
+    }
+    let mut result = 0u64;
+    for i in 0..width {
+        if val & (1 << i) != 0 {
+            result |= 1 << (width - 1 - i);
+        }
+    }
+    result
+}
+
 /// Bitstream reader for parsing variable-length tokens
 pub(crate) struct BitReader {
     bytes: Vec<u8>,
@@ -41,12 +62,14 @@ impl BitReader {
     /// Read a VARINT (4-bit nibbles with continuation bits)
     /// Format: [4-bit value][1-bit continuation]... Values assembled LSB-first.
     /// Continuation bit 1 = more nibbles follow, 0 = stop.
+    /// Each nibble is bit-reversed after reading (MSB-first stream, LSB-first data).
     pub fn read_varint(&mut self) -> Option<u64> {
         let mut result = 0u64;
         let mut shift = 0;
 
         for _ in 0..4 {
-            let nibble = self.read_bits(4)?;
+            let raw_nibble = self.read_bits(4)?;
+            let nibble = reverse_bits_in_width(raw_nibble, 4);
             result |= nibble << shift;
             shift += 4;
 
@@ -61,9 +84,15 @@ impl BitReader {
 
     /// Read a VARBIT (5-bit length prefix + variable data)
     /// Format: [5-bit length][N-bit value]. Length 0 means value is 0.
+    /// Both length and value are bit-reversed after reading.
     pub fn read_varbit(&mut self) -> Option<u64> {
-        let length = self.read_bits(5)? as usize;
-        self.read_bits(length)
+        let raw_length = self.read_bits(5)?;
+        let length = reverse_bits_in_width(raw_length, 5) as usize;
+        if length == 0 {
+            return Some(0);
+        }
+        let raw_value = self.read_bits(length)?;
+        Some(reverse_bits_in_width(raw_value, length))
     }
 
     #[allow(dead_code)]
@@ -112,6 +141,7 @@ impl BitWriter {
     }
 
     /// Write a VARINT (4-bit nibbles with continuation bits)
+    /// Each nibble is bit-reversed before writing (LSB-first data, MSB-first stream).
     pub fn write_varint(&mut self, value: u64) {
         let mut remaining = value;
 
@@ -119,7 +149,7 @@ impl BitWriter {
             let nibble = remaining & 0xF;
             remaining >>= 4;
 
-            self.write_bits(nibble, 4);
+            self.write_bits(reverse_bits_in_width(nibble, 4), 4);
 
             if remaining == 0 {
                 self.write_bits(0, 1); // Continuation = 0 (stop)
@@ -131,16 +161,16 @@ impl BitWriter {
     }
 
     /// Write a VARBIT (5-bit length prefix + variable data)
+    /// Both length and value are bit-reversed before writing.
     pub fn write_varbit(&mut self, value: u64) {
         if value == 0 {
             self.write_bits(0, 5); // Length 0 means value 0
             return;
         }
 
-        // Calculate number of bits needed
         let bits_needed = 64 - value.leading_zeros() as usize;
-        self.write_bits(bits_needed as u64, 5);
-        self.write_bits(value, bits_needed);
+        self.write_bits(reverse_bits_in_width(bits_needed as u64, 5), 5);
+        self.write_bits(reverse_bits_in_width(value, bits_needed), bits_needed);
     }
 
     /// Get the final bytes (padded to byte boundary)
