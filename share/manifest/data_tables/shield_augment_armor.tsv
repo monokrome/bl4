@@ -1,0 +1,15 @@
+row_name	augment_both	augment_both_2	augment_primary	augment_primary_2	augment_secondary	augment_secondary_2	comment_1	comment_2
+MiniNova	0.500000	600.000000	0.375000	400.000000	0.250000	250.000000	Damage Scale	Damage Radius
+MissileSwarm	0.300000	5.000000	0.200000	3.000000	0.100000	2.000000	Damage Scale	Missile Count
+Bladed	0.300000		0.200000		0.125000	5.000000	Damage Scale	
+Knockback	800.000000	0.500000	650.000000	0.400000	500.000000	0.300000	Knockback Radius	MoveSpeed
+Knockback_2	5.000000		5.000000		5.000000		MoveSpeedDuration	
+Boxer	0.400000		0.250000		0.150000		Melee Dmg Scale	
+Spunky	0.300000		0.200000		0.100000		Damage Scale	
+Flanking	0.250000		0.175000		0.100000		Movespeed Scale	
+Scavenger	0.300000		0.200000		0.100000		Mag Refilll %	
+Reinforced	1.000000		0.500000		0.350000		Overshield %	
+PositiveReinforcement	0.400000		0.250000		0.150000		Shard Drop Rate Scale	
+HeavyPlating	-0.500000		-0.350000		-0.200000		Damage Taken Scale	
+ArmorStrength	-0.300000		-0.200000		-0.100000		Damage Taken Scale	
+ArmorExtraSegment	2.000000		1.000000		1.000000		secondary only	

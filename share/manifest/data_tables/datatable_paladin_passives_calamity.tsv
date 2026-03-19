@@ -1,0 +1,68 @@
+row_name	comment	value
+Momentum_ActionSkill_Stack_CooldownRate		0.005000
+Momentum_Stacks_Max		20.000000
+Momentum_Stacks_Duration		12.000000
+FierySpirit_Fire_DamageScalar		0.060000
+BrassKnuckles_Melee_CriticalHitChance		0.050000
+ArmoredPlating_Shield_CapacityScalar		0.060000
+ArmoredPlating_Overshield_CapacityScalar		0.090000
+WieldTheStorm_StatusEffect_Damage		0.060000
+WieldTheStorm_StatusEffect_Duration		0.060000
+AdaptiveCharge_Shield_RegenerationScalar		0.050000
+AdaptiveCharge_Armor_RegenerationScalar	Negative Scale Math. 45% at rank 3 with 3 kills	-0.090909
+AdaptiveCharge_Movement_SpeedScalar		0.030000
+AdaptiveCharge_Stacks_Max		3.000000
+AdaptiveCharge_Stacks_Duration		15.000000
+DoomFist_Melee_DamageScalar		0.070000
+DoomFist_ActionSkill_DamageScalar		0.030000
+DoomFist_Stacks_Max		3.000000
+DoomFist_Stacks_Duration		12.000000
+ForgedInSteel_Duration		6.000000
+IntoTheFray_DamageDealt_Scalar		0.050000
+IntoTheFray_DamageTaken_Scalar	Negative Scale Math. 50% at rank 5	-0.200000
+TheBestDefense_Overshield_Multiplier		0.030000
+FlameAffinity_FireRate_Scalar		0.008000
+FlameAffinity_ReloadSpeed_Scalar	Negative Scale Math. 30% at rank 5 with 5 stacks	-0.017143
+FlameAffinity_ActionSkillCooldownRate_Scalar		0.012000
+Worldbreaker_DamageMultiplier		0.080000
+Worldbreaker_Cooldown		60.000000
+Worldbreaker_Affinity_DamageScalar		0.250000
+Worldbreaker_Velocity		2600.000000
+Worldbreaker_Hazards_DamageMultiplier		0.100000
+Worldbreaker_Duration		1.500000
+Worldbreaker_Attenuation_CooldownRestored	Seconds	-6.000000
+Berserk_Duration		15.000000
+Berserk_BonusDamage		0.060000
+Berserk_BonusMultiplier_PerStack		0.200000
+Berserk_Stacks_Max		10.000000
+Berserk_Duration_RestoreSeconds		3.000000
+AncestralCleave_KillSkill_ProcChance		0.050000
+WeakeningBlows_ProcChance_GunCritcalHit		0.080000
+BulletStorm_Stack_Max		5.000000
+BulletStorm_Stack_Duration		10.000000
+BulletStorm_Gun_DamageScalar		0.015000
+Titan_MaximumHealth_Scalar		0.070000
+Titan_SkilDamage_Scalar	This is actually Melee Damage. Renaming risky at this point.	0.070000
+Bloodlust_Lifesteal_Percentage		0.030000
+Bloodlust_ReloadSpeed_Scalar		-0.060000
+Bloodlist_Duration		8.000000
+AncestralStrikes_ProcChance		0.080000
+Rearm_ReloadPercentage		0.200000
+Harbinger_Stacks_Max		5.000000
+Harbinger_Stacks_Duration		20.000000
+Harbinger_Melee_DamageScalar		0.010000
+Harbinger_MaxShield_Scalar		0.020000
+Cataclysm_Stacks_Max		3.000000
+Cataclysm_Stacks_Duration		12.000000
+Cataclysm_Shock_CriticalHitChance		0.010000
+Cataclysm_Fire_CriticalHitDamage		0.020000
+Judgement_MeleeDamage		0.080000
+Thunderclap_ForgeSkill_Restoration_Multiplier		0.010000
+Thunderclap_ForgeSkill_Restoration_Multiplier_Attack		0.020000
+ShieldMatrix_Ordnance_DamageScalar		0.080000
+ShieldMatrix_StatusEffect_DamageScalar		0.080000
+ElectricalFire_DamageMultiplier		0.500000
+ElectricalFire_Cooldown		2.000000
+EmergencyRefresh_Cooldown		45.000000
+EmergencyRefresh_DamageMultiplier		0.200000
+EmergencyRefresh_Shield_Multiplier		0.150000

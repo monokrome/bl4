@@ -1,0 +1,7 @@
+row_name	description	description 2	modifier 1	modifier 2	skill name
+Stasis_Tiered					slam x times
+Stasis_Single	Target	Tick time	10.000000	0.200000	Damge x or more enemies with a single slam
+Exodus_Tiered					Damage x or more enemies with a single projectile
+Exodus_Single	Target		15.000000		Kill x enemies with exodus
+Terminal_Tiered					Kill enemies with passthrough
+Terminal_Single	Target	Time	10.000000	2.000000	Entangled x or more enemies within y seconds

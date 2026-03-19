@@ -1,0 +1,93 @@
+row_name	comment	value
+Domination_SoulOrb_Duration	This is now in an Action Skill. Not a Passive. Move eventually.	10.000000
+Domination_SoulOrb_DoT_Radius	This is now in an Action Skill. Not a Passive. Move eventually.	768.000000
+Domination_SoulOrb_DoT_DamageMultiplier	This is now in an Action Skill. Not a Passive. Move eventually.	0.040000
+Domination_SoulOrb_DoT_Interval	This is now in an Action Skill. Not a Passive. Move eventually.	0.500000
+Domination_SoulOrb_Explosion_Radius	This is now in an Action Skill. Not a Passive. Move eventually.	768.000000
+Domination_SoulOrb_Explosion_DamageMultiplier	This is now in an Action Skill. Not a Passive. Move eventually.	0.642000
+Domination_SoulOrb_Health_Percentage	This is now in an Action Skill. Not a Passive. Move eventually.	0.350000
+Domination_SoulOrb_SkillDuration_Percentage	This is now in an Action Skill. Not a Passive. Move eventually.	0.200000
+Domination_SoulOrb_MoveSpeed_Percentage	This is now in an Action Skill. Not a Passive. Move eventually.	0.060000
+Domination_SoulOrb_MoveSpeed_Duration	This is now in an Action Skill. Not a Passive. Move eventually.	8.000000
+Domination_SoulOrb_BonusDamage	This is now in an Action Skill. Not a Passive. Move eventually.	0.200000
+Domination_SoulOrb_BonusDamage_Duration	This is now in an Action Skill. Not a Passive. Move eventually.	12.000000
+Domination_PhasePlating_MovementSpeed		0.050000
+Domination_PhasePlating_DamageReduction	Negative Scale Math: 20% Damage Reduction at 3 points.	-0.083333
+Domination_LinkedAggression_DamageDealt		0.020000
+Domination_LinkedProsperity_HealthRegeneration		0.004000
+Domination_LinkedProsperity_Bane_Human_CriticalHitDamage		0.020000
+Domination_LinkedProsperity_Bane_Robot_ElementalDamage		0.020000
+Domination_LinkedProsperity_Bane_Beast_ActionSkillDamage		0.020000
+Domination_Quickening_FireRate		0.050000
+Domination_Quickening_ReloadSpeed		0.050000
+Domination_EternalEssence_MissingActionSkillCooldown		0.030000
+Domination_Linked_MaxStacks		3.000000
+Domination_Linked_Duration		12.000000
+Domination_PreservingEssence_Crit_ProcChance		0.050000
+Domination_PreservingEssence_DurationRestoration_Seconds		4.000000
+Domination_PreservingEssence_DurationRestoration_Cooldown		2.000000
+Domination_Overpowered_ActionSkillDamageDealt_Scalar		0.070000
+Domination_Overprotective_Overshield_Percentage		0.040000
+Domination_Overseer_HealthRegeneration		0.010000
+Domination_BanefulWeaponry_FireRate		0.015000
+Domination_BanefulWeaponry_Stack_Max		3.000000
+Domination_BanefulWeaponry_Stack_Duration		10.000000
+Domination_Curse_Damage_Multiplier		0.010000
+Domination_Curse_Duration		10.000000
+Domination_ExtraCursed_Damage_Multiplier		2.000000
+Domination_ExplosiveMinions_GadgetDamage		0.070000
+Domination_ExplosiveMinions_GadgetDamage_To_CompanionDamage_Multiplier		0.100000
+Domination_VengefulSpirits_ProcChance		0.200000
+Domination_VengefulSpirits_DamageMultiplier		0.050000
+Domination_VengefulSpirits_Cooldown		5.000000
+Domination_VengefulSpirits_Radius		256.000000
+Domination_PrimedAndReady_FireRate		0.050000
+Domination_PrimedAndReady_Duration		8.000000
+Domination_PrimedAndReady_Overshield		0.050000
+Domination_GraveCommand_Trouble_RespawnCooldownRestoration		0.080000
+Domination_GraveCommand_Trouble_CommandCooldownRestoration		0.080000
+Domination_PhaseSync_ActionSkillDuration		0.050000
+Domination_PhaseSync_AttunementDuration		0.070000
+Domination_HardenedSpirit_DamageReduction	Not Used ATM. Negative Scale Math. Will be 20% at rank 3.	-0.083333
+Domination_HardenedSpirit_OvershieldCapacity		0.120000
+Domination_HardenedSpirit_OvershieldDuration		0.120000
+Domination_HardenedSpirit_DamagDealt		0.060000
+Domination_Summoner_Minion_MaximumHealth		0.080000
+Domination_Summoner_GunDamage		0.050000
+Domination_Summoner_GunDamage_Duration		8.000000
+Domination_ShockingAttunement_MovementSpeed		0.040000
+Domination_ShockingAttunement_GunDamageDealt		0.060000
+Domination_ShockingAttunement_BaseSpeed		564.000000
+Domination_CryonicAttunement_AmmoRestoration		0.040000
+Domination_CryonicAttunement_OrdnanceCooldownRestoration		0.040000
+Domination_CryonicInfluence_CryoDamage		0.080000
+Domination_CryonicInfluence_CryoDamage_StatusEffect		0.060000
+Domination_Overblown_OrdnanceDamage		0.060000
+Domination_KeenFiends_CriticalHitChance		0.040000
+Domination_ElementalEssence_ElementalDamage		0.040000
+Domination_TheReaping_CriticalHitDamage_LowHealth		0.080000
+Domination_GraveShock_BonusDamage		0.080000
+Domination_GraveShock_Stack_Max		3.000000
+Domination_GraveShock_Stack_Duration		10.000000
+Domination_UndeadWire_SparkRemnant_DamageMultiplier		0.800000
+Domination_UndeadWire_SparkRemnant_Radius		128.000000
+Domination_UndeadWire_SparkRemnant_Cooldown		2.000000
+Domination_UndeadWire_ProcChance		0.100000
+Domination_ShockingInfluence_ShockDamage		0.080000
+Domination_ShockingInfluence_ShockDamage_StatusEffect		0.060000
+Domination_SpiritedAway_HealthRestoration		1.000000
+Domination_SpiritedAway_ShieldRestoration		1.000000
+Domination_SpiritedAway_Cooldown		120.000000
+Domination_SpiritedAway_InvisibilityTimer		4.000000
+Domination_PhaseExtension_KillSkillDuration		0.080000
+Domination_PhaseBullets_BonusDamage		0.075000
+Domination_GravyDrain_Lifesteal		0.015000
+Domination_GravyDrain_Lifesteal_Minions		0.030000
+Domination_GravyDrain_Stack_Max		3.000000
+Domination_GravyDrain_Stack_Duration		16.000000
+Domination_Tameshigiri_Stacks_Max		50.000000
+Domination_Tameshigiri_Duration		5.000000
+Domination_Tameshigiri_GunDamage		0.001600
+Domination_Tameshigiri_MeleeDamage		0.001600
+Domination_ClawAndBang_MeleeDamage		0.060000
+Domination_ClawAndBang_OrdnanceDamage		0.060000

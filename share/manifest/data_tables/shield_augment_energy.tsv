@@ -1,0 +1,13 @@
+row_name	augment_both	augment_both_2	augment_primary	augment_primary_2	augment_secondary	augment_secondary_2	comment_1	comment_2
+Nova	2.000000	800.000000	1.500000	600.000000	1.000000	400.000000	Damage Scale	Damage Radius
+Siphon	0.250000	0.300000	0.100000	0.200000	0.050000	0.100000	Proc Chance	Proc DamageScale
+Berserker	0.350000		0.275000		0.200000		Melee Scale	
+Fleeting	0.350000		0.275000		0.200000		Movement Scale	
+TriggerHappy	-0.350000	0.350000	-0.275000	0.275000	-0.200000	0.200000	Reload Scale	FireRate Scale
+Amp	1.500000	0.350000	1.000000	0.275000	0.500000	0.200000	Damage Scale	Shield Drain
+Emerging	0.375000	0.400000	0.250000	0.325000	0.125000	0.250000	RechargeDelayScale	RechargeRateScale
+Vagabond	0.350000		0.275000		0.200000		MovementSpeedScale	
+Brimming	0.050000		0.035000		0.020000		Health Regen	
+ShieldBooster	0.250000	0.200000	0.175000	0.150000	0.125000	0.100000	Shield Scale	Drop Chance
+RechargeRate	0.400000		0.300000		0.200000		RateScale	
+RechargeDelay	-0.300000		-0.200000		-0.100000		DelayScale	

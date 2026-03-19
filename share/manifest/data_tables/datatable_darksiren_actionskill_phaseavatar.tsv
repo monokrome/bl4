@@ -1,0 +1,50 @@
+row_name	comment	value
+PhaseAvatar_Duration		25.000000
+PhaseAvatar_Cooldown		55.000000
+PhaseAvatar_Cooldown_RefundMultiplier		0.330000
+PhaseAvatar_Buff_Base_FireRate		0.200000
+PhaseAvatar_Buff_Base_PhaseRegen		0.025000
+PhaseAvatar_Buff_Base_GunDamage		0.250000
+PhaseAvatar_Buff_Base_GroundSpeed		0.250000
+PhaseAvatar_PhaseBlast_DamageMultiplier		0.867000
+PhaseAvatar_PhaseBlast_Radius		256.000000
+PhaseAvatar_PhaseBlast_Cooldown		8.000000
+PhaseAvatar_GunDamage_EldritchBlast_RefundCooldown		0.040000
+PhaseAvatar_Nova_Damage_Multiplier		0.857000
+PhaseAvatar_Nova_Radius		768.000000
+PhaseAvatar_NecroPhase_Nova_RestoreHealth_Multiplier		0.500000
+PhaseAvatar_NecroPhase_Sacrifice_CurrentHealthPercentage		0.200000
+PhaseAvatar_NecroPhase_Sacrifice_BonusDamageMultiplier		1.500000
+PhaseAvatar_NecroSpear_DamageMultiplier		0.532000
+PhaseAvatar_Flux_DamageMultiplier		0.040000
+PhaseAvatar_Flux_AttachDistance		1200.000000
+PhaseAvatar_Flux_RestoreHealth_PerTarget_Percentage	Half a percent	0.050000
+PhaseAvatar_Flux_RestoreDuration_PerTarget_Percentage	Half a percent	0.005000
+PhaseAvatar_Flux_UpdateTime		0.500000
+PhaseAvatar_Flux_StackCount		5.000000
+PhaseAvatar_Flux_StatusEffectDamage		0.100000
+PhaseAvatar_PhaseGeist_Blast_Radius		512.000000
+PhaseAvatar_PhaseGeist_Nova_Radius		1028.000000
+PhaseAvatar_PhaseGeist_Hazard_DamageMultiplier		0.050000
+PhaseAvatar_PhaseGeist_Hazard_Duration		8.000000
+PhaseAvatar_PhaseGeist_FlyingBurst_DamageMultiplier		0.350000
+PhaseAvatar_PhaseGeist_FlyingBurst_Timer		1.000000
+PhaseAvatar_PhaseGeist_FlyingBurst_Radius		256.000000
+PhaseAvatar_PhaseGeist_FlyingBurst_MaxExplosions		3.000000
+PhaseAvatar_Geistwave_DamageMultiplier		0.530000
+PhaseAvatar_Geistwave_Debuff_DamageScalar		0.300000
+PhaseAvatar_Geistwave_Debuff_Duration		15.000000
+PhaseAvatar_PhaseAssassin_Dagger_DamageMultiplier		0.700000
+PhaseAvatar_PhaseAssassin_Nova_PhasePercentage		0.100000
+PhaseAvatar_PhaseAssassin_Dagger_CooldownPenalty		1.500000
+PhaseAvatar_SpiritArmor_BonusDamage_Percentage		0.150000
+PhaseAvatar_SpiritArmor_ShieldRestoration_Percentage		0.250000
+PhaseAvatar_WarlockAndLoad_MaxStacks		3.000000
+PhaseAvatar_WarlockAndLoad_StackDuration		15.000000
+PhaseAvatar_WarlockAndLoad_GunDamage_PerStack		0.150000
+PhaseAvatar_Resonance_Ricochet_DamageMultiplier	Scale Multiply	1.000000
+PhaseAvatar_Resonance_Ricochet_Distance		6000.000000
+PhaseAvatar_Resonance_Charges		3.000000
+PhaseAvatar_SoulCollector_RefundCooldownPercentage		0.500000
+PhaseAvatar_SoulCollector_Stack_DamageMultiplier		0.300000
+PhaseAvatar_SoulCollector_Stack_Max		5.000000

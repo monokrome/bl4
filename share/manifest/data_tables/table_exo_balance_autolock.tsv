@@ -1,0 +1,28 @@
+row_name	description	description 2	description 3	modifier 1	modifier 2	modifier 3	skill name
+----------------TRAIT----------------	--------------------	--------------------	--------------------				--------------------
+----------------ActionSkill----------------	--------------------	--------------------	--------------------				--------------------
+ActionSkill	Cooldown	Duration	Refund Rate	40.000000	18.000000		Auto Lock
+Weapon_BaseTurret	Damage Scalar	Max Ammo	Fire Rate	0.030000	20.000000	0.150000	Base Turret
+Weapon_Shotgun	Damage Scalar	Pellets	Fire Rate	0.022000	6.000000	0.300000	Shotgun
+Weapon_Beam	Damage Scalar	Fire Rate	Interval	0.025000	1.000000	0.200000	Beam
+Weapon_Rocket	Damage Scalar	Max Ammo	Fire Rate	0.150000	6.000000	0.500000	Rockets
+Weapon_MiniRocket	Damage Scalar	Max Ammo	Fire Rate	0.325000	6.000000	1.000000	Unmissible Missiles
+Weapon_PhosShell	Damage Scalar	Max Ammo	Fire Rate	0.800000	20.000000	1.000000	Hell in a Shell
+Weapon_ShotCosts	Base	Shotgun	Rockets	1.000000	2.000000	4.000000	
+Weapon_Target_Distance	Max Distance	Max Boss Distance		10000.000000	10000.000000		
+Weapon_Target_Angle	Max Angle	Max Beam Angle	Max Beam Boss Angle	45.000000	45.000000	45.000000	
+Weapon_Target_Focus	Focus Duration	Max Focus Angle	Max Beam Angle	0.500000	50.000000	60.000000	
+----------------CAPSTONES----------------	--------------------	--------------------	--------------------				--------------------
+MoreOomph	Crit Chance	Ricochet Damage		0.100000	0.500000		Double Ought Shot
+BeamTeam	Action Skill Damage		Max Stacks	0.050000		50.000000	Beam Team
+RocketPods	Damage Radius			224.000000			Volatile Hollow Points
+----------------AUGMENTS----------------	--------------------	--------------------	--------------------				--------------------
+HomingMissileFlurry	Duration Drain	Max Missiles		0.050000	6.000000		Unmissible Missiles
+Conduit	Crit Chance	Duration	Duration Return	0.200000	8.000000	0.100000	Instinto
+Conduit_DurationRate	Duration Penalty	Crit Damage	Duration Rate Mod	0.200000	0.200000	0.030000	
+Conduit_Stacks	Max Stacks			10.000000			
+PortableSupplyDepot	Gadget Damage			0.250000			Insta-Fort Battle System
+Overeload	Ammo Regen	Duration	Duration Cost	0.050000	8.000000	0.350000	Bullet Buddy Deluxe
+Overeload_BonusDamage	Bonus Damage	Explosive Damage	Radius	0.250000	0.100000	160.000000	
+HandMeDown	Bonus Damage Per Stack	Duration	Cost	0.150000	8.000000	0.100000	Hand-Me-Down
+PhosphorousShell	Radius	Cooldown	Reduction	768.000000	30.000000	0.200000	Hell in a Shell

@@ -1,0 +1,10 @@
+row_name	comment	value
+Forgefist_Resource_Value_Max_Multiplier		1.000000
+Forgefist_Resource_Value_DrainPercentage	Per second	0.100000
+Forgefist_Buff_Percent_ActionSkillCooldownRate_Potency	Maximum Action Skill Cooldown Rate Buff when Charge is full	0.300000
+Forgefist_Charge_Consumption_PauseDuration	Charge consumption is paused for this duration whenever you gain Charge	5.000000
+Forgefist_Charge_NumSegments		5.000000
+Paladin_Shared_PrimeStacks_Duration		10.000000
+Paladin_Shared_PrimeStacks_Max		10.000000
+Paladin_Shared_Detonation_Radius		512.000000
+Paladin_Shared_Stagger_Badass_Chance		0.400000

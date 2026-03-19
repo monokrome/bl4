@@ -1,0 +1,78 @@
+row_name	comment	value
+Scourge_Cooldown		60.000000
+Scourge_Duration		18.000000
+Scourge_Shield_Cooldown		1.000000
+Scourge_Shield_DamageReduction_Base_Full	60% in Negative Scale Math	-1.500000
+Scourge_Shield_Charge_Conversion_Percentage		1.000000
+Scourge_Shield_DamageReduction_Angle		90.000000
+Scourge_Whip_Damage_Multiplier		0.223000
+Scourge_Whip_Charge_ConsumePercent		0.200000
+Scourge_Whip_Charge_DamageMultiplier	Deal consumed Charge multiplied by this whenever you damage enemies with the Whip	1.000000
+Scourge_Whip_Transform_Timer		1.500000
+Scourge_Whip_Forgewave_Duration		3.000000
+Scourge_ForgeSpear_Damage_Mutliplier_Impact		0.657000
+Scourge_ForgeSpear_Charge_ConsumePercent		0.200000
+Scourge_ForgeSpear_Charge_DamageMultiplier		1.000000
+Scourge_ForgeSpear_Primed_DamageMultiplier		0.452000
+Scourge_ForgeSpear_Detonation_DamageMultiplier_CriticalHit		0.500000
+Scourge_Shield_Bash_DamageMultiplier		0.245000
+Scourge_Shield_Bash_Height		300.000000
+Scourge_Shield_Bash_Radius		500.000000
+Scourge_Shield_Bash_Angle		60.000000
+Scourge_Shield_Throw_DamageMultiplier		0.280000
+Scourge_Shield_Throw_Bounces_Base		2.000000
+Scourge_Shield_Throw_Bounces_Additional_Percentage		0.200000
+Scourge_Cooldown_RefundMultiplier		0.330000
+Scourge_ForgeSkill_FireWall_Cooldown		50.000000
+Scourge_ForgeSkill_Cooldown_Cap1		60.000000
+Scourge_ForgeSkill_Cooldown_Cap2		70.000000
+Scourge_ForgeSkill_Cooldown_Cap3		45.000000
+Scourge_ForgeSkill_FireWall_Duration		15.000000
+Scourge_ForgeSkill_FireWall_Buff_DamageScalar		1.250000
+Scourge_ForgeSkill_FireWall_Buff_SpeedScalar		1.500000
+Scourge_ForgeSkill_FireWall_DamageMultiplier		0.050000
+Scourge_ForgeSkill_FireWall_DamageInterval		0.330000
+Scourge_ForgeSkill_Shield_Charge_Percentage		0.250000
+Scourge_ForgeSkill_Ring_Height		500.000000
+Scourge_ForgeSkill_Ring_Radius		1024.000000
+Scourge_ForgeSkill_Smite_DamageMultiplier	Keep in mind this will always critically hit	0.750000
+Scourge_ForgeSkill_Smite_Range		5000.000000
+Scourge_ForgeSkill_Smite_CriticalChance	Always Critically Hits (on purpose)	1.000000
+Scourge_ForgeSkill_Fissure_Duration		2.000000
+Scourge_ForgeSkill_Fissure_Spin_DamageMultiplier	This happens twice	0.300000
+Scourge_ForgeSkill_Fissure_DamageMultiplier		0.600000
+Scourge_ForgeSkill_Fissure_Velocity		3000.000000
+Scourge_ForgeSkill_Fissure_Spin_Radius		512.000000
+Scourge_ForgeSkill_Fissure_Spin_Height		300.000000
+Scourge_ForgeSkill_Fissure_Puddle_DamageMultiplier	This is a percentage of the initial hit.	0.100000
+Scourge_Forgestar_Radius		600.000000
+Scourge_Forgestar_Radius_Enhanced		900.000000
+Scourge_Forgestar_Charge_ConsumePercent		0.300000
+Scourge_Forgestar_DamageMultiplier		0.315000
+Scourge_CoolingArray_Pulse_DamageMultiplier		0.060000
+Scourge_CoolingArray_Pulse_HealingMultiplier		0.060000
+Scourge_CoolingArray_PulseTimer		1.500000
+Scourge_CoolingArray_PulseTimer_Fast		1.000000
+Scourge_CoolingArray_Pulse_Radius		4096.000000
+Scourge_CoolingArray_Pulse_Height		2048.000000
+Scourge_CoolingArray_Aiming_MovementSpeed	50% in Negative Scale Math	-1.500000
+Scourge_CoolingArray_Aiming_BonusCryoDamage		0.350000
+Scourge_CoolingArray_GunDamage_ConsumePercentage		0.025000
+Scourge_FrostFireDome_DoT_DamageMultiplier		0.020000
+Scourge_FrostFireDome_DoT_DamageInterval		0.330000
+Scourge_FrostFireDome_DoT_Buff_DamageScalar		1.500000
+Scourge_FrostFireDome_DoT_Buff_ProjectileSpeed		2.000000
+Scourge_FrostFireDome_FrostWall_DamageMultiplier		0.200000
+Scrouge_EternalWinter_ActionSkillDuration_RestorationPercent		0.025000
+Scourge_EternalWinter_FireWallDuration_RestorationPercen		0.050000
+Scoruge_EternalWinter_BonusDamage	Percentage of Vegeance Meter Mac Capacity	0.200000
+ShatterWight_CryoEffieciency_ShieldBash		0.500000
+ShatterWight_Shield_Bash_Height		450.000000
+ShatterWight_Shield_Bash_Radius		1000.000000
+Shatterwight_Shield_Bash_Angle		75.000000
+Scourge_Forgewave_Height		125.000000
+Scourge_Forgewave_Width		512.000000
+Scourge_Forgewave_Depth		512.000000
+Scourge_Forgewave_Massive_Height		125.000000
+Scourge_Forgewave_Massive_Width		768.000000
+Scourge_Forgewave_Massive_Depth		768.000000

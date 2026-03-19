@@ -1,0 +1,23 @@
+row_name	augment_both	augment_both_2	augment_primary	augment_primary_2	augment_secondary	augment_secondary_2	comment_1	comment_2
+Spike	0.800000		0.600000		0.400000		Return Damage Scale	
+Reflect	0.400000		0.300000		0.150000		Reflect Chance	
+Turtle	2.000000	-0.200000	1.650000	-0.150000	1.400000	-0.100000	Shield Capacity Scale	Max Health Scale
+Absorb	0.400000		0.300000		0.150000		Absorb Chance	
+Adaptive	-0.500000	5.000000	-0.400000	4.000000	-0.200000	3.000000	Elemental Resist	Duration
+Adaptive_2	0.240000		0.160000		0.080000		Health%	
+HealthBooster	0.350000	0.400000	0.250000	0.300000	0.150000	0.200000	Health Scale	Drop Chance
+PowerBooster	0.300000	0.400000	0.200000	0.300000	0.100000	0.200000	Weapon Damage Scale	Drop Chance
+OvershieldBooster	0.400000	0.200000	0.300000	0.150000	0.200000	0.100000	Shield Scale	Drop Chance
+MagBooster	0.200000		0.150000		0.100000		Drop Chance	
+OverdriveBooster	0.300000	0.200000	0.225000	0.150000	0.150000	0.100000	Buff %	Drop Chance
+Sturdy	-0.350000	0.100000	-0.275000	0.075000	-0.200000	0.050000	Damage Taken Scale	Proc Chance
+Sturdy_1	5.000000		5.000000		5.000000		Duration	
+Evasive	0.250000	0.100000	0.150000	0.075000	0.100000	0.050000	Move Speed Scale	Proc Chance
+Evasive_1	5.000000		5.000000		5.000000		Duration	
+Resistant	-0.350000		-0.275000		-0.200000		% Element Resist	
+Projected	0.800000		0.650000		0.500000		Damage Reduction	
+Healthy	0.500000		0.250000		0.100000		Health Scale	
+Capacity	1.750000		1.500000		1.250000			
+Utility+	-0.350000	0.200000	-0.275000	0.150000	-0.200000	0.100000	Utility Scale	MoveScale
+PinPoint	-0.350000		-0.275000		-0.200000		Accuracy Scale	
+PinPoint_1	0.350000	0.500000	0.275000	0.350000	0.200000	0.250000	Handling Scale	Proj Speed Scale

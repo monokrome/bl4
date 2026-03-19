@@ -1,0 +1,13 @@
+row_name	value
+IncomingDamage_Neglible_Threshold	0.000000
+IncomingDamage_Neglible_Score	1.000000
+IncomingDamage_Negligible_ScoreThreshold	0.000000
+IncomingDamage_Low_Threshold	0.050000
+IncomingDamage_Low_Score	5.000000
+IncomingDamage_Low_ScoreThreshold	5.000000
+IncomingDamage_Medium_Threshold	0.100000
+IncomingDamage_Medium_Score	10.000000
+IncomingDamage_Medium_ScoreThreshold	10.000000
+IncomingDamage_High_Threshold	0.200000
+IncomingDamage_High_Score	20.000000
+IncomingDamage_High_ScoreThreshold	20.000000

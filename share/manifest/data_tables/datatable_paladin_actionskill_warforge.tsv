@@ -1,0 +1,57 @@
+row_name	comment	value
+Warforge_Cooldown		20.000000
+Warforge_ForgeSkill_Cooldown		30.000000
+Warforge_ForgeSkill_Cooldown_Cap1		30.000000
+Warforge_ForgeSkill_Cooldown_Cap2		35.000000
+Warforge_ForgeSkill_Cooldown_Cap3		40.000000
+Warforge_Duration		10.000000
+Warforge_Charges		3.000000
+Warforge_Melee_DamageMultiplier		0.245000
+Warforge_Melee_Height		300.000000
+Warforge_Melee_Radius		500.000000
+Warforge_Melee_Angle		60.000000
+Warforge_ForgeAxe_Duration		10.000000
+Warforge_ForgeAxe_Speed		7000.000000
+Warforge_ForgeAxe_Explosion_DamageMultiplier		0.580000
+Warforge_ForgeAxe_Impact_DamageMultiplier_Fire		0.490000
+Warforge_ForgeAxe_Impact_DamageMultiplier_Cryo		0.490000
+Warforge_ForgeAxe_Impact_DoT_DamageMultiplier		0.010000
+Warforge_ForgeAxe_PickedUp_CooldownRefund_Percentage		0.500000
+Warforge_ForgeSkill_TwinBlade_Box_Radius	Width and Depth	512.000000
+Warforge_ForgeSkill_TwinBlade_Box_Height		125.000000
+Warforge_ForgeSkill_TwinBlade_DamageMultiplier	This happens twice (To and From)	0.565000
+Warforge_ForgeSkill_Conflangarang_DamageMultiplier	This happens twice (To and From)	0.565000
+Warforge_ForgeSkill_Conflangarang_DamageMultiplier_Puddle		0.030000
+Warforge_ForgeSkill_Conflangarang_Box_Height		150.000000
+Warforge_ForgeSkill_Conflangarang_Box_Radius		768.000000
+Warforge_ForgeSkill_Conflangarang_CooldownReduction		0.100000
+Warforge_ForgeSkill_BoomingBlows_Impact_DamageMultiplier		0.542000
+Warforge_ForgeSkill_BoomingBlows_Impact_Radius		256.000000
+Warforge_ForgeSkill_BoomingBlows_Bounce_BaseCount		3.000000
+Warforge_ForgeSkill_StormShatter_DamageMultiplier		0.750000
+Warforge_ForgeSkill_StormShatter_Radius		1024.000000
+Warforge_ForgeSkill_StormShatter_Duration		18.000000
+Warforge_ForgeSkill_StormShatter_Field_DoT_DamageMultiplier		0.050000
+Warforge_ForgeSkill_StormShatter_ProcChance		0.330000
+Warforge_ForgeSkill_StormShatter_Proc_DamageMultiplier		0.100000
+Warforge_ForgeSword_Speed		1000.000000
+Warforge_ForgeSword_Acceleration		30000.000000
+Warforge_ForgeSword_DamageMultiplier		0.330000
+Warforge_ForgeSword_Explosion_DamageMultiplier		0.360000
+Warforge_ForgeSword_SwordsPerBarrage		3.000000
+Warforge_ForgeHammer_DamageMultiplier		0.657000
+Warforge_ForgeHammer_Radius		768.000000
+Warforge_AxeAndStone_MovementSpeed_Buff		0.400000
+Warforge_AxeAndStone_MovementSpeed_Buff_Duration		4.000000
+Warforge_AxeAndStone_ActionSkillCooldown_Restore		0.330000
+Warforge_AxeAndStone_GadgetCooldown_Restore		0.330000
+Warforge_WarMachine_GunDamage_PerStack		0.150000
+Warforge_WarMachine_Stacks		3.000000
+Warforge_WarMachine_Ricochet_Radius		512.000000
+Warforge_WarMachine_Ricochet_Cooldown		2.000000
+Warforge_WarMachine_Ricochet_Speed		1000.000000
+Warforge_WarMachine_Ricochet_Acceleration		4000.000000
+Warforge_FrostFire_PieceAxe_Height		500.000000
+Warforge_FrostFire_PieceAxe_Width		250.000000
+Warforge_FrostFire_PieceAxe_Depth		500.000000
+Warforge_FrostFire_PieceAxe_Speed		5000.000000
