@@ -193,14 +193,14 @@ The serial format assigns each item type a numeric category ID. Decoding a seria
 
 ### Category Derivation
 
-Categories can be derived from serial data using different formulas depending on item type:
+Categories can be derived from serial data depending on format:
 
 ```text
-Weapons (type 'r'):     category = first_varbit_token / 8192
-Equipment (type 'e'):   category = first_varbit_token / 384
+VarInt-first (weapons):  category from WEAPON_INFO lookup table
+VarBit-first (equipment): category = first_varbit / 384 (or / 8192 for some items)
 ```
 
-The `category_from_prefix()` function in `bl4-ncs` can also derive categories from manufacturer prefixes when processing NCS data directly (e.g., `BOR_SG` maps to category 12, `JAK_SG` maps to category 9).
+The `category_from_prefix()` function in `bl4-ncs` can also derive categories from manufacturer prefixes when processing NCS data directly (e.g., `BOR_SG` maps to category 7, `JAK_SG` maps to category 9).
 
 ---
 
@@ -318,15 +318,9 @@ GbxSerialNumberIndex:
 
 Each part is self-describing — the serial format encodes the category, scope, and index together, so a serial can be decoded without knowing the item type in advance.
 
-### The Bit 7 Flag: Root vs. Sub Scope
+### Part Index Resolution
 
-A breakthrough in January 2026 revealed that bit 7 of the part token index encodes the scope:
-
-- For indices > 142, bit 7 = 0 means **Root** scope (core parts)
-- For indices > 142, bit 7 = 1 means **Sub** scope (modular attachments)
-- The actual part index is in the lower 7 bits: `index & 0x7F`
-
-This discovery improved serial decoding resolution significantly. The Rainbow Vomit legendary shotgun (a Jakobs legendary) went from 30% part resolution to 70% once bit 7 stripping was applied. Indices like 170, 166, 174, and 196 — which had no matches in the parts database — resolved correctly to Jakobs Shotgun parts once the high bit was stripped.
+Part indices in serials map directly to the parts database for the item's category. The index is used as-is — no bit manipulation is needed. With the corrected bit assembly (nibble-reversed VarInt/VarBit values), part indices resolve correctly to the NCS-extracted parts database.
 
 ### Registration Order
 
@@ -477,7 +471,7 @@ Only Gravitar has any parts mapped (`part_grav_asm_legendaryGravitar` and `part_
 
 ### Equipment Low Resolution
 
-Equipment serials (class mods, firmware) still decode at low resolution. Most part indices map to nothing in the current database. Index 254 appears frequently and may be an end-of-data marker rather than an actual part.
+Equipment serials (class mods, firmware) decode with improving resolution as the parts database grows. Some part indices still map to nothing in the current database, particularly for equipment categories not yet fully extracted from NCS.
 
 ---
 
