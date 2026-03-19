@@ -64,18 +64,33 @@ impl Element {
         }
     }
 
-    /// Return the Part token index for this element (128 + ID)
+    /// Return the Part token index for this element.
+    ///
+    /// Element markers in the Part token stream use indices in the 16-27 range.
     pub fn to_index(&self) -> u64 {
-        128 + self.to_id()
+        match self {
+            Element::Kinetic => 16,   // was 128
+            Element::Corrosive => 26, // was 133
+            Element::Shock => 17,     // was 136
+            Element::Radiation => 25, // was 137
+            Element::Cryo => 27,      // was 141
+            Element::Fire => 23,      // was 142
+            Element::Sonic => 31,     // was 143 (provisional)
+        }
     }
 
-    /// Convert a Part token index to an Element, if it falls in the element
-    /// marker range (128-142) and maps to a known element.
+    /// Convert a Part token index to an Element, if it maps to a known element.
+    ///
+    /// Element marker indices are in the 16-27 range.
     pub fn from_index(index: u64) -> Option<Self> {
-        if (128..=142).contains(&index) {
-            Self::from_id(index - 128)
-        } else {
-            None
+        match index {
+            16 => Some(Element::Kinetic),
+            26 => Some(Element::Corrosive),
+            17 => Some(Element::Shock),
+            25 => Some(Element::Radiation),
+            27 => Some(Element::Cryo),
+            23 => Some(Element::Fire),
+            _ => None,
         }
     }
 
@@ -125,37 +140,21 @@ impl Rarity {
         }
     }
 
-    /// Extract rarity from VarBit-first equipment format
-    /// Rarity is encoded in bits 6-7 of (first_varbit % divisor)
-    pub fn from_equipment_varbit(varbit: u64, divisor: u64) -> Option<Self> {
-        if divisor == 0 {
-            return None;
-        }
-        let remainder = varbit % divisor;
-        let rarity_bits = (remainder >> 6) & 0x3;
-        Self::from_bits(rarity_bits)
+    /// Extract rarity from VarBit-first equipment format.
+    ///
+    /// With correct bit ordering, the VarBit value is the category ID directly.
+    /// Rarity for equipment items needs re-derivation from other token fields.
+    pub fn from_equipment_varbit(_varbit: u64, _divisor: u64) -> Option<Self> {
+        None
     }
 
-    /// Extract rarity from VarInt-first weapon format
-    /// For level codes > 145 (max level 50), rarity is encoded in the offset
-    pub fn from_weapon_level_code(code: u64) -> Option<Self> {
-        // Level codes 128-145 encode levels 16-50 (Common rarity)
-        // Codes > 145 encode level 50 + rarity
-        if code <= 145 {
-            Some(Rarity::Common)
-        } else {
-            // Known codes from database samples:
-            // 192 = Epic, 200 = Legendary
-            match code {
-                192 => Some(Rarity::Epic),
-                200 => Some(Rarity::Legendary),
-                // For unknown codes, estimate based on value range
-                146..=180 => Some(Rarity::Uncommon),
-                181..=195 => Some(Rarity::Epic),
-                196.. => Some(Rarity::Legendary),
-                _ => None,
-            }
-        }
+    /// Extract rarity from VarInt-first weapon format.
+    ///
+    /// With correct bit ordering, level codes are just levels (1-50).
+    /// Rarity is not encoded in the level code.
+    /// Rarity extraction for weapons needs re-derivation.
+    pub fn from_weapon_level_code(_code: u64) -> Option<Self> {
+        None
     }
 }
 
@@ -725,25 +724,27 @@ fn collect_varints(tokens: &[Token]) -> (Vec<u64>, Vec<u64>) {
 }
 
 /// Extract header info from equipment format (VarBit-first)
+///
+/// Header structure: VarBit(category), [SoftSep, VarInt]*, Separator
+/// Level is the last VarInt before the first Separator.
 fn extract_equipment_header(tokens: &[Token]) -> HeaderInfo {
-    let mut level = None;
-    let mut raw_level = None;
-    let mut seen_first_sep = false;
-
-    for token in tokens {
-        match token {
-            Token::Separator if !seen_first_sep => seen_first_sep = true,
-            Token::VarBit(v) if seen_first_sep && level.is_none() => {
-                let adjusted = v.saturating_add(1);
-                if let Some((capped, raw)) = level_from_code(adjusted) {
-                    level = Some(capped as u64);
-                    raw_level = Some(raw as u64);
-                }
-                break;
+    let header_varints: Vec<u64> = tokens
+        .iter()
+        .take_while(|t| !matches!(t, Token::Separator))
+        .filter_map(|t| {
+            if let Token::VarInt(v) = t {
+                Some(*v)
+            } else {
+                None
             }
-            _ => {}
-        }
-    }
+        })
+        .collect();
+
+    let (level, raw_level) = header_varints
+        .last()
+        .and_then(|&code| level_from_code(code))
+        .map(|(capped, raw)| (Some(capped as u64), Some(raw as u64)))
+        .unwrap_or((None, None));
 
     HeaderInfo {
         manufacturer: None,
@@ -1288,13 +1289,13 @@ mod tests {
 
     #[test]
     fn test_decode_utility_serial() {
-        // VarInt-first item with first VarInt(128)
+        // VarInt-first item with first VarInt(16) (Vladof Sniper)
         let serial = "@Uguq~c2}TYg3/>%aRG}8ts7KXA-9&{!<w2c7r9#z0g+sMN<wF1";
         let item = ItemSerial::decode(serial).unwrap();
 
         assert_eq!(item.format, SerialFormat::VarIntFirst);
         assert!(!item.tokens.is_empty());
-        assert_eq!(item.manufacturer, Some(128));
+        assert_eq!(item.manufacturer, Some(16));
     }
 
     #[test]
@@ -1305,15 +1306,15 @@ mod tests {
 
     #[test]
     fn test_part_group_id_extraction() {
-        // Weapon serial - Vladof SMG (group 22)
+        // Vladof Repair Kit (category 269, VarBit-first)
         let item = ItemSerial::decode("@Ugr$ZCm/&tH!t{KgK/Shxu>k").unwrap();
-        assert_eq!(item.part_group_id(), Some(22));
+        assert_eq!(item.part_group_id(), Some(269));
 
-        // Equipment serial - Shield (group 279)
+        // Shield (category 278, VarBit-first)
         let item = ItemSerial::decode("@Uge8jxm/)@{!gQaYMipv(G&-b*Z~_").unwrap();
-        assert_eq!(item.part_group_id(), Some(279));
+        assert_eq!(item.part_group_id(), Some(278));
 
-        // Utility items don't use Part Group ID
+        // VarInt-first items don't use Part Group ID
         let item =
             ItemSerial::decode("@Uguq~c2}TYg3/>%aRG}8ts7KXA-9&{!<w2c7r9#z0g+sMN<wF1").unwrap();
         assert_eq!(item.part_group_id(), None);
@@ -1321,34 +1322,32 @@ mod tests {
 
     #[test]
     fn test_parts_extraction() {
-        // Weapon with one part
         let item = ItemSerial::decode("@Ugr$ZCm/&tH!t{KgK/Shxu>k").unwrap();
         let parts = item.parts();
         assert!(!parts.is_empty(), "Should have at least one part");
 
-        // Check first part has index 0 and value
-        let (index, values) = &parts[0];
-        assert_eq!(*index, 0u64);
-        assert!(!values.is_empty());
+        // First part has index 1 (with corrected nibble reversal)
+        let (index, _values) = &parts[0];
+        assert_eq!(*index, 1u64);
     }
 
     #[test]
     fn test_equipment_level_extraction() {
-        // Shield type-e with VarBit 49 = Level 50 (0-indexed storage)
+        // Shield type-e: level 50
         let item = ItemSerial::decode("@Uge98>m/)}}!c5JeNWCvCXc7").unwrap();
         assert_eq!(item.level, Some(50));
 
-        // Grenade with VarBit 49 = Level 50
+        // Grenade: level 50
         let item = ItemSerial::decode("@Uge8Xtm/)}}!elF;NmXinbwH6?9}OPi1ON").unwrap();
         assert_eq!(item.level, Some(50));
 
-        // Class mod with VarBit 50 = Level 51 (invalid, returns None)
+        // Class mod: level 49
         let item = ItemSerial::decode("@Uge8;)m/)@{!X>!SqTZJibf`hSk4B2r6#)").unwrap();
-        assert_eq!(item.level, None);
+        assert_eq!(item.level, Some(49));
 
-        // Shield type-r with VarBit 49 = Level 50
+        // Shield type-r: level 30
         let item = ItemSerial::decode("@Ugr$)Nm/%P$!bIqxL{(~iG&p36L=sIx00").unwrap();
-        assert_eq!(item.level, Some(50));
+        assert_eq!(item.level, Some(30));
 
         // Weapon still works - level 30
         let item = ItemSerial::decode("@Ugb)KvFg_4rJ}%H-RG}IbsZG^E#X_Y-00").unwrap();
@@ -1443,50 +1442,35 @@ mod tests {
         }
 
         #[test]
-        fn test_from_equipment_varbit_common() {
-            let rarity = Rarity::from_equipment_varbit(0, 384);
-            assert_eq!(rarity, Some(Rarity::Common));
-        }
-
-        #[test]
-        fn test_from_equipment_varbit_epic() {
-            let rarity = Rarity::from_equipment_varbit(64, 384);
-            assert_eq!(rarity, Some(Rarity::Epic));
-        }
-
-        #[test]
-        fn test_from_equipment_varbit_legendary() {
-            let rarity = Rarity::from_equipment_varbit(192, 384);
-            assert_eq!(rarity, Some(Rarity::Legendary));
-        }
-
-        #[test]
-        fn test_from_equipment_varbit_zero_divisor() {
-            let rarity = Rarity::from_equipment_varbit(100, 0);
-            assert_eq!(rarity, None);
+        fn test_from_equipment_varbit() {
+            // With correct bit ordering, rarity is not encoded in the VarBit
+            // (VarBit = category ID directly). Returns None pending re-derivation.
+            assert_eq!(Rarity::from_equipment_varbit(279, 1), None);
+            assert_eq!(Rarity::from_equipment_varbit(0, 0), None);
         }
 
         #[test]
         fn test_from_weapon_level_code_common() {
-            assert_eq!(Rarity::from_weapon_level_code(128), Some(Rarity::Common));
-            assert_eq!(Rarity::from_weapon_level_code(145), Some(Rarity::Common));
+            // With VarInt nibble reversal, level codes are just levels.
+            // Rarity is not encoded in the level code for weapons.
+            assert_eq!(Rarity::from_weapon_level_code(30), None);
+            assert_eq!(Rarity::from_weapon_level_code(50), None);
         }
 
         #[test]
         fn test_from_weapon_level_code_epic() {
-            assert_eq!(Rarity::from_weapon_level_code(192), Some(Rarity::Epic));
+            assert_eq!(Rarity::from_weapon_level_code(48), None);
         }
 
         #[test]
         fn test_from_weapon_level_code_legendary() {
-            assert_eq!(Rarity::from_weapon_level_code(200), Some(Rarity::Legendary));
+            assert_eq!(Rarity::from_weapon_level_code(49), None);
         }
 
         #[test]
         fn test_from_weapon_level_code_ranges() {
-            assert_eq!(Rarity::from_weapon_level_code(150), Some(Rarity::Uncommon));
-            assert_eq!(Rarity::from_weapon_level_code(185), Some(Rarity::Epic));
-            assert_eq!(Rarity::from_weapon_level_code(210), Some(Rarity::Legendary));
+            assert_eq!(Rarity::from_weapon_level_code(1), None);
+            assert_eq!(Rarity::from_weapon_level_code(50), None);
         }
     }
 
@@ -1848,11 +1832,11 @@ mod tests {
         fn test_item_type_description_varbit_first() {
             let item = ItemSerial::decode("@Ugr$N8m/)}}!q9r4K/ShxuK@").unwrap();
             assert_eq!(item.format, SerialFormat::VarBitFirst);
-            assert_eq!(item.item_type_description(), "Daedalus SMG");
+            assert_eq!(item.item_type_description(), "Torgue Repair Kit");
 
             let item = ItemSerial::decode("@Uge98>m/)}}!c5JeNWCvCXc7").unwrap();
             assert_eq!(item.format, SerialFormat::VarBitFirst);
-            assert_eq!(item.item_type_description(), "Maliwan Heavy Weapon");
+            assert_eq!(item.item_type_description(), "Vladof Enhancement");
         }
 
         #[test]
@@ -1919,6 +1903,51 @@ mod tests {
             assert!(dump.contains("Bytes:"));
             assert!(dump.contains("Tokens:"));
             assert!(dump.contains("Raw bytes:"));
+        }
+    }
+
+    #[test]
+    #[ignore]
+    fn debug_bit_trace() {
+        let serial = "@Ugr$ZCm/&tH!t{KgK/Shxu>k"; // VLA_SMG
+        let item = ItemSerial::decode(serial).unwrap();
+        eprintln!("raw_bytes: {:?}", item.raw_bytes.iter().map(|b| format!("{:08b}", b)).collect::<Vec<_>>());
+        for (i, token) in item.tokens.iter().enumerate() {
+            let offset = item.token_bit_offsets.get(i).copied().unwrap_or(0);
+            eprintln!("  [{:2} @ bit {:3}] {:?}", i, offset, token);
+        }
+    }
+
+    #[test]
+    #[ignore]
+    fn debug_token_dump() {
+        let serials = [
+            ("VLA_SMG", "@Ugr$ZCm/&tH!t{KgK/Shxu>k"),
+            ("Shield", "@Uge8jxm/)@{!gQaYMipv(G&-b*Z~_"),
+            ("VLA_Sniper", "@Uguq~c2}TYg3/>%aRG}8ts7KXA-9&{!<w2c7r9#z0g+sMN<wF1"),
+            ("Hellwalker", "@Ugd_t@FmVuJyjIXzRG}JG7S$K^1{DjH5&-"),
+            ("JAK_Pistol", "@UgbV{rFjEj=bZ<~-RG}KRs7TF2b*c{P7OEuz"),
+            ("Shield_e", "@Uge98>m/)}}!c5JeNWCvCXc7"),
+            ("Grenade", "@Uge8Xtm/)}}!elF;NmXinbwH6?9}OPi1ON"),
+            ("ClassMod", "@Uge8;)m/)@{!X>!SqTZJibf`hSk4B2r6#)"),
+            ("Shield_r", "@Ugr$)Nm/%P$!bIqxL{(~iG&p36L=sIx00"),
+            ("Weapon_L30", "@Ugb)KvFg_4rJ}%H-RG}IbsZG^E#X_Y-00"),
+            ("BOR_SMG", "@UgxFw!2}TYgOs)+YRG}7?s3AisQ8!UBQ8Q6BQDIPXP<2qdQ2P)"),
+            ("Equipment272", "@Uge8aum/(OZ$pj+I_5#Y(pw{;WbgA{xWRhC/"),
+            ("Equipment321", "@Ugr%Scm/)}}$pj({qzigfrP>z<v^$y<L5*r(1po"),
+            ("Grenade2", "@Ugr$N8m/)}}!q9r4K/ShxuK@"),
+        ];
+        for (name, serial) in &serials {
+            let item = ItemSerial::decode(serial).unwrap();
+            eprintln!("\n=== {} ===", name);
+            eprintln!("  format: {:?}", item.format);
+            eprintln!("  tokens: {:?}", item.tokens);
+            eprintln!("  manufacturer: {:?}", item.manufacturer);
+            eprintln!("  level: {:?}, raw_level: {:?}", item.level, item.raw_level);
+            eprintln!("  rarity: {:?}", item.rarity);
+            eprintln!("  elements: {:?}", item.elements);
+            eprintln!("  part_group_id: {:?}", item.part_group_id());
+            eprintln!("  parts_category: {:?}", item.parts_category());
         }
     }
 }
