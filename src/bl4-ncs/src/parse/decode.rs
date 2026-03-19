@@ -7,6 +7,38 @@ use crate::document::{DepEntry, Document, Entry, Record, Table, Tag, Value};
 use crate::parse::remap::FixedWidthIntArray;
 use std::collections::HashMap;
 
+enum NodeKind {
+    Null,
+    Leaf,
+    Array,
+    Map,
+}
+
+impl NodeKind {
+    fn from_bits(bits: u32) -> Self {
+        match bits & 3 {
+            0 => Self::Null,
+            1 => Self::Leaf,
+            2 => Self::Array,
+            3 => Self::Map,
+            _ => unreachable!(),
+        }
+    }
+}
+
+struct NodeType {
+    kind: NodeKind,
+    carries_key: bool,
+}
+
+impl NodeType {
+    fn from_flags(flags: u32) -> Self {
+        let kind = NodeKind::from_bits(flags);
+        let carries_key = matches!(kind, NodeKind::Map) || (flags & 0x80) != 0;
+        Self { kind, carries_key }
+    }
+}
+
 /// All string tables and precomputed bit widths needed during decoding
 struct DecodeContext<'a> {
     value_strings: &'a [String],
@@ -17,7 +49,7 @@ struct DecodeContext<'a> {
     value_kind_bits: u8,
     key_index_bits: u8,
     type_index_bits: u8,
-    row_flags: &'a [u32],
+    node_types: Vec<NodeType>,
 }
 
 /// Per-table remap and dependency state
@@ -88,17 +120,18 @@ fn decode_node(
     record_end_bit: usize,
 ) -> Option<Value> {
     let type_index = reader.read_bits(ctx.type_index_bits)? as usize;
-    let flags = ctx.row_flags.get(type_index).copied().unwrap_or(0);
-    let kind = (flags & 3) as u8;
-    let has_self_key = kind == 3 || (flags & 0x80) != 0;
+    let node_type = ctx.node_types.get(type_index).unwrap_or(&NodeType {
+        kind: NodeKind::Null,
+        carries_key: false,
+    });
 
-    let self_key = if has_self_key {
+    let self_key = if node_type.carries_key {
         read_pair_vec_string(reader, ctx, tctx.pair_remap)?
     } else {
         String::new()
     };
 
-    let value = decode_node_value(reader, ctx, tctx, record_end_bit, kind)?;
+    let value = decode_node_value(reader, ctx, tctx, record_end_bit, &node_type.kind)?;
     wrap_with_self_key(self_key, value)
 }
 
@@ -108,12 +141,12 @@ fn decode_node_value(
     ctx: &DecodeContext,
     tctx: &TableContext,
     record_end_bit: usize,
-    kind: u8,
+    kind: &NodeKind,
 ) -> Option<Value> {
     match kind {
-        0 => Some(Value::Null),
-        1 => Some(Value::Leaf(read_value(reader, ctx, tctx.value_remap)?)),
-        2 => {
+        NodeKind::Null => Some(Value::Null),
+        NodeKind::Leaf => Some(Value::Leaf(read_value(reader, ctx, tctx.value_remap)?)),
+        NodeKind::Array => {
             let mut arr = Vec::new();
             while reader.position() < record_end_bit {
                 if !reader.read_bit()? {
@@ -123,7 +156,7 @@ fn decode_node_value(
             }
             Some(Value::Array(arr))
         }
-        3 => {
+        NodeKind::Map => {
             let mut map = HashMap::new();
             while reader.position() < record_end_bit {
                 if !reader.read_bit()? {
@@ -135,7 +168,6 @@ fn decode_node_value(
             }
             Some(Value::Map(map))
         }
-        _ => Some(Value::Null),
     }
 }
 
@@ -392,6 +424,7 @@ pub fn decode_table_data(input: &DecodeInput) -> Option<Document> {
 
 /// Decode all table data from any BitRead source
 pub fn decode_tables(reader: &mut impl BitRead, input: &DecodeInput) -> Option<Document> {
+    let node_types: Vec<NodeType> = input.row_flags.iter().map(|&f| NodeType::from_flags(f)).collect();
     let ctx = DecodeContext {
         value_strings: input.value_strings,
         value_kinds: input.value_kinds,
@@ -401,7 +434,7 @@ pub fn decode_tables(reader: &mut impl BitRead, input: &DecodeInput) -> Option<D
         value_kind_bits: bit_width(input.value_kinds_declared.max(1)),
         key_index_bits: bit_width(input.key_strings_declared.max(1)),
         type_index_bits: bit_width(input.row_flags.len() as u32),
-        row_flags: input.row_flags,
+        node_types,
     };
 
     let table_id_bits = ctx.header_index_bits;
@@ -485,6 +518,7 @@ mod tests {
         value_kinds: &'a [String],
         row_flags: &'a [u32],
     ) -> DecodeContext<'a> {
+        let node_types = row_flags.iter().map(|&f| NodeType::from_flags(f)).collect();
         DecodeContext {
             value_strings,
             value_kinds,
@@ -494,7 +528,7 @@ mod tests {
             value_kind_bits: bit_width(value_kinds.len().max(1) as u32),
             key_index_bits: bit_width(key_strings.len().max(1) as u32),
             type_index_bits: bit_width(row_flags.len() as u32),
-            row_flags,
+            node_types,
         }
     }
 

@@ -8,6 +8,12 @@ use std::io::Read;
 
 use super::blob::parse_null_terminated_strings;
 
+fn read_bit(buf: &[u8], bit_pos: usize) -> bool {
+    let byte_idx = bit_pos >> 3;
+    let bit_in_byte = bit_pos & 7;
+    byte_idx < buf.len() && ((buf[byte_idx] >> bit_in_byte) & 1) != 0
+}
+
 /// Map a type code character to its global bit position.
 fn global_type_bit(ch: char) -> Option<u8> {
     match ch {
@@ -179,9 +185,7 @@ fn parse_bit_matrix_from_reader(
     for _ in 0..type_index_count {
         let mut flags = 0u32;
         for (col, &ch) in type_code_chars.iter().enumerate() {
-            let byte_idx = bit_pos >> 3;
-            let bit_in_byte = bit_pos & 7;
-            if byte_idx < matrix_buf.len() && ((matrix_buf[byte_idx] >> bit_in_byte) & 1) != 0 {
+            if read_bit(&matrix_buf, bit_pos) {
                 let shift = global_type_bit(ch).unwrap_or(col as u8);
                 flags |= 1u32 << shift;
             }
@@ -264,9 +268,7 @@ fn parse_bit_matrix(
     for _ in 0..type_index_count {
         let mut flags = 0u32;
         for (col, &ch) in type_code_chars.iter().enumerate() {
-            let byte_idx = bit_pos >> 3;
-            let bit_in_byte = bit_pos & 7;
-            if byte_idx < body.len() && ((body[byte_idx] >> bit_in_byte) & 1) != 0 {
+            if read_bit(body, bit_pos) {
                 let shift = global_type_bit(ch).unwrap_or(col as u8);
                 flags |= 1u32 << shift;
             }
