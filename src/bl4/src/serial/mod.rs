@@ -115,6 +115,16 @@ impl Rarity {
         }
     }
 
+    pub fn from_bits(bits: u64) -> Option<Self> {
+        match bits {
+            0 => Some(Rarity::Common),
+            1 => Some(Rarity::Epic),      // Observed: 64 >> 6 = 1 for Epic
+            2 => Some(Rarity::Rare),      // Hypothetical
+            3 => Some(Rarity::Legendary), // Observed: 192 >> 6 = 3 for Legendary
+            _ => None,
+        }
+    }
+
     /// Extract rarity from VarBit-first equipment format
     /// Rarity is encoded in bits 6-7 of (first_varbit % divisor)
     pub fn from_equipment_varbit(varbit: u64, divisor: u64) -> Option<Self> {
@@ -123,13 +133,7 @@ impl Rarity {
         }
         let remainder = varbit % divisor;
         let rarity_bits = (remainder >> 6) & 0x3;
-        match rarity_bits {
-            0 => Some(Rarity::Common),
-            1 => Some(Rarity::Epic),      // Observed: 64 >> 6 = 1 for Epic
-            2 => Some(Rarity::Rare),      // Hypothetical
-            3 => Some(Rarity::Legendary), // Observed: 192 >> 6 = 3 for Legendary
-            _ => None,
-        }
+        Self::from_bits(rarity_bits)
     }
 
     /// Extract rarity from VarInt-first weapon format
@@ -151,6 +155,26 @@ impl Rarity {
                 196.. => Some(Rarity::Legendary),
                 _ => None,
             }
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum TokenPrefix {
+    VarInt = 0b100,
+    Part = 0b101,
+    VarBit = 0b110,
+    String = 0b111,
+}
+
+impl TokenPrefix {
+    fn from_bits(bits: u64) -> Option<Self> {
+        match bits {
+            0b100 => Some(TokenPrefix::VarInt),
+            0b101 => Some(TokenPrefix::Part),
+            0b110 => Some(TokenPrefix::VarBit),
+            0b111 => Some(TokenPrefix::String),
+            _ => None,
         }
     }
 }
@@ -275,15 +299,15 @@ fn encode_tokens(tokens: &[Token]) -> Vec<u8> {
                 writer.write_bits(0b01, 2);
             }
             Token::VarInt(v) => {
-                writer.write_bits(0b100, 3);
+                writer.write_bits(TokenPrefix::VarInt as u64, 3);
                 writer.write_varint(*v);
             }
             Token::VarBit(v) => {
-                writer.write_bits(0b110, 3);
+                writer.write_bits(TokenPrefix::VarBit as u64, 3);
                 writer.write_varbit(*v);
             }
             Token::Part { index, values } => {
-                writer.write_bits(0b101, 3);
+                writer.write_bits(TokenPrefix::Part as u64, 3);
                 writer.write_varint(*index);
 
                 if values.is_empty() {
@@ -300,15 +324,14 @@ fn encode_tokens(tokens: &[Token]) -> Vec<u8> {
                     writer.write_bits(0, 1);
                     writer.write_bits(0b01, 2);
                     for v in values {
-                        // For simplicity, encode as VarInt
-                        writer.write_bits(0b100, 3);
+                        writer.write_bits(TokenPrefix::VarInt as u64, 3);
                         writer.write_varint(*v);
                     }
                     writer.write_bits(0b00, 2); // Separator to terminate
                 }
             }
             Token::String(s) => {
-                writer.write_bits(0b111, 3);
+                writer.write_bits(TokenPrefix::String as u64, 3);
                 writer.write_varint(s.len() as u64);
                 for ch in s.bytes() {
                     writer.write_bits(ch as u64, 7);
@@ -365,14 +388,17 @@ fn read_part_value_list(reader: &mut BitReader) -> Vec<u64> {
     values
 }
 
+const PART_TYPE_SINGLE: u64 = 1;
+const PART_SUBTYPE_NONE: u64 = 0b10;
+const PART_SUBTYPE_LIST: u64 = 0b01;
+
 /// Parse Part token data after the index has been read
 fn parse_part_values(reader: &mut BitReader) -> Vec<u64> {
     let Some(type_flag) = reader.read_bits(1) else {
         return Vec::new();
     };
 
-    if type_flag == 1 {
-        // SUBTYPE_INT: single VARINT value + 000 terminator
+    if type_flag == PART_TYPE_SINGLE {
         let mut values = Vec::new();
         if let Some(val) = reader.read_varint() {
             values.push(val);
@@ -381,15 +407,14 @@ fn parse_part_values(reader: &mut BitReader) -> Vec<u64> {
         return values;
     }
 
-    // Type 0: read 2-bit subtype
     let Some(subtype) = reader.read_bits(2) else {
         return Vec::new();
     };
 
     match subtype {
-        0b10 => Vec::new(),                   // SUBTYPE_NONE: no data
-        0b01 => read_part_value_list(reader), // SUBTYPE_LIST: values until 00
-        _ => Vec::new(),                      // Unknown subtype
+        PART_SUBTYPE_NONE => Vec::new(),
+        PART_SUBTYPE_LIST => read_part_value_list(reader),
+        _ => Vec::new(),
     }
 }
 
@@ -448,11 +473,11 @@ fn parse_string_token(reader: &mut BitReader) -> Option<Token> {
 }
 
 /// Parse tokens with 3-bit prefix (100, 101, 110, 111)
-fn parse_3bit_token(reader: &mut BitReader, prefix3: u64, debug: bool) -> Option<Token> {
-    match prefix3 {
-        0b100 => reader.read_varint().map(Token::VarInt),
-        0b110 => reader.read_varbit().map(Token::VarBit),
-        0b101 => {
+fn parse_3bit_token(reader: &mut BitReader, prefix: TokenPrefix, debug: bool) -> Option<Token> {
+    match prefix {
+        TokenPrefix::VarInt => reader.read_varint().map(Token::VarInt),
+        TokenPrefix::VarBit => reader.read_varbit().map(Token::VarBit),
+        TokenPrefix::Part => {
             let index = reader.read_varint()?;
             if index > MAX_REASONABLE_PART_INDEX {
                 if debug {
@@ -466,8 +491,7 @@ fn parse_3bit_token(reader: &mut BitReader, prefix3: u64, debug: bool) -> Option
             let values = parse_part_values(reader);
             Some(Token::Part { index, values })
         }
-        0b111 => parse_string_token(reader),
-        _ => None,
+        TokenPrefix::String => parse_string_token(reader),
     }
 }
 
@@ -517,15 +541,18 @@ fn parse_tokens_impl(reader: &mut BitReader, debug: bool) -> (Vec<Token>, Vec<us
                     break;
                 };
                 let prefix3 = (prefix2 << 1) | bit3;
+                let Some(prefix) = TokenPrefix::from_bits(prefix3) else {
+                    break;
+                };
 
-                let token = parse_3bit_token(reader, prefix3, debug);
+                let token = parse_3bit_token(reader, prefix, debug);
 
                 match token {
                     Some(t) => {
                         offsets.push(bit_pos);
                         tokens.push(t);
                     }
-                    None if prefix3 == 0b101 => break, // Part index too large
+                    None if prefix == TokenPrefix::Part => break,
                     None => {}
                 }
             }
@@ -570,9 +597,12 @@ pub fn parse_raw_tokens(bytes: &[u8]) -> Vec<Token> {
                     break;
                 };
                 let prefix3 = (prefix2 << 1) | bit3;
-                match parse_3bit_token(&mut reader, prefix3, false) {
+                let Some(prefix) = TokenPrefix::from_bits(prefix3) else {
+                    break;
+                };
+                match parse_3bit_token(&mut reader, prefix, false) {
                     Some(t) => tokens.push(t),
-                    None if prefix3 == 0b101 => break,
+                    None if prefix == TokenPrefix::Part => break,
                     None => {}
                 }
             }
@@ -619,9 +649,12 @@ pub fn parse_embedded_from_bitstream(
                     break;
                 };
                 let prefix3 = (prefix2 << 1) | bit3;
-                match parse_3bit_token(&mut reader, prefix3, false) {
+                let Some(prefix) = TokenPrefix::from_bits(prefix3) else {
+                    break;
+                };
+                match parse_3bit_token(&mut reader, prefix, false) {
                     Some(t) => tokens.push(t),
-                    None if prefix3 == 0b101 => break,
+                    None if prefix == TokenPrefix::Part => break,
                     None => {}
                 }
             }
