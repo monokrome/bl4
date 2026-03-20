@@ -63,10 +63,7 @@ impl Database {
         dispatch!(self, add_items_bulk, serials)
     }
 
-    pub async fn set_sources_bulk(
-        &self,
-        items: &[(&str, &str)],
-    ) -> Result<(), bl4_idb::RepoError> {
+    pub async fn set_sources_bulk(&self, items: &[(&str, &str)]) -> Result<(), bl4_idb::RepoError> {
         match self {
             Database::Sqlite(_) => Ok(()),
             Database::Postgres(db) => db.set_sources_bulk(items).await,
@@ -127,11 +124,7 @@ impl Database {
         dispatch!(self, add_attachment, serial, name, mime_type, data, view)
     }
 
-    pub async fn set_source(
-        &self,
-        serial: &str,
-        source: &str,
-    ) -> Result<(), bl4_idb::RepoError> {
+    pub async fn set_source(&self, serial: &str, source: &str) -> Result<(), bl4_idb::RepoError> {
         dispatch!(self, set_source, serial, source)
     }
 

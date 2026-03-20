@@ -58,7 +58,12 @@ fn extract_parts_via_guobject_walk(source: &dyn MemorySource) -> Result<Vec<Part
     eprintln!("Detected SerialIndex offset: {:#x}", serial_index_offset);
 
     // Extract parts from the collected objects
-    extract_parts_from_objects(source, &sample_objects, &mut fname_reader, serial_index_offset)
+    extract_parts_from_objects(
+        source,
+        &sample_objects,
+        &mut fname_reader,
+        serial_index_offset,
+    )
 }
 
 /// Walk GUObjectArray and collect all objects whose class is an inventory part type.
@@ -67,8 +72,7 @@ fn find_part_objects(
     guobjects: &GUObjectArray,
     fname_reader: &mut FNameReader,
 ) -> Result<Vec<(usize, usize)>> {
-    let mut class_cache: std::collections::HashMap<usize, bool> =
-        std::collections::HashMap::new();
+    let mut class_cache: std::collections::HashMap<usize, bool> = std::collections::HashMap::new();
     let mut class_names: std::collections::HashMap<String, usize> =
         std::collections::HashMap::new();
     let mut sample_objects: Vec<(usize, usize)> = Vec::new();
@@ -133,7 +137,10 @@ fn find_part_objects(
     if sample_objects.is_empty() && !class_names.is_empty() {
         let mut top_classes: Vec<_> = class_names.iter().collect();
         top_classes.sort_by(|a, b| b.1.cmp(a.1));
-        eprintln!("  Top 20 class names found (of {} unique):", top_classes.len());
+        eprintln!(
+            "  Top 20 class names found (of {} unique):",
+            top_classes.len()
+        );
         for (name, count) in top_classes.iter().take(20) {
             eprintln!("    {} ({}x)", name, count);
         }
@@ -177,8 +184,7 @@ fn resolve_is_part_class(
         Err(_) => return false,
     };
 
-    let class_name_idx =
-        LE::read_u32(&class_header[UOBJECT_NAME_OFFSET..UOBJECT_NAME_OFFSET + 4]);
+    let class_name_idx = LE::read_u32(&class_header[UOBJECT_NAME_OFFSET..UOBJECT_NAME_OFFSET + 4]);
     let class_name = match fname_reader.read_name(source, class_name_idx) {
         Ok(n) => n,
         Err(_) => return false,
@@ -262,8 +268,8 @@ fn probe_serial_index_offset(
     sample_objects: &[(usize, usize)],
 ) -> Result<usize> {
     let candidate_offsets: &[usize] = &[
-        0x28, 0x30, 0x38, 0x40, 0x48, 0x50, 0x58, 0x60, 0x68, 0x70, 0x78, 0x80, 0x88, 0x90,
-        0x98, 0xA0, 0xA8, 0xB0, 0xB8, 0xC0, 0xC8, 0xD0, 0xD8, 0xE0,
+        0x28, 0x30, 0x38, 0x40, 0x48, 0x50, 0x58, 0x60, 0x68, 0x70, 0x78, 0x80, 0x88, 0x90, 0x98,
+        0xA0, 0xA8, 0xB0, 0xB8, 0xC0, 0xC8, 0xD0, 0xD8, 0xE0,
     ];
 
     let samples = sample_objects.len().min(100);
@@ -357,10 +363,7 @@ pub fn extract_part_definitions(
     }
 
     let serial_index_offset = probe_serial_index_offset(source, &sample_objects)?;
-    eprintln!(
-        "Detected SerialIndex offset: {:#x}",
-        serial_index_offset
-    );
+    eprintln!("Detected SerialIndex offset: {:#x}", serial_index_offset);
 
     // Full extraction pass
     for (idx, obj_ptr) in guobjects.iter_objects(source) {

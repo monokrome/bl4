@@ -78,18 +78,12 @@ fn fill_map(
 }
 
 /// Reveal the map (set all FOD cells to 0xFF = fully explored).
-pub fn reveal_map(
-    data: &mut serde_yaml::Value,
-    zone: Option<&str>,
-) -> Result<usize, SaveError> {
+pub fn reveal_map(data: &mut serde_yaml::Value, zone: Option<&str>) -> Result<usize, SaveError> {
     fill_map(data, zone, 0xFF)
 }
 
 /// Clear the map (set all FOD cells to 0x00 = fully fogged).
-pub fn clear_map(
-    data: &mut serde_yaml::Value,
-    zone: Option<&str>,
-) -> Result<usize, SaveError> {
+pub fn clear_map(data: &mut serde_yaml::Value, zone: Option<&str>) -> Result<usize, SaveError> {
     fill_map(data, zone, 0x00)
 }
 
@@ -194,8 +188,7 @@ foddatas:
 
     #[test]
     fn test_no_foddatas() {
-        let mut data: serde_yaml::Value =
-            serde_yaml::from_str("state: {}").unwrap();
+        let mut data: serde_yaml::Value = serde_yaml::from_str("state: {}").unwrap();
         assert!(reveal_map(&mut data, None).is_err());
         assert!(clear_map(&mut data, None).is_err());
     }

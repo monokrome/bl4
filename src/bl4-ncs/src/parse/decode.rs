@@ -103,7 +103,11 @@ fn read_value(
         .cloned()
         .unwrap_or_default();
 
-    let type_name = ctx.value_kinds.get(kind_index).map(|s| s.as_str()).unwrap_or("");
+    let type_name = ctx
+        .value_kinds
+        .get(kind_index)
+        .map(|s| s.as_str())
+        .unwrap_or("");
 
     if type_name.is_empty() {
         Some(value)
@@ -237,8 +241,9 @@ fn parse_tags(
         }
 
         let tag = match tag_byte {
-            b'a' => read_pair_vec_string(reader, ctx, tctx.pair_remap)
-                .map(|pair| Tag::KeyName { pair }),
+            b'a' => {
+                read_pair_vec_string(reader, ctx, tctx.pair_remap).map(|pair| Tag::KeyName { pair })
+            }
             b'b' => reader.read_bits(32).map(|value| Tag::U32 { value }),
             b'c' => reader.read_bits(32).map(|u32_value| {
                 let f32_value = f32::from_bits(u32_value);
@@ -424,7 +429,11 @@ pub fn decode_table_data(input: &DecodeInput) -> Option<Document> {
 
 /// Decode all table data from any BitRead source
 pub fn decode_tables(reader: &mut impl BitRead, input: &DecodeInput) -> Option<Document> {
-    let node_types: Vec<NodeType> = input.row_flags.iter().map(|&f| NodeType::from_flags(f)).collect();
+    let node_types: Vec<NodeType> = input
+        .row_flags
+        .iter()
+        .map(|&f| NodeType::from_flags(f))
+        .collect();
     let ctx = DecodeContext {
         value_strings: input.value_strings,
         value_kinds: input.value_kinds,
@@ -448,15 +457,22 @@ pub fn decode_tables(reader: &mut impl BitRead, input: &DecodeInput) -> Option<D
 
         let table_name = input.header_strings.get(table_id as usize)?.clone();
 
-        let (dep_names, dep_count) =
-            read_table_deps(reader, table_id_bits, input.header_strings);
+        let (dep_names, dep_count) = read_table_deps(reader, table_id_bits, input.header_strings);
 
         let remap_a = FixedWidthIntArray::read(reader)?;
         let remap_b = FixedWidthIntArray::read(reader)?;
 
         let tctx = TableContext {
-            pair_remap: if remap_a.is_active() { Some(&remap_a) } else { None },
-            value_remap: if remap_b.is_active() { Some(&remap_b) } else { None },
+            pair_remap: if remap_a.is_active() {
+                Some(&remap_a)
+            } else {
+                None
+            },
+            value_remap: if remap_b.is_active() {
+                Some(&remap_b)
+            } else {
+                None
+            },
             dep_index_bits: if dep_count > 0 {
                 bit_width(dep_count as u32)
             } else {
@@ -579,10 +595,7 @@ mod tests {
 
     #[test]
     fn test_parse_tags_tag_a_key_name() {
-        let key_strings: Vec<String> = vec![
-            "none".to_string(),
-            "test_key".to_string(),
-        ];
+        let key_strings: Vec<String> = vec!["none".to_string(), "test_key".to_string()];
         let row_flags = vec![0u32];
         let ctx = make_decode_context(&key_strings, &[], &[], &row_flags);
         let tctx = make_table_context();
@@ -672,7 +685,9 @@ mod tests {
         let tctx = make_table_context();
 
         // Two 'b' tags then 'z', values in LE (BitReader is LSB-first)
-        let data = [0x62, 0x01, 0x00, 0x00, 0x00, 0x62, 0x02, 0x00, 0x00, 0x00, 0x7A];
+        let data = [
+            0x62, 0x01, 0x00, 0x00, 0x00, 0x62, 0x02, 0x00, 0x00, 0x00, 0x7A,
+        ];
         let mut reader = BitReader::new(&data);
         let tags = parse_tags(&mut reader, &ctx, &tctx, data.len() * 8);
 
@@ -705,11 +720,8 @@ mod tests {
         // key_strings: [0]="none", [1]="foo", [2]="bar"
         // key_index_bits = bit_width(3) = 2
         // Read index 1 ("foo"), index 2 ("bar"), index 0 ("none" → terminator)
-        let key_strings: Vec<String> = vec![
-            "none".to_string(),
-            "foo".to_string(),
-            "bar".to_string(),
-        ];
+        let key_strings: Vec<String> =
+            vec!["none".to_string(), "foo".to_string(), "bar".to_string()];
         let row_flags = vec![0u32];
         let ctx = make_decode_context(&key_strings, &[], &[], &row_flags);
 

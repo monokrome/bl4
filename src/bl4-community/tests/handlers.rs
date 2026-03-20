@@ -71,7 +71,10 @@ async fn test_stats_empty_db() {
 #[tokio::test]
 async fn test_decode_resolves_part_names() {
     let app = test_app().await;
-    let req = post_json("/decode", serde_json::json!({"serial": SERIAL_FIRE_SHOTGUN}));
+    let req = post_json(
+        "/decode",
+        serde_json::json!({"serial": SERIAL_FIRE_SHOTGUN}),
+    );
     let (status, body) = json_body(app, req).await;
 
     assert_eq!(status, StatusCode::OK);
@@ -80,13 +83,19 @@ async fn test_decode_resolves_part_names() {
     assert!(!parts.is_empty());
 
     let named_count = parts.iter().filter(|p| !p["name"].is_null()).count();
-    assert!(named_count > 0, "At least some parts should have resolved names");
+    assert!(
+        named_count > 0,
+        "At least some parts should have resolved names"
+    );
 }
 
 #[tokio::test]
 async fn test_decode_flags_elements() {
     let app = test_app().await;
-    let req = post_json("/decode", serde_json::json!({"serial": SERIAL_FIRE_SHOTGUN}));
+    let req = post_json(
+        "/decode",
+        serde_json::json!({"serial": SERIAL_FIRE_SHOTGUN}),
+    );
     let (status, body) = json_body(app, req).await;
 
     assert_eq!(status, StatusCode::OK);
@@ -125,7 +134,10 @@ async fn test_decode_includes_string_tokens_field() {
 #[tokio::test]
 async fn test_decode_invalid_serial() {
     let app = test_app().await;
-    let req = post_json("/decode", serde_json::json!({"serial": "not-a-real-serial"}));
+    let req = post_json(
+        "/decode",
+        serde_json::json!({"serial": "not-a-real-serial"}),
+    );
 
     let response = app.oneshot(req).await.unwrap();
     assert_eq!(response.status(), StatusCode::BAD_REQUEST);
@@ -134,7 +146,10 @@ async fn test_decode_invalid_serial() {
 #[tokio::test]
 async fn test_encode_roundtrip() {
     let app = test_app().await;
-    let req = post_json("/encode", serde_json::json!({"serial": SERIAL_FIRE_SHOTGUN}));
+    let req = post_json(
+        "/encode",
+        serde_json::json!({"serial": SERIAL_FIRE_SHOTGUN}),
+    );
     let (status, body) = json_body(app, req).await;
 
     assert_eq!(status, StatusCode::OK);

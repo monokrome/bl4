@@ -37,8 +37,8 @@ pub fn with_save_file(
         let _ = bl4::smart_backup(&args.input).context("Failed to manage backup")?;
     }
 
-    let encrypted =
-        fs::read(&args.input).with_context(|| format!("Failed to read {}", args.input.display()))?;
+    let encrypted = fs::read(&args.input)
+        .with_context(|| format!("Failed to read {}", args.input.display()))?;
 
     let yaml_data =
         bl4::decrypt_sav(&encrypted, &steam_id).context("Failed to decrypt save file")?;
@@ -107,7 +107,9 @@ pub fn edit(args: &SaveArgs) -> Result<()> {
     };
 
     with_save_file(args, |save| {
-        let yaml_data = save.to_yaml().context("Failed to serialize YAML for editing")?;
+        let yaml_data = save
+            .to_yaml()
+            .context("Failed to serialize YAML for editing")?;
 
         let temp_path = args.input.with_extension("yaml.tmp");
         let abs_temp_path = fs::canonicalize(temp_path.parent().unwrap())
@@ -233,8 +235,8 @@ pub fn validate_items(args: &SaveArgs) -> Result<()> {
     use bl4::serial::Legality;
 
     let steam_id = get_steam_id(args.steam_id.clone())?;
-    let encrypted =
-        fs::read(&args.input).with_context(|| format!("Failed to read {}", args.input.display()))?;
+    let encrypted = fs::read(&args.input)
+        .with_context(|| format!("Failed to read {}", args.input.display()))?;
     let yaml_data =
         bl4::decrypt_sav(&encrypted, &steam_id).context("Failed to decrypt save file")?;
     let yaml_str = String::from_utf8(yaml_data).context("Invalid UTF-8 in save")?;
@@ -265,9 +267,18 @@ pub fn validate_items(args: &SaveArgs) -> Result<()> {
         let result = item.validate();
 
         let icon = match result.legality {
-            Legality::Legal => { counts[0] += 1; "✓" }
-            Legality::Illegal => { counts[1] += 1; "✗" }
-            Legality::Unknown => { counts[2] += 1; "?" }
+            Legality::Legal => {
+                counts[0] += 1;
+                "✓"
+            }
+            Legality::Illegal => {
+                counts[1] += 1;
+                "✗"
+            }
+            Legality::Unknown => {
+                counts[2] += 1;
+                "?"
+            }
         };
 
         let desc = if let Some((mfr, wtype)) = item.weapon_info() {

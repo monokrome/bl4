@@ -24,10 +24,7 @@ struct BulkValidationResult {
     errors: Vec<CreateItemResponse>,
 }
 
-fn validate_bulk_items(
-    items: Vec<CreateItemRequest>,
-    batch_source: &str,
-) -> BulkValidationResult {
+fn validate_bulk_items(items: Vec<CreateItemRequest>, batch_source: &str) -> BulkValidationResult {
     let mut valid_items = Vec::new();
     let mut errors = Vec::new();
 
@@ -65,7 +62,10 @@ fn validate_bulk_items(
         });
     }
 
-    BulkValidationResult { valid_items, errors }
+    BulkValidationResult {
+        valid_items,
+        errors,
+    }
 }
 
 async fn update_bulk_metadata(db: &Database, valid_items: &[ValidItem]) {

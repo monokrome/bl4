@@ -3,8 +3,12 @@
 use std::fs;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let save_path = std::env::args().nth(1).expect("Usage: inject_items <path_to_5.sav> <steam_id>");
-    let steam_id = std::env::args().nth(2).expect("Usage: inject_items <path_to_5.sav> <steam_id>");
+    let save_path = std::env::args()
+        .nth(1)
+        .expect("Usage: inject_items <path_to_5.sav> <steam_id>");
+    let steam_id = std::env::args()
+        .nth(2)
+        .expect("Usage: inject_items <path_to_5.sav> <steam_id>");
 
     let serials = [
         "@Uga`wSFdiD{FRD<H8j0%E9n>vUPSiOB",

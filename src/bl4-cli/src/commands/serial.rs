@@ -10,7 +10,16 @@ use std::path::Path;
 const DISPLAY_GROUPS: &[(&str, &[&str])] = &[
     ("Barrel", &["barrel"]),
     ("Underbarrel", &["underbarrel"]),
-    ("Body", &["body", "body_armor", "body_bolt", "body_element", "body_mag"]),
+    (
+        "Body",
+        &[
+            "body",
+            "body_armor",
+            "body_bolt",
+            "body_element",
+            "body_mag",
+        ],
+    ),
     ("Grip", &["grip"]),
     ("Foregrip", &["foregrip"]),
     ("Scope", &["scope"]),
@@ -47,7 +56,10 @@ impl From<bl4::ResolvedPart> for ResolvedPart {
 
 /// Resolve parts list into display-ready structs using core library.
 fn resolve_parts(item: &bl4::ItemSerial) -> Vec<ResolvedPart> {
-    item.resolved_parts().into_iter().map(ResolvedPart::from).collect()
+    item.resolved_parts()
+        .into_iter()
+        .map(ResolvedPart::from)
+        .collect()
 }
 
 /// Try to resolve a legendary name from the parts list.
@@ -78,9 +90,7 @@ fn resolve_legendary_name(
 }
 
 /// Pass 1: scan parts for `comp_05_legendary_*` suffix.
-fn resolve_from_legendary_comp(
-    parts: &[(u64, Option<&'static str>, Vec<u64>)],
-) -> Option<String> {
+fn resolve_from_legendary_comp(parts: &[(u64, Option<&'static str>, Vec<u64>)]) -> Option<String> {
     for (_index, name, _values) in parts {
         if let Some(n) = name {
             let segment = n.split('.').next_back().unwrap_or(n);
@@ -291,8 +301,9 @@ pub fn decode(
             let index = if let Ok(raw) = name.parse::<i64>() {
                 raw
             } else {
-                bl4::manifest::part_index(category, name)
-                    .with_context(|| format!("part '{}' not found in category {}", name, category))?
+                bl4::manifest::part_index(category, name).with_context(|| {
+                    format!("part '{}' not found in category {}", name, category)
+                })?
             };
             new_tokens.push(bl4::serial::Token::Part {
                 index: index as u64,
@@ -304,7 +315,15 @@ pub fn decode(
         let new_serial = modified.encode_from_tokens();
         println!("Modified serial: {}\n", new_serial);
         return decode(
-            &new_serial, verbose, debug, analyze, rarity, short, parts_db, &[], &[],
+            &new_serial,
+            verbose,
+            debug,
+            analyze,
+            rarity,
+            short,
+            parts_db,
+            &[],
+            &[],
         );
     }
 
@@ -376,11 +395,7 @@ pub fn decode(
     // Verbose: serial internals
     if verbose {
         println!("\nSerial: {}", item.original);
-        println!(
-            "Format: {} ({})",
-            item.format,
-            item.item_type_description()
-        );
+        println!("Format: {} ({})", item.format, item.item_type_description());
         if let Some(seed) = item.seed {
             println!("Seed: {}", seed);
         }
@@ -518,8 +533,15 @@ fn analyze_first_token(item: &bl4::ItemSerial) -> Result<()> {
                     if let Some(cat) = item.part_group_id() {
                         let divisor = if *v >= 131_072 { 8192 } else { 384 };
                         let offset = value % divisor;
-                        println!("  Formula: category = varbit / {} ({})", divisor,
-                            if divisor == 8192 { "weapons" } else { "equipment" });
+                        println!(
+                            "  Formula: category = varbit / {} ({})",
+                            divisor,
+                            if divisor == 8192 {
+                                "weapons"
+                            } else {
+                                "equipment"
+                            }
+                        );
                         println!("  Category: {} (offset {})", cat, offset);
                         let name = bl4::category_name(cat).unwrap_or("Unknown");
                         println!("  Identified: {}", name);

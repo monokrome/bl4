@@ -79,7 +79,9 @@ pub fn manufacturer_name_by_code(code: &str) -> Option<&'static str> {
 
 /// Get manufacturer by display name (reverse lookup)
 pub fn manufacturer_by_name(name: &str) -> Option<&'static Manufacturer> {
-    MANUFACTURERS.iter().find(|m| m.name.eq_ignore_ascii_case(name))
+    MANUFACTURERS
+        .iter()
+        .find(|m| m.name.eq_ignore_ascii_case(name))
 }
 
 #[cfg(test)]

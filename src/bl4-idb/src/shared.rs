@@ -180,10 +180,7 @@ pub mod schema {
 /// A tuple of (sql_string, param_count) where param_count indicates how many
 /// parameters need to be bound.
 pub fn build_list_query(filter: &ItemFilter, use_dollar_placeholders: bool) -> (String, usize) {
-    let mut sql = format!(
-        "SELECT {} FROM items WHERE 1=1",
-        ITEM_SELECT_COLUMNS
-    );
+    let mut sql = format!("SELECT {} FROM items WHERE 1=1", ITEM_SELECT_COLUMNS);
     let mut param_count = 0;
 
     fn next_placeholder(use_dollar: bool, count: &mut usize) -> String {

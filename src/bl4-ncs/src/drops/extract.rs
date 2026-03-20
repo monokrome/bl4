@@ -1,6 +1,6 @@
 //! Drop extraction from NCS data files
 
-use super::types::{BossNameMapping, DropEntry, DropProbabilities, DropsManifest, DropSource};
+use super::types::{BossNameMapping, DropEntry, DropProbabilities, DropSource, DropsManifest};
 use crate::data_table::DataTableManifest;
 use crate::document::Value;
 use std::collections::{HashMap, HashSet};
@@ -43,11 +43,8 @@ pub fn extract_drops_from_itempoollist(data: &[u8]) -> Vec<DropEntry> {
                         is_true_boss = true;
                     } else {
                         // Extract original-cased boss name from first leaf value
-                        let boss_name = extract_original_name(
-                            &entry.value,
-                            "ItemPoolList_",
-                        )
-                        .unwrap_or_else(|| key.replace("itempoollist_", ""));
+                        let boss_name = extract_original_name(&entry.value, "ItemPoolList_")
+                            .unwrap_or_else(|| key.replace("itempoollist_", ""));
                         current_boss = Some(boss_name);
                         is_true_boss = false;
                     }
@@ -83,14 +80,13 @@ pub fn extract_drops_from_itempoollist(data: &[u8]) -> Vec<DropEntry> {
                             if let Some(mut drop_entry) =
                                 parse_legendary_item_id(&boss, s, DropSource::Boss)
                             {
-                                drop_entry.drop_tier =
-                                    if is_true_boss && !tier.is_empty() {
-                                        format!("TrueBoss{}", tier)
-                                    } else if is_true_boss {
-                                        "TrueBoss".to_string()
-                                    } else {
-                                        tier.clone()
-                                    };
+                                drop_entry.drop_tier = if is_true_boss && !tier.is_empty() {
+                                    format!("TrueBoss{}", tier)
+                                } else if is_true_boss {
+                                    "TrueBoss".to_string()
+                                } else {
+                                    tier.clone()
+                                };
                                 drops.push(drop_entry);
                             }
                         }
@@ -192,11 +188,9 @@ pub fn extract_drops_from_itempool(data: &[u8]) -> Vec<DropEntry> {
                 // Black Market items (keys are lowercase)
                 if key.starts_with("itempool_blackmarket_") {
                     // Extract original-cased part from leaf value
-                    let item_part = extract_original_name(
-                        &entry.value,
-                        "ItemPool_BlackMarket_Comp_",
-                    )
-                    .unwrap_or_else(|| key.replace("itempool_blackmarket_comp_", ""));
+                    let item_part =
+                        extract_original_name(&entry.value, "ItemPool_BlackMarket_Comp_")
+                            .unwrap_or_else(|| key.replace("itempool_blackmarket_comp_", ""));
                     if let Some(drop_entry) = parse_black_market_item(&item_part) {
                         drops.push(drop_entry);
                     }
@@ -204,11 +198,9 @@ pub fn extract_drops_from_itempool(data: &[u8]) -> Vec<DropEntry> {
 
                 // Fish Collector rewards
                 if key.starts_with("itempool_fishcollector_reward_") {
-                    let tier = extract_original_name(
-                        &entry.value,
-                        "ItemPool_FishCollector_Reward_",
-                    )
-                    .unwrap_or_else(|| key.replace("itempool_fishcollector_reward_", ""));
+                    let tier =
+                        extract_original_name(&entry.value, "ItemPool_FishCollector_Reward_")
+                            .unwrap_or_else(|| key.replace("itempool_fishcollector_reward_", ""));
                     for s in collect_leaf_strings(&entry.value) {
                         if s.to_lowercase().contains(".comp_05_legendary_") {
                             if let Some(mut drop_entry) =
@@ -223,14 +215,11 @@ pub fn extract_drops_from_itempool(data: &[u8]) -> Vec<DropEntry> {
 
                 // Side mission rewards
                 if key.starts_with("itempool_sidemission_") && !key.ends_with("_turretdrop") {
-                    let mission_name = extract_original_name(
-                        &entry.value,
-                        "ItemPool_SideMission_",
-                    )
-                    .map(|n| n.replace('_', " "))
-                    .unwrap_or_else(|| {
-                        key.replace("itempool_sidemission_", "").replace('_', " ")
-                    });
+                    let mission_name = extract_original_name(&entry.value, "ItemPool_SideMission_")
+                        .map(|n| n.replace('_', " "))
+                        .unwrap_or_else(|| {
+                            key.replace("itempool_sidemission_", "").replace('_', " ")
+                        });
                     for s in collect_leaf_strings(&entry.value) {
                         if s.to_lowercase().contains(".comp_05_legendary_") {
                             if let Some(drop_entry) =
@@ -244,14 +233,11 @@ pub fn extract_drops_from_itempool(data: &[u8]) -> Vec<DropEntry> {
 
                 // Main mission rewards
                 if key.starts_with("itempool_mainmission_") {
-                    let mission_name = extract_original_name(
-                        &entry.value,
-                        "ItemPool_MainMission_",
-                    )
-                    .map(|n| n.replace('_', " "))
-                    .unwrap_or_else(|| {
-                        key.replace("itempool_mainmission_", "").replace('_', " ")
-                    });
+                    let mission_name = extract_original_name(&entry.value, "ItemPool_MainMission_")
+                        .map(|n| n.replace('_', " "))
+                        .unwrap_or_else(|| {
+                            key.replace("itempool_mainmission_", "").replace('_', " ")
+                        });
                     for s in collect_leaf_strings(&entry.value) {
                         if s.to_lowercase().contains(".comp_05_legendary_") {
                             if let Some(drop_entry) =
@@ -312,7 +298,11 @@ fn strip_ref_wrapper(s: &str) -> &str {
     }
 }
 
-fn parse_legendary_item_id(source: &str, raw_item_id: &str, source_type: DropSource) -> Option<DropEntry> {
+fn parse_legendary_item_id(
+    source: &str,
+    raw_item_id: &str,
+    source_type: DropSource,
+) -> Option<DropEntry> {
     let item_id = strip_ref_wrapper(raw_item_id);
     let parts: Vec<&str> = item_id.split('.').collect();
     if parts.len() != 2 {
@@ -363,7 +353,15 @@ fn parse_legendary_item_id(source: &str, raw_item_id: &str, source_type: DropSou
 #[allow(clippy::too_many_lines)]
 fn generate_world_drops(existing_drops: &[DropEntry]) -> Vec<DropEntry> {
     let world_drop_gear_types = [
-        "AR", "PS", "SM", "SG", "SR", "SHIELD", "GRENADE_GADGET", "HW", "REPAIR_KIT",
+        "AR",
+        "PS",
+        "SM",
+        "SG",
+        "SR",
+        "SHIELD",
+        "GRENADE_GADGET",
+        "HW",
+        "REPAIR_KIT",
     ];
 
     let mut items_by_type: HashMap<String, Vec<String>> = HashMap::new();
@@ -476,8 +474,7 @@ pub fn generate_drops_manifest<P: AsRef<Path>>(
         if let Some(name) = filename {
             let name_lower = name.to_ascii_lowercase();
             let is_pool_list = name_lower == "itempoollist.bin"
-                || name_lower.contains("itempoollist")
-                    && name_lower.ends_with(".bin");
+                || name_lower.contains("itempoollist") && name_lower.ends_with(".bin");
             let is_pool = !is_pool_list
                 && (name_lower == "itempool.bin"
                     || name_lower.contains("itempool")
@@ -561,8 +558,7 @@ pub fn generate_drops_manifest<P: AsRef<Path>>(
 pub fn generate_drop_pools_tsv(manifest: &DropsManifest) -> String {
     use std::collections::BTreeMap;
 
-    let mut pools: BTreeMap<(String, String), (HashSet<String>, HashSet<String>)> =
-        BTreeMap::new();
+    let mut pools: BTreeMap<(String, String), (HashSet<String>, HashSet<String>)> = BTreeMap::new();
 
     for drop in &manifest.drops {
         if drop.manufacturer.is_empty() || drop.gear_type.is_empty() {
@@ -682,10 +678,7 @@ mod tests {
             extract_tier_name("shiny_42_something"),
             Some("Shiny".to_string())
         );
-        assert_eq!(
-            extract_tier_name("trueboss_1_boss"),
-            Some("".to_string())
-        );
+        assert_eq!(extract_tier_name("trueboss_1_boss"), Some("".to_string()));
         assert_eq!(extract_tier_name("somethingelse"), None);
         assert_eq!(extract_tier_name("primary_nodig"), None);
     }

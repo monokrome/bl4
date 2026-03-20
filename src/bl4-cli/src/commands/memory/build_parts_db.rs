@@ -184,7 +184,10 @@ fn write_database(
     let mut category_counts: BTreeMap<i64, (usize, String)> = BTreeMap::new();
 
     for (category, index, name, group) in entries {
-        by_category.entry(*category).or_default().push((*index, name.as_str()));
+        by_category
+            .entry(*category)
+            .or_default()
+            .push((*index, name.as_str()));
         let entry = category_counts
             .entry(*category)
             .or_insert((0, group.clone()));

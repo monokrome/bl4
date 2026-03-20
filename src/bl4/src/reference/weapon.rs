@@ -49,7 +49,9 @@ pub fn weapon_type_by_code(code: &str) -> Option<&'static WeaponType> {
 
 /// Get weapon type by display name (reverse lookup)
 pub fn weapon_type_by_name(name: &str) -> Option<&'static WeaponType> {
-    WEAPON_TYPES.iter().find(|w| w.name.eq_ignore_ascii_case(name))
+    WEAPON_TYPES
+        .iter()
+        .find(|w| w.name.eq_ignore_ascii_case(name))
 }
 
 #[cfg(test)]

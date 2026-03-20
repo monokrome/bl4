@@ -205,10 +205,7 @@ mod tests {
 
     #[test]
     fn test_weapon_info_lookup() {
-        assert_eq!(
-            weapon_info_from_first_varint(3),
-            Some(("Jakobs", "Pistol"))
-        );
+        assert_eq!(weapon_info_from_first_varint(3), Some(("Jakobs", "Pistol")));
         assert_eq!(
             weapon_info_from_first_varint(16),
             Some(("Vladof", "Sniper"))
@@ -240,8 +237,8 @@ mod tests {
         assert_eq!(category_from_varbit(279), 279); // Maliwan Shield
         assert_eq!(category_from_varbit(269), 269); // Vladof Repair Kit
         assert_eq!(category_from_varbit(289), 289); // Maliwan Heavy Weapon
-        assert_eq!(category_from_varbit(22), 22);   // Vladof SMG
-        assert_eq!(category_from_varbit(16), 16);   // Vladof Sniper
+        assert_eq!(category_from_varbit(22), 22); // Vladof SMG
+        assert_eq!(category_from_varbit(16), 16); // Vladof Sniper
     }
 
     #[test]
@@ -306,7 +303,10 @@ mod tests {
     fn test_first_varint_from_weapon_info() {
         let id = first_varint_from_weapon_info("Jakobs", "Shotgun").unwrap();
         assert_eq!(id, 9);
-        assert_eq!(weapon_info_from_first_varint(id), Some(("Jakobs", "Shotgun")));
+        assert_eq!(
+            weapon_info_from_first_varint(id),
+            Some(("Jakobs", "Shotgun"))
+        );
 
         let id = first_varint_from_weapon_info("Vladof", "SMG").unwrap();
         assert_eq!(id, 19);

@@ -83,10 +83,7 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         .route("/encode", post(handlers::serial::encode_serial))
         .route("/stats", get(handlers::system::get_stats))
         .merge(Scalar::with_url("/scalar", ApiDoc::openapi()))
-        .route(
-            "/openapi.json",
-            get(|| async { Json(ApiDoc::openapi()) }),
-        )
+        .route("/openapi.json", get(|| async { Json(ApiDoc::openapi()) }))
         .with_state(state)
         .layer(cors);
 

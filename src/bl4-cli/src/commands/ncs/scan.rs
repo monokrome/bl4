@@ -8,7 +8,12 @@ use std::path::Path;
 
 use super::types::ScanResult;
 
-pub fn scan_directory(path: &Path, filter_type: Option<&str>, verbose: bool, json: bool) -> Result<()> {
+pub fn scan_directory(
+    path: &Path,
+    filter_type: Option<&str>,
+    verbose: bool,
+    json: bool,
+) -> Result<()> {
     let mut result = ScanResult {
         total_files: 0,
         parsed_files: 0,

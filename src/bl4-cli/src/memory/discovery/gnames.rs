@@ -20,10 +20,7 @@ pub fn discover_gnames(source: &dyn MemorySource) -> Result<GNamesPool> {
                 eprintln!("GNames discovered via FNamePool at block0={:#x}", block0);
                 return Ok(GNamesPool {
                     address: block0,
-                    sample_names: vec![
-                        (0, "None".to_string()),
-                        (1, "ByteProperty".to_string()),
-                    ],
+                    sample_names: vec![(0, "None".to_string()), (1, "ByteProperty".to_string())],
                 });
             }
         }
@@ -74,13 +71,9 @@ fn discover_gnames_by_pattern(source: &dyn MemorySource) -> Result<GNamesPool> {
                             let start = offset + 2;
                             let end = start + string_len as usize;
                             if end <= pool_data.len() {
-                                if let Ok(name) =
-                                    String::from_utf8(pool_data[start..end].to_vec())
+                                if let Ok(name) = String::from_utf8(pool_data[start..end].to_vec())
                                 {
-                                    if name
-                                        .chars()
-                                        .all(|c| c.is_ascii_alphanumeric() || c == '_')
-                                    {
+                                    if name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
                                         sample_names.push((index, name));
                                     }
                                 }

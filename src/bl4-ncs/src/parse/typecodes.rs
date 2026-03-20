@@ -84,7 +84,9 @@ pub fn parse_type_code_table(body: &[u8]) -> Option<TypeCodeTable> {
     if pos + tc_len > body.len() {
         return None;
     }
-    let type_codes = std::str::from_utf8(&body[pos..pos + tc_len]).ok()?.to_string();
+    let type_codes = std::str::from_utf8(&body[pos..pos + tc_len])
+        .ok()?
+        .to_string();
     pos += tc_len;
 
     let (row_flags, next_pos) = parse_bit_matrix(body, pos, &type_codes, type_index_count)?;
@@ -139,7 +141,8 @@ pub fn parse_type_code_table_from_reader(reader: &mut impl Read) -> Option<TypeC
     bytes_read += tc_len;
     let type_codes = std::str::from_utf8(&tc_buf).ok()?.to_string();
 
-    let row_flags = parse_bit_matrix_from_reader(reader, &type_codes, type_index_count, &mut bytes_read)?;
+    let row_flags =
+        parse_bit_matrix_from_reader(reader, &type_codes, type_index_count, &mut bytes_read)?;
 
     let value_block = read_string_block_from_reader(reader, &mut bytes_read)?;
     let kinds_block = read_string_block_from_reader(reader, &mut bytes_read);
@@ -200,15 +203,17 @@ fn parse_bit_matrix_from_reader(
 }
 
 /// Read a string block from a stream: 16-byte header + string data
-fn read_string_block_from_reader(reader: &mut impl Read, bytes_read: &mut usize) -> Option<StringBlock> {
+fn read_string_block_from_reader(
+    reader: &mut impl Read,
+    bytes_read: &mut usize,
+) -> Option<StringBlock> {
     let mut hdr = [0u8; 16];
     reader.read_exact(&mut hdr).ok()?;
 
     let declared_count = u32::from_le_bytes([hdr[0], hdr[1], hdr[2], hdr[3]]);
     let flags = u32::from_le_bytes([hdr[4], hdr[5], hdr[6], hdr[7]]);
     let byte_length = u64::from_le_bytes([
-        hdr[8], hdr[9], hdr[10], hdr[11],
-        hdr[12], hdr[13], hdr[14], hdr[15],
+        hdr[8], hdr[9], hdr[10], hdr[11], hdr[12], hdr[13], hdr[14], hdr[15],
     ]);
 
     let byte_len = byte_length as usize;
@@ -289,12 +294,7 @@ fn read_string_block(buf: &[u8], pos: usize) -> Option<(StringBlock, usize)> {
     }
 
     let declared_count = u32::from_le_bytes([buf[pos], buf[pos + 1], buf[pos + 2], buf[pos + 3]]);
-    let flags = u32::from_le_bytes([
-        buf[pos + 4],
-        buf[pos + 5],
-        buf[pos + 6],
-        buf[pos + 7],
-    ]);
+    let flags = u32::from_le_bytes([buf[pos + 4], buf[pos + 5], buf[pos + 6], buf[pos + 7]]);
     let byte_length = u64::from_le_bytes([
         buf[pos + 8],
         buf[pos + 9],
@@ -332,7 +332,6 @@ fn read_string_block(buf: &[u8], pos: usize) -> Option<(StringBlock, usize)> {
     Some((block, pos + 16 + byte_len))
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -351,7 +350,7 @@ mod tests {
         // Build a string block: declared=2, flags=0, byte_length=12, "hello\0world\0"
         let mut data = vec![0u8; 28];
         data[0] = 2; // declared_count
-        // flags = 0
+                     // flags = 0
         data[8] = 12; // byte_length
         data[16..28].copy_from_slice(b"hello\0world\0");
 
@@ -411,12 +410,21 @@ mod tests {
         let mut cursor = std::io::Cursor::new(&body);
         let from_reader = parse_type_code_table_from_reader(&mut cursor).unwrap();
 
-        assert_eq!(from_slice.header.type_code_count, from_reader.header.type_code_count);
+        assert_eq!(
+            from_slice.header.type_code_count,
+            from_reader.header.type_code_count
+        );
         assert_eq!(from_slice.header.type_codes, from_reader.header.type_codes);
-        assert_eq!(from_slice.header.type_index_count, from_reader.header.type_index_count);
+        assert_eq!(
+            from_slice.header.type_index_count,
+            from_reader.header.type_index_count
+        );
         assert_eq!(from_slice.header.row_flags, from_reader.header.row_flags);
         assert_eq!(from_slice.value_strings, from_reader.value_strings);
-        assert_eq!(from_slice.value_strings_declared_count, from_reader.value_strings_declared_count);
+        assert_eq!(
+            from_slice.value_strings_declared_count,
+            from_reader.value_strings_declared_count
+        );
         assert_eq!(from_slice.data_offset, from_reader.data_offset);
     }
 }

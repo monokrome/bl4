@@ -52,7 +52,10 @@ impl BossNameMapping {
             }
         }
 
-        Self { boss_names, aliases }
+        Self {
+            boss_names,
+            aliases,
+        }
     }
 
     /// Merge entries from `other` that aren't already present in `self`.
@@ -83,10 +86,7 @@ impl BossNameMapping {
 
     /// Parse boss names from the compiled-in boss replay costs TSV.
     fn from_compiled_tsv() -> Self {
-        const TSV: &str = include_str!(concat!(
-            env!("OUT_DIR"),
-            "/table_bossreplay_costs.tsv"
-        ));
+        const TSV: &str = include_str!(concat!(env!("OUT_DIR"), "/table_bossreplay_costs.tsv"));
 
         let mut boss_names = HashMap::new();
         let mut aliases = HashMap::new();
@@ -99,11 +99,10 @@ impl BossNameMapping {
             let row_name = cols[0];
             let comment = cols[1];
 
-            let display_name =
-                match crate::data_table::parse_boss_replay_comment(comment) {
-                    Some((_, name)) => name.to_string(),
-                    None => continue,
-                };
+            let display_name = match crate::data_table::parse_boss_replay_comment(comment) {
+                Some((_, name)) => name.to_string(),
+                None => continue,
+            };
 
             boss_names.insert(row_name.to_string(), display_name.clone());
 
@@ -121,7 +120,10 @@ impl BossNameMapping {
             }
         }
 
-        Self { boss_names, aliases }
+        Self {
+            boss_names,
+            aliases,
+        }
     }
 
     /// Hardcoded fallback entries for bosses not in the data table.
@@ -133,19 +135,37 @@ impl BossNameMapping {
         let mut aliases = HashMap::new();
 
         // ItemPoolList keys that differ from data table row_names
-        boss_names.insert("Grasslands_Commander".into(), "Primordial Guardian Inceptus".into());
-        boss_names.insert("MountainCommander".into(), "Primordial Guardian Radix".into());
-        boss_names.insert("ShatterlandsCommanderElpis".into(), "Primordial Guardian Origo".into());
-        boss_names.insert("ShatterlandsCommanderFortress".into(), "Primordial Guardian Origo".into());
+        boss_names.insert(
+            "Grasslands_Commander".into(),
+            "Primordial Guardian Inceptus".into(),
+        );
+        boss_names.insert(
+            "MountainCommander".into(),
+            "Primordial Guardian Radix".into(),
+        );
+        boss_names.insert(
+            "ShatterlandsCommanderElpis".into(),
+            "Primordial Guardian Origo".into(),
+        );
+        boss_names.insert(
+            "ShatterlandsCommanderFortress".into(),
+            "Primordial Guardian Origo".into(),
+        );
         boss_names.insert("Timekeeper_TKBoss".into(), "The Timekeeper".into());
         boss_names.insert("Grasslands_Guardian".into(), "Grasslands Guardian".into());
         boss_names.insert("MountainGuardian".into(), "Mountain Guardian".into());
-        boss_names.insert("ShatterlandsGuardian".into(), "Shatterlands Guardian".into());
+        boss_names.insert(
+            "ShatterlandsGuardian".into(),
+            "Shatterlands Guardian".into(),
+        );
         boss_names.insert("Timekeeper_Guardian".into(), "Timekeeper Guardian".into());
         boss_names.insert("GlidePackPsycho".into(), "Splashzone".into());
         boss_names.insert("KOTOMotherbaseBrute".into(), "Bio-Bulkhead".into());
         boss_names.insert("KotoLieutenant".into(), "Horace".into());
-        boss_names.insert("FoundryFreak_MeatheadFrackingBoss".into(), "Foundry Freaks".into());
+        boss_names.insert(
+            "FoundryFreak_MeatheadFrackingBoss".into(),
+            "Foundry Freaks".into(),
+        );
         boss_names.insert("Thresher_BioArmoredBig".into(), "Bio-Thresher Omega".into());
         boss_names.insert("MeatheadRider_Jockey".into(), "Jockey".into());
         boss_names.insert("Redguard".into(), "Directive-0".into());
@@ -169,9 +189,15 @@ impl BossNameMapping {
         aliases.insert("Axemaul".into(), "Axemaul".into());
         aliases.insert("Shadowpelt".into(), "Shadowpelt".into());
         aliases.insert("Tabnak".into(), "Tabnak, the Ripper Prince".into());
-        aliases.insert("Harbinger".into(), "Callous Harbinger of Annihilating Death".into());
+        aliases.insert(
+            "Harbinger".into(),
+            "Callous Harbinger of Annihilating Death".into(),
+        );
 
-        Self { boss_names, aliases }
+        Self {
+            boss_names,
+            aliases,
+        }
     }
 
     /// Get display name for a boss internal name

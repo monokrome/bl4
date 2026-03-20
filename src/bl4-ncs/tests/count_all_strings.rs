@@ -2,8 +2,10 @@
 #[test]
 #[ignore]
 fn count_all_strings_in_file() {
-    let data = std::fs::read("/home/polar/Documents/Borderlands 4/ncsdata/pakchunk4-Windows_0_P/Nexus-Data-inv4.bin")
-        .expect("File not found");
+    let data = std::fs::read(
+        "/home/polar/Documents/Borderlands 4/ncsdata/pakchunk4-Windows_0_P/Nexus-Data-inv4.bin",
+    )
+    .expect("File not found");
 
     // Start from string table offset
     let start = 0x225;

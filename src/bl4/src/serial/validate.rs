@@ -140,7 +140,10 @@ fn check_part_count(item: &ItemSerial) -> ValidationCheck {
         return ValidationCheck {
             name: "part_count",
             passed: None,
-            detail: format!("{} parts exceeds expected count of 30 (unverified limit)", part_count),
+            detail: format!(
+                "{} parts exceeds expected count of 30 (unverified limit)",
+                part_count
+            ),
         };
     }
 
@@ -173,7 +176,9 @@ fn check_pool_membership(item: &ItemSerial) -> ValidationCheck {
     let mut unnamed = 0u32;
 
     for token in &item.tokens {
-        let Token::Part { index, .. } = token else { continue };
+        let Token::Part { index, .. } = token else {
+            continue;
+        };
 
         // Element markers are identified separately, not part of the loot pool
         if super::Element::from_index(*index).is_some() {
@@ -207,7 +212,10 @@ fn check_pool_membership(item: &ItemSerial) -> ValidationCheck {
     ValidationCheck {
         name: "pool_membership",
         passed: Some(true),
-        detail: format!("{}/{} resolved parts in pool for category {}", in_pool, checked, category),
+        detail: format!(
+            "{}/{} resolved parts in pool for category {}",
+            in_pool, checked, category
+        ),
     }
 }
 
@@ -338,7 +346,12 @@ mod tests {
         // Known weapon serial — should not be flagged as illegal by pool check
         let item = ItemSerial::decode("@Ugr$ZCm/&tH!t{KgK/Shxu>k").unwrap();
         let check = check_pool_membership(&item);
-        assert_ne!(check.passed, Some(false), "Pool check failed: {}", check.detail);
+        assert_ne!(
+            check.passed,
+            Some(false),
+            "Pool check failed: {}",
+            check.detail
+        );
     }
 
     #[test]
@@ -346,7 +359,11 @@ mod tests {
         // Known shield serial
         let item = ItemSerial::decode("@Uge98>m/)}}!c5JeNWCvCXc7").unwrap();
         let check = check_pool_membership(&item);
-        assert_ne!(check.passed, Some(false), "Pool check failed: {}", check.detail);
+        assert_ne!(
+            check.passed,
+            Some(false),
+            "Pool check failed: {}",
+            check.detail
+        );
     }
-
 }

@@ -48,12 +48,17 @@ fn load_parts_from_file(path: &Path) -> Result<BTreeMap<i64, Vec<String>>> {
     for line in data.lines().skip(1) {
         let mut cols = line.splitn(3, '\t');
         let Some(cat_str) = cols.next() else { continue };
-        let Ok(category) = cat_str.parse::<i64>() else { continue };
+        let Ok(category) = cat_str.parse::<i64>() else {
+            continue;
+        };
         let _ = cols.next(); // skip index
         let Some(name) = cols.next() else { continue };
 
         if category > 0 {
-            by_category.entry(category).or_default().push(name.to_string());
+            by_category
+                .entry(category)
+                .or_default()
+                .push(name.to_string());
         }
     }
 
@@ -78,8 +83,8 @@ fn parse_category_id(stem: &str) -> Option<i64> {
 fn load_parts_from_dir(dir: &Path) -> Result<BTreeMap<i64, Vec<String>>> {
     let mut by_category: BTreeMap<i64, Vec<String>> = BTreeMap::new();
 
-    for entry in fs::read_dir(dir)
-        .with_context(|| format!("Failed to read directory {}", dir.display()))?
+    for entry in
+        fs::read_dir(dir).with_context(|| format!("Failed to read directory {}", dir.display()))?
     {
         let entry = entry?;
         let path = entry.path();
@@ -88,7 +93,11 @@ fn load_parts_from_dir(dir: &Path) -> Result<BTreeMap<i64, Vec<String>>> {
             continue;
         }
 
-        let category: i64 = match path.file_stem().and_then(|s| s.to_str()).and_then(parse_category_id) {
+        let category: i64 = match path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .and_then(parse_category_id)
+        {
             Some(id) if id > 0 => id,
             _ => continue,
         };
@@ -152,8 +161,16 @@ mod tests {
         fs::create_dir(&parts_dir).unwrap();
         let output = dir.path().join("pools.tsv");
 
-        fs::write(parts_dir.join("jakobs_pistol-3.tsv"), "index\tname\n0\tJAK_PS_barrel_01\n1\tJAK_PS_grip_01\n").unwrap();
-        fs::write(parts_dir.join("vladof_ar-5.tsv"), "index\tname\n0\tVLA_AR_barrel_01\n").unwrap();
+        fs::write(
+            parts_dir.join("jakobs_pistol-3.tsv"),
+            "index\tname\n0\tJAK_PS_barrel_01\n1\tJAK_PS_grip_01\n",
+        )
+        .unwrap();
+        fs::write(
+            parts_dir.join("vladof_ar-5.tsv"),
+            "index\tname\n0\tVLA_AR_barrel_01\n",
+        )
+        .unwrap();
 
         handle_part_pools(&parts_dir, &output).unwrap();
 

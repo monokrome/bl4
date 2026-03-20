@@ -6,7 +6,9 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use super::types::{FileInfo, ItemParts, LegendaryComposition, ManufacturerMapping, NexusSerializedEntry, PartIndex};
+use super::types::{
+    FileInfo, ItemParts, LegendaryComposition, ManufacturerMapping, NexusSerializedEntry, PartIndex,
+};
 
 /// Known weapon manufacturers
 const MANUFACTURERS: &[&str] = &["BOR", "DAD", "JAK", "MAL", "ORD", "TED", "TOR", "VLA"];
@@ -179,7 +181,6 @@ fn extract_part_indices(path: &Path, output: Option<&Path>, json: bool) -> Resul
             // Look for numeric index within next 10 strings (indices often have fields between)
             let window_end = (i + 10).min(strings.len());
             for candidate in &strings[(i + 1)..window_end] {
-
                 // Stop if we hit another part name (new record)
                 if parse_part_name(candidate).is_some() {
                     break;
@@ -203,8 +204,11 @@ fn extract_part_indices(path: &Path, output: Option<&Path>, json: bool) -> Resul
 
     // Sort by manufacturer, weapon type, then index
     parts.sort_by(|a, b| {
-        (&a.manufacturer, &a.weapon_type, a.serial_index)
-            .cmp(&(&b.manufacturer, &b.weapon_type, b.serial_index))
+        (&a.manufacturer, &a.weapon_type, a.serial_index).cmp(&(
+            &b.manufacturer,
+            &b.weapon_type,
+            b.serial_index,
+        ))
     });
 
     let output_str = if json {
@@ -561,13 +565,17 @@ fn extract_nexus_serialized(path: &Path, output: Option<&Path>, json: bool) -> R
 
             // If we didn't get manufacturer from context, try parsing from display name
             if entry.manufacturer_code.is_none() {
-                let (mfr_code, wep_type) = parse_display_name_with_mapping(&entry.display_name, &mfr_mapping);
+                let (mfr_code, wep_type) =
+                    parse_display_name_with_mapping(&entry.display_name, &mfr_mapping);
                 entry.manufacturer_code = mfr_code;
                 entry.weapon_type = wep_type;
             }
 
             // Avoid duplicates
-            if !entries.iter().any(|e: &NexusSerializedEntry| e.guid == entry.guid) {
+            if !entries
+                .iter()
+                .any(|e: &NexusSerializedEntry| e.guid == entry.guid)
+            {
                 entries.push(entry);
             }
         }
@@ -651,7 +659,9 @@ fn extract_manufacturer_mapping(strings: &[String]) -> BTreeMap<String, String> 
                         if let Some((mfr_code, ctx_wep_code)) = parse_item_type(&strings[j]) {
                             // Verify the weapon type matches
                             if ctx_wep_code == *wep_code {
-                                mapping.entry(mfr_code).or_insert_with(|| mfr_name.to_string());
+                                mapping
+                                    .entry(mfr_code)
+                                    .or_insert_with(|| mfr_name.to_string());
                                 break;
                             }
                         }
@@ -721,7 +731,10 @@ fn parse_nexus_serialized(s: &str) -> Option<NexusSerializedEntry> {
 }
 
 /// Parse display name using extracted manufacturer mapping
-fn parse_display_name_with_mapping(name: &str, mfr_mapping: &BTreeMap<String, String>) -> (Option<String>, Option<String>) {
+fn parse_display_name_with_mapping(
+    name: &str,
+    mfr_mapping: &BTreeMap<String, String>,
+) -> (Option<String>, Option<String>) {
     let words: Vec<&str> = name.split_whitespace().collect();
     if words.is_empty() {
         return (None, None);
@@ -874,7 +887,12 @@ fn extract_serial_indices_ncs_cmd(path: &Path, output: Option<&Path>, json: bool
 
     eprintln!("Tables: {}", doc.tables.len());
     for (name, table) in &doc.tables {
-        eprintln!("  {}: {} records, {} deps", name, table.records.len(), table.deps.len());
+        eprintln!(
+            "  {}: {} records, {} deps",
+            name,
+            table.records.len(),
+            table.deps.len()
+        );
     }
 
     let serial_indices = bl4_ncs::document::extract_serial_indices(&doc);
@@ -896,7 +914,11 @@ fn extract_serial_indices_ncs_cmd(path: &Path, output: Option<&Path>, json: bool
 
     if let Some(output_path) = output {
         fs::write(output_path, &output_str)?;
-        println!("Extracted {} serial indices to {}", serial_indices.len(), output_path.display());
+        println!(
+            "Extracted {} serial indices to {}",
+            serial_indices.len(),
+            output_path.display()
+        );
     } else {
         println!("{}", output_str);
     }
@@ -922,7 +944,12 @@ fn extract_binary_native(path: &Path, output: Option<&Path>, json: bool) -> Resu
 
     eprintln!("Tables: {}", doc.tables.len());
     for (name, table) in &doc.tables {
-        eprintln!("  {}: {} records, {} deps", name, table.records.len(), table.deps.len());
+        eprintln!(
+            "  {}: {} records, {} deps",
+            name,
+            table.records.len(),
+            table.deps.len()
+        );
     }
 
     if json {
@@ -945,7 +972,11 @@ fn extract_binary_native(path: &Path, output: Option<&Path>, json: bool) -> Resu
         let output_str = lines.join("\n");
         if let Some(output_path) = output {
             fs::write(output_path, &output_str)?;
-            println!("Wrote {} serial indices to {}", serial_indices.len(), output_path.display());
+            println!(
+                "Wrote {} serial indices to {}",
+                serial_indices.len(),
+                output_path.display()
+            );
         } else {
             println!("{}", output_str);
         }
@@ -1019,8 +1050,11 @@ fn build_serial_decoder(path: &Path, output: Option<&Path>, json: bool) -> Resul
     let mut seen = std::collections::HashSet::new();
     all_indices.retain(|e| seen.insert((e.part_name.clone(), e.index)));
 
-    eprintln!("\nProcessed {} files, found {} unique serial indices",
-        files_processed, all_indices.len());
+    eprintln!(
+        "\nProcessed {} files, found {} unique serial indices",
+        files_processed,
+        all_indices.len()
+    );
 
     let output_str = if json {
         serde_json::to_string_pretty(&all_indices)?
@@ -1037,7 +1071,11 @@ fn build_serial_decoder(path: &Path, output: Option<&Path>, json: bool) -> Resul
 
     if let Some(output_path) = output {
         fs::write(output_path, &output_str)?;
-        println!("Wrote {} serial indices to {}", all_indices.len(), output_path.display());
+        println!(
+            "Wrote {} serial indices to {}",
+            all_indices.len(),
+            output_path.display()
+        );
     } else {
         println!("{}", output_str);
     }
@@ -1092,7 +1130,9 @@ fn humanize_category_key(key: &str) -> String {
 
     // Try manufacturer + weapon type pattern (e.g., "dad_ps" → "Daedalus Pistol")
     if parts.len() == 2 {
-        let mfr = MANUFACTURER_NAMES.iter().find(|(code, _)| *code == parts[0]);
+        let mfr = MANUFACTURER_NAMES
+            .iter()
+            .find(|(code, _)| *code == parts[0]);
         let wep = WEAPON_TYPE_NAMES.iter().find(|(code, _)| *code == parts[1]);
 
         if let (Some((_, mfr_name)), Some((_, wep_name))) = (mfr, wep) {
@@ -1101,25 +1141,28 @@ fn humanize_category_key(key: &str) -> String {
     }
 
     // Replace manufacturer codes anywhere in the name, then title-case
-    let words: Vec<String> = parts.iter().map(|w| {
-        // Check if this word is a manufacturer code
-        if let Some((_, display)) = MANUFACTURER_NAMES.iter().find(|(code, _)| code == w) {
-            return display.to_string();
-        }
-        // Check if this word is a weapon type code
-        if let Some((_, display)) = WEAPON_TYPE_NAMES.iter().find(|(code, _)| code == w) {
-            return display.to_string();
-        }
-        // Title-case the word
-        let mut chars = w.chars();
-        match chars.next() {
-            Some(c) => {
-                let upper: String = c.to_uppercase().collect();
-                format!("{}{}", upper, chars.as_str())
+    let words: Vec<String> = parts
+        .iter()
+        .map(|w| {
+            // Check if this word is a manufacturer code
+            if let Some((_, display)) = MANUFACTURER_NAMES.iter().find(|(code, _)| code == w) {
+                return display.to_string();
             }
-            None => String::new(),
-        }
-    }).collect();
+            // Check if this word is a weapon type code
+            if let Some((_, display)) = WEAPON_TYPE_NAMES.iter().find(|(code, _)| code == w) {
+                return display.to_string();
+            }
+            // Title-case the word
+            let mut chars = w.chars();
+            match chars.next() {
+                Some(c) => {
+                    let upper: String = c.to_uppercase().collect();
+                    format!("{}{}", upper, chars.as_str())
+                }
+                None => String::new(),
+            }
+        })
+        .collect();
 
     // Fix common compound words
     let result = words.join(" ");
@@ -1208,7 +1251,8 @@ struct ManifestPartEntry {
 
 fn export_parts_manifest(path: &Path, output: Option<&Path>, json: bool) -> Result<()> {
     let mut all_parts = Vec::new();
-    let mut all_category_names: std::collections::HashMap<u32, String> = std::collections::HashMap::new();
+    let mut all_category_names: std::collections::HashMap<u32, String> =
+        std::collections::HashMap::new();
     let mut shared_dep_tables: BTreeMap<String, u32> = BTreeMap::new();
     let mut files_processed = 0;
 
@@ -1234,7 +1278,10 @@ fn export_parts_manifest(path: &Path, output: Option<&Path>, json: bool) -> Resu
         let cat_names = bl4_ncs::document::extract_category_names(&doc);
         eprintln!(
             "Processing {} ({} parts, {} shared, {} categories)...",
-            filename, parts.len(), shared.len(), cat_names.len()
+            filename,
+            parts.len(),
+            shared.len(),
+            cat_names.len()
         );
 
         for p in parts {
@@ -1303,7 +1350,8 @@ fn export_parts_manifest(path: &Path, output: Option<&Path>, json: bool) -> Resu
     }
     for (dep_table, cat_id) in &shared_dep_tables {
         if categories_with_parts.contains(cat_id) {
-            humanized.entry(cat_id.to_string())
+            humanized
+                .entry(cat_id.to_string())
                 .or_insert_with(|| humanize_dep_table(dep_table));
         }
     }
@@ -1321,7 +1369,11 @@ fn write_parts_manifest(
         let output_str = serde_json::to_string_pretty(manifest)?;
         if let Some(output_path) = output {
             fs::write(output_path, &output_str)?;
-            println!("Wrote manifest with {} parts to {}", manifest.parts.len(), output_path.display());
+            println!(
+                "Wrote manifest with {} parts to {}",
+                manifest.parts.len(),
+                output_path.display()
+            );
         } else {
             println!("{}", output_str);
         }
@@ -1386,7 +1438,11 @@ fn write_parts_manifest(
         };
 
         fs::write(&cat_names_path, &cat_str)?;
-        println!("Wrote {} category names to {}", category_names.len(), cat_names_path.display());
+        println!(
+            "Wrote {} category names to {}",
+            category_names.len(),
+            cat_names_path.display()
+        );
     }
 
     Ok(())

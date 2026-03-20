@@ -141,7 +141,8 @@ impl NativeBackend {
             }
 
             let proc_name = b"OodleLZ_Decompress\0";
-            let proc = winapi::um::libloaderapi::GetProcAddress(handle, proc_name.as_ptr() as *const i8);
+            let proc =
+                winapi::um::libloaderapi::GetProcAddress(handle, proc_name.as_ptr() as *const i8);
             if proc.is_null() {
                 return Err(Error::Oodle(
                     "Failed to find OodleLZ_Decompress in DLL".to_string(),
@@ -166,9 +167,9 @@ impl OodleDecompressor for NativeBackend {
                 compressed.len() as isize,
                 output.as_mut_ptr(),
                 decompressed_size as isize,
-                1,  // fuzz_safe
-                0,  // check_crc
-                0,  // verbosity
+                1, // fuzz_safe
+                0, // check_crc
+                0, // verbosity
                 std::ptr::null_mut(),
                 0,
                 std::ptr::null_mut(),
@@ -204,7 +205,6 @@ impl OodleDecompressor for NativeBackend {
         true
     }
 }
-
 
 /// External command-based Oodle decompressor
 ///
@@ -268,7 +268,9 @@ impl OodleDecompressor for ExecBackend {
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn()
-            .map_err(|e| Error::Oodle(format!("Failed to spawn command '{}': {}", self.command, e)))?;
+            .map_err(|e| {
+                Error::Oodle(format!("Failed to spawn command '{}': {}", self.command, e))
+            })?;
 
         // Write compressed data to stdin
         if let Some(mut stdin) = child.stdin.take() {
@@ -412,12 +414,7 @@ impl FifoExecBackend {
             .stdout(Stdio::null())
             .stderr(Stdio::piped())
             .spawn()
-            .map_err(|e| {
-                Error::Oodle(format!(
-                    "Failed to spawn command '{}': {}",
-                    self.command, e
-                ))
-            })
+            .map_err(|e| Error::Oodle(format!("Failed to spawn command '{}': {}", self.command, e)))
     }
 
     fn check_exit(&self, child: &mut std::process::Child) -> Result<()> {
@@ -469,9 +466,8 @@ impl OodleDecompressor for FifoExecBackend {
         // forever — the main thread detects the crash via wait() and opens
         // the FIFO itself to unblock the reader with an empty result.
         let output_path = self.output_fifo.clone();
-        let reader = std::thread::spawn(move || -> std::io::Result<Vec<u8>> {
-            std::fs::read(&output_path)
-        });
+        let reader =
+            std::thread::spawn(move || -> std::io::Result<Vec<u8>> { std::fs::read(&output_path) });
 
         // Wait for the child to exit. If it crashes, open the output FIFO
         // ourselves so the reader thread gets EOF instead of blocking forever.
@@ -658,11 +654,7 @@ mod tests {
         // Args: $1=decompress $2=size $3=input_fifo $4=output_fifo
         let script_dir = tempfile::tempdir().unwrap();
         let script_path = script_dir.path().join("test_helper.sh");
-        std::fs::write(
-            &script_path,
-            "#!/bin/sh\ncat < \"$3\" > \"$4\"\n",
-        )
-        .unwrap();
+        std::fs::write(&script_path, "#!/bin/sh\ncat < \"$3\" > \"$4\"\n").unwrap();
         std::fs::set_permissions(&script_path, std::fs::Permissions::from_mode(0o755)).unwrap();
 
         let backend = FifoExecBackend::new(script_path.to_str().unwrap()).unwrap();

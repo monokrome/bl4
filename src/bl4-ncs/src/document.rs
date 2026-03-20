@@ -164,9 +164,10 @@ pub fn extract_category_names(doc: &Document) -> HashMap<u32, String> {
                     continue;
                 };
 
-                let has_parts = entry.dep_entries.iter().any(|de| {
-                    extract_index_from_value(&de.value).is_some()
-                });
+                let has_parts = entry
+                    .dep_entries
+                    .iter()
+                    .any(|de| extract_index_from_value(&de.value).is_some());
                 if !has_parts {
                     continue;
                 }
@@ -575,14 +576,28 @@ mod tests {
         let parts = extract_categorized_parts(&doc);
         assert_eq!(parts.len(), 3);
         assert!(parts.iter().all(|p| p.category == 3));
-        assert!(parts.iter().any(|p| p.name == "part_barrel_01" && p.index == 7));
-        assert!(parts.iter().any(|p| p.name == "part_barrel_quickdraw" && p.index == 72));
-        assert!(parts.iter().any(|p| p.name == "element_fire" && p.index == 98));
+        assert!(parts
+            .iter()
+            .any(|p| p.name == "part_barrel_01" && p.index == 7));
+        assert!(parts
+            .iter()
+            .any(|p| p.name == "part_barrel_quickdraw" && p.index == 72));
+        assert!(parts
+            .iter()
+            .any(|p| p.name == "element_fire" && p.index == 98));
 
         let shared = extract_shared_parts(&doc);
-        assert_eq!(shared.len(), 2, "extension dep_table entries should appear as shared");
-        assert!(shared.iter().any(|p| p.dep_table == "barrel" && p.name == "part_barrel_quickdraw"));
-        assert!(shared.iter().any(|p| p.dep_table == "element" && p.name == "element_fire"));
+        assert_eq!(
+            shared.len(),
+            2,
+            "extension dep_table entries should appear as shared"
+        );
+        assert!(shared
+            .iter()
+            .any(|p| p.dep_table == "barrel" && p.name == "part_barrel_quickdraw"));
+        assert!(shared
+            .iter()
+            .any(|p| p.dep_table == "element" && p.name == "element_fire"));
     }
 
     #[test]
@@ -599,6 +614,9 @@ mod tests {
             entries: vec![],
         };
         let json = serde_json::to_string(&record_with_tags).unwrap();
-        assert!(json.contains("\"tags\""), "non-empty tags should be present");
+        assert!(
+            json.contains("\"tags\""),
+            "non-empty tags should be present"
+        );
     }
 }

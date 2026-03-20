@@ -14,21 +14,16 @@ use std::path::Path;
 ///
 /// This scans the FNamePool in memory and extracts all FName strings,
 /// attempting to identify which ones are NCS field names.
-pub fn handle_extract_ncs_schema(
-    output: &Path,
-    dump: Option<&Path>,
-) -> Result<()> {
+pub fn handle_extract_ncs_schema(output: &Path, dump: Option<&Path>) -> Result<()> {
     // Open memory source
     let source: Box<dyn MemorySource> = if let Some(dump_path) = dump {
-        Box::new(memory::DumpFile::open(dump_path)
-            .context("Failed to open dump file")?)
+        Box::new(memory::DumpFile::open(dump_path).context("Failed to open dump file")?)
     } else {
         bail!("ExtractNcsSchema requires a dump file. Use --dump <path> or create a memory dump first.");
     };
     let source = source.as_ref();
     eprintln!("Discovering FNamePool...");
-    let pool = memory::FNamePool::discover(source)
-        .context("Failed to discover FNamePool")?;
+    let pool = memory::FNamePool::discover(source).context("Failed to discover FNamePool")?;
 
     eprintln!("FNamePool found at {:#x}", pool.header_addr);
     eprintln!("  Blocks: {}", pool.blocks.len());
@@ -49,7 +44,10 @@ pub fn handle_extract_ncs_schema(
         scanned += 1;
 
         if scanned % 10000 == 0 {
-            eprint!("\rScanned {} FNames, found {} potential fields...", scanned, found);
+            eprint!(
+                "\rScanned {} FNames, found {} potential fields...",
+                scanned, found
+            );
         }
 
         if let Ok(name) = reader.read_name(source, fname_index) {
@@ -81,8 +79,8 @@ pub fn handle_extract_ncs_schema(
     let mut file = File::create(output)
         .with_context(|| format!("Failed to create output file: {}", output.display()))?;
 
-    let json_str = serde_json::to_string_pretty(&ncsmap)
-        .context("Failed to serialize ncsmap to JSON")?;
+    let json_str =
+        serde_json::to_string_pretty(&ncsmap).context("Failed to serialize ncsmap to JSON")?;
 
     file.write_all(json_str.as_bytes())
         .with_context(|| format!("Failed to write to {}", output.display()))?;
@@ -107,7 +105,8 @@ fn is_likely_ncs_field(name: &str) -> bool {
         || name.starts_with("BP_")
         || name.contains("/Game/")
         || name.contains("/Engine/")
-        || name.contains("/Script/") {
+        || name.contains("/Script/")
+    {
         return false;
     }
 
@@ -117,7 +116,11 @@ fn is_likely_ncs_field(name: &str) -> bool {
     // - bBooleanField (UE convention)
     // - Contains common NCS terms
     let has_underscore = name.contains('_');
-    let is_camel_case = name.chars().next().map(|c| c.is_uppercase()).unwrap_or(false);
+    let is_camel_case = name
+        .chars()
+        .next()
+        .map(|c| c.is_uppercase())
+        .unwrap_or(false);
     let has_ncs_keywords = name.contains("inv")
         || name.contains("audio")
         || name.contains("weapon")

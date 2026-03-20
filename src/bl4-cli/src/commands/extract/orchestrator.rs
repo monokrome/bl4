@@ -60,7 +60,11 @@ fn extract_ncs_from_paks(
     fs::create_dir_all(ncs_output).context("Failed to create NCS output directory")?;
 
     let backend_name = if oodle_exec.is_some() {
-        if oodle_fifo { "fifo-exec" } else { "exec" }
+        if oodle_fifo {
+            "fifo-exec"
+        } else {
+            "exec"
+        }
     } else {
         "oozextract"
     };

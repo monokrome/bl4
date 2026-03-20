@@ -2,9 +2,7 @@
 
 use super::{ItemSerial, Rarity, Token};
 use crate::manifest;
-use crate::reference::{
-    manufacturer_by_name, rarity_probability, weapon_type_by_name, GEAR_TYPES,
-};
+use crate::reference::{manufacturer_by_name, rarity_probability, weapon_type_by_name, GEAR_TYPES};
 
 /// Estimated rarity information for a decoded item serial
 #[derive(Debug, Clone)]

@@ -53,7 +53,11 @@ pub fn extract_pak(opts: &ExtractPakOptions<'_>) -> Result<()> {
         let mut reader = match PakReader::open(pak_path) {
             Ok(r) => r,
             Err(e) => {
-                eprintln!("Warning: Skipping {:?}: {}", pak_path.file_name().unwrap_or_default(), e);
+                eprintln!(
+                    "Warning: Skipping {:?}: {}",
+                    pak_path.file_name().unwrap_or_default(),
+                    e
+                );
                 skipped += 1;
                 continue;
             }
@@ -80,7 +84,10 @@ pub fn extract_pak(opts: &ExtractPakOptions<'_>) -> Result<()> {
                 // String filters (OR logic)
                 if !filters.is_empty() {
                     let f_lower = f.to_lowercase();
-                    if !filters.iter().any(|filter| f_lower.contains(&filter.to_lowercase())) {
+                    if !filters
+                        .iter()
+                        .any(|filter| f_lower.contains(&filter.to_lowercase()))
+                    {
                         return false;
                     }
                 }
@@ -115,7 +122,9 @@ pub fn extract_pak(opts: &ExtractPakOptions<'_>) -> Result<()> {
         let pb = ProgressBar::new(matching.len() as u64);
         pb.set_style(
             ProgressStyle::default_bar()
-                .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} {msg}")
+                .template(
+                    "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} {msg}",
+                )
                 .unwrap()
                 .progress_chars("#>-"),
         );

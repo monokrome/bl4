@@ -452,9 +452,12 @@ pub fn parse_property_value_extended(
 
                     for prop_index in indices {
                         if let Some(prop_def) = index_to_prop.get(&prop_index) {
-                            if let Some((mut parsed, consumed)) =
-                                parse_property_value_extended(data, current_pos, &prop_def.inner, ctx)
-                            {
+                            if let Some((mut parsed, consumed)) = parse_property_value_extended(
+                                data,
+                                current_pos,
+                                &prop_def.inner,
+                                ctx,
+                            ) {
                                 parsed.name = prop_def.name.clone();
                                 struct_props.push(parsed);
                                 current_pos += consumed;
@@ -465,7 +468,8 @@ pub fn parse_property_value_extended(
                     }
 
                     if !struct_props.is_empty() {
-                        let mut prop = ParsedProperty::with_type(&format!("Struct:{}", struct_name));
+                        let mut prop =
+                            ParsedProperty::with_type(&format!("Struct:{}", struct_name));
                         prop.struct_values = Some(struct_props);
                         return Some((prop, current_pos - pos));
                     }
@@ -815,7 +819,11 @@ pub fn extract_property_info_from_names(names: &[String]) -> Vec<(String, u32, S
     props
 }
 
-#[allow(clippy::cognitive_complexity, clippy::too_many_lines, clippy::too_many_arguments)]
+#[allow(
+    clippy::cognitive_complexity,
+    clippy::too_many_lines,
+    clippy::too_many_arguments
+)]
 pub fn parse_export_properties_with_schema(
     data: &[u8],
     offset: usize,
@@ -887,9 +895,12 @@ pub fn parse_export_properties_with_schema(
 
                     for prop_index in serialized_indices {
                         if let Some(prop_def) = index_to_prop.get(&prop_index) {
-                            if let Some((mut parsed, consumed)) =
-                                parse_property_value_extended(export_data, pos, &prop_def.inner, &ctx)
-                            {
+                            if let Some((mut parsed, consumed)) = parse_property_value_extended(
+                                export_data,
+                                pos,
+                                &prop_def.inner,
+                                &ctx,
+                            ) {
                                 parsed.name = prop_def.name.clone();
                                 properties.push(parsed);
                                 pos += consumed;
@@ -940,8 +951,8 @@ pub fn parse_export_properties_with_schema(
                     "Float" => {
                         if let Ok(bytes) = export_data[pos..pos + 4].try_into() {
                             let val: f32 = f32::from_le_bytes(bytes);
-                            let is_reasonable =
-                                val.is_finite() && (val == 0.0 || val.abs() > 1e-30 && val.abs() < 1e30);
+                            let is_reasonable = val.is_finite()
+                                && (val == 0.0 || val.abs() > 1e-30 && val.abs() < 1e30);
                             if is_reasonable {
                                 let mut parsed = ParsedProperty::with_type("Float");
                                 parsed.name = prop.name.clone();

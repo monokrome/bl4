@@ -84,10 +84,9 @@ pub fn handle(yes: bool) -> Result<()> {
     print_launch_info(&launch_options);
 
     // Prompt for confirmation
-    if !yes
-        && !prompt_confirmation()? {
-            return Ok(());
-        }
+    if !yes && !prompt_confirmation()? {
+        return Ok(());
+    }
 
     launch_via_steam()
 }
