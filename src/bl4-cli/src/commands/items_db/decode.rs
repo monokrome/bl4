@@ -100,6 +100,19 @@ pub fn decode_all(db: &Path) -> Result<()> {
                     decoded_item.item_type_description(),
                 )?;
 
+                let parts_with_names = decoded_item.parts_with_names();
+                let is_legendary = decoded_item
+                    .rarity
+                    .map(|r| matches!(r, bl4::serial::Rarity::Legendary))
+                    .unwrap_or(false);
+                if let Some(name) = crate::commands::serial::resolve_legendary_name(
+                    &parts_with_names,
+                    decoded_item.parts_category(),
+                    is_legendary,
+                ) {
+                    set_decoded(&wdb, &item.serial, "name", &name)?;
+                }
+
                 let parts_summary = decoded_item.parts_summary();
                 if !parts_summary.is_empty() {
                     set_decoded(&wdb, &item.serial, "parts", &parts_summary)?;
