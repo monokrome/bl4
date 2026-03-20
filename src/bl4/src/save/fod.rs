@@ -67,11 +67,13 @@ fn fill_map(
         }
     }
 
-    if zone.is_some() && count == 0 {
-        return Err(SaveError::KeyNotFound(format!(
-            "zone '{}' not found in foddatas",
-            zone.unwrap()
-        )));
+    if let Some(z) = zone {
+        if count == 0 {
+            return Err(SaveError::KeyNotFound(format!(
+                "zone '{}' not found in foddatas",
+                z
+            )));
+        }
     }
 
     Ok(count)

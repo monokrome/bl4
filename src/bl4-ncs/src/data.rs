@@ -132,10 +132,8 @@ impl<'a> DecompressReader<'a> {
 
 impl io::Read for DecompressReader<'_> {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        if self.buffer_pos >= self.buffer.len() {
-            if !self.load_next_block()? {
-                return Ok(0);
-            }
+        if self.buffer_pos >= self.buffer.len() && !self.load_next_block()? {
+            return Ok(0);
         }
 
         let available = &self.buffer[self.buffer_pos..];

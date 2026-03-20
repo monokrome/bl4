@@ -154,7 +154,7 @@ pub fn category_name(category: i64) -> Option<&'static str> {
 /// With correct bit ordering, the VarInt value IS the level directly.
 /// Valid levels are 1-50.
 pub fn level_from_code(code: u64) -> Option<(u8, u8)> {
-    if code >= 1 && code <= 50 {
+    if matches!(code, 1..=50) {
         Some((code as u8, code as u8))
     } else {
         None

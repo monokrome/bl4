@@ -131,68 +131,49 @@ impl BossNameMapping {
     /// Covers: ItemPoolList key variants (different from data table row_name),
     /// DLC bosses, Primordial Guardians, and fuzzy-match aliases.
     fn hardcoded_fallbacks() -> Self {
-        let mut boss_names = HashMap::new();
-        let mut aliases = HashMap::new();
-
-        // ItemPoolList keys that differ from data table row_names
-        boss_names.insert(
-            "Grasslands_Commander".into(),
-            "Primordial Guardian Inceptus".into(),
-        );
-        boss_names.insert(
-            "MountainCommander".into(),
-            "Primordial Guardian Radix".into(),
-        );
-        boss_names.insert(
-            "ShatterlandsCommanderElpis".into(),
-            "Primordial Guardian Origo".into(),
-        );
-        boss_names.insert(
-            "ShatterlandsCommanderFortress".into(),
-            "Primordial Guardian Origo".into(),
-        );
-        boss_names.insert("Timekeeper_TKBoss".into(), "The Timekeeper".into());
-        boss_names.insert("Grasslands_Guardian".into(), "Grasslands Guardian".into());
-        boss_names.insert("MountainGuardian".into(), "Mountain Guardian".into());
-        boss_names.insert(
-            "ShatterlandsGuardian".into(),
-            "Shatterlands Guardian".into(),
-        );
-        boss_names.insert("Timekeeper_Guardian".into(), "Timekeeper Guardian".into());
-        boss_names.insert("GlidePackPsycho".into(), "Splashzone".into());
-        boss_names.insert("KOTOMotherbaseBrute".into(), "Bio-Bulkhead".into());
-        boss_names.insert("KotoLieutenant".into(), "Horace".into());
-        boss_names.insert(
-            "FoundryFreak_MeatheadFrackingBoss".into(),
-            "Foundry Freaks".into(),
-        );
-        boss_names.insert("Thresher_BioArmoredBig".into(), "Bio-Thresher Omega".into());
-        boss_names.insert("MeatheadRider_Jockey".into(), "Jockey".into());
-        boss_names.insert("Redguard".into(), "Directive-0".into());
-
-        // DLC bosses (not in base game data table)
-        boss_names.insert("Donk".into(), "Donk".into());
-        boss_names.insert("MinisterScrew".into(), "Minister Screw".into());
-        boss_names.insert("Bloomreaper".into(), "Bloomreaper".into());
-
-        // Variant entries
-        boss_names.insert("SideCity_Psycho".into(), "Side City Psycho".into());
-        boss_names.insert("FoundryFreak_Psycho".into(), "Foundry Freak Psycho".into());
-        boss_names.insert("FoundryFreak_Splice".into(), "Foundry Freak Splice".into());
-
-        // Aliases for fuzzy matching
-        aliases.insert("Grasslands".into(), "Primordial Guardian Inceptus".into());
-        aliases.insert("Mountains".into(), "Primordial Guardian Radix".into());
-        aliases.insert("Shatterlands".into(), "Primordial Guardian Origo".into());
-        aliases.insert("Castilleia".into(), "Castilleia".into());
-        aliases.insert("Mimicron".into(), "Mimicron".into());
-        aliases.insert("Axemaul".into(), "Axemaul".into());
-        aliases.insert("Shadowpelt".into(), "Shadowpelt".into());
-        aliases.insert("Tabnak".into(), "Tabnak, the Ripper Prince".into());
-        aliases.insert(
-            "Harbinger".into(),
-            "Callous Harbinger of Annihilating Death".into(),
-        );
+        let names: &[(&str, &str)] = &[
+            ("Grasslands_Commander", "Primordial Guardian Inceptus"),
+            ("MountainCommander", "Primordial Guardian Radix"),
+            ("ShatterlandsCommanderElpis", "Primordial Guardian Origo"),
+            ("ShatterlandsCommanderFortress", "Primordial Guardian Origo"),
+            ("Timekeeper_TKBoss", "The Timekeeper"),
+            ("Grasslands_Guardian", "Grasslands Guardian"),
+            ("MountainGuardian", "Mountain Guardian"),
+            ("ShatterlandsGuardian", "Shatterlands Guardian"),
+            ("Timekeeper_Guardian", "Timekeeper Guardian"),
+            ("GlidePackPsycho", "Splashzone"),
+            ("KOTOMotherbaseBrute", "Bio-Bulkhead"),
+            ("KotoLieutenant", "Horace"),
+            ("FoundryFreak_MeatheadFrackingBoss", "Foundry Freaks"),
+            ("Thresher_BioArmoredBig", "Bio-Thresher Omega"),
+            ("MeatheadRider_Jockey", "Jockey"),
+            ("Redguard", "Directive-0"),
+            ("Donk", "Donk"),
+            ("MinisterScrew", "Minister Screw"),
+            ("Bloomreaper", "Bloomreaper"),
+            ("SideCity_Psycho", "Side City Psycho"),
+            ("FoundryFreak_Psycho", "Foundry Freak Psycho"),
+            ("FoundryFreak_Splice", "Foundry Freak Splice"),
+        ];
+        let alias_list: &[(&str, &str)] = &[
+            ("Grasslands", "Primordial Guardian Inceptus"),
+            ("Mountains", "Primordial Guardian Radix"),
+            ("Shatterlands", "Primordial Guardian Origo"),
+            ("Castilleia", "Castilleia"),
+            ("Mimicron", "Mimicron"),
+            ("Axemaul", "Axemaul"),
+            ("Shadowpelt", "Shadowpelt"),
+            ("Tabnak", "Tabnak, the Ripper Prince"),
+            ("Harbinger", "Callous Harbinger of Annihilating Death"),
+        ];
+        let boss_names = names
+            .iter()
+            .map(|(k, v)| ((*k).into(), (*v).into()))
+            .collect();
+        let aliases = alias_list
+            .iter()
+            .map(|(k, v)| ((*k).into(), (*v).into()))
+            .collect();
 
         Self {
             boss_names,

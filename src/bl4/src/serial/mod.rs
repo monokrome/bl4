@@ -494,22 +494,27 @@ fn parse_3bit_token(reader: &mut BitReader, prefix: TokenPrefix, debug: bool) ->
 }
 
 /// Parse tokens with optional debug output, returning tokens and their bit offsets.
-fn parse_tokens_impl(reader: &mut BitReader, debug: bool) -> (Vec<Token>, Vec<usize>) {
-    let mut tokens = Vec::new();
-    let mut offsets = Vec::new();
-
-    // Verify magic header (7 bits = 0010000)
+fn verify_magic(reader: &mut BitReader, debug: bool) -> bool {
     let Some(magic) = reader.read_bits(7) else {
-        return (tokens, offsets);
+        return false;
     };
     if magic != 0b0010000 {
         if debug {
             eprintln!("Warning: Invalid magic header: {:07b}", magic);
         }
+        return false;
+    }
+    true
+}
+
+fn parse_tokens_impl(reader: &mut BitReader, debug: bool) -> (Vec<Token>, Vec<usize>) {
+    let mut tokens = Vec::new();
+    let mut offsets = Vec::new();
+
+    if !verify_magic(reader, debug) {
         return (tokens, offsets);
     }
 
-    // Parse tokens until terminator or end of data
     for _ in 0..100 {
         let bit_pos = reader.bit_offset;
 
