@@ -377,22 +377,23 @@ pub fn handle_extract(input: &Path, output: &Path, decompress: bool) -> Result<(
         let decompressed = match file.decompress(&data) {
             Ok(d) => d,
             Err(e) => {
-                eprintln!(
-                    "Failed to decompress {}: {}",
-                    file.filename, e
-                );
+                eprintln!("Failed to decompress {}: {}", file.filename, e);
                 failed += 1;
                 continue;
             }
         };
 
         // Use manifest filename (strip Nexus-Data- prefix for cleaner output)
-        let clean_name = file.filename
+        let clean_name = file
+            .filename
             .strip_prefix("Nexus-Data-")
             .unwrap_or(&file.filename);
 
         let out_path = if decompress {
-            output.join(format!("{}.bin", clean_name.strip_suffix(".ncs").unwrap_or(clean_name)))
+            output.join(format!(
+                "{}.bin",
+                clean_name.strip_suffix(".ncs").unwrap_or(clean_name)
+            ))
         } else {
             output.join(clean_name)
         };
@@ -409,7 +410,11 @@ pub fn handle_extract(input: &Path, output: &Path, decompress: bool) -> Result<(
         extracted += 1;
 
         if extracted <= 10 {
-            println!("  {} -> {:?}", file.type_name, out_path.file_name().unwrap());
+            println!(
+                "  {} -> {:?}",
+                file.type_name,
+                out_path.file_name().unwrap()
+            );
         }
 
         if (i + 1) % 100 == 0 {
@@ -447,9 +452,7 @@ mod tests {
     use std::collections::HashMap;
 
     /// Build a map from lowercase type_name to clean manifest filename
-    fn build_manifest_map(
-        manifests: &[(usize, bl4_ncs::NcsManifest)],
-    ) -> HashMap<String, String> {
+    fn build_manifest_map(manifests: &[(usize, bl4_ncs::NcsManifest)]) -> HashMap<String, String> {
         let mut map = HashMap::new();
 
         for (_offset, manifest) in manifests {

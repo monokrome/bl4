@@ -131,7 +131,10 @@ fn extract_balance_tables(scanner: &IoStoreScanner, output_dir: &Path) -> Result
         Ok(a) => a,
         Err(e) => {
             println!(" failed: {}", e);
-            return Ok(BalanceSummary { assets: 0, categories: 0 });
+            return Ok(BalanceSummary {
+                assets: 0,
+                categories: 0,
+            });
         }
     };
 
@@ -225,8 +228,7 @@ fn write_balance_tsvs(
         }
 
         let tsv_path = output_dir.join(format!("{}.tsv", category));
-        fs::write(&tsv_path, &tsv)
-            .with_context(|| format!("Failed to write {:?}", tsv_path))?;
+        fs::write(&tsv_path, &tsv).with_context(|| format!("Failed to write {:?}", tsv_path))?;
 
         index_lines.push(format!("{}\t{}", category, entries.len()));
     }

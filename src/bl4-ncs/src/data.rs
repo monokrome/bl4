@@ -112,12 +112,15 @@ impl<'a> DecompressReader<'a> {
                 self.buffer.extend_from_slice(data);
             }
             BlockDesc::Compressed { data, decomp_size } => {
-                self.buffer = self.decompressor
+                self.buffer = self
+                    .decompressor
                     .decompress_block(data, *decomp_size)
-                    .map_err(|e| io::Error::new(
-                        io::ErrorKind::InvalidData,
-                        format!("block {}: {}", self.next_block, e),
-                    ))?;
+                    .map_err(|e| {
+                        io::Error::new(
+                            io::ErrorKind::InvalidData,
+                            format!("block {}: {}", self.next_block, e),
+                        )
+                    })?;
             }
         }
 
@@ -301,7 +304,8 @@ pub fn decompress_with(data: &[u8], decompressor: &dyn OodleDecompressor) -> Res
 
     let mut reader = decompress_reader_with(data, decompressor)?;
     let mut buf = Vec::with_capacity(expected);
-    reader.read_to_end(&mut buf)
+    reader
+        .read_to_end(&mut buf)
         .map_err(|e| Error::Oodle(e.to_string()))?;
 
     if header.is_compressed() && buf.len() != expected {

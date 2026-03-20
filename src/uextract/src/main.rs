@@ -5,8 +5,7 @@ use clap::Parser;
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::prelude::*;
 use retoc::{
-    container_header::EIoContainerHeaderVersion, iostore, AesKey, Config, EIoStoreTocVersion,
-    FGuid,
+    container_header::EIoContainerHeaderVersion, iostore, AesKey, Config, EIoStoreTocVersion, FGuid,
 };
 use std::collections::HashMap;
 use std::io::Cursor;
@@ -232,7 +231,11 @@ fn main() -> Result<()> {
                 Ok(r) => r,
                 Err(e) => {
                     if args.verbose {
-                        eprintln!("Skipping PAK {:?}: {}", pak_path.file_name().unwrap_or_default(), e);
+                        eprintln!(
+                            "Skipping PAK {:?}: {}",
+                            pak_path.file_name().unwrap_or_default(),
+                            e
+                        );
                     }
                     continue;
                 }

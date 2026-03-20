@@ -56,8 +56,7 @@ pub fn load_database(path: &Path) -> Result<PartsDatabase> {
     let content = std::fs::read_to_string(path)
         .with_context(|| format!("Failed to read parts database: {:?}", path))?;
 
-    let is_tsv = path.extension().is_some_and(|e| e == "tsv")
-        || content.starts_with("category\t");
+    let is_tsv = path.extension().is_some_and(|e| e == "tsv") || content.starts_with("category\t");
 
     if is_tsv {
         let parts = content
@@ -68,7 +67,11 @@ pub fn load_database(path: &Path) -> Result<PartsDatabase> {
                 let category = cols.next()?.parse::<i64>().ok()?;
                 let index = cols.next()?.parse::<i64>().ok()?;
                 let name = cols.next()?.to_string();
-                Some(PartEntry { name, category, index })
+                Some(PartEntry {
+                    name,
+                    category,
+                    index,
+                })
             })
             .collect();
         Ok(PartsDatabase { parts })
@@ -83,8 +86,8 @@ pub fn load_database(path: &Path) -> Result<PartsDatabase> {
 fn load_database_dir(dir: &Path) -> Result<PartsDatabase> {
     let mut parts = Vec::new();
 
-    for entry in std::fs::read_dir(dir)
-        .with_context(|| format!("Failed to read directory: {:?}", dir))?
+    for entry in
+        std::fs::read_dir(dir).with_context(|| format!("Failed to read directory: {:?}", dir))?
     {
         let entry = entry?;
         let path = entry.path();
@@ -93,13 +96,17 @@ fn load_database_dir(dir: &Path) -> Result<PartsDatabase> {
             continue;
         }
 
-        let category: i64 = match path.file_stem().and_then(|s| s.to_str()).and_then(parse_category_id) {
+        let category: i64 = match path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .and_then(parse_category_id)
+        {
             Some(id) => id,
             None => continue,
         };
 
-        let content = std::fs::read_to_string(&path)
-            .with_context(|| format!("Failed to read {:?}", path))?;
+        let content =
+            std::fs::read_to_string(&path).with_context(|| format!("Failed to read {:?}", path))?;
 
         for line in content.lines().skip(1) {
             let mut cols = line.splitn(2, '\t');
@@ -111,7 +118,11 @@ fn load_database_dir(dir: &Path) -> Result<PartsDatabase> {
                 Some(n) => n.to_string(),
                 None => continue,
             };
-            parts.push(PartEntry { name, category, index });
+            parts.push(PartEntry {
+                name,
+                category,
+                index,
+            });
         }
     }
 
@@ -373,7 +384,11 @@ mod tests {
     fn test_parts_database_load_tsv() {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("parts.tsv");
-        std::fs::write(&path, "category\tindex\tname\n1\t0\tTEST.part_01\n1\t1\tTEST.part_02\n").unwrap();
+        std::fs::write(
+            &path,
+            "category\tindex\tname\n1\t0\tTEST.part_01\n1\t1\tTEST.part_02\n",
+        )
+        .unwrap();
 
         let db = load_database(&path).unwrap();
         assert_eq!(db.parts.len(), 2);
@@ -388,8 +403,16 @@ mod tests {
         let parts_dir = dir.path().join("parts");
         std::fs::create_dir(&parts_dir).unwrap();
 
-        std::fs::write(parts_dir.join("jakobs_pistol-3.tsv"), "index\tname\n0\tJAK_PS.part_barrel_01\n1\tJAK_PS.part_grip_01\n").unwrap();
-        std::fs::write(parts_dir.join("vladof_ar-5.tsv"), "index\tname\n0\tVLA_AR.part_barrel_01\n").unwrap();
+        std::fs::write(
+            parts_dir.join("jakobs_pistol-3.tsv"),
+            "index\tname\n0\tJAK_PS.part_barrel_01\n1\tJAK_PS.part_grip_01\n",
+        )
+        .unwrap();
+        std::fs::write(
+            parts_dir.join("vladof_ar-5.tsv"),
+            "index\tname\n0\tVLA_AR.part_barrel_01\n",
+        )
+        .unwrap();
 
         let db = load_database(&parts_dir).unwrap();
         assert_eq!(db.parts.len(), 3);

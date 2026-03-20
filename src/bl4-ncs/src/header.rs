@@ -45,7 +45,6 @@ impl Default for ParseConfig {
     }
 }
 
-
 /// Parse basic header information from NCS data
 ///
 /// Uses SIMD-accelerated memchr for efficient pattern matching.

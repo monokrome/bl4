@@ -7,18 +7,16 @@
 
 use anyhow::{Context, Result};
 use retoc::{
-    container_header::EIoContainerHeaderVersion,
-    iostore,
-    script_objects::FPackageObjectIndexType,
-    zen::FZenPackageHeader,
-    Config, EIoStoreTocVersion,
+    container_header::EIoContainerHeaderVersion, iostore, script_objects::FPackageObjectIndexType,
+    zen::FZenPackageHeader, Config, EIoStoreTocVersion,
 };
-use std::path::Path;
 use std::collections::HashMap;
 use std::io::Cursor;
+use std::path::Path;
 use std::sync::Arc;
 
-const PAK_PATH: &str = "/home/polar/.local/share/Steam/steamapps/common/Borderlands 4/OakGame/Content/Paks";
+const PAK_PATH: &str =
+    "/home/polar/.local/share/Steam/steamapps/common/Borderlands 4/OakGame/Content/Paks";
 const SCRIPTOBJECTS_PATH: &str = "/tmp/scriptobjects.json";
 
 fn main() -> Result<()> {
@@ -38,8 +36,7 @@ fn main() -> Result<()> {
         container_header_version_override: None,
         toc_version_override: None,
     });
-    let store = iostore::open(Path::new(PAK_PATH), config)
-        .context("Failed to open IoStore")?;
+    let store = iostore::open(Path::new(PAK_PATH), config).context("Failed to open IoStore")?;
 
     let toc_version = store
         .container_file_version()
@@ -51,9 +48,13 @@ fn main() -> Result<()> {
     eprintln!("Loading scriptobjects from {SCRIPTOBJECTS_PATH}...");
     let (hash_to_path, name_to_hash) = load_scriptobjects(SCRIPTOBJECTS_PATH)?;
 
-    let target_hash = name_to_hash
-        .get(class_name.as_str())
-        .with_context(|| format!("Class '{}' not found in scriptobjects ({} classes loaded)", class_name, name_to_hash.len()))?;
+    let target_hash = name_to_hash.get(class_name.as_str()).with_context(|| {
+        format!(
+            "Class '{}' not found in scriptobjects ({} classes loaded)",
+            class_name,
+            name_to_hash.len()
+        )
+    })?;
     eprintln!("Class '{class_name}' -> hash {target_hash}");
 
     eprintln!("Scanning for matching assets (max {max_samples})...");
@@ -107,8 +108,14 @@ fn main() -> Result<()> {
 
             println!("=== {} ===", path);
             println!("  class: {}", resolved_class);
-            println!("  export[{}]: {} ({} bytes, offset 0x{:X} in chunk)", ei, obj_name, size, offset);
-            println!("  header_end: 0x{:X}, cooked_serial_offset: 0x{:X}", header_end, export.cooked_serial_offset);
+            println!(
+                "  export[{}]: {} ({} bytes, offset 0x{:X} in chunk)",
+                ei, obj_name, size, offset
+            );
+            println!(
+                "  header_end: 0x{:X}, cooked_serial_offset: 0x{:X}",
+                header_end, export.cooked_serial_offset
+            );
             println!("  name_map: {:?}", header.name_map.copy_raw_names());
 
             if offset + size <= data.len() {
@@ -118,7 +125,10 @@ fn main() -> Result<()> {
                 print_hex(export_data, dump_len);
                 println!("  strings: {:?}", find_ascii_strings(export_data, 4));
             } else {
-                println!("  ERROR: export data out of bounds (chunk len {})", data.len());
+                println!(
+                    "  ERROR: export data out of bounds (chunk len {})",
+                    data.len()
+                );
             }
             println!();
 
@@ -170,13 +180,16 @@ fn print_hex(data: &[u8], len: usize) {
     for (i, chunk) in data[..len].chunks(16).enumerate() {
         let offset = i * 16;
         let hex: Vec<String> = chunk.iter().map(|b| format!("{:02x}", b)).collect();
-        let ascii: String = chunk.iter().map(|b| {
-            if b.is_ascii_graphic() || *b == b' ' {
-                *b as char
-            } else {
-                '.'
-            }
-        }).collect();
+        let ascii: String = chunk
+            .iter()
+            .map(|b| {
+                if b.is_ascii_graphic() || *b == b' ' {
+                    *b as char
+                } else {
+                    '.'
+                }
+            })
+            .collect();
 
         // Pad hex to full width for alignment
         let hex_str = if chunk.len() < 16 {

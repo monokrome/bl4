@@ -41,46 +41,43 @@ mod types;
 mod unpack;
 
 // Re-export main types
+pub use bit_reader::{bit_width, BitRead, BitReader, StreamingBitReader};
 pub use content::{Content as NcsContent, Header as NcsContentHeader};
+pub use data::{
+    decompress as decompress_ncs, decompress_reader_with as decompress_ncs_reader_with,
+    decompress_with as decompress_ncs_with, scan as scan_for_ncs, DecompressReader,
+    Header as NcsHeader,
+};
 pub use data_table::{
     extract_data_tables, extract_data_tables_from_dir, table_to_tsv, write_data_tables, DataTable,
     DataTableManifest, DataTableRow,
+};
+pub use document::{
+    extract_categorized_parts, extract_category_names,
+    extract_serial_indices as extract_document_serial_indices, CategorizedPart,
+    DepEntry as ParsedDepEntry, Document as ParsedDocument, Entry as ParsedEntry,
+    Record as ParsedRecord2, SerialIndexEntry as DocumentSerialIndexEntry, Table as ParsedTable,
+    Tag as ParsedTag, Value as ParsedValue,
 };
 pub use drops::{
     extract_drops_from_itempool, extract_drops_from_itempoollist, generate_drop_pools_tsv,
     generate_drops_manifest, DropEntry, DropLocation, DropProbabilities, DropSource, DropsDb,
     DropsManifest,
 };
-pub use data::{
-    decompress as decompress_ncs, decompress_reader_with as decompress_ncs_reader_with,
-    decompress_with as decompress_ncs_with, scan as scan_for_ncs, DecompressReader, Header as NcsHeader,
-};
 pub use extract::{extract_from_pak, ExtractionResult, NcsFile};
 pub use field::{known as fields, Field, Type as FieldType};
 pub use hash::fnv1a_hash;
+pub use inventory::{
+    extract_raw_strings, extract_string_numeric_pairs, get_parts, get_parts_by_slot, is_valid_part,
+    parse_inventory, raw_strings_to_tsv, string_numeric_pairs_to_tsv, Inventory, ItemCategory,
+    ItemParts, LegendaryComposition, PartIndices, RawStringEntry, SerialIndex, StringNumericPair,
+};
 pub use manifest::{
     scan as scan_for_ncs_manifests, Entry as NcsManifestEntry, Manifest as NcsManifest,
 };
-pub use name_data::{
-    extract_from_directory as extract_name_data, NameDataEntry, NameDataMap,
-};
-pub use inventory::{
-    extract_raw_strings, extract_string_numeric_pairs, get_parts,
-    get_parts_by_slot, is_valid_part, parse_inventory, raw_strings_to_tsv,
-    string_numeric_pairs_to_tsv, Inventory, ItemCategory, ItemParts, LegendaryComposition,
-    PartIndices, RawStringEntry, SerialIndex, StringNumericPair,
-};
+pub use name_data::{extract_from_directory as extract_name_data, NameDataEntry, NameDataMap};
 pub use pak::{
     extract_from_directory, is_ncs_file, type_from_filename, DirectoryReader, ExtractedNcs,
-};
-pub use bit_reader::{bit_width, BitRead, BitReader, StreamingBitReader};
-pub use document::{
-    extract_serial_indices as extract_document_serial_indices,
-    extract_categorized_parts, extract_category_names,
-    Document as ParsedDocument, Table as ParsedTable, Record as ParsedRecord2,
-    Entry as ParsedEntry, DepEntry as ParsedDepEntry, Value as ParsedValue,
-    Tag as ParsedTag, SerialIndexEntry as DocumentSerialIndexEntry,
-    CategorizedPart,
 };
 pub use parse::parse as parse_ncs_binary;
 pub use parse::parse_from_reader as parse_ncs_binary_from_reader;
@@ -301,10 +298,17 @@ mod investigate_failures {
                     for (offset, header) in &chunks {
                         if let Err(e) = decompress(&data[*offset..]) {
                             println!("{} offset {}: {:?}", pak_name, offset, e);
-                            println!("  Header: comp={} decomp={}", header.compressed_size, header.decompressed_size);
+                            println!(
+                                "  Header: comp={} decomp={}",
+                                header.compressed_size, header.decompressed_size
+                            );
                             // Show first 64 bytes
-                            let preview: String = data[*offset..*offset+64.min(data.len()-*offset)]
-                                .iter().map(|b| format!("{:02x}", b)).collect::<Vec<_>>().join(" ");
+                            let preview: String = data
+                                [*offset..*offset + 64.min(data.len() - *offset)]
+                                .iter()
+                                .map(|b| format!("{:02x}", b))
+                                .collect::<Vec<_>>()
+                                .join(" ");
                             println!("  Bytes: {}", preview);
                         }
                     }
@@ -317,8 +321,8 @@ mod investigate_failures {
 #[cfg(test)]
 mod parse_real_ncs {
     use super::test_paths;
-    use crate::data::{decompress, scan};
     use crate::content::Content;
+    use crate::data::{decompress, scan};
 
     #[test]
     #[ignore = "reads PAK files, slow"]
@@ -335,20 +339,23 @@ mod parse_real_ncs {
 
         let data = std::fs::read(pak_path).expect("read pak");
         let chunks = scan(&data);
-        
+
         println!("\nFound {} NCS chunks", chunks.len());
-        
+
         let mut success = 0;
         let mut failed_parse = 0;
-        
+
         for (offset, header) in chunks.iter().take(10) {
             println!("\n=== NCS at offset {} ===", offset);
-            println!("  Header: comp={} decomp={}", header.compressed_size, header.decompressed_size);
-            
+            println!(
+                "  Header: comp={} decomp={}",
+                header.compressed_size, header.decompressed_size
+            );
+
             match decompress(&data[*offset..]) {
                 Ok(decompressed) => {
                     println!("  Decompressed: {} bytes", decompressed.len());
-                    
+
                     if let Some(content) = Content::parse(&decompressed) {
                         success += 1;
                         println!("  Type: {}", content.type_name());
@@ -361,13 +368,17 @@ mod parse_real_ncs {
                         failed_parse += 1;
                         println!("  FAILED to parse content");
                         // Show raw bytes
-                        let hex: String = decompressed.iter().take(64)
+                        let hex: String = decompressed
+                            .iter()
+                            .take(64)
                             .map(|b| format!("{:02x}", b))
                             .collect::<Vec<_>>()
                             .join(" ");
                         println!("  First 64 bytes: {}", hex);
                         // Show as string
-                        let s: String = decompressed.iter().take(100)
+                        let s: String = decompressed
+                            .iter()
+                            .take(100)
                             .map(|&b| if b >= 32 && b < 127 { b as char } else { '.' })
                             .collect();
                         println!("  As string: {}", s);
@@ -376,17 +387,20 @@ mod parse_real_ncs {
                 Err(e) => println!("  Decompress error: {:?}", e),
             }
         }
-        
-        println!("\n\nSummary: {} parsed successfully, {} failed to parse", success, failed_parse);
+
+        println!(
+            "\n\nSummary: {} parsed successfully, {} failed to parse",
+            success, failed_parse
+        );
     }
 }
 
 #[cfg(test)]
 mod correlate_manifest {
     use super::test_paths;
+    use crate::content::Content;
     use crate::data::{decompress, scan};
     use crate::manifest::scan as scan_manifests;
-    use crate::content::Content;
 
     #[test]
     #[ignore = "reads PAK files, slow"]
@@ -423,8 +437,10 @@ mod correlate_manifest {
         for entry in &entries {
             if entry.index != expected_index {
                 let gap = (entry.index - expected_index) / 12;
-                println!("  Gap before {}: {} missing slots (index jumped from {} to {})",
-                    entry.filename, gap, expected_index, entry.index);
+                println!(
+                    "  Gap before {}: {} missing slots (index jumped from {} to {})",
+                    entry.filename, gap, expected_index, entry.index
+                );
             }
             expected_index = entry.index + 12;
         }
@@ -442,8 +458,10 @@ mod correlate_manifest {
             } else {
                 None
             };
-            println!("  {} (idx {}) -> chunk offset: {:?}",
-                entry.filename, entry.index, chunk_idx);
+            println!(
+                "  {} (idx {}) -> chunk offset: {:?}",
+                entry.filename, entry.index, chunk_idx
+            );
         }
     }
 
@@ -482,7 +500,10 @@ mod correlate_manifest {
 
         println!("Found {} NCS chunks", chunks.len());
         println!("\nCorrelating first 10:");
-        println!("{:<6} {:<12} {:<40} {:<20}", "Idx", "Offset", "Manifest Filename", "Parsed Type");
+        println!(
+            "{:<6} {:<12} {:<40} {:<20}",
+            "Idx", "Offset", "Manifest Filename", "Parsed Type"
+        );
         println!("{}", "-".repeat(80));
 
         for i in 0..10.min(entries.len().min(chunks.len())) {
@@ -491,27 +512,32 @@ mod correlate_manifest {
 
             // Try to parse content for comparison
             let parsed_type = match decompress(&data[*offset..]) {
-                Ok(decompressed) => {
-                    Content::parse(&decompressed)
-                        .map(|c| c.type_name().to_string())
-                        .unwrap_or_else(|| "(parse failed)".to_string())
-                }
+                Ok(decompressed) => Content::parse(&decompressed)
+                    .map(|c| c.type_name().to_string())
+                    .unwrap_or_else(|| "(parse failed)".to_string()),
                 Err(_) => "(decompress failed)".to_string(),
             };
 
             // Extract type from manifest filename: "Nexus-Data-{type}0.ncs"
-            let manifest_type = entry.filename
+            let manifest_type = entry
+                .filename
                 .strip_prefix("Nexus-Data-")
                 .and_then(|s| s.strip_suffix("0.ncs"))
                 .unwrap_or(&entry.filename);
 
-            println!("{:<6} {:<12} {:<40} {:<20}",
-                entry.index, offset, &entry.filename, parsed_type);
+            println!(
+                "{:<6} {:<12} {:<40} {:<20}",
+                entry.index, offset, &entry.filename, parsed_type
+            );
 
             // Check if they match (case-insensitive)
             if parsed_type.to_lowercase() != manifest_type.to_lowercase()
-                && parsed_type != "(parse failed)" {
-                println!("  ^ MISMATCH: manifest='{}' vs parsed='{}'", manifest_type, parsed_type);
+                && parsed_type != "(parse failed)"
+            {
+                println!(
+                    "  ^ MISMATCH: manifest='{}' vs parsed='{}'",
+                    manifest_type, parsed_type
+                );
             }
         }
     }
@@ -552,8 +578,7 @@ mod scan_all_paks {
                 let manifest_count: usize = manifests.iter().map(|(_, m)| m.entries.len()).sum();
 
                 if chunks.len() > 0 || manifest_count > 0 {
-                    println!("{:<45} {:>8} {:>10}",
-                        name, chunks.len(), manifest_count);
+                    println!("{:<45} {:>8} {:>10}", name, chunks.len(), manifest_count);
                     total_chunks += chunks.len();
                     total_manifest_entries += manifest_count;
                 }
@@ -561,7 +586,10 @@ mod scan_all_paks {
         }
 
         println!("{}", "-".repeat(65));
-        println!("{:<45} {:>8} {:>10}", "TOTAL", total_chunks, total_manifest_entries);
+        println!(
+            "{:<45} {:>8} {:>10}",
+            "TOTAL", total_chunks, total_manifest_entries
+        );
     }
 }
 
@@ -591,8 +619,10 @@ mod test_extraction {
 
         println!("\nFirst 10 files:");
         for file in result.files.iter().take(10) {
-            println!("  {} (type: {}, offset: {})",
-                file.filename, file.type_name, file.offset);
+            println!(
+                "  {} (type: {}, offset: {})",
+                file.filename, file.type_name, file.offset
+            );
         }
 
         println!("\nMissing chunks (manifest entries without data):");
@@ -652,21 +682,28 @@ mod investigate_missing {
         // Check the index gap pattern
         println!("\nIndex analysis for last entries:");
         let last_10: Vec<_> = entries.iter().rev().take(10).collect();
-        for i in 0..last_10.len()-1 {
+        for i in 0..last_10.len() - 1 {
             let curr = last_10[i];
-            let next = last_10[i+1];
+            let next = last_10[i + 1];
             let gap = curr.index as i32 - next.index as i32;
             println!("  {} -> {}: gap = {}", curr.index, next.index, gap);
         }
 
         // Search for these specific strings in the pak to see if data exists
         println!("\nSearching for missing entry names in pak:");
-        let missing = ["wwise_auxilary_busses", "wwise_soundbanks", "wwise_states", 
-                       "wwise_switches", "wwise_triggers", "xp_progression"];
-        
+        let missing = [
+            "wwise_auxilary_busses",
+            "wwise_soundbanks",
+            "wwise_states",
+            "wwise_switches",
+            "wwise_triggers",
+            "xp_progression",
+        ];
+
         for name in &missing {
             let pattern = name.as_bytes();
-            let count = data.windows(pattern.len())
+            let count = data
+                .windows(pattern.len())
                 .filter(|w| *w == pattern)
                 .count();
             println!("  '{}': found {} times", name, count);
@@ -676,7 +713,8 @@ mod investigate_missing {
         // Last known chunk is at offset ~10602549 (wise_game_parameters)
         println!("\nData after last known NCS chunk (offset ~10602549):");
         let start = 10602549 + 1000; // A bit after the last chunk
-        let preview: String = data[start..start+200].iter()
+        let preview: String = data[start..start + 200]
+            .iter()
             .map(|&b| if b >= 32 && b < 127 { b as char } else { '.' })
             .collect();
         println!("  {}", preview);
@@ -700,43 +738,52 @@ mod investigate_missing2 {
         }
 
         let data = std::fs::read(pak_path).expect("read pak");
-        
+
         // Get all chunks
         let mut chunks = scan(&data);
         chunks.sort_by_key(|(offset, _)| *offset);
-        
+
         println!("\nLast 5 NCS chunks found:");
         for (offset, header) in chunks.iter().rev().take(5).rev() {
-            println!("  offset {}: comp={} decomp={}", 
-                offset, header.compressed_size, header.decompressed_size);
+            println!(
+                "  offset {}: comp={} decomp={}",
+                offset, header.compressed_size, header.decompressed_size
+            );
         }
-        
+
         let last_offset = chunks.last().map(|(o, _)| *o).unwrap_or(0);
         let last_end = chunks.last().map(|(o, h)| o + h.total_size()).unwrap_or(0);
-        
+
         println!("\nLast chunk ends at: {}", last_end);
-        
+
         // Search for ANY NCS magic after the last chunk
         println!("\nSearching for NCS magic after last chunk...");
         let search_start = last_end;
         let ncs_magic = [0x4e, 0x43, 0x53]; // "NCS"
-        
+
         let mut found = 0;
         for i in search_start..data.len().saturating_sub(3) {
-            if data[i..i+3] == ncs_magic {
+            if data[i..i + 3] == ncs_magic {
                 found += 1;
                 if found <= 10 {
-                    let version = if i > 0 { data[i-1] } else { 0 };
-                    println!("  Found at offset {} (version byte: 0x{:02x})", i-1, version);
+                    let version = if i > 0 { data[i - 1] } else { 0 };
+                    println!(
+                        "  Found at offset {} (version byte: 0x{:02x})",
+                        i - 1,
+                        version
+                    );
                 }
             }
         }
         println!("Total NCS magic found after last chunk: {}", found);
-        
+
         // Check the manifest location
         println!("\nManifest is at offset 384699320");
         println!("Last NCS chunk at: {}", last_offset);
-        println!("Gap between last chunk and manifest: {} bytes", 384699320 - last_end);
+        println!(
+            "Gap between last chunk and manifest: {} bytes",
+            384699320 - last_end
+        );
     }
 }
 
@@ -756,10 +803,14 @@ mod full_mapping {
         let mut total_missing = 0;
         let mut total_orphans = 0;
 
-        println!("\n{:<45} {:>6} {:>6} {:>6}", "Pak File", "Files", "Miss", "Orph");
+        println!(
+            "\n{:<45} {:>6} {:>6} {:>6}",
+            "Pak File", "Files", "Miss", "Orph"
+        );
         println!("{}", "=".repeat(70));
 
-        let mut paks: Vec<_> = std::fs::read_dir(&paks_dir).unwrap()
+        let mut paks: Vec<_> = std::fs::read_dir(&paks_dir)
+            .unwrap()
             .flatten()
             .filter(|e| e.path().extension().map_or(false, |x| x == "pak"))
             .collect();
@@ -776,12 +827,17 @@ mod full_mapping {
 
             let result = extract_from_pak(&data);
 
-            if result.files.len() > 0 || result.missing_chunks.len() > 0 || result.orphan_chunks.len() > 0 {
-                println!("{:<45} {:>6} {:>6} {:>6}",
+            if result.files.len() > 0
+                || result.missing_chunks.len() > 0
+                || result.orphan_chunks.len() > 0
+            {
+                println!(
+                    "{:<45} {:>6} {:>6} {:>6}",
                     name,
                     result.files.len(),
                     result.missing_chunks.len(),
-                    result.orphan_chunks.len());
+                    result.orphan_chunks.len()
+                );
 
                 total_files += result.files.len();
                 total_missing += result.missing_chunks.len();
@@ -790,7 +846,10 @@ mod full_mapping {
         }
 
         println!("{}", "=".repeat(70));
-        println!("{:<45} {:>6} {:>6} {:>6}", "TOTAL", total_files, total_missing, total_orphans);
+        println!(
+            "{:<45} {:>6} {:>6} {:>6}",
+            "TOTAL", total_files, total_missing, total_orphans
+        );
 
         println!("\n\nSample mappings from pakchunk0:");
         let pak0 = paks_dir.join("pakchunk0-Windows_0_P.pak");
@@ -803,7 +862,10 @@ mod full_mapping {
         println!("\n{:<5} {:<12} {:<40}", "Idx", "Offset", "Filename");
         println!("{}", "-".repeat(60));
         for file in result.files.iter().take(15) {
-            println!("{:<5} {:<12} {:<40}", file.index, file.offset, file.filename);
+            println!(
+                "{:<5} {:<12} {:<40}",
+                file.index, file.offset, file.filename
+            );
         }
         println!("... ({} more)", result.files.len() - 15);
     }
@@ -822,9 +884,12 @@ mod generate_csv {
         };
 
         let mut csv = String::new();
-        csv.push_str("pak_file,index,offset,compressed_size,decompressed_size,filename,type_name\n");
+        csv.push_str(
+            "pak_file,index,offset,compressed_size,decompressed_size,filename,type_name\n",
+        );
 
-        let mut paks: Vec<_> = std::fs::read_dir(paks_dir).unwrap()
+        let mut paks: Vec<_> = std::fs::read_dir(paks_dir)
+            .unwrap()
             .flatten()
             .filter(|e| e.path().extension().map_or(false, |x| x == "pak"))
             .collect();
@@ -842,14 +907,16 @@ mod generate_csv {
             let result = extract_from_pak(&data);
 
             for file in &result.files {
-                csv.push_str(&format!("{},{},{},{},{},{},{}\n",
+                csv.push_str(&format!(
+                    "{},{},{},{},{},{},{}\n",
                     pak_name,
                     file.index,
                     file.offset,
                     file.header.compressed_size,
                     file.header.decompressed_size,
                     file.filename,
-                    file.type_name));
+                    file.type_name
+                ));
             }
         }
 
@@ -858,7 +925,7 @@ mod generate_csv {
         let out_path = out_dir.join("ncs-mapping.csv");
         std::fs::write(&out_path, &csv).expect("write csv");
         println!("\nWrote {} bytes to {}", csv.len(), out_path.display());
-        
+
         // Show first 20 lines
         println!("\nFirst 20 lines:");
         for line in csv.lines().take(20) {
@@ -895,7 +962,10 @@ mod investigate_inner_format {
         println!("\n=== Inner header analysis ===");
         println!("NCS offset: {}", ncs_offset);
         println!("Inner start: {}", inner_start);
-        println!("Compressed: {}, Decompressed: {}", compressed_size, decompressed_size);
+        println!(
+            "Compressed: {}, Decompressed: {}",
+            compressed_size, decompressed_size
+        );
 
         let inner = &data[inner_start..inner_start + 0x60.min(compressed_size)];
         println!("\nFirst 0x60 bytes of inner data:");
@@ -921,7 +991,8 @@ mod investigate_inner_format {
 
             match extractor.read_from_slice(oodle_data, &mut output) {
                 Ok(actual) => {
-                    if actual > 10000 {  // Significant output
+                    if actual > 10000 {
+                        // Significant output
                         println!("Skip {}: SUCCESS {} bytes", skip, actual);
                         println!("  First 32: {:02x?}", &output[..32.min(actual)]);
                     }
@@ -942,21 +1013,28 @@ mod investigate_inner_format {
 
         // If block_count = 2, try decompressing as multiple blocks
         if block_count > 0 && block_count < 100 {
-            println!("Trying multi-block decompression with {} blocks...", block_count);
+            println!(
+                "Trying multi-block decompression with {} blocks...",
+                block_count
+            );
         }
     }
 }
 
 #[cfg(test)]
 mod test_new_parser {
-    use crate::parse;
     use crate::document;
+    use crate::parse;
 
     fn ncs_test_dir() -> Option<std::path::PathBuf> {
         let dir = std::path::PathBuf::from(
             "/home/polar/Documents/Borderlands 4/ncsdata/pakchunk0-Windows_0_P",
         );
-        if dir.exists() { Some(dir) } else { None }
+        if dir.exists() {
+            Some(dir)
+        } else {
+            None
+        }
     }
 
     #[test]
@@ -974,12 +1052,21 @@ mod test_new_parser {
         println!("BlobHeader: {:?}", blob);
 
         let blob = blob.expect("BlobHeader parse failed");
-        println!("  entry_count={}, flags={}, string_bytes={}, body_offset={}",
-            blob.entry_count, blob.flags, blob.string_bytes, blob.body_offset());
+        println!(
+            "  entry_count={}, flags={}, string_bytes={}, body_offset={}",
+            blob.entry_count,
+            blob.flags,
+            blob.string_bytes,
+            blob.body_offset()
+        );
 
         // Step 2: header strings
         let header_strings = parse::blob::extract_header_strings(&data, &blob);
-        println!("Header strings ({}): {:?}", header_strings.len(), &header_strings);
+        println!(
+            "Header strings ({}): {:?}",
+            header_strings.len(),
+            &header_strings
+        );
 
         // Step 3: body
         let body_offset = blob.body_offset();
@@ -994,20 +1081,44 @@ mod test_new_parser {
         if let Some(tct) = &tct {
             println!("  type_codes: {:?}", tct.header.type_codes);
             println!("  type_index_count: {}", tct.header.type_index_count);
-            println!("  value_strings: {} (declared {})", tct.value_strings.len(), tct.value_strings_declared_count);
-            println!("  value_kinds: {} (declared {})", tct.value_kinds.len(), tct.value_kinds_declared_count);
-            println!("  key_strings: {} (declared {})", tct.key_strings.len(), tct.key_strings_declared_count);
+            println!(
+                "  value_strings: {} (declared {})",
+                tct.value_strings.len(),
+                tct.value_strings_declared_count
+            );
+            println!(
+                "  value_kinds: {} (declared {})",
+                tct.value_kinds.len(),
+                tct.value_kinds_declared_count
+            );
+            println!(
+                "  key_strings: {} (declared {})",
+                tct.key_strings.len(),
+                tct.key_strings_declared_count
+            );
             println!("  data_offset: {}", tct.data_offset);
-            println!("  row_flags[..5]: {:?}", &tct.header.row_flags[..5.min(tct.header.row_flags.len())]);
+            println!(
+                "  row_flags[..5]: {:?}",
+                &tct.header.row_flags[..5.min(tct.header.row_flags.len())]
+            );
 
             if !tct.value_strings.is_empty() {
-                println!("  first 5 value_strings: {:?}", &tct.value_strings[..5.min(tct.value_strings.len())]);
+                println!(
+                    "  first 5 value_strings: {:?}",
+                    &tct.value_strings[..5.min(tct.value_strings.len())]
+                );
             }
             if !tct.value_kinds.is_empty() {
-                println!("  first 5 value_kinds: {:?}", &tct.value_kinds[..5.min(tct.value_kinds.len())]);
+                println!(
+                    "  first 5 value_kinds: {:?}",
+                    &tct.value_kinds[..5.min(tct.value_kinds.len())]
+                );
             }
             if !tct.key_strings.is_empty() {
-                println!("  first 5 key_strings: {:?}", &tct.key_strings[..5.min(tct.key_strings.len())]);
+                println!(
+                    "  first 5 key_strings: {:?}",
+                    &tct.key_strings[..5.min(tct.key_strings.len())]
+                );
             }
         }
 
@@ -1017,7 +1128,12 @@ mod test_new_parser {
         if let Some(doc) = &doc {
             println!("  tables: {:?}", doc.tables.keys().collect::<Vec<_>>());
             for (name, table) in &doc.tables {
-                println!("  table '{}': {} deps, {} records", name, table.deps.len(), table.records.len());
+                println!(
+                    "  table '{}': {} deps, {} records",
+                    name,
+                    table.deps.len(),
+                    table.records.len()
+                );
             }
         }
     }
@@ -1030,22 +1146,35 @@ mod test_new_parser {
         };
 
         let data = std::fs::read(dir.join("Nexus-Data-achievement0.bin")).unwrap();
-        let doc = parse::parse_from_reader(&mut std::io::Cursor::new(&data)).expect("Failed to parse achievement0");
+        let doc = parse::parse_from_reader(&mut std::io::Cursor::new(&data))
+            .expect("Failed to parse achievement0");
 
         // achievement0 should have one table named "achievement"
-        assert!(doc.tables.contains_key("achievement"),
-            "Expected 'achievement' table, got: {:?}", doc.tables.keys().collect::<Vec<_>>());
+        assert!(
+            doc.tables.contains_key("achievement"),
+            "Expected 'achievement' table, got: {:?}",
+            doc.tables.keys().collect::<Vec<_>>()
+        );
 
         let table = &doc.tables["achievement"];
         assert!(table.deps.is_empty(), "achievement0 has no deps");
-        assert!(!table.records.is_empty(), "Expected records in achievement table");
+        assert!(
+            !table.records.is_empty(),
+            "Expected records in achievement table"
+        );
 
         // First record should have entries with keys like "id_achievement_04_cosmetics_collect"
         let first_record = &table.records[0];
-        assert!(!first_record.entries.is_empty(), "First record should have entries");
+        assert!(
+            !first_record.entries.is_empty(),
+            "First record should have entries"
+        );
 
-        println!("achievement0: {} records, first record has {} entries",
-            table.records.len(), first_record.entries.len());
+        println!(
+            "achievement0: {} records, first record has {} entries",
+            table.records.len(),
+            first_record.entries.len()
+        );
 
         // Check first entry
         let first_entry = &first_record.entries[0];
@@ -1060,36 +1189,51 @@ mod test_new_parser {
         };
 
         let data = std::fs::read(dir.join("Nexus-Data-inv0.bin")).unwrap();
-        let doc = parse::parse_from_reader(&mut std::io::Cursor::new(&data)).expect("Failed to parse inv0");
+        let doc = parse::parse_from_reader(&mut std::io::Cursor::new(&data))
+            .expect("Failed to parse inv0");
 
         // inv0 should have an "inv" table with deps
-        assert!(doc.tables.contains_key("inv"),
-            "Expected 'inv' table, got: {:?}", doc.tables.keys().collect::<Vec<_>>());
+        assert!(
+            doc.tables.contains_key("inv"),
+            "Expected 'inv' table, got: {:?}",
+            doc.tables.keys().collect::<Vec<_>>()
+        );
 
         let table = &doc.tables["inv"];
-        println!("inv0: {} deps, {} records", table.deps.len(), table.records.len());
+        println!(
+            "inv0: {} deps, {} records",
+            table.deps.len(),
+            table.records.len()
+        );
         println!("deps: {:?}", table.deps);
 
         // Count serial indices
         let indices = document::extract_serial_indices(&doc);
-        let root_count = indices.iter()
-            .filter(|e| e.dep_table.is_empty())
-            .count();
-        let sub_count = indices.iter()
-            .filter(|e| !e.dep_table.is_empty())
-            .count();
+        let root_count = indices.iter().filter(|e| e.dep_table.is_empty()).count();
+        let sub_count = indices.iter().filter(|e| !e.dep_table.is_empty()).count();
 
-        println!("Serial indices: {} total ({} Root, {} Sub)", indices.len(), root_count, sub_count);
+        println!(
+            "Serial indices: {} total ({} Root, {} Sub)",
+            indices.len(),
+            root_count,
+            sub_count
+        );
 
         // Target: 655 serial indices (37 Root + 618 Sub)
         // Print first 10 for debugging
         for entry in indices.iter().take(10) {
-            println!("  {} -> {} (dep: {})", entry.part_name, entry.index, entry.dep_table);
+            println!(
+                "  {} -> {} (dep: {})",
+                entry.part_name, entry.index, entry.dep_table
+            );
         }
 
         // This is the critical assertion
-        assert!(indices.len() >= 600,
-            "Expected ~655 serial indices, got {}", indices.len());
+        assert!(
+            indices.len() >= 600,
+            "Expected ~655 serial indices, got {}",
+            indices.len()
+        );
     }
 
     #[test]
@@ -1112,12 +1256,14 @@ mod test_new_parser {
                 match parse::parse_from_reader(&mut std::io::Cursor::new(&data)) {
                     Some(doc) => {
                         let total_tables = doc.tables.len();
-                        let total_records: usize = doc.tables.values()
-                            .map(|t| t.records.len())
-                            .sum();
+                        let total_records: usize =
+                            doc.tables.values().map(|t| t.records.len()).sum();
                         success += 1;
                         if success <= 5 {
-                            println!("{}: {} tables, {} records", name, total_tables, total_records);
+                            println!(
+                                "{}: {} tables, {} records",
+                                name, total_tables, total_records
+                            );
                         }
                     }
                     None => {
@@ -1132,7 +1278,11 @@ mod test_new_parser {
         if !failures.is_empty() {
             println!("Failures: {:?}", failures);
         }
-        assert!(success > 100, "Expected most files to parse, got {}", success);
+        assert!(
+            success > 100,
+            "Expected most files to parse, got {}",
+            success
+        );
     }
 
     #[test]
@@ -1198,7 +1348,8 @@ mod test_new_parser {
         };
 
         let data = std::fs::read(dir.join("Nexus-Data-inv0.bin")).unwrap();
-        let doc = parse::parse_from_reader(&mut std::io::Cursor::new(&data)).expect("Failed to parse inv0");
+        let doc = parse::parse_from_reader(&mut std::io::Cursor::new(&data))
+            .expect("Failed to parse inv0");
 
         let mut with_si = 0;
         let mut without_si = 0;
@@ -1217,15 +1368,23 @@ mod test_new_parser {
             }
         }
 
-        println!("inv0: {} dep_entries with SI, {} without", with_si, without_si);
+        println!(
+            "inv0: {} dep_entries with SI, {} without",
+            with_si, without_si
+        );
         assert!(with_si > 600, "Expected 600+ dep_entries with serialindex");
-        assert_eq!(without_si, 0, "inv0 dep_entries should all have serialindex");
+        assert_eq!(
+            without_si, 0,
+            "inv0 dep_entries should all have serialindex"
+        );
     }
 
     fn has_serialindex(value: &document::Value) -> bool {
         match value {
             document::Value::Map(map) => {
-                if map.contains_key("serialindex") { return true; }
+                if map.contains_key("serialindex") {
+                    return true;
+                }
                 map.values().any(|v| has_serialindex(v))
             }
             document::Value::Array(arr) => arr.iter().any(|v| has_serialindex(v)),

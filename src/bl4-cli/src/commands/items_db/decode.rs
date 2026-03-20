@@ -38,12 +38,7 @@ fn build_item_parts(
 }
 
 /// Store a decoded value in item_values with Decoder source attribution
-fn set_decoded(
-    wdb: &bl4_idb::SqliteDb,
-    serial: &str,
-    field: &str,
-    value: &str,
-) -> Result<()> {
+fn set_decoded(wdb: &bl4_idb::SqliteDb, serial: &str, field: &str, value: &str) -> Result<()> {
     wdb.set_value(
         serial,
         field,
@@ -141,7 +136,10 @@ pub fn decode_all(db: &Path) -> Result<()> {
         }
     }
     let total = decoded + failed;
-    println!("Decoded {} items, {} failed ({} total)", decoded, failed, total);
+    println!(
+        "Decoded {} items, {} failed ({} total)",
+        decoded, failed, total
+    );
     println!(
         "Validation: {} legal, {} illegal, {} unknown",
         validated[0], validated[1], validated[2]

@@ -231,7 +231,9 @@ pub fn extract_reflection_data(
         if i % 500 == 0 {
             eprint!("\r  Processing class {}/{}...", i, classes.len());
         }
-        if let Ok(info) = extract_struct_properties(source, obj.address, &obj.name, true, fname_reader) {
+        if let Ok(info) =
+            extract_struct_properties(source, obj.address, &obj.name, true, fname_reader)
+        {
             structs.push(info);
         }
     }
@@ -245,7 +247,9 @@ pub fn extract_reflection_data(
         if i % 500 == 0 {
             eprint!("\r  Processing struct {}/{}...", i, script_structs.len());
         }
-        if let Ok(info) = extract_struct_properties(source, obj.address, &obj.name, false, fname_reader) {
+        if let Ok(info) =
+            extract_struct_properties(source, obj.address, &obj.name, false, fname_reader)
+        {
             structs.push(info);
         }
     }

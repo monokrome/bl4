@@ -90,8 +90,7 @@ pub fn debug_file(path: &Path, show_hex: bool, do_parse: bool, _show_offsets: bo
             Some(doc) => {
                 println!("\nParsed {} tables:", doc.tables.len());
                 for (name, table) in &doc.tables {
-                    let total_entries: usize =
-                        table.records.iter().map(|r| r.entries.len()).sum();
+                    let total_entries: usize = table.records.iter().map(|r| r.entries.len()).sum();
                     println!(
                         "  '{}': {} deps, {} records, {} entries",
                         name,

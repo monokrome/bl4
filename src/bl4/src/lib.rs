@@ -61,7 +61,10 @@ pub use parts::{
 #[doc(inline)]
 pub use save::{ChangeSet, SaveError, SaveFile, StateFlags};
 #[doc(inline)]
-pub use serial::{ItemSerial, Legality, RarityEstimate, ResolvedPart, ResolvedString, SerialError, SerialFormat, ValidationCheck, ValidationResult};
+pub use serial::{
+    ItemSerial, Legality, RarityEstimate, ResolvedPart, ResolvedString, SerialError, SerialFormat,
+    ValidationCheck, ValidationResult,
+};
 
 // Manifest data lookups
 #[doc(inline)]

@@ -122,7 +122,8 @@ impl Content {
 
         // Read format code - can be 4-10+ chars like "abcefhijl" or "abhX"
         let search_end = (format_start + 20).min(data.len());
-        let format_end = format_start + memchr::memchr(0, &data[format_start..search_end]).unwrap_or(4);
+        let format_end =
+            format_start + memchr::memchr(0, &data[format_start..search_end]).unwrap_or(4);
 
         // Validate format code: must be all alphabetic
         let format_bytes = &data[format_start..format_end];
@@ -255,9 +256,11 @@ fn find_format_code_after(data: &[u8], after: usize) -> Option<usize> {
         if abs_pos + 4 <= data.len() {
             let code_bytes = &data[abs_pos..abs_pos + 4];
             if code_bytes.iter().all(|&b| b.is_ascii_alphabetic())
-                && abs_pos > 0 && data[abs_pos - 1] <= 3 {
-                    return Some(abs_pos);
-                }
+                && abs_pos > 0
+                && data[abs_pos - 1] <= 3
+            {
+                return Some(abs_pos);
+            }
         }
 
         offset += rel_pos + 1;

@@ -36,7 +36,10 @@ pub fn unpack_string(s: &str) -> UnpackedString {
     }
 
     // Pure float string
-    if s.chars().all(|c| c.is_ascii_digit() || c == '.' || c == '-') && s.contains('.') {
+    if s.chars()
+        .all(|c| c.is_ascii_digit() || c == '.' || c == '-')
+        && s.contains('.')
+    {
         if let Ok(f) = s.parse::<f64>() {
             return UnpackedString {
                 original,
@@ -90,8 +93,7 @@ pub fn unpack_string(s: &str) -> UnpackedString {
 
     // If we only got one value and it's a string equal to original, not packed
     let was_packed = values.len() > 1
-        || (values.len() == 1
-            && !matches!(&values[0], UnpackedValue::String(s) if s == &original));
+        || (values.len() == 1 && !matches!(&values[0], UnpackedValue::String(s) if s == &original));
 
     // If nothing was unpacked, treat as plain string
     if values.is_empty() {
@@ -162,7 +164,11 @@ fn find_integer_end(s: &str) -> Option<usize> {
         }
     }
 
-    if pos > 0 { Some(pos) } else { None }
+    if pos > 0 {
+        Some(pos)
+    } else {
+        None
+    }
 }
 
 /// Batch unpack multiple strings, returning only those that were packed

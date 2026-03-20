@@ -191,7 +191,6 @@ pub enum SerialError {
 
     #[error("Serial too short: expected at least {expected} bytes, got {actual}")]
     TooShort { expected: usize, actual: usize },
-
 }
 
 /// Serial encoding format, determined from the binary token stream.
@@ -682,9 +681,7 @@ fn decode_serial_bytes(serial: &str) -> Result<Vec<u8>, SerialError> {
     }
 
     if serial.len() < 5 {
-        return Err(SerialError::InvalidEncoding(
-            "Serial too short".to_string(),
-        ));
+        return Err(SerialError::InvalidEncoding("Serial too short".to_string()));
     }
 
     let encoded_data = &serial[2..];
@@ -991,7 +988,8 @@ impl ItemSerial {
     ///
     /// Returns None if the category can't be determined or has no known name.
     pub fn category_name(&self) -> Option<&'static str> {
-        self.parts_category().and_then(crate::manifest::category_name)
+        self.parts_category()
+            .and_then(crate::manifest::category_name)
     }
 
     /// Get the item type description — category name with "Unknown" fallback
@@ -1198,10 +1196,7 @@ impl ItemSerial {
             .iter()
             .filter_map(|t| {
                 if let Token::String(s) = t {
-                    let short_name = s.split('.')
-                        .next_back()
-                        .unwrap_or(s)
-                        .to_string();
+                    let short_name = s.split('.').next_back().unwrap_or(s).to_string();
                     Some(ResolvedString {
                         asset_path: s.clone(),
                         short_name,
@@ -1217,7 +1212,11 @@ impl ItemSerial {
     pub fn detailed_dump(&self) -> String {
         let mut output = String::new();
         output.push_str(&format!("Serial: {}\n", self.original));
-        output.push_str(&format!("Format: {} ({})\n", self.format, self.item_type_description()));
+        output.push_str(&format!(
+            "Format: {} ({})\n",
+            self.format,
+            self.item_type_description()
+        ));
         output.push_str(&format!("Bytes: {} total\n\n", self.raw_bytes.len()));
 
         // Show extracted fields
@@ -1497,9 +1496,17 @@ mod tests {
                 match item.tokens.first() {
                     Some(Token::VarInt(_)) => {
                         // VarInt-first: level code is header VarInt[3]
-                        let header: Vec<u64> = item.tokens.iter()
+                        let header: Vec<u64> = item
+                            .tokens
+                            .iter()
                             .take_while(|t| !matches!(t, Token::Separator))
-                            .filter_map(|t| if let Token::VarInt(v) = t { Some(*v) } else { None })
+                            .filter_map(|t| {
+                                if let Token::VarInt(v) = t {
+                                    Some(*v)
+                                } else {
+                                    None
+                                }
+                            })
                             .collect();
                         if header.len() >= 4 {
                             *varint_codes.entry(header[3]).or_default() += 1;
@@ -1512,7 +1519,9 @@ mod tests {
                         let remainder = v % divisor;
                         *varbit_remainders.entry(remainder).or_default() += 1;
                     }
-                    _ => { no_level += 1; }
+                    _ => {
+                        no_level += 1;
+                    }
                 }
             }
         }
@@ -1522,8 +1531,15 @@ mod tests {
         sorted.sort_by(|a, b| b.1.cmp(a.1));
         for (code, count) in &sorted {
             let decoded = crate::parts::level_from_code(**code);
-            let odd_marker = if **code >= 128 && (**code - 120) % 2 == 1 { " *** ODD ***" } else { "" };
-            println!("  code {:>3} (0x{:02x}) = {:>4}x  decoded={:?}{}", code, code, count, decoded, odd_marker);
+            let odd_marker = if **code >= 128 && (**code - 120) % 2 == 1 {
+                " *** ODD ***"
+            } else {
+                ""
+            };
+            println!(
+                "  code {:>3} (0x{:02x}) = {:>4}x  decoded={:?}{}",
+                code, code, count, decoded, odd_marker
+            );
         }
 
         println!("\n=== VarBit-first: remainder values (varbit % divisor) ===");
@@ -1532,24 +1548,38 @@ mod tests {
         for (remainder, count) in &sorted {
             let rarity_bits = (**remainder >> 6) & 0x3;
             let low_bits = **remainder & 0x3F;
-            println!("  remainder {:>3} (0x{:02x}) = {:>4}x  rarity_bits={} low_6_bits={} (0x{:02x})",
-                remainder, remainder, count, rarity_bits, low_bits, low_bits);
+            println!(
+                "  remainder {:>3} (0x{:02x}) = {:>4}x  rarity_bits={} low_6_bits={} (0x{:02x})",
+                remainder, remainder, count, rarity_bits, low_bits, low_bits
+            );
         }
 
         println!("\n=== Dead zone codes (51-127) detail ===");
         for s in &serials {
             if let Ok(item) = ItemSerial::decode(s) {
-                if !matches!(item.tokens.first(), Some(Token::VarInt(_))) { continue; }
-                let header: Vec<u64> = item.tokens.iter()
+                if !matches!(item.tokens.first(), Some(Token::VarInt(_))) {
+                    continue;
+                }
+                let header: Vec<u64> = item
+                    .tokens
+                    .iter()
                     .take_while(|t| !matches!(t, Token::Separator))
-                    .filter_map(|t| if let Token::VarInt(v) = t { Some(*v) } else { None })
+                    .filter_map(|t| {
+                        if let Token::VarInt(v) = t {
+                            Some(*v)
+                        } else {
+                            None
+                        }
+                    })
                     .collect();
                 if header.len() >= 4 && (51..128).contains(&header[3]) {
                     let mfr_id = header[0];
                     let mfr = crate::parts::weapon_info_from_first_varint(mfr_id);
                     let rarity = item.rarity;
-                    println!("  code={} mfr_id={} mfr={:?} rarity={:?} header={:?}",
-                        header[3], mfr_id, mfr, rarity, header);
+                    println!(
+                        "  code={} mfr_id={} mfr={:?} rarity={:?} header={:?}",
+                        header[3], mfr_id, mfr, rarity, header
+                    );
                 }
             }
         }
@@ -1557,16 +1587,28 @@ mod tests {
         println!("\n=== High codes (>145, non-standard rarity) detail ===");
         for s in &serials {
             if let Ok(item) = ItemSerial::decode(s) {
-                if !matches!(item.tokens.first(), Some(Token::VarInt(_))) { continue; }
-                let header: Vec<u64> = item.tokens.iter()
+                if !matches!(item.tokens.first(), Some(Token::VarInt(_))) {
+                    continue;
+                }
+                let header: Vec<u64> = item
+                    .tokens
+                    .iter()
                     .take_while(|t| !matches!(t, Token::Separator))
-                    .filter_map(|t| if let Token::VarInt(v) = t { Some(*v) } else { None })
+                    .filter_map(|t| {
+                        if let Token::VarInt(v) = t {
+                            Some(*v)
+                        } else {
+                            None
+                        }
+                    })
                     .collect();
                 if header.len() >= 4 && header[3] > 200 {
                     let mfr_id = header[0];
                     let mfr = crate::parts::weapon_info_from_first_varint(mfr_id);
-                    println!("  code={} (0x{:x}) mfr={:?} header={:?}",
-                        header[3], header[3], mfr, header);
+                    println!(
+                        "  code={} (0x{:x}) mfr={:?} header={:?}",
+                        header[3], header[3], mfr, header
+                    );
                 }
             }
         }
@@ -1575,10 +1617,20 @@ mod tests {
         let mut vi2: BTreeMap<u64, usize> = BTreeMap::new();
         for s in &serials {
             if let Ok(item) = ItemSerial::decode(s) {
-                if !matches!(item.tokens.first(), Some(Token::VarInt(_))) { continue; }
-                let header: Vec<u64> = item.tokens.iter()
+                if !matches!(item.tokens.first(), Some(Token::VarInt(_))) {
+                    continue;
+                }
+                let header: Vec<u64> = item
+                    .tokens
+                    .iter()
                     .take_while(|t| !matches!(t, Token::Separator))
-                    .filter_map(|t| if let Token::VarInt(v) = t { Some(*v) } else { None })
+                    .filter_map(|t| {
+                        if let Token::VarInt(v) = t {
+                            Some(*v)
+                        } else {
+                            None
+                        }
+                    })
                     .collect();
                 if header.len() >= 3 {
                     *vi2.entry(header[2]).or_default() += 1;
@@ -1596,10 +1648,20 @@ mod tests {
         let mut vi3_when_4: BTreeMap<u64, usize> = BTreeMap::new();
         for s in &serials {
             if let Ok(item) = ItemSerial::decode(s) {
-                if !matches!(item.tokens.first(), Some(Token::VarInt(_))) { continue; }
-                let header: Vec<u64> = item.tokens.iter()
+                if !matches!(item.tokens.first(), Some(Token::VarInt(_))) {
+                    continue;
+                }
+                let header: Vec<u64> = item
+                    .tokens
+                    .iter()
                     .take_while(|t| !matches!(t, Token::Separator))
-                    .filter_map(|t| if let Token::VarInt(v) = t { Some(*v) } else { None })
+                    .filter_map(|t| {
+                        if let Token::VarInt(v) = t {
+                            Some(*v)
+                        } else {
+                            None
+                        }
+                    })
                     .collect();
                 if header.len() >= 4 {
                     if header[2] == 8 {
@@ -1627,10 +1689,20 @@ mod tests {
         println!("\n=== VarInt[2]=4 item serials ===");
         for s in &serials {
             if let Ok(item) = ItemSerial::decode(s) {
-                if !matches!(item.tokens.first(), Some(Token::VarInt(_))) { continue; }
-                let header: Vec<u64> = item.tokens.iter()
+                if !matches!(item.tokens.first(), Some(Token::VarInt(_))) {
+                    continue;
+                }
+                let header: Vec<u64> = item
+                    .tokens
+                    .iter()
                     .take_while(|t| !matches!(t, Token::Separator))
-                    .filter_map(|t| if let Token::VarInt(v) = t { Some(*v) } else { None })
+                    .filter_map(|t| {
+                        if let Token::VarInt(v) = t {
+                            Some(*v)
+                        } else {
+                            None
+                        }
+                    })
                     .collect();
                 if header.len() >= 3 && header[2] == 4 {
                     println!("  serial: {}", s);
@@ -1700,8 +1772,7 @@ mod tests {
 
             // Show each index: frequency, value patterns
             for (idx, all_values) in &index_values {
-                let name = crate::manifest::part_name(**cat, *idx as i64)
-                    .unwrap_or("?");
+                let name = crate::manifest::part_name(**cat, *idx as i64).unwrap_or("?");
                 let freq = all_values.len();
                 let pct = freq * 100 / n;
 
@@ -1738,8 +1809,16 @@ mod tests {
 
                 println!(
                     "    idx {:>3} ({:<35}) {:>3}/{} ({:>2}%) empty={} single={} multi={}{}{}",
-                    idx, name, freq, n, pct, empty_count, single_count, multi_count,
-                    value_info, multi_info
+                    idx,
+                    name,
+                    freq,
+                    n,
+                    pct,
+                    empty_count,
+                    single_count,
+                    multi_count,
+                    value_info,
+                    multi_info
                 );
             }
         }
@@ -1763,7 +1842,10 @@ mod tests {
             println!("  {:>4}x  {:?}", count, s);
         }
         if sorted_strings.len() > 30 {
-            println!("  ... and {} more unique strings", sorted_strings.len() - 30);
+            println!(
+                "  ... and {} more unique strings",
+                sorted_strings.len() - 30
+            );
         }
 
         // Token structure fingerprints
@@ -1911,7 +1993,13 @@ mod tests {
     fn debug_bit_trace() {
         let serial = "@Ugr$ZCm/&tH!t{KgK/Shxu>k"; // VLA_SMG
         let item = ItemSerial::decode(serial).unwrap();
-        eprintln!("raw_bytes: {:?}", item.raw_bytes.iter().map(|b| format!("{:08b}", b)).collect::<Vec<_>>());
+        eprintln!(
+            "raw_bytes: {:?}",
+            item.raw_bytes
+                .iter()
+                .map(|b| format!("{:08b}", b))
+                .collect::<Vec<_>>()
+        );
         for (i, token) in item.tokens.iter().enumerate() {
             let offset = item.token_bit_offsets.get(i).copied().unwrap_or(0);
             eprintln!("  [{:2} @ bit {:3}] {:?}", i, offset, token);
@@ -1924,7 +2012,10 @@ mod tests {
         let serials = [
             ("VLA_SMG", "@Ugr$ZCm/&tH!t{KgK/Shxu>k"),
             ("Shield", "@Uge8jxm/)@{!gQaYMipv(G&-b*Z~_"),
-            ("VLA_Sniper", "@Uguq~c2}TYg3/>%aRG}8ts7KXA-9&{!<w2c7r9#z0g+sMN<wF1"),
+            (
+                "VLA_Sniper",
+                "@Uguq~c2}TYg3/>%aRG}8ts7KXA-9&{!<w2c7r9#z0g+sMN<wF1",
+            ),
             ("Hellwalker", "@Ugd_t@FmVuJyjIXzRG}JG7S$K^1{DjH5&-"),
             ("JAK_Pistol", "@UgbV{rFjEj=bZ<~-RG}KRs7TF2b*c{P7OEuz"),
             ("Shield_e", "@Uge98>m/)}}!c5JeNWCvCXc7"),
@@ -1932,7 +2023,10 @@ mod tests {
             ("ClassMod", "@Uge8;)m/)@{!X>!SqTZJibf`hSk4B2r6#)"),
             ("Shield_r", "@Ugr$)Nm/%P$!bIqxL{(~iG&p36L=sIx00"),
             ("Weapon_L30", "@Ugb)KvFg_4rJ}%H-RG}IbsZG^E#X_Y-00"),
-            ("BOR_SMG", "@UgxFw!2}TYgOs)+YRG}7?s3AisQ8!UBQ8Q6BQDIPXP<2qdQ2P)"),
+            (
+                "BOR_SMG",
+                "@UgxFw!2}TYgOs)+YRG}7?s3AisQ8!UBQ8Q6BQDIPXP<2qdQ2P)",
+            ),
             ("Equipment272", "@Uge8aum/(OZ$pj+I_5#Y(pw{;WbgA{xWRhC/"),
             ("Equipment321", "@Ugr%Scm/)}}$pj({qzigfrP>z<v^$y<L5*r(1po"),
             ("Grenade2", "@Ugr$N8m/)}}!q9r4K/ShxuK@"),

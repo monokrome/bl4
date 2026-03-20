@@ -220,9 +220,6 @@ mod tests {
         let result = extract_from_pak(&data);
         assert_eq!(result.files.len(), 1);
         assert_eq!(result.missing_chunks.len(), 1);
-        assert_eq!(
-            result.missing_chunks[0].filename,
-            "Nexus-Data-shields0.ncs"
-        );
+        assert_eq!(result.missing_chunks[0].filename, "Nexus-Data-shields0.ncs");
     }
 }

@@ -197,7 +197,12 @@ impl NameDataMap {
             }
 
             // Prefer names that start with capital letter (proper nouns)
-            if entry.display_name.chars().next().is_some_and(|c| c.is_uppercase()) {
+            if entry
+                .display_name
+                .chars()
+                .next()
+                .is_some_and(|c| c.is_uppercase())
+            {
                 score += 5;
             }
 
@@ -496,9 +501,6 @@ mod tests {
         });
 
         // Should prefer "Ravenous Thresher" as it has no variant prefix
-        assert_eq!(
-            map.find_display_name("Thresher"),
-            Some("Ravenous Thresher")
-        );
+        assert_eq!(map.find_display_name("Thresher"), Some("Ravenous Thresher"));
     }
 }

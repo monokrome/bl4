@@ -447,7 +447,11 @@ mod tests {
         for (i, &ptr) in obj_ptrs.iter().enumerate() {
             let base = 0x100000 + i * item_size;
             // FlagsAndRefCount at +0
-            let flags = if ptr != 0 { 0x0000000400000001u64 } else { 0u64 };
+            let flags = if ptr != 0 {
+                0x0000000400000001u64
+            } else {
+                0u64
+            };
             adjusted_data[base..base + 8].copy_from_slice(&flags.to_le_bytes());
             // Object* at +FUOBJECTITEM_OBJECT_OFFSET (0x08)
             adjusted_data[base + FUOBJECTITEM_OBJECT_OFFSET..base + FUOBJECTITEM_OBJECT_OFFSET + 8]

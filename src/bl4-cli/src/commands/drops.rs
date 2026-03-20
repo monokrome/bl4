@@ -32,10 +32,7 @@ fn find_item(item: &str, manifest_path: &Path) -> Result<()> {
 
     for loc in &locations {
         // Use display name if available, otherwise fall back to internal name
-        let source_name = loc
-            .source_display
-            .as_ref()
-            .unwrap_or(&loc.source);
+        let source_name = loc.source_display.as_ref().unwrap_or(&loc.source);
 
         println!(
             "{:<20} {:<30} {:<12} {:<12} {:>8}",

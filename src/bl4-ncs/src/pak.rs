@@ -92,8 +92,7 @@ pub fn type_from_filename(filename: &str) -> String {
     name.strip_prefix("Nexus-Data-")
         .and_then(|s| {
             // Remove trailing digit + .ncs (e.g., "0.ncs", "6.ncs")
-            s.rfind(|c: char| c.is_ascii_digit())
-                .map(|pos| &s[..pos])
+            s.rfind(|c: char| c.is_ascii_digit()).map(|pos| &s[..pos])
         })
         .unwrap_or(name)
         .to_string()

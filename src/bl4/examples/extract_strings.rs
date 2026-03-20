@@ -47,17 +47,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                 // The current parser already reads 7-bit chunks but doesn't mirror.
                 // Apply 7-bit mirror to each byte.
-                let mirrored: String = s
-                    .bytes()
-                    .map(|b| mirror_7bit(b) as char)
-                    .collect();
+                let mirrored: String = s.bytes().map(|b| mirror_7bit(b) as char).collect();
 
-                writeln!(
-                    out,
-                    "{}\t{}",
-                    &serial[..serial.len().min(50)],
-                    mirrored
-                )?;
+                writeln!(out, "{}\t{}", &serial[..serial.len().min(50)], mirrored)?;
             }
         }
     }

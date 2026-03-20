@@ -323,7 +323,10 @@ mod tests {
         );
 
         let mut map = HashMap::new();
-        map.insert("row_name".to_string(), Value::Leaf("WeaponDamageScale".to_string()));
+        map.insert(
+            "row_name".to_string(),
+            Value::Leaf("WeaponDamageScale".to_string()),
+        );
         map.insert("row_value".to_string(), Value::Map(row_value));
 
         let row = extract_row(&Value::Map(map)).unwrap();
@@ -367,7 +370,10 @@ mod tests {
         assert_eq!(table.key, "my_table");
         assert_eq!(table.name, "My_Table");
         assert_eq!(table.rows.len(), 1);
-        assert_eq!(table.rows[0].fields.get("cost_normal"), Some(&"600".to_string()));
+        assert_eq!(
+            table.rows[0].fields.get("cost_normal"),
+            Some(&"600".to_string())
+        );
     }
 
     #[test]
@@ -464,19 +470,15 @@ mod tests {
     #[test]
     fn test_parse_boss_replay_comment_too_few_parts() {
         assert!(parse_boss_replay_comment("Table_BossReplay_Costs").is_none());
-        assert!(
-            parse_boss_replay_comment("Table_BossReplay_Costs, notahexuuid").is_none()
-        );
+        assert!(parse_boss_replay_comment("Table_BossReplay_Costs, notahexuuid").is_none());
     }
 
     #[test]
     fn test_parse_boss_replay_type() {
-        let type_field =
-            "Table_BossReplay_Costs, 6373124341BCD375BEDB7986820D90FD, Plot";
+        let type_field = "Table_BossReplay_Costs, 6373124341BCD375BEDB7986820D90FD, Plot";
         assert_eq!(parse_boss_replay_type(type_field), Some("Plot"));
 
-        let type_field =
-            "Table_BossReplay_Costs, C5A8B1CA40465DAD67976C8962D07283, DrillSite";
+        let type_field = "Table_BossReplay_Costs, C5A8B1CA40465DAD67976C8962D07283, DrillSite";
         assert_eq!(parse_boss_replay_type(type_field), Some("DrillSite"));
     }
 }

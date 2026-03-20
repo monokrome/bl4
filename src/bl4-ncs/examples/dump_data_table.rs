@@ -32,7 +32,11 @@ fn main() {
     eprintln!("Read {} bytes from {}", data.len(), path);
 
     let manifest = bl4_ncs::extract_data_tables(&data).expect("Failed to extract data tables");
-    eprintln!("{} tables, {} total rows", manifest.len(), manifest.total_rows());
+    eprintln!(
+        "{} tables, {} total rows",
+        manifest.len(),
+        manifest.total_rows()
+    );
 
     if let Some(dir) = write_dir {
         bl4_ncs::write_data_tables(&manifest, dir).expect("Failed to write TSVs");

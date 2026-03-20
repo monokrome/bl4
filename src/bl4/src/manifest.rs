@@ -46,14 +46,12 @@ struct WeaponType {
 // ============================================================================
 
 /// Category ID -> Category Name (parsed from TSV)
-static CATEGORY_NAMES: Lazy<HashMap<i64, String>> = Lazy::new(|| {
-    parse_tsv_pairs(CATEGORY_NAMES_TSV)
-});
+static CATEGORY_NAMES: Lazy<HashMap<i64, String>> =
+    Lazy::new(|| parse_tsv_pairs(CATEGORY_NAMES_TSV));
 
 /// (Category, Index) -> (Part Name, Slot) parsed from TSV
-static PARTS_BY_ID: Lazy<HashMap<(i64, i64), (String, String)>> = Lazy::new(|| {
-    parse_tsv_parts(PARTS_DATABASE_TSV)
-});
+static PARTS_BY_ID: Lazy<HashMap<(i64, i64), (String, String)>> =
+    Lazy::new(|| parse_tsv_parts(PARTS_DATABASE_TSV));
 
 /// (Category, Normalized Part Name) -> Index (reverse lookup)
 static PARTS_BY_NAME: Lazy<HashMap<(i64, String), i64>> = Lazy::new(|| {
@@ -408,7 +406,10 @@ pub fn part_index(category: i64, name: &str) -> Option<i64> {
 
 /// Get the number of known parts for a category.
 pub fn category_part_count(category: i64) -> usize {
-    PARTS_BY_ID.keys().filter(|(cat, _)| *cat == category).count()
+    PARTS_BY_ID
+        .keys()
+        .filter(|(cat, _)| *cat == category)
+        .count()
 }
 
 /// Find a legendary barrel alias in per-category NCS metadata.
@@ -615,7 +616,10 @@ mod tests {
         // Basic slots
         assert_eq!(slot_from_part_name("DAD_PS.part_barrel_01"), "barrel");
         assert_eq!(slot_from_part_name("part_barrel_02_finnty"), "barrel");
-        assert_eq!(slot_from_part_name("part_barrel_licensed_ted_shooting"), "barrel");
+        assert_eq!(
+            slot_from_part_name("part_barrel_licensed_ted_shooting"),
+            "barrel"
+        );
         assert_eq!(slot_from_part_name("part_scope_02"), "scope");
         assert_eq!(slot_from_part_name("part_body"), "body");
         assert_eq!(slot_from_part_name("part_body_b"), "body");
@@ -627,7 +631,10 @@ mod tests {
 
         // Stat mods
         assert_eq!(slot_from_part_name("part_stat2_wt_ps_equipspeed"), "stat2");
-        assert_eq!(slot_from_part_name("part_stat3_statuseffect_chance"), "stat3");
+        assert_eq!(
+            slot_from_part_name("part_stat3_statuseffect_chance"),
+            "stat3"
+        );
 
         // Rarity / comp
         assert_eq!(slot_from_part_name("comp_05_legendary_stopgap"), "rarity");
@@ -640,16 +647,31 @@ mod tests {
 
         // Other
         assert_eq!(slot_from_part_name("part_firmware_baker"), "firmware");
-        assert_eq!(slot_from_part_name("part_passive_blue_3_1_tier_1"), "passive");
-        assert_eq!(slot_from_part_name("part_secondary_ammo_sg"), "secondary_ammo");
-        assert_eq!(slot_from_part_name("part_secondary_elem_cryo_fire"), "secondary_elem");
+        assert_eq!(
+            slot_from_part_name("part_passive_blue_3_1_tier_1"),
+            "passive"
+        );
+        assert_eq!(
+            slot_from_part_name("part_secondary_ammo_sg"),
+            "secondary_ammo"
+        );
+        assert_eq!(
+            slot_from_part_name("part_secondary_elem_cryo_fire"),
+            "secondary_elem"
+        );
         assert_eq!(slot_from_part_name("part_shield_ammo"), "shield");
-        assert_eq!(slot_from_part_name("part_underbarrel_04_atlas_ball"), "underbarrel");
+        assert_eq!(
+            slot_from_part_name("part_underbarrel_04_atlas_ball"),
+            "underbarrel"
+        );
     }
 
     #[test]
     fn test_normalize_part_name() {
-        assert_eq!(normalize_part_name("DAD_PS.part_barrel_01"), "part_barrel_01");
+        assert_eq!(
+            normalize_part_name("DAD_PS.part_barrel_01"),
+            "part_barrel_01"
+        );
         assert_eq!(normalize_part_name("part_body"), "part_body");
         assert_eq!(normalize_part_name("comp_01_common"), "comp_01_common");
         assert_eq!(normalize_part_name("BOR_REPAIR_KIT.part_borg"), "part_borg");
@@ -706,6 +728,10 @@ mod tests {
     fn test_part_pool_stats() {
         // Verify pool data loaded with reasonable counts
         let total_categories = PART_POOL_MEMBERS.len();
-        assert!(total_categories > 50, "Expected 50+ categories, got {}", total_categories);
+        assert!(
+            total_categories > 50,
+            "Expected 50+ categories, got {}",
+            total_categories
+        );
     }
 }

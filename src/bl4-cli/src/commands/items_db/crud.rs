@@ -102,7 +102,14 @@ pub fn show(db: &Path, serial: &str) -> Result<()> {
         println!("Element:      {}", w.element.as_deref().unwrap_or("-"));
         println!("\n--- Metadata ---");
         println!("Source:       {}", w.source.as_deref().unwrap_or("-"));
-        println!("Legal:        {}", match w.legal { Some(true) => "yes", Some(false) => "no", None => "?" });
+        println!(
+            "Legal:        {}",
+            match w.legal {
+                Some(true) => "yes",
+                Some(false) => "no",
+                None => "?",
+            }
+        );
         println!("Status:       {}", w.verification_status);
         println!("Created:      {}", w.created_at);
 

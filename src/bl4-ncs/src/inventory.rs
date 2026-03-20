@@ -173,7 +173,8 @@ pub fn parse_inventory(data: &[u8]) -> Option<Inventory> {
             // Find which item this composition belongs to
             for item in items.values_mut() {
                 if item.parts.iter().any(|p| {
-                    p.contains(&s.replace("part_", "")) || s.contains(&item.item_id.replace('_', ""))
+                    p.contains(&s.replace("part_", ""))
+                        || s.contains(&item.item_id.replace('_', ""))
                 }) {
                     if let Some(existing) = item
                         .legendary_compositions
@@ -230,7 +231,11 @@ pub fn get_parts<'a>(inventory: &'a Inventory, item_id: &str) -> Option<&'a [Str
 }
 
 /// Get parts by slot type (barrel, grip, etc.)
-pub fn get_parts_by_slot<'a>(inventory: &'a Inventory, item_id: &str, slot: &str) -> Vec<&'a String> {
+pub fn get_parts_by_slot<'a>(
+    inventory: &'a Inventory,
+    item_id: &str,
+    slot: &str,
+) -> Vec<&'a String> {
     inventory
         .items
         .iter()
@@ -243,7 +248,6 @@ pub fn get_parts_by_slot<'a>(inventory: &'a Inventory, item_id: &str, slot: &str
         })
         .unwrap_or_default()
 }
-
 
 /// Check if string is a weapon part (MANU_TYPE_PartName pattern)
 fn is_weapon_part(s: &str) -> bool {
@@ -297,7 +301,8 @@ fn is_part_pattern(s: &str) -> bool {
     }
 
     // Composition patterns
-    if s.starts_with("comp_") || s.starts_with("Weapon.base_comp_") || s.starts_with("Shield.comp_") {
+    if s.starts_with("comp_") || s.starts_with("Weapon.base_comp_") || s.starts_with("Shield.comp_")
+    {
         return true;
     }
 
@@ -343,7 +348,6 @@ fn is_part_pattern(s: &str) -> bool {
 fn is_part_name(s: &str) -> bool {
     is_part_pattern(s)
 }
-
 
 /// Raw string entry from NCS data
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -514,19 +518,11 @@ mod tests {
     fn test_parse_weapon_type() {
         assert_eq!(
             parse_weapon_type("DAD_PS"),
-            Some((
-                "DAD_PS".to_string(),
-                "DAD".to_string(),
-                "PS".to_string()
-            ))
+            Some(("DAD_PS".to_string(), "DAD".to_string(), "PS".to_string()))
         );
         assert_eq!(
             parse_weapon_type("BOR_HW"),
-            Some((
-                "BOR_HW".to_string(),
-                "BOR".to_string(),
-                "HW".to_string()
-            ))
+            Some(("BOR_HW".to_string(), "BOR".to_string(), "HW".to_string()))
         );
         assert_eq!(parse_weapon_type("DAD_PS_Barrel"), None);
         assert_eq!(parse_weapon_type("UNKNOWN_PS"), None);
@@ -664,7 +660,8 @@ mod tests {
     #[test]
     #[ignore]
     fn test_raw_string_numeric_pairs() {
-        let inv_path = "/home/polar/Documents/Borderlands 4/ncsdata/pakchunk4-Windows_0_P/Nexus-Data-inv4.bin";
+        let inv_path =
+            "/home/polar/Documents/Borderlands 4/ncsdata/pakchunk4-Windows_0_P/Nexus-Data-inv4.bin";
         let data = std::fs::read(inv_path).expect("Failed to read inv4.bin");
 
         let pairs = extract_string_numeric_pairs(&data);
@@ -680,18 +677,20 @@ mod tests {
         }
 
         // Count how many have potential part patterns
-        let part_patterns = pairs.iter().filter(|p| {
-            let s = &p.string_value;
-            s.starts_with("part_")
-                || s.starts_with("comp_")
-                || s.contains("_PS_")
-                || s.contains("_SG_")
-                || s.contains("_AR_")
-                || s.contains("_SM_")
-                || s.contains("_SR_")
-                || s.contains("_HW_")
-        }).count();
+        let part_patterns = pairs
+            .iter()
+            .filter(|p| {
+                let s = &p.string_value;
+                s.starts_with("part_")
+                    || s.starts_with("comp_")
+                    || s.contains("_PS_")
+                    || s.contains("_SG_")
+                    || s.contains("_AR_")
+                    || s.contains("_SM_")
+                    || s.contains("_SR_")
+                    || s.contains("_HW_")
+            })
+            .count();
         println!("\nPairs with part-like patterns: {}", part_patterns);
     }
-
 }

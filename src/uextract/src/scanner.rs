@@ -178,16 +178,13 @@ impl IoStoreScanner {
 
     /// Find the class hash for a given class name.
     fn class_hash(&self, class_name: &str) -> Result<String> {
-        self.name_to_hash
-            .get(class_name)
-            .cloned()
-            .with_context(|| {
-                format!(
-                    "Class '{}' not found in scriptobjects (loaded {} classes)",
-                    class_name,
-                    self.name_to_hash.len()
-                )
-            })
+        self.name_to_hash.get(class_name).cloned().with_context(|| {
+            format!(
+                "Class '{}' not found in scriptobjects (loaded {} classes)",
+                class_name,
+                self.name_to_hash.len()
+            )
+        })
     }
 
     /// Check if any export in a parsed header matches the target class hash.
@@ -349,10 +346,7 @@ impl IoStoreScanner {
 
                 Some(RawExportData {
                     path: path.clone(),
-                    package_name: header
-                        .name_map
-                        .get(header.summary.name)
-                        .to_string(),
+                    package_name: header.name_map.get(header.summary.name).to_string(),
                     name_map: header.name_map.copy_raw_names(),
                     exports,
                 })

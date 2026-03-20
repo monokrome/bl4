@@ -237,12 +237,12 @@ fn validate_guobject_candidate(
 
             // Read UObject header and verify vtable + ClassPrivate
             if let Ok(uobj_data) = source.read_bytes(obj_ptr, UOBJECT_HEADER_SIZE) {
-                let vtable = LE::read_u64(
-                    &uobj_data[UOBJECT_VTABLE_OFFSET..UOBJECT_VTABLE_OFFSET + 8],
-                ) as usize;
-                let class_ptr = LE::read_u64(
-                    &uobj_data[UOBJECT_CLASS_OFFSET..UOBJECT_CLASS_OFFSET + 8],
-                ) as usize;
+                let vtable =
+                    LE::read_u64(&uobj_data[UOBJECT_VTABLE_OFFSET..UOBJECT_VTABLE_OFFSET + 8])
+                        as usize;
+                let class_ptr =
+                    LE::read_u64(&uobj_data[UOBJECT_CLASS_OFFSET..UOBJECT_CLASS_OFFSET + 8])
+                        as usize;
 
                 if (MIN_VTABLE_ADDR..=MAX_VTABLE_ADDR).contains(&vtable)
                     && is_valid_pointer(class_ptr)
