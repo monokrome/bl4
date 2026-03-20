@@ -129,26 +129,31 @@ clean_build() {
 
 # Build with quarto
 build() {
-    local formats=()
-
     if $BUILD_ALL; then
-        formats=("html" "pdf" "epub")
+        header "Building all formats"
+        info "Running: quarto render $QUARTO_DIR"
+        if quarto render "$QUARTO_DIR"; then
+            info "All formats build complete"
+        else
+            error "Build failed"
+        fi
     else
+        local formats=()
         $BUILD_HTML && formats+=("html")
         $BUILD_PDF && formats+=("pdf")
         $BUILD_EPUB && formats+=("epub")
+
+        for format in "${formats[@]}"; do
+            header "Building $format"
+            info "Running: quarto render $QUARTO_DIR --to $format"
+
+            if quarto render "$QUARTO_DIR" --to "$format"; then
+                info "$format build complete"
+            else
+                error "$format build failed"
+            fi
+        done
     fi
-
-    for format in "${formats[@]}"; do
-        header "Building $format"
-        info "Running: quarto render $QUARTO_DIR --to $format"
-
-        if quarto render "$QUARTO_DIR" --to "$format"; then
-            info "$format build complete"
-        else
-            error "$format build failed"
-        fi
-    done
 }
 
 # Start preview server
