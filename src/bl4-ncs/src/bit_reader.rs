@@ -262,7 +262,7 @@ impl<R: Read> BitRead for StreamingBitReader<R> {
             return None;
         }
 
-        let bytes_needed = ((self.bit_offset as usize + n as usize) + 7) / 8;
+        let bytes_needed = (self.bit_offset as usize + n as usize).div_ceil(8);
         if !self.ensure_bytes(bytes_needed) {
             return None;
         }
@@ -271,10 +271,8 @@ impl<R: Read> BitRead for StreamingBitReader<R> {
         let mut bits_read = 0u8;
 
         while bits_read < n {
-            if self.buf_offset >= self.buffer.len() {
-                if !self.ensure_bytes(1) {
-                    return None;
-                }
+            if self.buf_offset >= self.buffer.len() && !self.ensure_bytes(1) {
+                return None;
             }
 
             let remaining_in_byte = 8 - self.bit_offset;

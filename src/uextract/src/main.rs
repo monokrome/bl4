@@ -219,69 +219,80 @@ fn main() -> Result<()> {
     let failed = results.len() - success;
     eprintln!("Extracted: {}, Failed: {}", success, failed);
 
-    // Also extract PAK contents into the same output directory
-    let pak_files = pak::find_pak_files(&input).unwrap_or_default();
-    if !pak_files.is_empty() {
-        eprintln!("Found {} PAK files in input directory", pak_files.len());
-        let mut pak_extracted = 0;
-        let mut pak_failed = 0;
-
-        for pak_path in &pak_files {
-            let mut reader = match pak::PakReader::open(pak_path) {
-                Ok(r) => r,
-                Err(e) => {
-                    if args.verbose {
-                        eprintln!(
-                            "Skipping PAK {:?}: {}",
-                            pak_path.file_name().unwrap_or_default(),
-                            e
-                        );
-                    }
-                    continue;
-                }
-            };
-
-            let files = reader.files();
-            let mount = reader.mount_point().to_string();
-
-            for filename in &files {
-                if !matches_filters(filename, &args) {
-                    continue;
-                }
-
-                let data = match reader.read(filename) {
-                    Ok(d) => d,
-                    Err(e) => {
-                        if args.verbose {
-                            eprintln!("Failed to read PAK entry {}: {}", filename, e);
-                        }
-                        pak_failed += 1;
-                        continue;
-                    }
-                };
-
-                let clean_name = filename
-                    .trim_start_matches(&mount)
-                    .trim_start_matches('/')
-                    .trim_start_matches("../");
-
-                let out_path = args.output.join(clean_name);
-                if let Some(parent) = out_path.parent() {
-                    let _ = std::fs::create_dir_all(parent);
-                }
-                let _ = std::fs::write(&out_path, &data);
-                pak_extracted += 1;
-            }
-        }
-
-        if pak_extracted > 0 || pak_failed > 0 {
-            eprintln!("PAK: Extracted {}, Failed: {}", pak_extracted, pak_failed);
-        }
-    }
-
+    extract_pak_contents(&input, &args);
     eprintln!("Found {} script objects", store.chunks().count());
 
     Ok(())
+}
+
+fn extract_pak_contents(input: &std::path::Path, args: &Args) {
+    let pak_files = pak::find_pak_files(input).unwrap_or_default();
+    if pak_files.is_empty() {
+        return;
+    }
+
+    eprintln!("Found {} PAK files in input directory", pak_files.len());
+    let mut pak_extracted = 0;
+    let mut pak_failed = 0;
+
+    for pak_path in &pak_files {
+        let (extracted, failed) = extract_single_pak(pak_path, args);
+        pak_extracted += extracted;
+        pak_failed += failed;
+    }
+
+    if pak_extracted > 0 || pak_failed > 0 {
+        eprintln!("PAK: Extracted {}, Failed: {}", pak_extracted, pak_failed);
+    }
+}
+
+fn extract_single_pak(pak_path: &std::path::Path, args: &Args) -> (usize, usize) {
+    let mut reader = match pak::PakReader::open(pak_path) {
+        Ok(r) => r,
+        Err(e) => {
+            if args.verbose {
+                eprintln!(
+                    "Skipping PAK {:?}: {}",
+                    pak_path.file_name().unwrap_or_default(),
+                    e
+                );
+            }
+            return (0, 0);
+        }
+    };
+
+    let files = reader.files();
+    let mount = reader.mount_point().to_string();
+    let mut extracted = 0;
+    let mut failed = 0;
+
+    for filename in &files {
+        if !matches_filters(filename, args) {
+            continue;
+        }
+        let data = match reader.read(filename) {
+            Ok(d) => d,
+            Err(e) => {
+                if args.verbose {
+                    eprintln!("Failed to read PAK entry {}: {}", filename, e);
+                }
+                failed += 1;
+                continue;
+            }
+        };
+        let clean_name = filename
+            .trim_start_matches(&mount)
+            .trim_start_matches('/')
+            .trim_start_matches("../");
+        let out_path = args.output.join(clean_name);
+        if let Some(parent) = out_path.parent() {
+            let _ = std::fs::create_dir_all(parent);
+        }
+        let _ = std::fs::write(&out_path, &data);
+        extracted += 1;
+    }
+
+    (extracted, failed)
 }
 
 /// Extract a single entry from the IoStore

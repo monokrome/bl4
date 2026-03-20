@@ -427,14 +427,13 @@ pub fn decode_table_data(input: &DecodeInput) -> Option<Document> {
     decode_tables(&mut reader, input)
 }
 
-/// Decode all table data from any BitRead source
-pub fn decode_tables(reader: &mut impl BitRead, input: &DecodeInput) -> Option<Document> {
-    let node_types: Vec<NodeType> = input
+fn build_context<'a>(input: &'a DecodeInput<'a>) -> DecodeContext<'a> {
+    let node_types = input
         .row_flags
         .iter()
         .map(|&f| NodeType::from_flags(f))
         .collect();
-    let ctx = DecodeContext {
+    DecodeContext {
         value_strings: input.value_strings,
         value_kinds: input.value_kinds,
         key_strings: input.key_strings,
@@ -444,8 +443,12 @@ pub fn decode_tables(reader: &mut impl BitRead, input: &DecodeInput) -> Option<D
         key_index_bits: bit_width(input.key_strings_declared.max(1)),
         type_index_bits: bit_width(input.row_flags.len() as u32),
         node_types,
-    };
+    }
+}
 
+/// Decode all table data from any BitRead source
+pub fn decode_tables(reader: &mut impl BitRead, input: &DecodeInput) -> Option<Document> {
+    let ctx = build_context(input);
     let table_id_bits = ctx.header_index_bits;
     let mut tables = HashMap::new();
 
