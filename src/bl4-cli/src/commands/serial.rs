@@ -68,7 +68,7 @@ fn resolve_parts(item: &bl4::ItemSerial) -> Vec<ResolvedPart> {
 /// 1. Look for `comp_05_legendary_*` suffix in resolved comp parts
 /// 2. Look for legendary barrel names (`part_barrel_*_<suffix>`)
 /// 3. If legendary with generic barrel, check per-category NCS metadata
-fn resolve_legendary_name(
+pub(crate) fn resolve_legendary_name(
     parts: &[(u64, Option<&'static str>, Vec<u64>)],
     category: Option<i64>,
     is_legendary: bool,
