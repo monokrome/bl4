@@ -83,9 +83,10 @@ impl BossNameMapping {
 
     /// Parse boss names from the compiled-in boss replay costs TSV.
     fn from_compiled_tsv() -> Self {
-        const TSV: &str = include_str!(
-            "../../../../share/manifest/data_tables/table_bossreplay_costs.tsv"
-        );
+        const TSV: &str = include_str!(concat!(
+            env!("OUT_DIR"),
+            "/table_bossreplay_costs.tsv"
+        ));
 
         let mut boss_names = HashMap::new();
         let mut aliases = HashMap::new();
