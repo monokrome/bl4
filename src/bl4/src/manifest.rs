@@ -11,14 +11,14 @@ use serde::Deserialize;
 use std::collections::{HashMap, HashSet};
 
 // Embed manifest files at compile time
-const CATEGORY_NAMES_TSV: &str = include_str!("../../../share/manifest/category_names.tsv");
+const CATEGORY_NAMES_TSV: &str = include_str!(concat!(env!("OUT_DIR"), "/category_names.tsv"));
 const PARTS_DATABASE_TSV: &str = include_str!(concat!(env!("OUT_DIR"), "/parts_database.tsv"));
-const MANUFACTURERS_JSON: &str = include_str!("../../../share/manifest/manufacturers.json");
-const WEAPON_TYPES_JSON: &str = include_str!("../../../share/manifest/weapon_types.json");
-const DROP_POOLS_TSV: &str = include_str!("../../../share/manifest/drop_pools.tsv");
-const PART_POOLS_TSV: &str = include_str!("../../../share/manifest/part_pools.tsv");
+const MANUFACTURERS_JSON: &str = include_str!(concat!(env!("OUT_DIR"), "/manufacturers.json"));
+const WEAPON_TYPES_JSON: &str = include_str!(concat!(env!("OUT_DIR"), "/weapon_types.json"));
+const DROP_POOLS_TSV: &str = include_str!(concat!(env!("OUT_DIR"), "/drop_pools.tsv"));
+const PART_POOLS_TSV: &str = include_str!(concat!(env!("OUT_DIR"), "/part_pools.tsv"));
 const BOSS_REPLAY_COSTS_TSV: &str =
-    include_str!("../../../share/manifest/data_tables/table_bossreplay_costs.tsv");
+    include_str!(concat!(env!("OUT_DIR"), "/table_bossreplay_costs.tsv"));
 
 // ============================================================================
 // Data Structures (JSON-based reference data only)
