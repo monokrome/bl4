@@ -53,39 +53,40 @@ jobs:
       - name: Test PostgreSQL migrations
         run: cargo test -p bl4-idb --features sqlx-postgres test_postgres_migrations -- --ignored
 
-  publish-crates:
-    name: Publish to crates.io
+  publish-bl4-ncs:
+    name: Publish bl4-ncs
     needs: [check]
     runs-on: ubuntu-latest
     environment: build
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-
+      - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+      - run: cargo publish -p bl4-ncs --token ${{ secrets.CARGO_TOKEN }}
 
-      - name: Publish bl4-ncs library
-        run: cargo publish -p bl4-ncs --token ${{ secrets.CARGO_TOKEN }}
+  publish-bl4:
+    name: Publish bl4
+    needs: [publish-bl4-ncs]
+    runs-on: ubuntu-latest
+    environment: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: sleep 30
+      - run: cargo publish -p bl4 --token ${{ secrets.CARGO_TOKEN }}
 
-      - name: Wait for crates.io to update
-        run: sleep 30
-
-      - name: Publish bl4 library
-        run: cargo publish -p bl4 --token ${{ secrets.CARGO_TOKEN }}
-
-      - name: Wait for crates.io to update
-        run: sleep 30
-
-      - name: Publish bl4-idb library
-        run: cargo publish -p bl4-idb --token ${{ secrets.CARGO_TOKEN }}
-
-      - name: Wait for crates.io to update
-        run: sleep 30
-
-      - name: Publish bl4-cli
-        run: cargo publish -p bl4-cli --token ${{ secrets.CARGO_TOKEN }}
+  publish-bl4-idb:
+    name: Publish bl4-idb
+    needs: [publish-bl4]
+    runs-on: ubuntu-latest
+    environment: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: sleep 30
+      - run: cargo publish -p bl4-idb --token ${{ secrets.CARGO_TOKEN }}
 
   build-binaries:
     name: Build release binaries
