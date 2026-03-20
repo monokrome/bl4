@@ -21,7 +21,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-QUARTO_DIR="$PROJECT_ROOT/docs/quarto"
+QUARTO_DIR="$PROJECT_ROOT/docs"
 OUTPUT_DIR="$PROJECT_ROOT/docs/rendered/quarto"
 
 # Colors for output
