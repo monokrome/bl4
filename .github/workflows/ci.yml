@@ -52,6 +52,7 @@ jobs:
 
   build:
     name: Build
+    needs: [test]
     runs-on: ${{ matrix.os }}
     environment: build
     strategy:
