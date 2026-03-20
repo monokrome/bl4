@@ -155,25 +155,11 @@ impl BossNameMapping {
             ("FoundryFreak_Psycho", "Foundry Freak Psycho"),
             ("FoundryFreak_Splice", "Foundry Freak Splice"),
         ];
-        let alias_list: &[(&str, &str)] = &[
-            ("Grasslands", "Primordial Guardian Inceptus"),
-            ("Mountains", "Primordial Guardian Radix"),
-            ("Shatterlands", "Primordial Guardian Origo"),
-            ("Castilleia", "Castilleia"),
-            ("Mimicron", "Mimicron"),
-            ("Axemaul", "Axemaul"),
-            ("Shadowpelt", "Shadowpelt"),
-            ("Tabnak", "Tabnak, the Ripper Prince"),
-            ("Harbinger", "Callous Harbinger of Annihilating Death"),
-        ];
         let boss_names = names
             .iter()
             .map(|(k, v)| ((*k).into(), (*v).into()))
             .collect();
-        let aliases = alias_list
-            .iter()
-            .map(|(k, v)| ((*k).into(), (*v).into()))
-            .collect();
+        let aliases = HashMap::new();
 
         Self {
             boss_names,
