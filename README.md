@@ -142,7 +142,7 @@ bl4 ncs scan /path/to/decompressed/
 bl4 ncs show inv0.bin
 
 # Extract manifests (parts database, category names)
-bl4 ncs extract -t manifest /path/to/decompressed/ --json
+bl4 ncs extract -t manifest /path/to/decompressed/
 
 # Search for patterns across NCS files
 bl4 ncs search /path/to/decompressed/ "weapon_ps"
