@@ -14,7 +14,8 @@ use super::serial::SerialCommand;
 
 #[derive(Parser)]
 #[command(name = "bl4")]
-#[command(about = "Borderlands 4 Save Editor", long_about = None)]
+#[command(about = "Borderlands 4 Save Editor")]
+#[command(after_help = "Shorthand: bl4 <file>.sav is equivalent to bl4 save <file>.sav")]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,
