@@ -47,34 +47,36 @@ Steam ID is required for encryption/decryption. Find it in your Steam profile UR
 
 ### Save Commands
 
+`bl4 save 1.sav` or shorthand `bl4 1.sav` — both work.
+
 ```bash
 # Decrypt to YAML
-bl4 save 1.sav decrypt -o save.yaml
-bl4 save 1.sav decrypt > save.yaml
+bl4 1.sav decrypt -o save.yaml
+bl4 1.sav decrypt > save.yaml
 
 # Encrypt from YAML
-bl4 save 1.sav encrypt save.yaml
+bl4 1.sav encrypt save.yaml
 
 # Edit in $EDITOR
-bl4 save 1.sav edit
+bl4 1.sav edit
 
 # Query values
-bl4 save 1.sav get
-bl4 save 1.sav get --level
-bl4 save 1.sav get --money
-bl4 save 1.sav get --info
-bl4 save 1.sav get "state.currencies.cash"
+bl4 1.sav get
+bl4 1.sav get --level
+bl4 1.sav get --money
+bl4 1.sav get --info
+bl4 1.sav get "state.currencies.cash"
 
 # Set values
-bl4 save 1.sav set "state.experience[0].level" 50
-bl4 save 1.sav set "state.currencies.cash" 999999
+bl4 1.sav set "state.experience[0].level" 50
+bl4 1.sav set "state.currencies.cash" 999999
 
 # Fog-of-discovery map manipulation
-bl4 save 1.sav --map reveal
-bl4 save 1.sav --map clear --zone "Crimson Badlands"
+bl4 1.sav --map reveal
+bl4 1.sav --map clear --zone "Crimson Badlands"
 
 # Validate all items in a save
-bl4 save 1.sav --validate-items
+bl4 1.sav --validate-items
 ```
 
 ### Item Serial Commands
