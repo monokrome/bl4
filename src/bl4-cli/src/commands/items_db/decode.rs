@@ -39,15 +39,50 @@ fn build_item_parts(
 
 /// Store a decoded value in item_values with Decoder source attribution
 fn set_decoded(wdb: &bl4_idb::SqliteDb, serial: &str, field: &str, value: &str) -> Result<()> {
+    set_decoded_with_confidence(wdb, serial, field, value, bl4_idb::Confidence::Inferred)
+}
+
+/// Store a decoded value with explicit confidence level
+fn set_decoded_with_confidence(
+    wdb: &bl4_idb::SqliteDb,
+    serial: &str,
+    field: &str,
+    value: &str,
+    confidence: bl4_idb::Confidence,
+) -> Result<()> {
     wdb.set_value(
         serial,
         field,
         value,
         bl4_idb::ValueSource::Decoder,
         Some("bl4-cli"),
-        bl4_idb::Confidence::Inferred,
+        confidence,
     )?;
     Ok(())
+}
+
+/// Calculate decode confidence based on how many parts we can resolve names for.
+///
+/// Returns a confidence percentage (0.0 to 1.0) and a Confidence level.
+/// - 95%+ resolved parts with a name → Inferred (high confidence)
+/// - Below 95% → Uncertain
+fn calculate_decode_confidence(decoded: &bl4::ItemSerial) -> (f64, bl4_idb::Confidence) {
+    let parts = decoded.parts_with_names();
+    if parts.is_empty() {
+        return (0.0, bl4_idb::Confidence::Uncertain);
+    }
+
+    let total = parts.len();
+    let resolved = parts.iter().filter(|(_, name, _)| name.is_some()).count();
+    let ratio = resolved as f64 / total as f64;
+
+    let confidence = if ratio >= 0.95 {
+        bl4_idb::Confidence::Inferred
+    } else {
+        bl4_idb::Confidence::Uncertain
+    };
+
+    (ratio, confidence)
 }
 
 /// Handle `idb decode-all`
@@ -105,13 +140,31 @@ pub fn decode_all(db: &Path) -> Result<()> {
                     .rarity
                     .map(|r| matches!(r, bl4::serial::Rarity::Legendary))
                     .unwrap_or(false);
-                if let Some(name) = crate::commands::serial::resolve_legendary_name(
+
+                let (confidence_ratio, decode_confidence) =
+                    calculate_decode_confidence(&decoded_item);
+
+                if let Some(name) = crate::commands::serial::resolve_item_name(
                     &parts_with_names,
                     decoded_item.parts_category(),
                     is_legendary,
                 ) {
-                    set_decoded(&wdb, &item.serial, "name", &name)?;
+                    set_decoded_with_confidence(
+                        &wdb,
+                        &item.serial,
+                        "name",
+                        &name,
+                        decode_confidence,
+                    )?;
                 }
+
+                set_decoded_with_confidence(
+                    &wdb,
+                    &item.serial,
+                    "confidence",
+                    &format!("{:.0}%", confidence_ratio * 100.0),
+                    decode_confidence,
+                )?;
 
                 let parts_summary = decoded_item.parts_summary();
                 if !parts_summary.is_empty() {
