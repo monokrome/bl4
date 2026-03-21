@@ -267,6 +267,30 @@ pub fn handle_manifest(
             }
         };
 
+        // Extract item names from inv_name_part NCS files
+        println!("\n=== Item Names ===\n");
+        println!("Extracting item names from NCS data...");
+        let item_name_entries = bl4_ncs::extract_item_names(&ncs_dir);
+        if item_name_entries.is_empty() {
+            eprintln!("  Warning: No item names found in NCS data");
+        } else {
+            let names_path = output.join("item_names.tsv");
+            match bl4_ncs::item_names::write_tsv(&item_name_entries, &names_path) {
+                Ok(()) => {
+                    let name_map = bl4_ncs::item_names::build_name_map(&item_name_entries);
+                    println!(
+                        "  {} entries ({} unique names) → {}",
+                        item_name_entries.len(),
+                        name_map.len(),
+                        names_path.display()
+                    );
+                }
+                Err(e) => {
+                    eprintln!("  Warning: Failed to write item names: {}", e);
+                }
+            }
+        }
+
         // Generate drops manifest (uses data tables for boss names)
         println!("\n=== Drops Manifest ===\n");
         println!("Generating drops manifest from NCS data...");

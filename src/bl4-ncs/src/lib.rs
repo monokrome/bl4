@@ -32,6 +32,7 @@ mod field;
 mod hash;
 mod header;
 pub mod inventory;
+pub mod item_names;
 mod manifest;
 pub mod name_data;
 pub mod oodle;
@@ -74,6 +75,9 @@ pub use inventory::{
 };
 pub use manifest::{
     scan as scan_for_ncs_manifests, Entry as NcsManifestEntry, Manifest as NcsManifest,
+};
+pub use item_names::{
+    extract_from_directory as extract_item_names, ItemNameEntry,
 };
 pub use name_data::{extract_from_directory as extract_name_data, NameDataEntry, NameDataMap};
 pub use pak::{
