@@ -1,172 +1,155 @@
 {
-  "Enhancements": {
-    "name": "Enhancements",
-    "path": "OakGame/Content/Gear/Enhancements",
-    "balance_data": [],
-    "manufacturers": [
-      {
-        "code": "ORD",
-        "name": "Order",
-        "path": "OakGame/Content/Gear/Enhancements/Manufacturer/ORD"
-      }
-    ]
-  },
-  "ClassMods": {
-    "name": "ClassMods",
-    "path": "OakGame/Content/Gear/ClassMods",
-    "balance_data": [],
-    "manufacturers": []
-  },
-  "Vehicles": {
-    "name": "Vehicles",
-    "path": "OakGame/Content/Gear/Vehicles",
-    "balance_data": [],
-    "manufacturers": []
-  },
-  "Shields": {
-    "name": "Shields",
-    "path": "OakGame/Content/Gear/Shields",
-    "balance_data": [],
-    "manufacturers": [
-      {
-        "code": "TOR",
-        "name": "Torgue",
-        "path": "OakGame/Content/Gear/Shields/Manufacturer/TOR"
-      },
-      {
-        "code": "TED",
-        "name": "Tediore",
-        "path": "OakGame/Content/Gear/Shields/Manufacturer/TED"
-      },
-      {
-        "code": "DAD",
-        "name": "Daedalus",
-        "path": "OakGame/Content/Gear/Shields/Manufacturer/DAD"
-      },
-      {
-        "code": "JAK",
-        "name": "Jakobs",
-        "path": "OakGame/Content/Gear/Shields/Manufacturer/JAK"
-      },
-      {
-        "code": "MAL",
-        "name": "Maliwan",
-        "path": "OakGame/Content/Gear/Shields/Manufacturer/MAL"
-      },
-      {
-        "code": "VLA",
-        "name": "Vladof",
-        "path": "OakGame/Content/Gear/Shields/Manufacturer/VLA"
-      },
-      {
-        "code": "BOR",
-        "name": "Ripper",
-        "path": "OakGame/Content/Gear/Shields/Manufacturer/BOR"
-      },
-      {
-        "code": "ORD",
-        "name": "Order",
-        "path": "OakGame/Content/Gear/Shields/Manufacturer/ORD"
-      }
-    ]
-  },
-  "RepairKits": {
-    "name": "RepairKits",
-    "path": "OakGame/Content/Gear/RepairKits",
-    "balance_data": [],
-    "manufacturers": []
-  },
-  "shields": {
-    "name": "shields",
-    "path": "OakGame/Content/Gear/shields",
-    "balance_data": [],
-    "manufacturers": [
-      {
-        "code": "VLA",
-        "name": "Vladof",
-        "path": "OakGame/Content/Gear/shields/Manufacturer/VLA"
-      }
-    ]
-  },
-  "ShieldBooster": {
-    "name": "ShieldBooster",
-    "path": "OakGame/Content/Gear/ShieldBooster",
-    "balance_data": [],
-    "manufacturers": []
-  },
-  "GrenadeGadgets": {
-    "name": "GrenadeGadgets",
-    "path": "OakGame/Content/Gear/GrenadeGadgets",
-    "balance_data": [],
-    "manufacturers": [
-      {
-        "code": "MAL",
-        "name": "Maliwan",
-        "path": "OakGame/Content/Gear/GrenadeGadgets/Manufacturer/MAL"
-      },
-      {
-        "code": "TED",
-        "name": "Tediore",
-        "path": "OakGame/Content/Gear/GrenadeGadgets/Manufacturer/TED"
-      },
-      {
-        "code": "JAK",
-        "name": "Jakobs",
-        "path": "OakGame/Content/Gear/GrenadeGadgets/Manufacturer/JAK"
-      },
-      {
-        "code": "TOR",
-        "name": "Torgue",
-        "path": "OakGame/Content/Gear/GrenadeGadgets/Manufacturer/TOR"
-      },
-      {
-        "code": "Borg",
-        "name": "Borg",
-        "path": "OakGame/Content/Gear/GrenadeGadgets/Manufacturer/Borg"
-      },
-      {
-        "code": "BORG",
-        "name": "BORG",
-        "path": "OakGame/Content/Gear/GrenadeGadgets/Manufacturer/BORG"
-      },
-      {
-        "code": "VLA",
-        "name": "Vladof",
-        "path": "OakGame/Content/Gear/GrenadeGadgets/Manufacturer/VLA"
-      },
-      {
-        "code": "ORD",
-        "name": "Order",
-        "path": "OakGame/Content/Gear/GrenadeGadgets/Manufacturer/ORD"
-      },
-      {
-        "code": "DAD",
-        "name": "Daedalus",
-        "path": "OakGame/Content/Gear/GrenadeGadgets/Manufacturer/DAD"
-      }
-    ]
-  },
-  "Firmware": {
-    "name": "Firmware",
-    "path": "OakGame/Content/Gear/Firmware",
-    "balance_data": [],
-    "manufacturers": []
-  },
-  "Gadgets": {
-    "name": "Gadgets",
-    "path": "OakGame/Content/Gear/Gadgets",
+  "ArmorShard": {
+    "name": "ArmorShard",
+    "path": "OakGame/Content/Gear\\ArmorShard",
     "balance_data": [],
     "manufacturers": []
   },
   "GPS": {
     "name": "GPS",
-    "path": "OakGame/Content/Gear/GPS",
+    "path": "OakGame/Content/Gear\\GPS",
     "balance_data": [],
     "manufacturers": []
   },
-  "ArmorShard": {
-    "name": "ArmorShard",
-    "path": "OakGame/Content/Gear/ArmorShard",
+  "ShieldBooster": {
+    "name": "ShieldBooster",
+    "path": "OakGame/Content/Gear\\ShieldBooster",
+    "balance_data": [],
+    "manufacturers": []
+  },
+  "Shields": {
+    "name": "Shields",
+    "path": "OakGame/Content/Gear\\Shields",
+    "balance_data": [],
+    "manufacturers": [
+      {
+        "code": "BOR",
+        "name": "Ripper",
+        "path": "OakGame/Content/Gear\\Shields\\Manufacturer\\BOR"
+      },
+      {
+        "code": "DAD",
+        "name": "Daedalus",
+        "path": "OakGame/Content/Gear\\Shields\\Manufacturer\\DAD"
+      },
+      {
+        "code": "JAK",
+        "name": "Jakobs",
+        "path": "OakGame/Content/Gear\\Shields\\Manufacturer\\JAK"
+      },
+      {
+        "code": "MAL",
+        "name": "Maliwan",
+        "path": "OakGame/Content/Gear\\Shields\\Manufacturer\\MAL"
+      },
+      {
+        "code": "ORD",
+        "name": "Order",
+        "path": "OakGame/Content/Gear\\Shields\\Manufacturer\\ORD"
+      },
+      {
+        "code": "TED",
+        "name": "Tediore",
+        "path": "OakGame/Content/Gear\\Shields\\Manufacturer\\TED"
+      },
+      {
+        "code": "TOR",
+        "name": "Torgue",
+        "path": "OakGame/Content/Gear\\Shields\\Manufacturer\\TOR"
+      },
+      {
+        "code": "VLA",
+        "name": "Vladof",
+        "path": "OakGame/Content/Gear\\Shields\\Manufacturer\\VLA"
+      }
+    ]
+  },
+  "Enhancements": {
+    "name": "Enhancements",
+    "path": "OakGame/Content/Gear\\Enhancements",
+    "balance_data": [],
+    "manufacturers": [
+      {
+        "code": "ORD",
+        "name": "Order",
+        "path": "OakGame/Content/Gear\\Enhancements\\Manufacturer\\ORD"
+      }
+    ]
+  },
+  "GrenadeGadgets": {
+    "name": "GrenadeGadgets",
+    "path": "OakGame/Content/Gear\\GrenadeGadgets",
+    "balance_data": [],
+    "manufacturers": [
+      {
+        "code": "Borg",
+        "name": "Borg",
+        "path": "OakGame/Content/Gear\\GrenadeGadgets\\Manufacturer\\Borg"
+      },
+      {
+        "code": "DAD",
+        "name": "Daedalus",
+        "path": "OakGame/Content/Gear\\GrenadeGadgets\\Manufacturer\\DAD"
+      },
+      {
+        "code": "JAK",
+        "name": "Jakobs",
+        "path": "OakGame/Content/Gear\\GrenadeGadgets\\Manufacturer\\JAK"
+      },
+      {
+        "code": "MAL",
+        "name": "Maliwan",
+        "path": "OakGame/Content/Gear\\GrenadeGadgets\\Manufacturer\\MAL"
+      },
+      {
+        "code": "ORD",
+        "name": "Order",
+        "path": "OakGame/Content/Gear\\GrenadeGadgets\\Manufacturer\\ORD"
+      },
+      {
+        "code": "TED",
+        "name": "Tediore",
+        "path": "OakGame/Content/Gear\\GrenadeGadgets\\Manufacturer\\TED"
+      },
+      {
+        "code": "TOR",
+        "name": "Torgue",
+        "path": "OakGame/Content/Gear\\GrenadeGadgets\\Manufacturer\\TOR"
+      },
+      {
+        "code": "VLA",
+        "name": "Vladof",
+        "path": "OakGame/Content/Gear\\GrenadeGadgets\\Manufacturer\\VLA"
+      }
+    ]
+  },
+  "ClassMods": {
+    "name": "ClassMods",
+    "path": "OakGame/Content/Gear\\ClassMods",
+    "balance_data": [],
+    "manufacturers": []
+  },
+  "Vehicles": {
+    "name": "Vehicles",
+    "path": "OakGame/Content/Gear\\Vehicles",
+    "balance_data": [],
+    "manufacturers": []
+  },
+  "Gadgets": {
+    "name": "Gadgets",
+    "path": "OakGame/Content/Gear\\Gadgets",
+    "balance_data": [],
+    "manufacturers": []
+  },
+  "RepairKits": {
+    "name": "RepairKits",
+    "path": "OakGame/Content/Gear\\RepairKits",
+    "balance_data": [],
+    "manufacturers": []
+  },
+  "Firmware": {
+    "name": "Firmware",
+    "path": "OakGame/Content/Gear\\Firmware",
     "balance_data": [],
     "manufacturers": []
   }
