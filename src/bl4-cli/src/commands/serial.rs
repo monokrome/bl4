@@ -222,10 +222,17 @@ fn generic_barrel_base_name(name: &str) -> Option<&str> {
     }
 }
 
-/// Match a legendary suffix against KNOWN_LEGENDARIES, falling back to title-case.
+/// Match a legendary suffix against NCS item names, then KNOWN_LEGENDARIES,
+/// falling back to title-case.
 fn match_legendary_suffix(suffix: &str) -> Option<String> {
-    let suffix_lower = suffix.to_lowercase();
+    // Try NCS naming data first (most complete and authoritative)
+    let np_key = format!("np_{}", suffix.to_lowercase());
+    if let Some(name) = bl4::manifest::item_display_name(&np_key) {
+        return Some(name.to_string());
+    }
 
+    // Fall back to hardcoded KNOWN_LEGENDARIES
+    let suffix_lower = suffix.to_lowercase();
     for leg in bl4::KNOWN_LEGENDARIES {
         let leg_segment = leg.internal.split('.').next_back().unwrap_or(leg.internal);
         if let Some(leg_suffix) = leg_segment.strip_prefix("comp_05_legendary_") {
@@ -251,6 +258,33 @@ fn match_legendary_suffix(suffix: &str) -> Option<String> {
         .collect::<Vec<_>>()
         .join(" ");
     Some(title)
+}
+
+/// Resolve an item name for ANY item (not just legendaries).
+///
+/// For unique/legendary items, uses the comp/barrel-based resolution.
+/// For generic items, uses the full part name (with manufacturer prefix)
+/// to look up the NCS naming strategy base name.
+pub(crate) fn resolve_item_name(
+    parts: &[(u64, Option<&'static str>, Vec<u64>)],
+    category: Option<i64>,
+    is_legendary: bool,
+) -> Option<String> {
+    // First try the legendary/unique resolution (works for all rarities with unique parts)
+    if let Some(name) = resolve_legendary_name(parts, category, is_legendary) {
+        return Some(name);
+    }
+
+    // For generic items: try part names with category context
+    for (_index, name, _values) in parts {
+        if let Some(n) = name {
+            if let Some(display) = bl4::manifest::item_name_from_part(n, category) {
+                return Some(display.to_string());
+            }
+        }
+    }
+
+    None
 }
 
 /// Handle `serial decode` command
@@ -329,12 +363,12 @@ pub fn decode(
 
     let parts = item.parts_with_names();
 
-    // Build header with optional legendary name
+    // Build header with item name
     let is_legendary = item
         .rarity
         .map(|r| r == bl4::serial::Rarity::Legendary)
         .unwrap_or(false);
-    let legendary_name = resolve_legendary_name(&parts, item.parts_category(), is_legendary);
+    let legendary_name = resolve_item_name(&parts, item.parts_category(), is_legendary);
     let base_name = if let Some((mfr, weapon_type)) = item.weapon_info() {
         format!("{} {}", mfr, weapon_type)
     } else if let Some(group_id) = item.part_group_id() {

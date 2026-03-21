@@ -19,6 +19,7 @@ const DROP_POOLS_TSV: &str = include_str!(concat!(env!("OUT_DIR"), "/drop_pools.
 const PART_POOLS_TSV: &str = include_str!(concat!(env!("OUT_DIR"), "/part_pools.tsv"));
 const BOSS_REPLAY_COSTS_TSV: &str =
     include_str!(concat!(env!("OUT_DIR"), "/table_bossreplay_costs.tsv"));
+const ITEM_NAMES_TSV: &str = include_str!(concat!(env!("OUT_DIR"), "/item_names.tsv"));
 
 // ============================================================================
 // Data Structures (JSON-based reference data only)
@@ -199,6 +200,19 @@ static WEAPON_TYPES: Lazy<HashMap<String, Vec<String>>> = Lazy::new(|| {
         .collect()
 });
 
+/// NCS naming key (np_*) -> Display name
+static ITEM_NAMES: Lazy<HashMap<String, String>> = Lazy::new(|| {
+    ITEM_NAMES_TSV
+        .lines()
+        .filter_map(|line| {
+            let mut cols = line.splitn(2, '\t');
+            let key = cols.next()?.to_string();
+            let name = cols.next()?.to_string();
+            Some((key, name))
+        })
+        .collect()
+});
+
 // ============================================================================
 // Public API
 // ============================================================================
@@ -258,6 +272,107 @@ pub fn boss_display_name(internal_name: &str) -> Option<&'static str> {
 /// Get all boss name mappings (internal_name -> display_name)
 pub fn all_boss_names() -> &'static HashMap<String, String> {
     &BOSS_NAMES
+}
+
+/// Look up an item display name by its NCS naming key (e.g., "np_anarchy" → "Anarchy")
+pub fn item_display_name(np_key: &str) -> Option<&'static str> {
+    ITEM_NAMES.get(np_key).map(|s| s.as_str())
+}
+
+/// Resolve an item display name from a part name and category.
+///
+/// Tries multiple strategies to derive the NCS naming key:
+/// 1. Legendary comp: `comp_05_legendary_anarchy` → `np_anarchy`
+/// 2. Unique barrel: `part_barrel_01_anarchy` → `np_anarchy`
+/// 3. Generic barrel: `part_barrel_01` + category 3 (Jakobs Pistol) → `np_weap_jak_ps_b01`
+pub fn item_name_from_part(part_name: &str, category: Option<i64>) -> Option<&'static str> {
+    // Strategy 1: Legendary comp part (comp_05_legendary_<suffix>)
+    if let Some(suffix) = part_name.strip_prefix("comp_05_legendary_") {
+        let key = format!("np_{}", suffix.to_lowercase());
+        if let Some(name) = item_display_name(&key) {
+            return Some(name);
+        }
+    }
+
+    // Strategy 2: Unique barrel (part_barrel_NN_<suffix> where suffix isn't just digits)
+    if part_name.starts_with("part_barrel_") {
+        let after_barrel = &part_name["part_barrel_".len()..];
+        if let Some(pos) = after_barrel.find('_') {
+            let suffix = &after_barrel[pos + 1..];
+            // Skip single-letter sub-variants (a, b, c, d)
+            if suffix.len() > 1 && !suffix.chars().all(|c| c.is_ascii_digit()) {
+                let key = format!("np_{}", suffix.to_lowercase());
+                if let Some(name) = item_display_name(&key) {
+                    return Some(name);
+                }
+            }
+        }
+
+        // Strategy 3: Generic barrel via category → NCS prefix
+        if let Some(cat) = category {
+            if let Some(ncs_prefix) = category_ncs_prefix(cat) {
+                let barrel_num = if after_barrel == "01" || after_barrel == "02" {
+                    after_barrel
+                } else {
+                    let num_end = after_barrel.find('_').unwrap_or(after_barrel.len());
+                    &after_barrel[..num_end]
+                };
+                if !barrel_num.is_empty() && barrel_num.chars().all(|c| c.is_ascii_digit()) {
+                    let key = format!("np_weap_{}_b{}", ncs_prefix, barrel_num);
+                    if let Some(name) = item_display_name(&key) {
+                        return Some(name);
+                    }
+                }
+            }
+        }
+    }
+
+    None
+}
+
+/// Map category IDs to NCS manufacturer+type prefix codes.
+///
+/// These are the codes used in NCS naming keys like `np_weap_jak_ps_b01`.
+fn category_ncs_prefix(category: i64) -> Option<&'static str> {
+    match category {
+        // Shotguns
+        7 => Some("bor_sg"),
+        8 => Some("dad_sg"),
+        9 => Some("jak_sg"),
+        10 => Some("mal_sg"),
+        11 => Some("ted_sg"),
+        12 => Some("tor_sg"),
+        // Pistols
+        2 => Some("dad_ps"),
+        3 => Some("jak_ps"),
+        4 => Some("ord_ps"),
+        5 => Some("ted_ps"),
+        6 => Some("tor_ps"),
+        // ARs
+        13 => Some("dad_ar"),
+        14 => Some("ted_ar"),
+        15 => Some("ord_ar"),
+        17 => Some("tor_ar"),
+        18 => Some("vla_ar"),
+        27 => Some("jak_ar"),
+        // Snipers
+        16 => Some("vla_sr"),
+        23 => Some("bor_sr"),
+        24 => Some("jak_sr"),
+        25 => Some("mal_sr"),
+        26 => Some("ord_sr"),
+        // SMGs
+        19 => Some("bor_sm"),
+        20 => Some("dad_sm"),
+        21 => Some("mal_sm"),
+        22 => Some("vla_sm"),
+        _ => None,
+    }
+}
+
+/// Get all item name mappings
+pub fn all_item_names() -> &'static HashMap<String, String> {
+    &ITEM_NAMES
 }
 
 /// Get all manufacturer codes for a weapon type

@@ -45,6 +45,7 @@ fn main() {
         &out_dir,
         "data_tables/table_bossreplay_costs.tsv",
     );
+    copy_manifest_file(&manifest, &out_dir, "item_names.tsv");
 
     build_parts_database(&manifest, &out_dir);
 }

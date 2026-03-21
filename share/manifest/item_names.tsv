@@ -1,0 +1,493 @@
+np_absolution	Absolution
+np_aggrovator	Chaumurky
+np_anarchy	Anarchy
+np_anchor	Anchor
+np_angel	Guardian Angel
+np_arctic	ARC-TAN
+np_asher	Asher's Rise
+np_atlien	Budget Deity
+np_atlinggun	Atling Gun
+np_axe	Buzz Axe
+np_ballista	Borstel Ballista
+np_barrelaged	Oak-Aged Cask
+np_beegun	Birt's Bees
+np_blockbuster	Blockbuster
+np_bloodstarved	Darkbeast
+np_bod	Bod
+np_bonnieclyde	Bonnie and Clyde
+np_boomslang	Boomslang
+np_bottledlightning	Bottled Lightning
+np_breadth	Hardpoint
+np_bubbles	Bubbles
+np_bugbear	Bugbear
+np_bully	Bully
+np_buoy	Buoy
+np_chuck	Chuck
+np_cindershelly	Cindershelly
+np_cm_ds_01	Psion
+np_cm_ds_02	Transistor
+np_cm_ds_03	Firedancer
+np_cm_ds_04	Naturalist
+np_cm_ds_05	Weaver
+np_cm_ds_06	Radiance
+np_cm_ds_07	Ritualist
+np_cm_ds_08	Alchemist
+np_cm_ds_09	Commander
+np_cm_ds_10	Hunter
+np_cm_ds_leg_01	Technomancer
+np_cm_ds_leg_02	Avatar
+np_cm_ds_leg_03	Undead Eye
+np_cm_ds_leg_04	Kindread Spirits
+np_cm_ds_leg_05	Illusionist
+np_cm_ds_leg_06	Teen Witch
+np_cm_ds_leg_raid1	Misericorde
+np_cm_exo_01	Agente
+np_cm_exo_02	Genio
+np_cm_exo_03	Soldado
+np_cm_exo_04	Demolitionist
+np_cm_exo_05	T
+np_cm_exo_06	Mercenario
+np_cm_exo_07	Gearhead
+np_cm_exo_08	Trooper
+np_cm_exo_09	Tanker
+np_cm_exo_10	Practitioner
+np_cm_exo_leg_01	Dancer
+np_cm_exo_leg_02	Fil
+np_cm_exo_leg_03	Instigator
+np_cm_exo_leg_04	Buster
+np_cm_exo_leg_05	Esgrimidor
+np_cm_exo_leg_06	Grenazerker
+np_cm_exo_leg_raid1	Overdriver
+np_cm_grav_01	Breaker
+np_cm_grav_02	Chemist
+np_cm_grav_03	Assistant
+np_cm_grav_04	Physicist
+np_cm_grav_05	Controller
+np_cm_grav_06	Compiler
+np_cm_grav_07	Specialist
+np_cm_grav_08	Bookworm
+np_cm_grav_09	Radiologist
+np_cm_grav_10	Savant
+np_cm_grav_leg_01	Bio-Robot
+np_cm_grav_leg_02	Reactor
+np_cm_grav_leg_03	Generator
+np_cm_grav_leg_04	Driver
+np_cm_grav_leg_05	Skeptic
+np_cm_grav_leg_06	Scientist
+np_cm_grav_leg_raid1	Trooper
+np_cm_pal_01	Guardian
+np_cm_pal_02	Brawler
+np_cm_pal_03	Grenadier
+np_cm_pal_04	Icebringer
+np_cm_pal_05	Torchbearer
+np_cm_pal_06	Stormcaller
+np_cm_pal_07	Soldier
+np_cm_pal_08	Commando
+np_cm_pal_09	Cyborg
+np_cm_pal_10	Outlaw
+np_cm_pal_leg_01	Furnace
+np_cm_pal_leg_02	Elementalist
+np_cm_pal_leg_03	Blacksmith
+np_cm_pal_leg_04	Shatterwight
+np_cm_pal_leg_05	Viking
+np_cm_pal_leg_06	Forge Master
+np_cm_pld_leg_raid1	Lamplighter
+np_coldshoulder	Cold Shoulder
+np_commbd	Forsaken Chaos
+np_compleat	Compleation
+np_complex_root	Complex Root
+np_conflux	Conflux
+np_convergence	Convergence
+np_crowdsourced	Midnight Defiance
+np_demo	Hair Trigger
+np_discjockey	Disc Jockey
+np_disco_disc	Destructo Disco
+np_dividedfocus	Divided Focus
+np_doeshot	Doeshot
+np_dualdamage	Aegon's Dream
+np_eigenburst	Eigenburst
+np_faultydetonator	Faulty Detonator
+np_finnity	Finnity XXX-L
+np_finnty_upgrade	Upgraded Finnity XXX-L
+np_firepot	Firepot
+np_firewall	Firebreak
+np_firewerks	Firewerks
+np_firework	Matador's Match
+np_firstimpression	First Impression
+np_fisheye	Fisheye
+np_flare	Countermeasure
+np_fleabag	Fleabag
+np_fuse	Fuse
+np_gammavoid	Gamma Void
+np_gmr	G.M.R.
+np_goalkeeper	Goalkeeper
+np_goldengod	Golden God
+np_goremaster	Goremaster
+np_gren_aug_artillery	Fusillade
+np_gren_aug_artillery_duration	Suppressing
+np_gren_aug_artillery_maglock	Relentless
+np_gren_aug_artillery_micromissiles	Barrage
+np_gren_aug_artillery_mortar	Artillery
+np_gren_aug_artillery_ricochet	Anti-Infantry
+np_gren_aug_damage_amp	Wounding
+np_gren_aug_damage_amp_bouncing	Caroming
+np_gren_aug_damage_amp_penetrator	Vivisecting
+np_gren_aug_damage_amp_suppressor	Maiming
+np_gren_aug_divider	Duplicating
+np_gren_aug_divider_children	Multiplying
+np_gren_aug_divider_repeater	Bombing Run
+np_gren_aug_divider_seeker	Pack-Hunter
+np_gren_aug_divider_singularity	Binary
+np_gren_aug_divider_spring	Coursing
+np_gren_aug_lingering	Hazard
+np_gren_aug_lingering_alchemic	Potent
+np_gren_aug_lingering_duration	Ruinous
+np_gren_aug_lingering_fracture	Tectonic
+np_gren_aug_lingering_pulse	Erupting
+np_gren_aug_lingering_splat	Bubbling
+np_gren_aug_mirv	MIRV
+np_gren_aug_mirv_bouncer	Festive
+np_gren_aug_mirv_children	Clonal
+np_gren_aug_mirv_micro_mirv	Bountiful
+np_gren_aug_mirv_spring	Bouquet
+np_gren_aug_singularity	Singularity
+np_gren_aug_singularity_collapsing	Supermassive
+np_gren_aug_singularity_duration	Stable
+np_gren_aug_singularity_lingering	Spaghettifying
+np_gren_aug_singularity_repulsor	White Hole
+np_gren_aug_spring	Spring-Loaded
+np_gren_aug_spring_apex	Daisy Cutter
+np_gren_aug_spring_artillery	Blossoming
+np_gren_aug_spring_bouncer	Mad Hatter
+np_gren_aug_spring_compounded	Crescendo
+np_gren_aug_spring_springs	Rebounding
+np_gren_manu_bor	Reaver Grenade
+np_gren_manu_dad	Frag Grenade
+np_gren_manu_jak	Throwing Knife
+np_gren_manu_mal	Plasma Grenade
+np_gren_manu_ord	Seeker
+np_gren_manu_ted	Satchel Charge
+np_gren_manu_tor	EXPLODER
+np_gren_manu_vla	Impact Grenade
+np_gren_stat_cooldown	Rapid
+np_gren_stat_crit_chance	Bullseye
+np_gren_stat_crit_damage	Killshot
+np_gren_stat_damage	Booming
+np_gren_stat_elemental_power	Ancient
+np_gren_stat_extra_charge	Fully Loaded
+np_gren_stat_force	Concussive
+np_gren_stat_nuke	Atomic
+np_gren_stat_oversized	Augmented
+np_gren_stat_radius	Collateral
+np_gren_stat_transfusion	Vampiric
+np_gren_stat_wideload	Double-Wide
+np_handcannon	Handcannon
+np_heartgun	Acey May
+np_heavyturret	Husky Friend
+np_heavyweight	Heavyweight
+np_hellfire	Hellfire
+np_hellwalker	Hellwalker
+np_hoarder	Hoarder
+np_hopscotch	Hopscotch
+np_inscriber	Inscriber
+np_javelin	Sprezzatura
+np_jetset	Jetsetter
+np_kaleidosplode	Kaleidosplode
+np_kaoson	Kaoson
+np_katagawa	Katagawa's Revenge
+np_kickballer	Kickballer
+np_kingsgambit	King's Gambit
+np_laserdisc	Laser Disker
+np_leadballoon	Lead Balloon
+np_lightning	Sparky Shield
+np_linebacker	Linebacker
+np_lucian	Lucian's Flank
+np_lumberjack	Bloody Lumberjack
+np_luty	Luty Madlad
+np_mantra	Mantra
+np_mercredi	Mercredi
+np_mercury	Mercurious
+np_misslaser	Missilaser
+np_momento	Pandoran Memento
+np_murder	Murmur
+np_noisycricket	Noisy Cricket
+np_ohmigot	Ohm I Got
+np_om	Oscar Mike
+np_on_the_go	On The Go
+np_onionlayeredguard	Onion
+np_onslaught	Onslaught
+np_phantom_flame	Phantom Flame
+np_plasmacoil	Plasma Coil
+np_potatothrower	Potato Thrower IV
+np_predatordrone	UAV
+np_prince	Prince Harming
+np_proteancell	Protean Cell
+np_queensrest	Queen's Rest
+np_quickdraw	San Saba Songbird
+np_rainbowvomit	Rainbow Vomit
+np_rainmaker	Rainmaker
+np_rangefinder	Rangefinder
+np_ravenfire	Ravenfire
+np_recursive	Recursive
+np_repkit_aug_d_aoe_heal	Aerosolized
+np_repkit_aug_d_damage_reduction	Reinforcing
+np_repkit_aug_d_elem_immune_corrosive	Neutralizing
+np_repkit_aug_d_elem_immune_cryo	Thermal
+np_repkit_aug_d_elem_immune_fire	Insulating
+np_repkit_aug_d_elem_immune_radiation	Radioprotectant
+np_repkit_aug_d_elem_immune_shock	Grounding
+np_repkit_aug_d_elem_resist_corrosive	Anionic
+np_repkit_aug_d_elem_resist_cryo	Warming
+np_repkit_aug_d_elem_resist_fire	Tempered
+np_repkit_aug_d_elem_resist_radiation	Leaded
+np_repkit_aug_d_elem_resist_shock	Rubberized
+np_repkit_aug_d_healing	High Dosage
+np_repkit_aug_d_health_burst	Fast-Acting
+np_repkit_aug_d_lifesteal	Parasitic
+np_repkit_aug_d_overshield	Synergizing
+np_repkit_aug_d_shield_charge	Instigating
+np_repkit_aug_o_amp	Amplified
+np_repkit_aug_o_elem_damage	Reactive
+np_repkit_aug_o_firerate	Spasmodic
+np_repkit_aug_o_melee	Steroidal
+np_repkit_aug_o_nova_corrosive	Caustic
+np_repkit_aug_o_nova_cryo	Cryogenic
+np_repkit_aug_o_nova_fire	Combustible
+np_repkit_aug_o_nova_radiation	Fissile
+np_repkit_aug_o_nova_shock	Plasmic
+np_repkit_aug_o_reload	Dextrous
+np_repkit_aug_o_splash	Explosive
+np_repkit_aug_o_splat_corrosive	Digesting
+np_repkit_aug_o_splat_cryo	Supercooling
+np_repkit_aug_o_splat_fire	Igneous
+np_repkit_aug_o_splat_radiation	Radiant
+np_repkit_aug_o_splat_shock	Conductive
+np_repkit_aug_u_all_dmg	Experimental
+np_repkit_aug_u_cooldown	Quick-Charging
+np_repkit_aug_u_duration	Slow Release
+np_repkit_aug_u_gadget_cooldown	Nootropic
+np_repkit_aug_u_movespeed	Caffienated
+np_repkit_aug_u_skill_cooldown	Adrenalized
+np_repkit_manu_bor	Scabber
+np_repkit_manu_dad	Stim
+np_repkit_manu_jak	Tonic
+np_repkit_manu_mal	Refresher
+np_repkit_manu_ord	Recorporator
+np_repkit_manu_ted	Pocket Doc
+np_repkit_manu_tor	Juicer
+np_repkit_manu_vla	Sobirat
+np_repkit_payload_huge	Mega
+np_repkit_payload_large	Large
+np_repkit_payload_medium	Standard
+np_repkit_payload_small	Mini
+np_repkit_uni_bor_augmenter	Augmenter AF1000
+np_repkit_uni_dad_healthraiser	Healthraiser
+np_repkit_uni_jak_defibrillator	Defibrillator
+np_repkit_uni_mal_bloodanalyzer	Blood Analyzer
+np_repkit_uni_ord_triplebypass	Triple Bypass
+np_repkit_uni_ted_killspring	Kill Spring
+np_repkit_uni_tor_shinywarpaint	Shiny War Paint
+np_repkit_uni_vla_adrenalinepump	Adrenaline Pump
+np_repkit_uni_vla_pacemaker	Pacemaker
+np_roach	Roach
+np_rocketreload	Lucky Clover
+np_roil	Roil
+np_roulette	Roulette
+np_rowan	Rowan's Charge
+np_rowdy	Rowdy Rider
+np_rubber	Jelly
+np_rubysgrasp	Ruby's Grasp
+np_seamstress	Rooker
+np_seventh_sense	Seventh Sense
+np_shalashaska	Shalashaska
+np_shieldboi	Principal
+np_shokunai	Sho Kunai
+np_sideshow	Sideshow
+np_sidewinder	Sidewinder
+np_skully	Skully
+np_slippy	Slippy
+np_slugger	Hot Slugger
+np_songbird	Broken Wings
+np_spinning_blade	Spinning Blade
+np_splatoon	Inkling
+np_star_helix	Star Helix
+np_stopgap	Stop Gap
+np_stray	Stray
+np_streamer	Streamer
+np_superconductingplasmacoil	Superconducting Plasma Coil
+np_supernova	Extra Medium
+np_supersoldier	Super Soldier
+np_swarm	Swarm
+np_sweet_embrace	Sweet Embrace
+np_symmetry	Symmetry
+np_tankbuster	Tankbuster
+np_term_name_bor	BOR Term
+np_term_name_dad	DAD Term
+np_term_name_jak	JAK Term
+np_term_name_mal	MAL Term
+np_term_name_ord	ORD Term
+np_term_name_ted	TED Term
+np_term_name_tor	TOR Term
+np_term_name_vla	VLA Term
+np_term_pri_barr_barredaggression	Barred1
+np_term_pri_barr_bulletamp	BulletAmp1
+np_term_pri_barr_dome	Dome1
+np_term_pri_barr_elementalfield	ElementalField1
+np_term_pri_barr_health	Health1
+np_term_pri_barr_reflection	Reflection1
+np_term_pri_barr_scopesup	ScopesUp1
+np_term_pri_barr_speedgate	Speedgate1
+np_term_pri_com_coldshoulder	ColdShoulder1
+np_term_pri_com_contamination	Contamination1
+np_term_pri_com_killclip	Killclip1
+np_term_pri_com_orbiting	Orbiting1
+np_term_pri_com_power	ComPower1
+np_term_pri_com_radius	ComRadius1
+np_term_pri_com_reverb	Reverb1
+np_term_pri_com_tothenth	ToTheNth1
+np_term_pri_heal_ironskin	Ironskin1
+np_term_pri_heal_leechseed	Leechseed1
+np_term_pri_heal_life_steal	Lifesteal1
+np_term_pri_heal_overshield	Overshield1
+np_term_pri_heal_power	HealPower1
+np_term_pri_heal_radius	HealRadius1
+np_term_pri_heal_shield_recharge	ShieldRecharge1
+np_term_pri_heal_thorns	Thorns1
+np_term_sec_barr_barredaggression	Barred2
+np_term_sec_barr_bulletamp	BulletAmp2
+np_term_sec_barr_dome	Dome2
+np_term_sec_barr_elementalfield	ElementalField2
+np_term_sec_barr_health	Health2
+np_term_sec_barr_reflection	Reflection2
+np_term_sec_barr_scopesup	ScopesUp2
+np_term_sec_barr_speedgate	Speedgate2
+np_term_sec_com_coldshoulder	ColdShoulder2
+np_term_sec_com_contamination	Contamination2
+np_term_sec_com_killclip	KillClip2
+np_term_sec_com_orbiting	Orbiting2
+np_term_sec_com_power	ComPower2
+np_term_sec_com_radius	ComRadius2
+np_term_sec_com_reverb	Reverb2
+np_term_sec_com_tothenth	ToTheNth2
+np_term_sec_heal_ironskin	Ironskin2
+np_term_sec_heal_leechseed	Leechseed2
+np_term_sec_heal_life_steal	Lifesteal2
+np_term_sec_heal_overshield	Overshield2
+np_term_sec_heal_power	HealPower2
+np_term_sec_heal_radius	HealRadius2
+np_term_sec_heal_shield_recharge	ShieldRecharge2
+np_term_sec_heal_thorns	Thorns2
+np_timekeeper	Timekeeper's New Shield
+np_tkswave	T.K's Wave
+np_transmission	Transmitter
+np_truck	Truck
+np_turret_name_bor_basic	BORBASIC
+np_turret_name_bor_beam	BORBEAM
+np_turret_name_bor_chaingun	BORCHAIN
+np_turret_name_bor_longbarrel	BORLONG
+np_turret_name_bor_rocket	BORRocket
+np_turret_name_bor_shotgun	BORSHOTGUN
+np_turret_name_dad_basic	DADBASIC
+np_turret_name_dad_beam	DADBEAM
+np_turret_name_dad_chaingun	DADCHAIN
+np_turret_name_dad_longbarrel	DADLONG
+np_turret_name_dad_rocket	DADRocket
+np_turret_name_dad_shotgun	DADSHOTGUN
+np_turret_name_jak_basic	JAKBASIC
+np_turret_name_jak_beam	JAKBEAM
+np_turret_name_jak_chaingun	JAKCHAIN
+np_turret_name_jak_longbarrel	JAKLONG
+np_turret_name_jak_rocket	JAKRocket
+np_turret_name_jak_shotgun	JAKSHOTGUN
+np_turret_name_mal_basic	MALBASIC
+np_turret_name_mal_beam	MALBEAM
+np_turret_name_mal_chaingun	MALCHAIN
+np_turret_name_mal_longbarrel	MALLONG
+np_turret_name_mal_rocket	MALRocket
+np_turret_name_mal_shotgun	MALSHOTGUN
+np_turret_name_ord_basic	ORDBASIC
+np_turret_name_ord_beam	ORDBEAM
+np_turret_name_ord_chaingun	ORDCHAIN
+np_turret_name_ord_longbarrel	ORDLONG
+np_turret_name_ord_rocket	ORDRocket
+np_turret_name_ord_shotgun	ORDSHOTGUN
+np_turret_name_ted_basic	TEDBASIC
+np_turret_name_ted_beam	TEDBEAM
+np_turret_name_ted_chaingun	TEDCHAIN
+np_turret_name_ted_longbarrel	TEDLONG
+np_turret_name_ted_rocket	TEDRocket
+np_turret_name_ted_shotgun	TEDSHOTGUN
+np_turret_name_tor_basic	TORBASIC
+np_turret_name_tor_beam	TORBEAM
+np_turret_name_tor_chaingun	TORCHAIN
+np_turret_name_tor_longbarrel	TORLONG
+np_turret_name_tor_rocket	TORRocket
+np_turret_name_tor_shotgun	TORSHOTGUN
+np_turret_name_vla_basic	VLABASIC
+np_turret_name_vla_beam	VLABEAM
+np_turret_name_vla_chaingun	VLACHAIN
+np_turret_name_vla_longbarrel	VLALONG
+np_turret_name_vla_rocket	VLARocket
+np_turret_name_vla_shotgun	VLASHOTGUN
+np_undershield	Undershield
+np_urchin	Urchin
+np_vamoose	Vamoose
+np_waterfall	Waterfall
+np_watts4dinner	Watts 4 Dinner
+np_weap_bor_sg_b01	Weldwyrm
+np_weap_bor_sg_b02	Hellhound
+np_weap_bor_sm_b01	Phage
+np_weap_bor_sm_b02	Infestation
+np_weap_bor_sr_b01	Nullsaint
+np_weap_bor_sr_b02	Daemon
+np_weap_dad_ar_b01	Spec-Tec
+np_weap_dad_ar_b02	F.A.N.G.
+np_weap_dad_ps_b01	S23
+np_weap_dad_ps_b02	Bonn-91
+np_weap_dad_sg_b01	Caliburn
+np_weap_dad_sg_b02	Durendal
+np_weap_dad_sm_b01	GCX
+np_weap_dad_sm_b02	Painter
+np_weap_jak_ar_b01	Karkadann
+np_weap_jak_ar_b02	Rougarou
+np_weap_jak_ps_b01	Cuca
+np_weap_jak_ps_b02	Muki
+np_weap_jak_sg_b01	Dullahan
+np_weap_jak_sg_b02	Balor
+np_weap_jak_sr_b01	Inkanyamba
+np_weap_jak_sr_b02	Xiuhcoatl
+np_weap_mal_sg_b01	Stellium
+np_weap_mal_sg_b02	Vertex
+np_weap_mal_sm_b01	Ephemeris
+np_weap_mal_sm_b02	Synastry
+np_weap_mal_sr_b01	Midheaven
+np_weap_mal_sr_b02	Transit
+np_weap_ord_ar_b01	Indiction
+np_weap_ord_ar_b02	Schema
+np_weap_ord_ps_b01	Punct
+np_weap_ord_ps_b02	Lemma
+np_weap_ord_sr_b01	Yuga
+np_weap_ord_sr_b02	Piktun
+np_weap_ted_ar_b01	Assaultomatic
+np_weap_ted_ar_b02	Perforator
+np_weap_ted_ps_b01	Pocketshot
+np_weap_ted_ps_b02	Widget
+np_weap_ted_sg_b01	EZ-Blast
+np_weap_ted_sg_b02	Omnibore
+np_weap_tor_ar_b01	Handle
+np_weap_tor_ar_b02	Truncheon
+np_weap_tor_ps_b01	Kitty
+np_weap_tor_ps_b02	Lotus
+np_weap_tor_sg_b01	Rider
+np_weap_tor_sg_b02	Crank
+np_weap_vla_ar_b01	Buzzymuzz
+np_weap_vla_ar_b02	Gruppagrak
+np_weap_vla_sm_b01	Boory
+np_weap_vla_sm_b02	Flewdy
+np_weap_vla_sr_b01	Ragoon
+np_weap_vla_sr_b02	Vyudazy
+np_wf	Whiskey Foxtrot
+np_wombocombo	Wombo Combo
+np_zadra_weapon	Absolution
+np_zadra_weapon_prefix	A
+np_zipgun	Zipper
