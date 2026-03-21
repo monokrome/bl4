@@ -8,7 +8,8 @@ use axum::{
 use bl4_idb::{generate_item_uuid, generate_random_uuid, Confidence, ItemFilter, ValueSource};
 
 use crate::schema::{
-    CreateItemRequest, CreateItemResponse, ItemResponse, ListItemsQuery, ListItemsResponse,
+    CreateItemRequest, CreateItemResponse, DecodedValues, ItemResponse, ListItemsQuery,
+    ListItemsResponse,
 };
 use crate::state::AppState;
 
@@ -70,6 +71,7 @@ pub async fn list_items(
             element: item.element,
             verification_status: item.verification_status.to_string(),
             source: item.source,
+            decoded: None,
         })
         .collect();
 
@@ -102,6 +104,22 @@ pub async fn get_item(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
         .ok_or_else(|| (StatusCode::NOT_FOUND, format!("Item not found: {}", serial)))?;
 
+    let best_values = state
+        .db
+        .get_best_values(&item.serial)
+        .await
+        .unwrap_or_default();
+
+    let decoded = if best_values.is_empty() {
+        None
+    } else {
+        Some(DecodedValues {
+            name: best_values.get("name").cloned(),
+            parts: best_values.get("parts").cloned(),
+            confidence: best_values.get("confidence").cloned(),
+        })
+    };
+
     Ok(Json(ItemResponse {
         serial: item.serial,
         name: item.name,
@@ -114,6 +132,7 @@ pub async fn get_item(
         element: item.element,
         verification_status: item.verification_status.to_string(),
         source: item.source,
+        decoded,
     }))
 }
 

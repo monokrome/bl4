@@ -31,6 +31,17 @@ pub struct ItemResponse {
     pub element: Option<String>,
     pub verification_status: String,
     pub source: Option<String>,
+    /// Best-confidence decoded values from item_values table
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub decoded: Option<DecodedValues>,
+}
+
+/// Best-confidence decoded values for an item
+#[derive(Debug, Serialize, ToSchema)]
+pub struct DecodedValues {
+    pub name: Option<String>,
+    pub parts: Option<String>,
+    pub confidence: Option<String>,
 }
 
 #[derive(Debug, Serialize, ToSchema)]

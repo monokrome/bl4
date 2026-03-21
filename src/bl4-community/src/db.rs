@@ -56,6 +56,13 @@ impl Database {
         dispatch!(self, add_item, serial)
     }
 
+    pub async fn get_best_values(
+        &self,
+        serial: &str,
+    ) -> Result<std::collections::HashMap<String, String>, bl4_idb::RepoError> {
+        dispatch!(self, get_best_values, serial)
+    }
+
     pub async fn add_items_bulk(
         &self,
         serials: &[&str],
