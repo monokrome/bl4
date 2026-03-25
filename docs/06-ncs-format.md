@@ -172,137 +172,70 @@ The decode loop reads:
 
 ## Binary Section
 
-The binary section is where NCS gets complicated. It contains the actual structured data --- field values, type information, and cross-references --- in a space-efficient binary encoding. The format varies significantly across NCS file types.
+The binary section contains bit-packed structured data decoded by the `decode.rs` module. All NCS files use the same decode algorithm — the TypeCodeTable's row flags determine how each node type is interpreted.
 
-### Combined String Table
+### String Indexing
 
-Before diving into binary encodings, understand how indexing works. The binary section references strings by index into a **combined string table** built from multiple sources:
+The binary section references strings by index into the three string tables parsed from the TypeCodeTable:
 
-1. **Primary strings** (indices 0 to N-1) --- from the string table section
-2. **Category names** (indices N to N+K-1) --- DLC identifiers like "none", "base"
-3. **Field abbreviation** (next index) --- if present, like "corid_aid.a"
-4. **Type name** (final index) --- the schema identifier like "achievement"
+- **Header strings** — table name and dependency names (from BlobHeader)
+- **Value strings** — data values (from string block 1)
+- **Value kinds** — type annotations like `Asset`, `game_region` (from string block 2)
+- **Key strings** — entry and field names (from string block 3)
 
-For `achievement.bin` with 10 primary strings, 3 category names, 1 abbreviation, and the type name, the combined table has 15 entries. Index 13 points to "achievement" (the type name), which serves as the `table_id`.
+Bit widths for indices are computed from the declared counts: `bit_width(count)` gives the minimum bits needed to index into each table.
 
-### Simple Binary Format (abjx)
+### Decode Loop
 
-For compact `abjx` files (like `achievement`), the binary section has this structure:
-
-```text
-Offset  Size    Description
-------  ----    -----------
-0x00    12      ASCII field abbreviations (e.g., 'corid_aid.a!')
-0x0c    4       u32 offset/count value
-0x10    4       u32 secondary value
-0x14    var     Hash table or lookup data
-...     var     Entry metadata (indices, flags)
-...     var     Tail section with packed values
--4      4       Checksum (FNV-1a or CRC)
-```
-
-The section divider `7a 00 00 00 00 00` marks a transition point --- before it: entry data markers (`XX XX 00 00` patterns); after it: bit-packed binary data.
-
-#### Bit-Packed String Indices
-
-After the divider, the first ~32 bytes contain bit-packed indices into the combined string table. The bit width is determined by the table size:
-
-- 6 strings -> 3 bits per index
-- 14 strings -> 4 bits per index
-- 18 strings -> 5 bits per index
-
-Example from `achievement.bin` (4-bit indices, 14-entry table):
+The binary data is read as a bitstream. The outer loop reads table IDs (referencing header strings), dependency lists, and per-table remap arrays. Each table contains byte-aligned records:
 
 ```text
-Raw bytes: 1d 15 d7 55 e3 fb 2d fb...
-Decoded:   13, 1, 5, 1, 7, 13, 5, 5, 3, 14, 11, 15...
+[table_id] [dep_id...0] [remap_a] [remap_b] [records...]
 ```
 
-Index 13 maps to "achievement" (the table_id). Index 1 maps to "10" (a field value). The bit-packed section encodes the entire entry-to-field mapping in a few dozen bytes.
+Each record has:
+1. **Length prefix** (32-bit, byte-aligned) — total record size in bytes
+2. **Tags** — metadata bytes (`a` through `z`) until the `z` terminator
+3. **Entries** — key-value pairs with 2-bit opcodes (0=end, 1=null, 2=node, 3=ref)
+4. **Dependency entries** — cross-references to dependent tables
 
-#### Structured Metadata Section
+### Record Tags
 
-Following the bit-packed indices is a byte-based metadata section. Values are mostly in the 0x08--0x30 range, with `0x28` acting as a separator between entry groups:
+Tags provide per-record metadata. Each tag is a single ASCII byte followed by tag-specific data:
 
-```text
-15 11 13 14 14 14 12 25 08 08 | 28 | 13 0a 19 | 28 | 13 | 28 | 13 | 28 | 12 | 28 28 | 00 00
-Entry 0: [21, 17, 19, 20, 20, 20, 18, 37, 8, 8]
-Entry 1: [19, 10, 25]
-Entry 2: [19]
-Entry 3: [19]
-Entry 4: [18]
-```
+| Tag | Description | Data |
+|-----|-------------|------|
+| `a` | Key name | pair_vec string reference |
+| `b` | U32 value | 32 bits |
+| `c` | F32 value | 32 bits (interpreted as both u32 and f32) |
+| `d`, `e`, `f` | Name lists | Sequence of pair_vec strings until "none" |
+| `p` | Variant | Nested node value |
+| `z` | Terminator | End of tag section |
 
-The number of entry groups matches the number of entries. The `0x00 0x00` sequence terminates the section.
+### Node Types
 
-#### Compact Binary Format
+Entry values are decoded recursively. The type_index from the bitstream selects a row from the TypeCodeTable's bit matrix, which determines the node kind:
 
-Some NCS files (e.g., `rarity`) skip the separator-based format and use fixed-width records instead. This format is signaled by a `0x80 0x80` header after the bit-packed indices:
+| Kind (bits 0-1) | Type | Decoding |
+|------------------|------|----------|
+| 0 | Null | No data |
+| 1 | Leaf | Value string + value kind |
+| 2 | Array | Continuation-bit loop of child nodes |
+| 3 | Map | Continuation-bit loop of key-value pairs |
 
-```text
-[Bit-packed indices] [0x80 0x80] [fixed-width records] [00 00] [tail data]
-```
+If bit 7 of the row flags is set (or kind is Map), the node reads a self-key string before the value.
 
-Each entry occupies a fixed number of bytes (typically 2) without separators:
+### Remap Arrays
 
-```text
-rarity.bin (10 entries, 2 bytes each):
-0x80 0x80 | 13 0f | 08 11 | 0d 0d | 23 08 | 08 24 | 27 11 | 0e 22 | 13 0d | 1c 1b | 26 27 | 00 00
-           Entry0  Entry1  Entry2  Entry3  Entry4  Entry5  Entry6  Entry7  Entry8  Entry9  Term
-```
+Each table has two FixedWidthIntArrays (24-bit count + 8-bit value width):
+- **Remap A** — remaps key string indices
+- **Remap B** — remaps value string indices
 
-### Extended Binary Format (abij)
-
-Extended `abij` files (like `itempoollist`) store full field names instead of abbreviations:
-
-```text
-Offset  Size    Description
-------  ----    -----------
-0x00    var     Category names (none, base, basegame, ...)
-var     var     Field names as null-terminated strings
-var     4       u32 start marker
-...     var     Hash/lookup tables
--4      4       Checksum
-```
-
-Field names section:
-
-```text
-none\0
-base\0
-basegame\0
-pad\0
-cor_dbinstance\0
-structtype\0
-hand\0
-items\0
-rowname\0
-columnvalue\0
-pstbms\0
-```
-
-### Tag-Based Binary Format
-
-The most complex NCS files --- `inv.bin`, `gbxactor.bin` --- use a tag-based encoding system. Each byte in the binary section acts as a type tag that determines how to interpret the following data:
-
-| Tag | ASCII | Type | Description |
-|-----|-------|------|-------------|
-| `0x61` | `a` | Pair | String reference (key-value) |
-| `0x62` | `b` | U32 | 32-bit unsigned integer |
-| `0x63` | `c` | U32F32 | Dual interpretation: u32 and f32 |
-| `0x64`--`0x66` | `d`--`f` | List | List terminated by "none" |
-| `0x68` | `h` | --- | Hash/reference |
-| `0x69` | `i` | --- | Index |
-| `0x6a` | `j` | --- | Jump/offset |
-| `0x6c` | `l` | --- | Length-prefixed |
-| `0x70` | `p` | Variant | 2-bit subtype selector |
-| `0x7a` | `z` | End | Record terminator |
-
-This format uses remap tables (FixedWidthIntArrays with 24-bit count + 8-bit width) for index compression and variable-length encoding for complex hierarchical data structures.
+These compress the index space when a table only uses a subset of the global string tables.
 
 ### Hash Function
 
-Field names are hashed using **FNV-1a 64-bit** for lookup tables:
+FNV-1a 64-bit is used for field name hashing:
 
 ```rust
 const OFFSET_BASIS: u64 = 0xcbf29ce484222325;
@@ -317,15 +250,6 @@ fn fnv1a_64(data: &[u8]) -> u64 {
     hash
 }
 ```
-
-### Format Variations Summary
-
-| Format | Entry Marker | Control Pattern | Field Names |
-|--------|--------------|-----------------|-------------|
-| `abjx` compact | `0x01` | `01 00 xx yy` | ASCII abbreviations in binary |
-| `abij` extended | `0xb0` | `xx yy 01` | Full names as strings |
-| `abhj` | `0xb0` | varies | Long ASCII abbreviation |
-| `abcefhijl` | `0x01` | varies | Tag-based with type codes |
 
 ---
 
