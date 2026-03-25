@@ -179,8 +179,41 @@ pub mod schema {
 /// # Returns
 /// A tuple of (sql_string, param_count) where param_count indicates how many
 /// parameters need to be bound.
+/// Build a subquery that resolves the best-confidence value for a field from item_values.
+fn best_value_subquery(field: &str) -> String {
+    format!(
+        "(SELECT v.value FROM item_values v WHERE v.item_serial = i.serial AND v.field = '{}' ORDER BY v.confidence DESC LIMIT 1)",
+        field
+    )
+}
+
+fn item_select_with_values() -> String {
+    format!(
+        "SELECT i.serial, \
+         COALESCE(i.name, {name}) AS name, \
+         i.prefix, \
+         COALESCE(i.manufacturer, {manufacturer}) AS manufacturer, \
+         COALESCE(i.weapon_type, {weapon_type}) AS weapon_type, \
+         COALESCE(i.item_type, {item_type}) AS item_type, \
+         COALESCE(i.rarity, {rarity}) AS rarity, \
+         COALESCE(i.level, CAST({level} AS INTEGER)) AS level, \
+         COALESCE(i.element, {element}) AS element, \
+         i.dps, i.damage, i.accuracy, i.fire_rate, i.reload_time, i.mag_size, i.value, \
+         i.red_text, i.notes, i.verification_status, i.verification_notes, i.verified_at, \
+         i.legal, i.source, i.created_at \
+         FROM items i",
+        name = best_value_subquery("name"),
+        manufacturer = best_value_subquery("manufacturer"),
+        weapon_type = best_value_subquery("weapon_type"),
+        item_type = best_value_subquery("item_type"),
+        rarity = best_value_subquery("rarity"),
+        level = best_value_subquery("level"),
+        element = best_value_subquery("element"),
+    )
+}
+
 pub fn build_list_query(filter: &ItemFilter, use_dollar_placeholders: bool) -> (String, usize) {
-    let mut sql = format!("SELECT {} FROM items WHERE 1=1", ITEM_SELECT_COLUMNS);
+    let mut sql = format!("{} WHERE 1=1", item_select_with_values());
     let mut param_count = 0;
 
     fn next_placeholder(use_dollar: bool, count: &mut usize) -> String {
@@ -194,30 +227,34 @@ pub fn build_list_query(filter: &ItemFilter, use_dollar_placeholders: bool) -> (
 
     if filter.manufacturer.is_some() {
         sql.push_str(&format!(
-            " AND manufacturer = {}",
+            " AND COALESCE(i.manufacturer, {}) = {}",
+            best_value_subquery("manufacturer"),
             next_placeholder(use_dollar_placeholders, &mut param_count)
         ));
     }
     if filter.weapon_type.is_some() {
         sql.push_str(&format!(
-            " AND weapon_type = {}",
+            " AND COALESCE(i.weapon_type, {}) = {}",
+            best_value_subquery("weapon_type"),
             next_placeholder(use_dollar_placeholders, &mut param_count)
         ));
     }
     if filter.element.is_some() {
         sql.push_str(&format!(
-            " AND element = {}",
+            " AND COALESCE(i.element, {}) = {}",
+            best_value_subquery("element"),
             next_placeholder(use_dollar_placeholders, &mut param_count)
         ));
     }
     if filter.rarity.is_some() {
         sql.push_str(&format!(
-            " AND rarity = {}",
+            " AND COALESCE(i.rarity, {}) = {}",
+            best_value_subquery("rarity"),
             next_placeholder(use_dollar_placeholders, &mut param_count)
         ));
     }
 
-    sql.push_str(" ORDER BY created_at DESC");
+    sql.push_str(" ORDER BY i.created_at DESC");
 
     if let Some(limit) = filter.limit {
         sql.push_str(&format!(" LIMIT {}", limit));
@@ -234,7 +271,7 @@ pub fn build_list_query(filter: &ItemFilter, use_dollar_placeholders: bool) -> (
 /// Returns the SQL string with placeholders. The caller is responsible for
 /// binding parameters in the order they were added to the filter.
 pub fn build_count_query(filter: &ItemFilter, use_dollar_placeholders: bool) -> (String, usize) {
-    let mut sql = String::from("SELECT COUNT(*) as count FROM items WHERE 1=1");
+    let mut sql = String::from("SELECT COUNT(*) as count FROM items i WHERE 1=1");
     let mut param_count = 0;
 
     fn next_placeholder(use_dollar: bool, count: &mut usize) -> String {
@@ -248,25 +285,29 @@ pub fn build_count_query(filter: &ItemFilter, use_dollar_placeholders: bool) -> 
 
     if filter.manufacturer.is_some() {
         sql.push_str(&format!(
-            " AND manufacturer = {}",
+            " AND COALESCE(i.manufacturer, {}) = {}",
+            best_value_subquery("manufacturer"),
             next_placeholder(use_dollar_placeholders, &mut param_count)
         ));
     }
     if filter.weapon_type.is_some() {
         sql.push_str(&format!(
-            " AND weapon_type = {}",
+            " AND COALESCE(i.weapon_type, {}) = {}",
+            best_value_subquery("weapon_type"),
             next_placeholder(use_dollar_placeholders, &mut param_count)
         ));
     }
     if filter.element.is_some() {
         sql.push_str(&format!(
-            " AND element = {}",
+            " AND COALESCE(i.element, {}) = {}",
+            best_value_subquery("element"),
             next_placeholder(use_dollar_placeholders, &mut param_count)
         ));
     }
     if filter.rarity.is_some() {
         sql.push_str(&format!(
-            " AND rarity = {}",
+            " AND COALESCE(i.rarity, {}) = {}",
+            best_value_subquery("rarity"),
             next_placeholder(use_dollar_placeholders, &mut param_count)
         ));
     }
@@ -355,8 +396,9 @@ mod tests {
         let (sql, count) = build_list_query(&filter, false);
 
         assert!(sql.contains("SELECT"));
-        assert!(sql.contains("FROM items"));
-        assert!(sql.contains("ORDER BY created_at DESC"));
+        assert!(sql.contains("FROM items i"));
+        assert!(sql.contains("ORDER BY i.created_at DESC"));
+        assert!(sql.contains("COALESCE"));
         assert_eq!(count, 0);
     }
 
@@ -368,7 +410,8 @@ mod tests {
         };
         let (sql, count) = build_list_query(&filter, false);
 
-        assert!(sql.contains("AND manufacturer = ?"));
+        assert!(sql.contains("COALESCE(i.manufacturer"));
+        assert!(sql.contains("= ?"));
         assert_eq!(count, 1);
     }
 
@@ -384,10 +427,10 @@ mod tests {
         };
         let (sql, count) = build_list_query(&filter, false);
 
-        assert!(sql.contains("AND manufacturer = ?"));
-        assert!(sql.contains("AND weapon_type = ?"));
-        assert!(sql.contains("AND element = ?"));
-        assert!(sql.contains("AND rarity = ?"));
+        assert!(sql.contains("COALESCE(i.manufacturer"));
+        assert!(sql.contains("COALESCE(i.weapon_type"));
+        assert!(sql.contains("COALESCE(i.element"));
+        assert!(sql.contains("COALESCE(i.rarity"));
         assert!(sql.contains("LIMIT 10"));
         assert!(sql.contains("OFFSET 5"));
         assert_eq!(count, 4);
@@ -402,8 +445,8 @@ mod tests {
         };
         let (sql, count) = build_list_query(&filter, true);
 
-        assert!(sql.contains("manufacturer = $1"));
-        assert!(sql.contains("rarity = $2"));
+        assert!(sql.contains("= $1"));
+        assert!(sql.contains("= $2"));
         assert_eq!(count, 2);
     }
 
@@ -416,7 +459,7 @@ mod tests {
         let (sql, count) = build_count_query(&filter, false);
 
         assert!(sql.contains("SELECT COUNT(*)"));
-        assert!(sql.contains("AND manufacturer = ?"));
+        assert!(sql.contains("COALESCE(i.manufacturer"));
         assert_eq!(count, 1);
     }
 
