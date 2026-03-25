@@ -164,13 +164,11 @@ The serial format assigns each item type a numeric category ID. Decoding a seria
 
 | Range | Type | Categories |
 |-------|------|------------|
-| 2-7 | Pistols | DAD, JAK, TED, TOR, ORD, VLA |
-| 8-12 | Shotguns | DAD, JAK, TED, TOR, BOR |
+| 2-6 | Pistols | DAD, JAK, TED, TOR, ORD |
+| 7-12 | Shotguns | BOR, DAD, JAK, TED, TOR, MAL |
 | 13-18 | Assault Rifles | DAD, JAK, TED, TOR, VLA, ORD |
-| 19 | Maliwan Shotgun | MAL_SG |
-| 20-23 | SMGs | DAD, BOR, VLA, MAL |
-| 25 | BOR Sniper | BOR_SR |
-| 26-29 | Snipers | JAK, VLA, ORD, MAL |
+| 19-22 | SMGs | BOR, DAD, MAL, VLA |
+| 23-26 | Snipers | BOR, JAK, VLA, ORD, MAL |
 | 244-247 | Heavy Weapons | VLA, TOR, BOR, MAL |
 
 *Table 8.4: Weapon category ID ranges.*

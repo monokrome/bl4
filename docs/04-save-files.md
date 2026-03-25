@@ -672,25 +672,18 @@ The safest approach: make one change at a time, test immediately, keep backups.
 
 If you want to understand the process without tools, here's a Python walkthrough:
 
-**Step 1: Read and parse the header**
+**Step 1: Read the encrypted file**
 ```python
-with open('profile.sav', 'rb') as f:
-    data = f.read()
+with open('1.sav', 'rb') as f:
+    encrypted = f.read()
 
-# First 12 bytes: "AES-256-ECB\0"
-assert data[:11] == b'AES-256-ECB'
-
-# Bytes 24-28: compressed size (little-endian u32)
-import struct
-compressed_size = struct.unpack('<I', data[24:28])[0]
-print(f"Compressed size: {compressed_size}")
-
-# Encrypted payload starts at byte 32
-encrypted = data[32:]
+# The entire file is encrypted from byte 0
+print(f"Encrypted size: {len(encrypted)}")
 ```
 
 **Step 2: Derive the key**
 ```python
+import struct
 STEAM_ID = 76561198012345678  # Replace with yours
 
 BASE_KEY = bytes([
