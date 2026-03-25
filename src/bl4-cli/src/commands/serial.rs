@@ -193,8 +193,10 @@ fn legendary_barrel_suffix(name: &str) -> Option<&str> {
 
     for prefix in ["01_", "02_"] {
         if let Some(suffix) = rest.strip_prefix(prefix) {
-            // Single-letter sub-variants (a, b, c, d) are barrel accessories, not legendaries
             if suffix.len() == 1 && suffix.chars().all(|c| c.is_ascii_lowercase()) {
+                return None;
+            }
+            if suffix.chars().all(|c| c.is_ascii_digit()) {
                 return None;
             }
             return Some(suffix);
@@ -242,7 +244,11 @@ fn match_legendary_suffix(suffix: &str) -> Option<String> {
         }
     }
 
-    // No known match — title-case the suffix
+    // No known match — title-case the suffix if it's not purely numeric
+    if suffix.chars().all(|c| c.is_ascii_digit()) {
+        return None;
+    }
+
     let title = suffix
         .split('_')
         .map(|w| {
