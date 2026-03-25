@@ -401,10 +401,10 @@ Current NCS extraction yields 806 files with 232 unique types:
 
 ```rust
 // Prefix-to-category mapping
-"BOR_SG" -> Category 12  (Ripper Shotgun)
+"BOR_SG" -> Category 7   (Ripper Shotgun)
 "JAK_SG" -> Category 9   (Jakobs Shotgun)
 "DAD_PS" -> Category 2   (Daedalus Pistol)
-"VLA_AR" -> Category 17  (Vladof Assault Rifle)
+"VLA_AR" -> Category 18  (Vladof Assault Rifle)
 // ... etc
 ```
 

@@ -745,72 +745,42 @@ Some string table values carry single-letter type prefixes:
 
 ## Worked Example: achievement.bin
 
-To tie the format together, here's a complete walkthrough of `achievement.bin` (278 bytes decompressed).
+To tie the format together, here's a walkthrough of `achievement.bin` (576 bytes decompressed).
 
 ### File Layout
 
 ```text
-0x000-0x008 (  8 bytes): Header
-0x009-0x015 ( 12 bytes): Type name: 'achievement'
-0x015-0x01c (  7 bytes): Format: 03 03 00 abjx
-0x01c-0x01f (  3 bytes): Entry marker + field info: 01 0a c2
-0x01f-0x073 ( 84 bytes): String table (entries + values)
-0x073-0x077 (  4 bytes): Control section: 01 00 0b e9
-0x077-0x08a ( 19 bytes): Category names: none, base, basegame
-0x08a-0x116 (140 bytes): Binary data section
+0x000-0x00F ( 16 bytes): BlobHeader (entry_count=2, flags=0, string_bytes=13)
+0x010-0x01C ( 13 bytes): Header strings: "achievement"
+0x01D        (  3 bytes): TypeCodeTable header: type_code_count=3, type_index_count=3
+0x020        (  3 bytes): Type codes: "abj"
+0x023        (  2 bytes): Bit matrix (3×3 = 9 bits, padded to 2 bytes)
+0x025+       (variable):  Three string blocks (value strings, value kinds, key strings)
+...          (remaining):  Binary data (bit-packed tables, records, entries)
 ```
 
-### String Table Contents
-
-| Offset | String | Purpose |
-|--------|--------|---------|
-| 0x1f | `ID_A_10_worldevents_colosseum` | Entry 1 name |
-| 0x3d | `10` | Entry 1 achievementid |
-| 0x40 | `1airship` | Entry 2 differential |
-| 0x49 | `11` | Entry 2 achievementid |
-| 0x4c | `2meteor` | Entry 3 differential |
-| 0x54 | `1224_missions_side` | Entry 3+4 packed |
-| 0x67 | `24` | Entry 4 achievementid |
-| 0x6a | `9main` | Entry 5 differential |
-| 0x70 | `29` | Entry 5 achievementid |
-
 ### Parsed Output
+
+The parser produces a single `achievement` table with one record containing 6 tags and 5 entries:
 
 ```json
 {
   "achievement": {
+    "name": "achievement",
+    "deps": [],
     "records": [{
+      "tags": [
+        {"__tag": "a", "pair": "none"},
+        {"__tag": "b", "value": 1},
+        {"__tag": "c", "u32_value": 1065353216, "f32_value": 1.0}
+      ],
       "entries": [
-        {
-          "id_achievement_10_worldevents_colosseum": {
-            "achievement": "ID_Achievement_10_worldevents_colosseum",
-            "achievementid": "10"
-          }
-        },
-        {
-          "id_achievement_11_worldevents_airship": {
-            "achievement": "ID_Achievement_11_worldevents_airship",
-            "achievementid": "11"
-          }
-        },
-        {
-          "id_achievement_12_worldevents_meteor": {
-            "achievement": "ID_Achievement_12_worldevents_meteor",
-            "achievementid": "12"
-          }
-        },
-        {
-          "id_achievement_24_missions_side": {
-            "achievement": "ID_Achievement_24_missions_side",
-            "achievementid": "24"
-          }
-        },
-        {
-          "id_achievement_29_missions_main": {
-            "achievement": "ID_Achievement_29_missions_main",
-            "achievementid": "29"
-          }
-        }
+        {"key": "id_achievement_10_worldevents_colosseum",
+         "value": {"achievementid": "10", "achievement": "ID_Achievement_10_worldevents_colosseum"}},
+        {"key": "id_achievement_11_worldevents_airship",
+         "value": {"achievementid": "11", "achievement": "ID_Achievement_11_worldevents_airship"}},
+        {"key": "id_achievement_12_worldevents_meteor",
+         "value": {"achievementid": "12", "achievement": "ID_Achievement_12_worldevents_meteor"}}
       ]
     }]
   }
