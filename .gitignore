@@ -14,3 +14,4 @@ target/
 # Non-git hidden file patterns
 .*
 !.git*
+docs/AUDIT_2026.md

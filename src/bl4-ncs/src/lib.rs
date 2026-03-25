@@ -73,11 +73,9 @@ pub use inventory::{
     parse_inventory, raw_strings_to_tsv, string_numeric_pairs_to_tsv, Inventory, ItemCategory,
     ItemParts, LegendaryComposition, PartIndices, RawStringEntry, SerialIndex, StringNumericPair,
 };
+pub use item_names::{extract_from_directory as extract_item_names, ItemNameEntry};
 pub use manifest::{
     scan as scan_for_ncs_manifests, Entry as NcsManifestEntry, Manifest as NcsManifest,
-};
-pub use item_names::{
-    extract_from_directory as extract_item_names, ItemNameEntry,
 };
 pub use name_data::{extract_from_directory as extract_name_data, NameDataEntry, NameDataMap};
 pub use pak::{
