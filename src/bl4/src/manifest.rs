@@ -295,8 +295,7 @@ pub fn item_name_from_part(part_name: &str, category: Option<i64>) -> Option<&'s
     }
 
     // Strategy 2: Unique barrel (part_barrel_NN_<suffix> where suffix isn't just digits)
-    if part_name.starts_with("part_barrel_") {
-        let after_barrel = &part_name["part_barrel_".len()..];
+    if let Some(after_barrel) = part_name.strip_prefix("part_barrel_") {
         if let Some(pos) = after_barrel.find('_') {
             let suffix = &after_barrel[pos + 1..];
             // Skip single-letter sub-variants (a, b, c, d)
