@@ -118,14 +118,20 @@ impl PakManifest {
     /// Load manifest from a JSON file
     pub fn load(path: &Path) -> Result<Self> {
         let content = fs::read_to_string(path).context("Failed to read pak_manifest.json")?;
-        serde_json::from_str(&content).context("Failed to parse pak_manifest.json")
+        let mut manifest: Self =
+            serde_json::from_str(&content).context("Failed to parse pak_manifest.json")?;
+        for item in &mut manifest.items {
+            item.path = item.path.replace('\\', "/");
+        }
+        Ok(manifest)
     }
 }
 
 /// Parse a uextract JSON file
 pub fn parse_uextract_json(json_path: &Path) -> Result<UextractAsset> {
     let content = fs::read_to_string(json_path)?;
-    let asset: UextractAsset = serde_json::from_str(&content)?;
+    let mut asset: UextractAsset = serde_json::from_str(&content)?;
+    asset.path = asset.path.replace('\\', "/");
     Ok(asset)
 }
 
