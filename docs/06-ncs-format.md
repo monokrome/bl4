@@ -31,13 +31,10 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    A[Header<br/>8 bytes] --> B[Type Name<br/>null-terminated]
-    B --> C[Format Section<br/>7 bytes]
-    C --> D[Entry Section<br/>variable]
-    D --> E[String Table<br/>variable]
-    E --> F[Control Section<br/>4 bytes]
-    F --> G[Category Names<br/>variable]
-    G --> H[Binary Data<br/>variable]
+    A[BlobHeader<br/>16 bytes] --> B[Header Strings<br/>null-terminated]
+    B --> C[TypeCodeTable<br/>type codes + bit matrix]
+    C --> D[String Blocks<br/>3 blocks: values, kinds, keys]
+    D --> E[Binary Data<br/>bit-packed tables/records/entries]
 ```
 
 ---
@@ -97,229 +94,79 @@ Most NCS files decompress with open-source Oodle implementations. A small number
 
 ## Content Format
 
-After decompression, the data follows a structured binary format. Every NCS file shares the same overall layout, though the details of each section vary by content type and format code.
+After decompression, the data follows a structured binary format parsed by the `parse/` module pipeline: `blob.rs` → `typecodes.rs` → `decode.rs`.
 
-### Header (8 bytes)
+### BlobHeader (16 bytes)
 
-```text
-Offset  Size  Type   Description
-------  ----  ----   -----------
-0x00    6     bytes  Zeros (reserved)
-0x06    2     u16    Checksum/identifier (little-endian)
-```
-
-### Type Name
-
-A null-terminated ASCII string identifying the content type. This is the first thing you read after the header, and it determines how to interpret everything that follows.
-
-Common types: `achievement`, `ainodefollowsettings`, `attribute`, `gbx_ue_data_table`, `gbxactor`, `inv`, `itempool`, `itempoollist`, `loot_config`, `preferredparts`.
-
-### Format Section (7 bytes)
+Every decompressed NCS payload starts with a 16-byte header:
 
 ```text
 Offset  Size  Type   Description
 ------  ----  ----   -----------
-0x00    3     bytes  Format prefix (determines structure variant)
-0x03    4     ascii  Format code (e.g., "abjx", "abij")
+0x00    4     u32    Entry count (little-endian)
+0x04    4     u32    Flags
+0x08    4     u32    String bytes (total size of header strings)
+0x0c    4     u32    Reserved
 ```
 
-The format prefix signals the structural variant:
+### Header Strings
 
-| Prefix | Structure |
-|--------|-----------|
-| `03 03 00` | Compact format (no GUID) |
-| `04 xx 00` | Extended format (with 4-byte GUID) |
+Immediately after the BlobHeader, `string_bytes` worth of null-terminated ASCII strings. The first string is the table type name (e.g., `achievement`, `inv`, `itempoollist`). Remaining strings are dependency table names — for `inv.bin`, these include part slot categories like `inv_comp`, `barrel`, `body`, `element`, `firmware`, etc.
 
-The format code is a short ASCII string that describes the tag types used in the binary section. Each letter corresponds to a different encoding strategy:
+### TypeCodeTable
 
-| Code | Description | Examples |
-|------|-------------|----------|
-| `abjx` | Extended entries with dependents | achievement, preferredparts |
-| `abij` | Indexed entries | itempoollist, aim_assist |
-| `abjl` | Labeled entries | inv_name_part |
-| `abhj` | Hash-indexed entries | inv_params |
-| `abpe` | Property-based entries | audio_event |
-| `abcefhijl` | Full tag-based encoding | inv (inventory) |
-
-For complex NCS files like `inv.bin`, the format code lists every tag type used in the binary section. The code `abcefhijl` means the binary data uses tags `a`, `b`, `c`, `e`, `f`, `h`, `i`, `j`, and `l`.
-
-### Entry Section
-
-The entry section sits between the format code and the string table. Its encoding varies by format code and content type --- this is one of the trickier parts of the format to parse.
-
-The section starts with an entry marker followed by field count information:
+After the header strings, the body section begins with a TypeCodeTable:
 
 ```text
-Offset  Size  Type   Description
-------  ----  ----   -----------
-0x00    1     u8     Entry marker (typically 0x01)
-0x01    1     u8     First field value
-0x02    1     u8     Field count marker (0xc0 | count)
+Offset  Size       Description
+------  ----       -----------
+0x00    1          type_code_count (number of type code chars)
+0x01    2          type_index_count (u16 LE)
+0x03    N          type code characters (e.g., 'a', 'b', 'c', 'e', 'f', 'h', 'i', 'j', 'l')
+0x03+N  ceil(type_index_count * type_code_count / 8) bytes  Bit matrix (row flags)
 ```
 
-The field count encoding uses `0xc0 | field_count`:
+The type codes are single ASCII characters that describe the tag types used in the binary data section. Each character maps to a bit position in the row flags:
 
-- `0xc2` = 2 fields per entry
-- `0xc3` = 3 fields per entry
+| Tag | Bit | Description |
+|-----|-----|-------------|
+| `a` | 0 | Key name (pair_vec string) |
+| `b` | 1 | U32 value |
+| `c` | 2 | F32 value |
+| `d` | 3 | Name list D |
+| `e` | 4 | Name list E |
+| `f` | 5 | Name list F |
+| `h` | 7 | Has-self-key flag (bit 7 of row flags) |
+| `i` | 8 | (format-specific) |
+| `j` | 9 | (format-specific) |
+| `l` | 11 | (format-specific) |
+| `p` | 15 | Variant (nested node) |
+| `z` | — | Tag section terminator (not in bit matrix) |
 
-But this is only the "simple" variant. The entry section has at least five encoding patterns depending on the format code:
+The bit matrix has `type_index_count` rows and `type_code_count` columns. Each row's bits are combined into a `row_flags` u32 that determines how nodes of that type are decoded — bits 0-1 encode the node kind (null/leaf/array/map), bit 7 encodes whether the node carries its own key.
 
-**Simple format** (`01 XX c?`) --- used by abjx compact files like `achievement`:
+### Three String Blocks
 
-```text
-[0x01] [string_count] [0xc0 | field_count]
-Example: 01 0a c2 = 10 strings, 2 fields per entry
-```
+After the bit matrix, three sequential string blocks contain the decode vocabulary:
 
-**Extended format** (`XX XX 01`) --- used by abjx with larger string counts:
+1. **Value strings** — the actual data values referenced by index
+2. **Value kinds** — type annotations (e.g., `Asset`, `game_region`, `map`)
+3. **Key strings** — entry and field names (e.g., `serialindex`, `mappath`, `displayname`)
 
-```text
-[string_count] [field_count] [0x01]
-Example: 1d 06 01 = 29 strings, 6 fields
-```
+Each block has a 16-byte header: `count` (u16), `declared_count` (u16), then `byte_length` bytes of null-terminated strings.
 
-**Direct format** (`01 XX YY`) --- variable marker byte:
+### Binary Data Section
 
-```text
-[0x01] [field_count] [marker]
-Example: 01 03 30 = 3 fields, marker 0x30
-```
+After the string blocks, the remaining bytes are the bit-packed binary data. This is decoded by `decode.rs` using the row flags from the TypeCodeTable and the string tables for value resolution.
 
-**Variable format** (`01 XX 7f`) --- special marker for non-standard entries:
-
-```text
-[0x01] [count] [0x7f]
-Example: 01 0b 7f = 11 entries with special handling
-```
-
-**Hash-indexed format** --- entry marker `0xb0` instead of `0x01`, used by `abhj` files.
-
-Some NCS files contain **inline entry names** in the metadata bytes between the format code and string table. In `inv.bin`, the 28 bytes at offset 0x100-0x11b decode to short identifiers like `CAaB`, `RQJ`, and `IEZ`. These aren't stored in the string table --- they're an optimization for short or special identifiers that the parser surfaces as entry names.
-
-::: {.callout-note}
-## Per-Entry Schemas
-
-Each entry type within an NCS file can have its own field schema. The first entry doesn't define a template for the rest. For example, in `inv.bin`:
-
-- Entry "ammo" (index 0): 16 fields including `rarity`, `pingfeedback`, `cantpickupprompt`
-- Entry "ammo_assaultrifle" (index 1): 9 fields including `basetype`, `body`, `aspects`
-- Entry "classmod" (index 6): 33 fields including `class`, `slot`, `parttypes`
-
-The binary section encodes these heterogeneous schemas through its tag-based system.
-:::
-
-### String Table
-
-The string table contains null-terminated strings for entry names and values. Strings are interleaved --- entry name, then its field values, then the next entry name, and so on:
-
-```text
-[Entry 1 Name\0][Value 1\0][Value 2\0]...
-[Entry 2 Name\0][Value 1\0][Value 2\0]...
-```
-
-The string table is bounded by the entry section on one side and the control section marker (`01 00 XX YY`) on the other.
-
-#### Differential Encoding
-
-Entry names use differential encoding to compress common prefixes. The first entry stores the full name (sometimes abbreviated), and subsequent entries encode only the changed suffix:
-
-| Entry | Encoded String | Reconstructed |
-|-------|----------------|---------------|
-| 1 | `ID_A_10_worldevents_colosseum` | `ID_Achievement_10_worldevents_colosseum` |
-| 2 | `1airship` | `ID_Achievement_11_worldevents_airship` |
-| 3 | `2meteor` | `ID_Achievement_12_worldevents_meteor` |
-| 4 | `1224_missions_side` | `ID_Achievement_24_missions_side` |
-| 5 | `9main` | `ID_Achievement_29_missions_main` |
-
-The algorithm: the first entry provides the base string (with abbreviation expansion like `ID_A_` to `ID_Achievement_`). Subsequent entries use leading digits to indicate where the new suffix starts, with the remaining text replacing the final segment.
-
-#### Packed String Values
-
-When the field count marker indicates multiple fields per entry, values are stored consecutively. Values can be **packed** together to save space --- a numeric value and the next entry's differential name concatenated into a single string:
-
-```text
-String table for achievement (2 fields per entry):
-[0] 'ID_A_10_worldevents_colosseum'  -> Entry 0 name
-[1] '10'                              -> Entry 0 achievementid
-[2] '1airship'                        -> Entry 1 name (diff)
-[3] '11'                              -> Entry 1 achievementid
-[4] '2meteor'                         -> Entry 2 name (diff)
-[5] '1224_missions_side'              -> PACKED: Entry 2 id + Entry 3 name
-[6] '24'                              -> Entry 3 achievementid
-[7] '9main'                           -> Entry 4 name (diff)
-[8] '29'                              -> Entry 4 achievementid
-```
-
-The string `'1224_missions_side'` packs two values: `'12'` (achievementid for Entry 2) and `'24_missions_side'` (differential name for Entry 3). The parser splits on the expected field width --- achievement IDs are 2-digit numbers, so extract the first 2 characters as the value and treat the remainder as the next entry's name.
-
-#### Value Packing Patterns
-
-NCS uses aggressive packing wherever values share boundaries:
-
-- **Numeric prefix + string suffix**: `"1airship"` splits to `(1, "airship")`, `"5true"` splits to `(5, true)`
-- **Float + string**: `"0.175128Session"` splits to `(0.175128, "Session")`
-- **Multiple numerics**: `"1224_missions_side"` splits to `(12, "24_missions_side")`
-
-The binary section's field abbreviations indicate expected types, which determine how to split packed values.
-
-#### String Table for Large Files
-
-Large NCS files (like `inv.bin` with 18,393 strings) use three separate string blocks instead of a single interleaved table. Each block stores a u64 byte-length prefix followed by the string data:
-
-1. **Value strings** --- the actual data values
-2. **Value kinds** --- type annotations for values
-3. **Key strings** --- entry and field names
-
-The parser performs string repair on these blocks, handling cases where null terminators are missing or strings are truncated.
-
-### Control Section (4 bytes)
-
-Marks the transition from the string table to category names and binary data:
-
-```text
-Offset  Size  Type   Description
-------  ----  ----   -----------
-0x00    1     u8     Marker (always 0x01)
-0x01    1     u8     Separator (always 0x00)
-0x02    1     u8     Entry/index count
-0x03    1     u8     Type/mode byte
-```
-
-The type/mode byte indicates the binary section's encoding:
-
-| Value | ASCII | Interpretation |
-|-------|-------|----------------|
-| `0x62` | 'b' | Text-based format |
-| `0xe9` | --- | Encoded format (0xe0 \| 0x09) |
-| `0x06` | --- | Simple format |
-
-::: {.callout-tip}
-## Detection Heuristic
-
-To find the control section, scan for the byte pattern `01 00` followed by a valid count byte, then verify the subsequent bytes contain known category name strings like "none" or "base".
-:::
-
-### Category Names
-
-DLC and content pack identifiers, stored as null-terminated strings after the control section:
-
-```text
-none\0
-base\0
-basegame\0
-```
-
-These indicate which DLC or content pack an entry belongs to. Category names are part of the combined string table used for binary section indexing --- they occupy indices after the primary string table entries.
-
-### Field Abbreviations
-
-Some format variants include compact field name abbreviations between the category names and binary data. These are distinct from category names by their use of `.` or `!` characters:
-
-```text
-corid_aid.a!
-```
-
-This encodes field names compactly: `cor` (correlation), `id`, `aid` (achievementid), `.a` (field separator), `!` (terminator, stripped when indexing). Field abbreviations are part of the combined string table and occupy indices after category names.
+The decode loop reads:
+- **Table IDs** referencing header strings
+- **Dependency lists** per table
+- **Remap arrays** (FixedWidthIntArray) for key and value string index remapping
+- **Records** with byte-aligned length prefixes
+- **Tags** (a through z) per record — metadata like key names, numeric values, name lists
+- **Entries** with key-value pairs decoded recursively as null/leaf/array/map nodes
+- **Dependency entries** linking records to dependent tables with serial indices
 
 ---
 
@@ -493,8 +340,8 @@ The `inv.bin` file is the **authoritative source** for valid weapon and gear par
 ```text
 Offset    Content
 ------    -------
-0x00      Header (8 bytes)
-0x08      Type name ("inv")
+0x00      BlobHeader (16 bytes)
+0x10      Header strings ("inv" + 39 dependency names)
 0x0d      Dependencies (39 null-terminated strings)
 0x1fb     Format code ("abcefhijl")
 0x225     String table (18,393 null-terminated strings)
