@@ -155,7 +155,7 @@ Weapons start with a VarInt encoding a combined manufacturer/weapon-type ID:
 Equipment (shields, grenades, class mods) starts with a VarBit encoding the category:
 
 ```text
-[0] VarBit: category_identifier      <- Category * divisor
+[0] VarBit: category_id              <- Category ID directly
 [1] SoftSeparator
 [2] VarInt: 0
 [3] SoftSeparator
@@ -169,11 +169,7 @@ Equipment (shields, grenades, class mods) starts with a VarBit encoding the cate
 [11+] More data and parts...
 ```
 
-For VarBit-first serials, the category is extracted using a divisor:
-```text
-Category ≈ first_varbit / 384   (most equipment)
-Category ≈ first_varbit / 8192  (weapons encoded as VarBit)
-```
+For VarBit-first serials, the VarBit value IS the NCS category ID directly. No divisor or formula is needed.
 
 ---
 
@@ -246,7 +242,7 @@ This is why you must decode the Part Group ID first. Without knowing which pool 
 
 ## Level Encoding
 
-Level is encoded as a VarInt at position 6 in the token list for both weapon and equipment formats. For equipment, the level is stored as `level - 1` (0-indexed).
+Level is encoded as a VarInt at position 6 in the token list for both weapon and equipment formats. The VarInt value is the level directly (e.g., 50 = level 50).
 
 ---
 

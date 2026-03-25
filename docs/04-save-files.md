@@ -49,14 +49,7 @@ To edit a save, you reverse this process: decrypt, decompress, edit the YAML, co
 
 ## The Encryption Layer
 
-Open a save file in a hex editor and the first bytes tell you what you're dealing with:
-
-```hexdump
-00000000: 41 45 53 2D 32 35 36 2D 45 43 42 00 ...
-          A  E  S  -  2  5  6  -  E  C  B  \0
-```
-
-"AES-256-ECB" in plain ASCII. The game literally labels its encryption scheme. Following that header (32 bytes total) comes the encrypted payload.
+Save files are encrypted from byte 0 — there's no plaintext header. The entire file is AES-256-ECB encrypted, then zlib compressed underneath.
 
 AES-256-ECB means:
 - **AES**: Advanced Encryption Standard, the industry standard block cipher
@@ -734,7 +727,7 @@ yaml_data = zlib.decompress(decrypted)
 print(yaml_data[:500].decode('utf-8'))
 ```
 
-At this point, you have the raw YAML. Edit it, then reverse the process: compress with zlib, encrypt with AES-256-ECB using the same key, prepend the header.
+At this point, you have the raw YAML. Edit it, then reverse the process: compress with zlib, encrypt with AES-256-ECB using the same key, and write the result directly as the `.sav` file (no header).
 
 ---
 
