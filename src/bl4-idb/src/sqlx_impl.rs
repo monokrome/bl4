@@ -1385,42 +1385,8 @@ pub mod postgres {
             Ok(())
         }
 
-        #[allow(clippy::too_many_lines)] // Item struct has 24 fields to map
         async fn list_items(&self, filter: &ItemFilter) -> AsyncRepoResult<Vec<Item>> {
-            let mut sql = String::from(
-                r#"SELECT serial, name, prefix, manufacturer, weapon_type, item_type, rarity, level, element,
-                        dps, damage, accuracy, fire_rate, reload_time, mag_size, value, red_text,
-                        notes, verification_status, verification_notes, verified_at, legal, source, created_at
-                   FROM items WHERE 1=1"#,
-            );
-
-            let mut param_idx = 1;
-
-            if filter.manufacturer.is_some() {
-                sql.push_str(&format!(" AND manufacturer = ${}", param_idx));
-                param_idx += 1;
-            }
-            if filter.weapon_type.is_some() {
-                sql.push_str(&format!(" AND weapon_type = ${}", param_idx));
-                param_idx += 1;
-            }
-            if filter.element.is_some() {
-                sql.push_str(&format!(" AND element = ${}", param_idx));
-                param_idx += 1;
-            }
-            if filter.rarity.is_some() {
-                sql.push_str(&format!(" AND rarity = ${}", param_idx));
-            }
-
-            sql.push_str(" ORDER BY created_at DESC");
-
-            if let Some(limit) = filter.limit {
-                sql.push_str(&format!(" LIMIT {}", limit));
-            }
-            if let Some(offset) = filter.offset {
-                sql.push_str(&format!(" OFFSET {}", offset));
-            }
-
+            let (sql, _) = shared::build_list_query(filter, true);
             let mut query = sqlx::query(sqlx::AssertSqlSafe(sql));
 
             if let Some(m) = &filter.manufacturer {
@@ -1434,6 +1400,9 @@ pub mod postgres {
             }
             if let Some(r) = &filter.rarity {
                 query = query.bind(r);
+            }
+            if let Some(l) = &filter.legal {
+                query = query.bind(l);
             }
             if let Some(l) = &filter.legal {
                 query = query.bind(l);
@@ -1459,25 +1428,7 @@ pub mod postgres {
         }
 
         async fn count_items(&self, filter: &ItemFilter) -> AsyncRepoResult<i64> {
-            let mut sql = String::from("SELECT COUNT(*) as count FROM items WHERE 1=1");
-            let mut param_idx = 1;
-
-            if filter.manufacturer.is_some() {
-                sql.push_str(&format!(" AND manufacturer = ${}", param_idx));
-                param_idx += 1;
-            }
-            if filter.weapon_type.is_some() {
-                sql.push_str(&format!(" AND weapon_type = ${}", param_idx));
-                param_idx += 1;
-            }
-            if filter.element.is_some() {
-                sql.push_str(&format!(" AND element = ${}", param_idx));
-                param_idx += 1;
-            }
-            if filter.rarity.is_some() {
-                sql.push_str(&format!(" AND rarity = ${}", param_idx));
-            }
-
+            let (sql, _) = shared::build_count_query(filter, true);
             let mut query = sqlx::query(sqlx::AssertSqlSafe(sql));
 
             if let Some(m) = &filter.manufacturer {
