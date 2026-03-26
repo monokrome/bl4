@@ -13,6 +13,8 @@ pub struct ListItemsQuery {
     pub weapon_type: Option<String>,
     pub element: Option<String>,
     pub rarity: Option<String>,
+    /// Filter by legality: "legal", "illegal", or "any" (default: "legal")
+    pub legal: Option<String>,
     #[param(default = 100, maximum = 1000)]
     pub limit: Option<u32>,
     pub offset: Option<u32>,

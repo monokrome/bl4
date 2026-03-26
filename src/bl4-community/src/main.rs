@@ -1,9 +1,12 @@
+use std::collections::HashSet;
 use std::sync::Arc;
 
 use clap::Parser;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use bl4_community::{db::Database, helpers::sanitize_db_url, routes, state::AppState};
+use bl4_community::{
+    db::Database, helpers::sanitize_db_url, rate_limit::RateLimiter, routes, state::AppState,
+};
 
 #[derive(Parser)]
 #[command(name = "bl4-community")]
@@ -60,7 +63,22 @@ async fn main() -> anyhow::Result<()> {
             db.init().await?;
             tracing::info!("Database initialized");
 
-            let state = Arc::new(AppState { db });
+            let allowed_ips: HashSet<String> = std::env::var("BL4_ALLOWED_IPS")
+                .unwrap_or_default()
+                .split(',')
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+                .collect();
+
+            if !allowed_ips.is_empty() {
+                tracing::info!("Allowed IPs for attachments: {:?}", allowed_ips);
+            }
+
+            let state = Arc::new(AppState {
+                db,
+                write_limiter: RateLimiter::new(30),
+                allowed_ips,
+            });
             let app = routes::build_router(state);
 
             let bind_addr = format!("{}:{}", bind, port);

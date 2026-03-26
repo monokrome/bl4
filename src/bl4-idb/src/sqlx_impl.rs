@@ -484,6 +484,9 @@ pub mod sqlite {
             if let Some(r) = &filter.rarity {
                 query = query.bind(r);
             }
+            if let Some(l) = &filter.legal {
+                query = query.bind(l);
+            }
 
             let rows = query
                 .fetch_all(&self.pool)
@@ -519,6 +522,9 @@ pub mod sqlite {
             }
             if let Some(r) = &filter.rarity {
                 query = query.bind(r);
+            }
+            if let Some(l) = &filter.legal {
+                query = query.bind(l);
             }
 
             let row = query
@@ -1429,6 +1435,9 @@ pub mod postgres {
             if let Some(r) = &filter.rarity {
                 query = query.bind(r);
             }
+            if let Some(l) = &filter.legal {
+                query = query.bind(l);
+            }
 
             let rows = query
                 .fetch_all(&self.pool)
@@ -1482,6 +1491,9 @@ pub mod postgres {
             }
             if let Some(r) = &filter.rarity {
                 query = query.bind(r);
+            }
+            if let Some(l) = &filter.legal {
+                query = query.bind(l);
             }
 
             let row = query

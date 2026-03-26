@@ -212,11 +212,13 @@ fn item_select_with_values() -> String {
     )
 }
 
-pub fn build_list_query(filter: &ItemFilter, use_dollar_placeholders: bool) -> (String, usize) {
-    let mut sql = format!("{} WHERE 1=1", item_select_with_values());
-    let mut param_count = 0;
-
-    fn next_placeholder(use_dollar: bool, count: &mut usize) -> String {
+fn append_filter_clauses(
+    sql: &mut String,
+    filter: &ItemFilter,
+    use_dollar: bool,
+    param_count: &mut usize,
+) {
+    fn next_ph(use_dollar: bool, count: &mut usize) -> String {
         *count += 1;
         if use_dollar {
             format!("${}", *count)
@@ -229,30 +231,43 @@ pub fn build_list_query(filter: &ItemFilter, use_dollar_placeholders: bool) -> (
         sql.push_str(&format!(
             " AND COALESCE(i.manufacturer, {}) = {}",
             best_value_subquery("manufacturer"),
-            next_placeholder(use_dollar_placeholders, &mut param_count)
+            next_ph(use_dollar, param_count)
         ));
     }
     if filter.weapon_type.is_some() {
         sql.push_str(&format!(
             " AND COALESCE(i.weapon_type, {}) = {}",
             best_value_subquery("weapon_type"),
-            next_placeholder(use_dollar_placeholders, &mut param_count)
+            next_ph(use_dollar, param_count)
         ));
     }
     if filter.element.is_some() {
         sql.push_str(&format!(
             " AND COALESCE(i.element, {}) = {}",
             best_value_subquery("element"),
-            next_placeholder(use_dollar_placeholders, &mut param_count)
+            next_ph(use_dollar, param_count)
         ));
     }
     if filter.rarity.is_some() {
         sql.push_str(&format!(
             " AND COALESCE(i.rarity, {}) = {}",
             best_value_subquery("rarity"),
-            next_placeholder(use_dollar_placeholders, &mut param_count)
+            next_ph(use_dollar, param_count)
         ));
     }
+    if filter.legal.is_some() {
+        sql.push_str(&format!(
+            " AND {} = {}",
+            best_value_subquery("legal"),
+            next_ph(use_dollar, param_count)
+        ));
+    }
+}
+
+pub fn build_list_query(filter: &ItemFilter, use_dollar_placeholders: bool) -> (String, usize) {
+    let mut sql = format!("{} WHERE 1=1", item_select_with_values());
+    let mut param_count = 0;
+    append_filter_clauses(&mut sql, filter, use_dollar_placeholders, &mut param_count);
 
     sql.push_str(" ORDER BY i.created_at DESC");
 
@@ -273,45 +288,7 @@ pub fn build_list_query(filter: &ItemFilter, use_dollar_placeholders: bool) -> (
 pub fn build_count_query(filter: &ItemFilter, use_dollar_placeholders: bool) -> (String, usize) {
     let mut sql = String::from("SELECT COUNT(*) as count FROM items i WHERE 1=1");
     let mut param_count = 0;
-
-    fn next_placeholder(use_dollar: bool, count: &mut usize) -> String {
-        *count += 1;
-        if use_dollar {
-            format!("${}", *count)
-        } else {
-            "?".to_string()
-        }
-    }
-
-    if filter.manufacturer.is_some() {
-        sql.push_str(&format!(
-            " AND COALESCE(i.manufacturer, {}) = {}",
-            best_value_subquery("manufacturer"),
-            next_placeholder(use_dollar_placeholders, &mut param_count)
-        ));
-    }
-    if filter.weapon_type.is_some() {
-        sql.push_str(&format!(
-            " AND COALESCE(i.weapon_type, {}) = {}",
-            best_value_subquery("weapon_type"),
-            next_placeholder(use_dollar_placeholders, &mut param_count)
-        ));
-    }
-    if filter.element.is_some() {
-        sql.push_str(&format!(
-            " AND COALESCE(i.element, {}) = {}",
-            best_value_subquery("element"),
-            next_placeholder(use_dollar_placeholders, &mut param_count)
-        ));
-    }
-    if filter.rarity.is_some() {
-        sql.push_str(&format!(
-            " AND COALESCE(i.rarity, {}) = {}",
-            best_value_subquery("rarity"),
-            next_placeholder(use_dollar_placeholders, &mut param_count)
-        ));
-    }
-
+    append_filter_clauses(&mut sql, filter, use_dollar_placeholders, &mut param_count);
     (sql, param_count)
 }
 
@@ -422,6 +399,7 @@ mod tests {
             weapon_type: Some("Pistol".to_string()),
             element: Some("Fire".to_string()),
             rarity: Some("Legendary".to_string()),
+            legal: None,
             limit: Some(10),
             offset: Some(5),
         };

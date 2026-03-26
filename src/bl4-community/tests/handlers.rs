@@ -17,6 +17,8 @@ async fn test_app() -> axum::Router {
     db.init().await.unwrap();
     let state = Arc::new(AppState {
         db: Database::Sqlite(db),
+        write_limiter: bl4_community::rate_limit::RateLimiter::new(1000),
+        allowed_ips: std::collections::HashSet::new(),
     });
     build_router(state)
 }
@@ -205,8 +207,10 @@ async fn test_list_items_pagination() {
         let _ = app.clone().oneshot(req).await.unwrap();
     }
 
-    // List with limit=1
-    let req = Request::get("/items?limit=1").body(Body::empty()).unwrap();
+    // List with limit=1 (legal=any to include all items)
+    let req = Request::get("/items?limit=1&legal=any")
+        .body(Body::empty())
+        .unwrap();
     let (status, body) = json_body(app.clone(), req).await;
     assert_eq!(status, StatusCode::OK);
     assert_eq!(body["items"].as_array().unwrap().len(), 1);
@@ -214,7 +218,7 @@ async fn test_list_items_pagination() {
     assert_eq!(body["limit"], 1);
 
     // List with offset=1
-    let req = Request::get("/items?limit=1&offset=1")
+    let req = Request::get("/items?limit=1&offset=1&legal=any")
         .body(Body::empty())
         .unwrap();
     let (status, body) = json_body(app, req).await;

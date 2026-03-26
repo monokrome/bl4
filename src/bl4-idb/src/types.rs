@@ -344,6 +344,8 @@ pub struct ItemFilter {
     pub weapon_type: Option<String>,
     pub element: Option<String>,
     pub rarity: Option<String>,
+    /// Filter by legality: Some("legal"), Some("illegal"), or None (any)
+    pub legal: Option<String>,
     pub limit: Option<u32>,
     pub offset: Option<u32>,
 }

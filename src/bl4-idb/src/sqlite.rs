@@ -64,6 +64,9 @@ fn build_filter_params(filter: &ItemFilter) -> Vec<Box<dyn rusqlite::ToSql>> {
     if let Some(r) = &filter.rarity {
         params.push(Box::new(r.clone()));
     }
+    if let Some(l) = &filter.legal {
+        params.push(Box::new(l.clone()));
+    }
     params
 }
 

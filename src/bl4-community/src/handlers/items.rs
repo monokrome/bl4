@@ -27,11 +27,18 @@ pub async fn list_items(
     let limit = query.limit.unwrap_or(100).min(1000);
     let offset = query.offset.unwrap_or(0);
 
+    let legal_filter = match query.legal.as_deref() {
+        Some("any") => None,
+        Some(v) => Some(v.to_string()),
+        None => Some("legal".to_string()),
+    };
+
     let filter = ItemFilter {
         manufacturer: query.manufacturer.clone(),
         weapon_type: query.weapon_type.clone(),
         element: query.element.clone(),
         rarity: query.rarity.clone(),
+        legal: legal_filter.clone(),
         limit: Some(limit),
         offset: Some(offset),
     };
@@ -41,6 +48,7 @@ pub async fn list_items(
         weapon_type: query.weapon_type,
         element: query.element,
         rarity: query.rarity,
+        legal: legal_filter,
         limit: None,
         offset: None,
     };

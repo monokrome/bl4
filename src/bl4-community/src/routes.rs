@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use axum::{
     extract::DefaultBodyLimit,
+    middleware,
     routing::{get, post},
     Json, Router,
 };
@@ -14,6 +15,7 @@ use utoipa_scalar::{Scalar, Servable};
 
 use crate::handlers;
 use crate::helpers::MAX_ATTACHMENT_SIZE;
+use crate::rate_limit;
 use crate::schema::*;
 use crate::state::AppState;
 
@@ -41,6 +43,7 @@ use crate::state::AppState;
         HealthResponse,
         CapabilitiesResponse,
         ItemResponse,
+        DecodedValues,
         ListItemsQuery,
         ListItemsResponse,
         CreateItemRequest,
@@ -65,23 +68,37 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         .allow_methods(Any)
         .allow_headers(Any);
 
-    let api_routes = Router::new()
-        .route("/health", get(handlers::system::health))
-        .route("/capabilities", get(handlers::system::get_capabilities))
-        .route(
-            "/items",
-            get(handlers::items::list_items).post(handlers::items::create_item),
-        )
+    let write_routes = Router::new()
+        .route("/items", post(handlers::items::create_item))
         .route("/items/bulk", post(handlers::bulk::create_items_bulk))
-        .route("/items/{serial}", get(handlers::items::get_item))
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            rate_limit::rate_limit_writes,
+        ));
+
+    let attachment_routes = Router::new()
         .route(
             "/items/{serial}/attachments",
             post(handlers::attachments::upload_attachment)
                 .layer(DefaultBodyLimit::max(MAX_ATTACHMENT_SIZE)),
         )
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            rate_limit::require_allowed_ip,
+        ));
+
+    let read_routes = Router::new()
+        .route("/health", get(handlers::system::health))
+        .route("/capabilities", get(handlers::system::get_capabilities))
+        .route("/items", get(handlers::items::list_items))
+        .route("/items/{serial}", get(handlers::items::get_item))
         .route("/decode", post(handlers::serial::decode_serial))
         .route("/encode", post(handlers::serial::encode_serial))
-        .route("/stats", get(handlers::system::get_stats))
+        .route("/stats", get(handlers::system::get_stats));
+
+    let api_routes = read_routes
+        .merge(write_routes)
+        .merge(attachment_routes)
         .merge(Scalar::with_url("/scalar", ApiDoc::openapi()))
         .route("/openapi.json", get(|| async { Json(ApiDoc::openapi()) }))
         .with_state(state)
