@@ -5,8 +5,9 @@
 use crate::repository::RepoError;
 use crate::types::*;
 
+use crate::shared;
 #[cfg(feature = "sqlx-sqlite")]
-use crate::shared::{self, ITEM_SELECT_COLUMNS};
+use crate::shared::ITEM_SELECT_COLUMNS;
 use sqlx::Row;
 use std::collections::HashMap;
 
