@@ -77,6 +77,10 @@ index	name
 76	part_foregrip_01
 77	part_body_mag_sg
 78	part_barrel_02_rangefinder
+79	part_barrel_02_soulsurvivor
+80	comp_05_legendary_soulsurvivor
+81	part_mag_torgue_sticky_soulsurvivor
+82	part_mag_torgue_normal_soulsurvivor
 95	comp_01_common
 96	comp_02_uncommon
 97	comp_03_rare

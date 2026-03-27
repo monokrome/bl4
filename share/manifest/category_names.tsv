@@ -5,29 +5,30 @@ category_id	name
 10001	Stat Group2
 10002	Stat Group3
 10003	Rarity Component
-10004	Firmware
-10005	Pearl Elementm
-10006	Pearl Stat
-10007	Barrel
-10008	Barrel Acc
-10009	Tediore Acc
-10010	Foregrip
-10011	Grip
-10012	Magazine
-10013	Magazine Acc
-10014	Tediore Secondary Acc
-10015	Secondary Ammo
-10016	Hyperion Secondary Acc
-10017	Body
-10018	Payload
-10019	Class Mod Body
-10020	Primary Augment
-10021	Body Element
-10022	Unique
-10023	Scope
-10024	Payload Augment
-10025	Underbarrel
-10026	Underbarrel Acc
+10004	Barrel
+10005	Barrel Acc
+10006	Tediore Acc
+10007	Foregrip
+10008	Grip
+10009	Magazine
+10010	Magazine Acc
+10011	Tediore Secondary Acc
+10012	Secondary Ammo
+10013	Hyperion Secondary Acc
+10014	Body
+10015	Payload
+10016	Class Mod Body
+10017	Primary Augment
+10018	Body Element
+10019	Unique
+10020	Scope
+10021	Payload Augment
+10022	Underbarrel
+10023	Underbarrel Acc
+10024	Firmware
+10025	Pearl Elementm
+10026	Pearl Stat
+10027	Secondary Augment
 101	Invdef Pickup Grapplebox Intro
 102	Invdef Broombaplaceable
 103	Invdef Genivivcore
@@ -363,21 +364,66 @@ category_id	name
 400	Io Pickup Powercell
 401	Io Pickup Flat Kairos
 403	Invdef Pickup Mfaction4 Lictordrive Child
+404	Class Mod Robodealer
+405	Weapon Dahlgrunt Laserrifle
+406	Invdef Io Pickup Dahlkeycard
+407	Weapon Dahlgrunt Shoulderlaserrifle
+408	Weapon Dahlgrunt Sprayer
+409	Invdef Io Pickup Dahlbeefylegs
 41	Inv Contractitem Batwing
+410	Invdef Io Pickup Dahlbeefyarms
+411	Invdef Io Pickup Dahloglegs
+412	Invdef Io Pickup Dahlogarms
+413	Invdef Io Pickup Dahltorso
+414	Invdef M3 Plantroot
+415	Invdef Io Pickup Keepsake1
+416	Invdef Io Pickup Keepsake2
+417	Invdef Io Pickup Towel
+418	Weapon Dahlmech Chaingun
+419	Weapon Dahlmech Emp
 42	Inv Contractitem Batkidney
+420	Weapon Dahlmech Flamespitter
+421	Weapon Dahlmech Grenadelauncher
+422	Inv Sc Pickup Suggarathegg
+423	Invdef Sc Pickup Heart
+424	Invdef Io Pickup Keystone
 425	Invdef Io Pickup Gifts
 426	Invdef Io Pickup Picture
 427	Invdef Io Pickup Lights
 428	Invdef Io Pickup Passwordlog
 43	Inv Contractitem Tools
+433	Invdef Io Pickup Dahlbadarm1
+434	Invdef Io Pickup Dahlbadarm2
+435	Invdef Io Pickup Dahlbadarm3
+436	Invdef Io Pickup Keepsake3
 44	Inv Contractitem Creepbrain
+442	Inv M3 Pickup Glowleaf
+443	Invdef Pickup Gumpyhat
+444	Inv Dbd Pickup Driftwood
 445	Health Booster Pickup Healthraiser
+449	Invdef M3 Pickup Keystone
 45	Inv Contractitem Sparkplug
+450	Invdef M4 Pickup Dahlkeycard Warroom
+451	Invdef M4 Pickup Dahlkeycard Powercore
+452	Invdef Dbd Pickup Dahlkeycard
+453	Invdef Dbd Dogtag Samuels
+454	Invdef Dbd Dogtag Cooper
+455	Invdef Dbd Dogtag Austin
+456	Invdef Dbd Dogtag Hays
+457	Invdef Dbd Dogtag Turner
+459	Weapon Dahlmech Flamespitterunderbarrel
 46	Inv Contractitem Pangolinparts
 460	Invdef Io Pickup Staff
 461	Invdef Io Pickup Bomb
 462	Inv Echologdefault Cello
+466	Inv Contractitem Dahljetpack
+467	Inv Contractitem Dahlhelmet
+468	Inv Contractitem Scavgrenade
+469	Inv Contractitem Kraggoncore
 47	Inv Contractitem Creepparts
+470	Weapon Turret Dahlchaingun
+471	Weapon Dahlmech Energygun
+472	Weapon Dahlgrunt Crashflamer
 48	Inv Contractitem Bloodpack
 49	Inv Contractitem Poster
 5	Tediore Pistol

@@ -19,6 +19,7 @@ index	name
 18	part_barrel_goldengod
 19	comp_05_legendary_goldengod
 20	comp_05_legendary_goremaster
+21	part_barrel_crazedearl
 22	part_mag_ted_thrown_01
 23	part_mag_ted_thrown_02
 24	part_mag_ted_thrown_03_tor
@@ -51,8 +52,11 @@ index	name
 51	part_foregrip_03
 52	part_underbarrel_05_ammoswitcher
 53	part_underbarrel_06_malswitch
+54	comp_05_legendary_crazedearl
 55	part_unique_barrel_02_demo
 56	comp_05_legendary_demo
+57	part_mag_02_crazedearl
+58	part_mag_01_crazedearl
 60	part_secondary_ammo_smg
 61	part_secondary_ammo_ar
 62	part_secondary_ammo_ps

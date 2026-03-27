@@ -57,6 +57,8 @@ index	name
 56	part_barrel_02_leadballoon
 57	comp_05_legendary_leadballoon
 58	part_barrel_01_linebacker
+59	part_foregrip_03_unstable_kor
+60	part_foregrip_02_unstable_kor
 61	part_barrel_01_a
 62	part_barrel_01_b
 63	part_barrel_01_c
@@ -71,6 +73,9 @@ index	name
 72	part_barrel_licensed_ted_mirv
 73	part_barrel_licensed_ted_combo
 74	part_barrel_licensed_hyp
+75	part_foregrip_01_unstable_kor
+76	part_barrel_01_unstable_kor
+77	comp_05_legendary_unstable_kor
 78	part_barrel_02_arctic
 79	comp_05_legendary_arctic
 95	comp_01_common

@@ -75,6 +75,10 @@ index	name
 74	part_barrel_02_boomslang
 75	part_barrel_truck
 76	comp_05_legendary_truck
+77	part_barrel_02_fearstalker
+78	comp_05_legendary_fearstalker
+80	part_mag_torgue_sticky_fearstalker
+81	part_mag_torgue_normal_fearstalker
 95	comp_01_common
 96	comp_02_uncommon
 97	comp_03_rare
