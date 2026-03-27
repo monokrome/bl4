@@ -61,6 +61,10 @@ pub struct Args {
     /// Filter by class name (requires --scriptobjects, can specify multiple, OR logic)
     #[arg(long)]
     pub class_filter: Vec<String>,
+
+    /// Number of parallel extraction threads (default: half available cores)
+    #[arg(short = 'j', long)]
+    pub threads: Option<usize>,
 }
 
 #[derive(clap::Subcommand, Debug)]

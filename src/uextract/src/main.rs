@@ -25,6 +25,17 @@ use uextract::zen::parse_zen_to_json;
 fn main() -> Result<()> {
     let args = Args::parse();
 
+    let num_threads = args.threads.unwrap_or_else(|| {
+        std::thread::available_parallelism()
+            .map(|n| (n.get() / 2).max(1))
+            .unwrap_or(2)
+    });
+    rayon::ThreadPoolBuilder::new()
+        .num_threads(num_threads)
+        .build_global()
+        .ok();
+    eprintln!("Using {} threads", num_threads);
+
     if let Some(command) = args.command {
         return match command {
             Commands::Pak {
