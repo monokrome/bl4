@@ -386,6 +386,36 @@ mod tests {
     }
 
     #[test]
+    fn test_duplicate_foregrip_is_illegal() {
+        // Reported: user added a second foregrip to a Shalashaska, it should be illegal
+        let item =
+            ItemSerial::decode("@UgbV{rFme!K<aW?mRG/*lsIsVasB@@vs7=*D^+EkX%/f+Al/uj}").unwrap();
+        let result = item.validate();
+        assert_eq!(result.legality, Legality::Illegal);
+        let slot_check = result
+            .checks
+            .iter()
+            .find(|c| c.name == "slot_uniqueness")
+            .unwrap();
+        assert_eq!(slot_check.passed, Some(false));
+        assert!(slot_check.detail.contains("foregrip"));
+    }
+
+    #[test]
+    fn test_valid_item_passes_slot_uniqueness() {
+        // Normal Shalashaska with one foregrip
+        let item =
+            ItemSerial::decode("@UgbV{rFme!K<aW?mRG/*lsIsVasB@@vs7=*D^+EkX%/f+A00}").unwrap();
+        let result = item.validate();
+        let slot_check = result
+            .checks
+            .iter()
+            .find(|c| c.name == "slot_uniqueness")
+            .unwrap();
+        assert_eq!(slot_check.passed, Some(true));
+    }
+
+    #[test]
     fn test_pool_membership_not_illegal_on_known_items() {
         // Known weapon serial — should not be flagged as illegal by pool check
         let item = ItemSerial::decode("@Ugr$ZCm/&tH!t{KgK/Shxu>k").unwrap();
