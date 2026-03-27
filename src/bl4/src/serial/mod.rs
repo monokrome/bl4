@@ -848,7 +848,8 @@ pub(crate) fn resolve_part_name(category: i64, index: u64) -> Option<&'static st
     }
 
     // Only fall back to shared verticals if index is ABOVE per-category range.
-    // Gaps within per-category range are genuinely absent — not shared parts.
+    // Indices within the per-category range that don't exist there are ambiguous —
+    // multiple shared categories can claim the same index with different parts.
     let max = crate::manifest::max_part_index(category).unwrap_or(0);
     if (index as i64) <= max {
         return None;
