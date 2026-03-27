@@ -35,16 +35,12 @@ pub fn handle_ncs_command(command: NcsCommand) -> Result<()> {
             json,
             tsv,
         } => {
-            let mode = if hex {
-                show::ShowMode::Hex
-            } else if json {
-                show::ShowMode::Json
-            } else if tsv {
-                show::ShowMode::Tsv
-            } else if raw {
-                show::ShowMode::Raw { all_strings }
-            } else {
-                show::ShowMode::Document
+            let mode = match (hex, json, tsv, raw) {
+                (true, _, _, _) => show::ShowMode::Hex,
+                (_, true, _, _) => show::ShowMode::Json,
+                (_, _, true, _) => show::ShowMode::Tsv,
+                (_, _, _, true) => show::ShowMode::Raw { all_strings },
+                _ => show::ShowMode::Document,
             };
             show::show_file(&path, &mode)
         }
