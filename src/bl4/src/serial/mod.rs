@@ -80,16 +80,34 @@ impl Element {
     }
 
     /// Convert a Part token index to an Element, if it maps to a known element.
+    /// Detect element from a resolved part name.
     ///
-    /// Element marker indices are in the 16-27 range.
-    pub fn from_index(index: u64) -> Option<Self> {
-        match index {
-            16 => Some(Element::Kinetic),
-            26 => Some(Element::Corrosive),
-            17 => Some(Element::Shock),
-            25 => Some(Element::Radiation),
-            27 => Some(Element::Cryo),
-            23 => Some(Element::Fire),
+    /// Element parts are named `part_<element>`, `part_body_ele_*`, or `part_kinetic`.
+    pub fn from_part_name(name: &str) -> Option<Self> {
+        let base = name.split('.').next_back().unwrap_or(name);
+        match base {
+            "part_kinetic" => Some(Element::Kinetic),
+            "part_corrosive" => Some(Element::Corrosive),
+            "part_shock" => Some(Element::Shock),
+            "part_radiation" => Some(Element::Radiation),
+            "part_cryo" => Some(Element::Cryo),
+            "part_fire" => Some(Element::Fire),
+            _ if base.starts_with("part_body_ele_") => {
+                // Multi-element parts (rainbowvomit) — report first element found
+                if base.contains("cor") {
+                    Some(Element::Corrosive)
+                } else if base.contains("cryo") {
+                    Some(Element::Cryo)
+                } else if base.contains("fire") {
+                    Some(Element::Fire)
+                } else if base.contains("rad") {
+                    Some(Element::Radiation)
+                } else if base.contains("shock") {
+                    Some(Element::Shock)
+                } else {
+                    Some(Element::Kinetic)
+                }
+            }
             _ => None,
         }
     }
@@ -784,13 +802,14 @@ fn extract_weapon_header(tokens: &[Token]) -> HeaderInfo {
     }
 }
 
-/// Extract elements from Part tokens (index 128-142)
-fn extract_elements(tokens: &[Token]) -> Vec<Element> {
+/// Extract elements from Part tokens by resolving part names
+fn extract_elements(tokens: &[Token], category: i64) -> Vec<Element> {
     tokens
         .iter()
         .filter_map(|token| {
             if let Token::Part { index, .. } = token {
-                Element::from_index(*index)
+                let name = resolve_part_name(category, *index)?;
+                Element::from_part_name(name)
             } else {
                 None
             }
@@ -870,7 +889,24 @@ impl ItemSerial {
             extract_weapon_header(&tokens)
         };
 
-        let elements = extract_elements(&tokens);
+        let category = if format == SerialFormat::VarBitFirst {
+            tokens
+                .iter()
+                .find_map(|t| {
+                    if let Token::VarBit(v) = t {
+                        Some(category_from_varbit(*v))
+                    } else {
+                        None
+                    }
+                })
+                .unwrap_or(-1)
+        } else {
+            header
+                .manufacturer
+                .map(|id| serial_id_to_parts_category(id) as i64)
+                .unwrap_or(-1)
+        };
+        let elements = extract_elements(&tokens, category);
         let rarity = extract_rarity(&tokens, format == SerialFormat::VarBitFirst);
 
         Ok(ItemSerial {
@@ -922,17 +958,8 @@ impl ItemSerial {
 
     /// Create a new ItemSerial with modified tokens
     pub fn with_tokens(&self, tokens: Vec<Token>) -> Self {
-        // Re-extract elements from the new tokens
-        let elements: Vec<Element> = tokens
-            .iter()
-            .filter_map(|token| {
-                if let Token::Part { index, .. } = token {
-                    Element::from_index(*index)
-                } else {
-                    None
-                }
-            })
-            .collect();
+        let category = self.parts_category().unwrap_or(-1);
+        let elements = extract_elements(&tokens, category);
 
         ItemSerial {
             original: self.original.clone(),
@@ -1117,7 +1144,7 @@ impl ItemSerial {
 
         let mut output = Vec::new();
         for (index, name, values) in parts {
-            if Element::from_index(index).is_some() {
+            if name.is_some_and(|n| Element::from_part_name(n).is_some()) {
                 continue;
             }
 
@@ -1163,15 +1190,19 @@ impl ItemSerial {
                 continue;
             }
 
-            if let Some(element) = Element::from_index(index) {
-                resolved.push(ResolvedPart {
-                    index,
-                    name: None,
-                    short_name: element.name().to_string(),
-                    slot: "element",
-                    is_element: true,
-                });
-            } else if let Some(n) = name {
+            if let Some(n) = name {
+                if let Some(element) = Element::from_part_name(n) {
+                    resolved.push(ResolvedPart {
+                        index,
+                        name: Some(n),
+                        short_name: element.name().to_string(),
+                        slot: "element",
+                        is_element: true,
+                    });
+                    continue;
+                }
+            }
+            if let Some(n) = name {
                 let short_name = n.split('.').next_back().unwrap_or(n);
                 let slot = crate::manifest::slot_from_part_name(n);
                 resolved.push(ResolvedPart {
@@ -1409,20 +1440,19 @@ mod tests {
 
     #[test]
     fn test_element_extraction_fire() {
-        // Hellwalker (Fire shotgun) - verified in-game
+        // Hellwalker (Fire shotgun) - element is intrinsic to the legendary part,
+        // not encoded as a separate element Part token in the serial
         let item = ItemSerial::decode("@Ugd_t@FmVuJyjIXzRG}JG7S$K^1{DjH5&-").unwrap();
-        assert_eq!(item.elements.len(), 1);
-        assert_eq!(item.elements[0], Element::Fire);
-        assert_eq!(item.element_names(), Some("Fire".to_string()));
+        assert_eq!(item.elements.len(), 0);
+        assert_eq!(item.element_names(), None);
     }
 
     #[test]
     fn test_element_extraction_corrosive() {
-        // Jakobs Pistol (Corrosive)
+        // Jakobs Pistol (Shalashaska) - no separate element Part token
         let item = ItemSerial::decode("@UgbV{rFjEj=bZ<~-RG}KRs7TF2b*c{P7OEuz").unwrap();
-        assert_eq!(item.elements.len(), 1);
-        assert_eq!(item.elements[0], Element::Corrosive);
-        assert_eq!(item.element_names(), Some("Corrosive".to_string()));
+        assert_eq!(item.elements.len(), 0);
+        assert_eq!(item.element_names(), None);
     }
 
     #[test]
@@ -1431,6 +1461,45 @@ mod tests {
         let item = ItemSerial::decode("@Uge98>m/)}}!c5JeNWCvCXc7").unwrap();
         assert!(item.elements.is_empty());
         assert_eq!(item.element_names(), None);
+    }
+
+    #[test]
+    fn test_shalashaska_scope_not_element() {
+        // Reported bug: index 26 in Jakobs Pistol is part_scope_01_lens_01,
+        // not Corrosive. The old from_index hardcoded map was wrong.
+        let item =
+            ItemSerial::decode("@UgbV{rFme!K<aW?mRG/*lsIsVasB@@vs7=*D^+EkX%/f+A00}").unwrap();
+        assert!(item.elements.is_empty(), "Shalashaska has no element parts");
+        let parts = item.resolved_parts();
+        let scope = parts.iter().find(|p| p.index == 26).unwrap();
+        assert_eq!(scope.short_name, "part_scope_01_lens_01");
+        assert_eq!(scope.slot, "scope");
+        assert!(!scope.is_element);
+    }
+
+    #[test]
+    fn test_from_part_name() {
+        assert_eq!(Element::from_part_name("part_fire"), Some(Element::Fire));
+        assert_eq!(Element::from_part_name("part_cryo"), Some(Element::Cryo));
+        assert_eq!(
+            Element::from_part_name("part_corrosive"),
+            Some(Element::Corrosive)
+        );
+        assert_eq!(Element::from_part_name("part_shock"), Some(Element::Shock));
+        assert_eq!(
+            Element::from_part_name("part_radiation"),
+            Some(Element::Radiation)
+        );
+        assert_eq!(
+            Element::from_part_name("part_kinetic"),
+            Some(Element::Kinetic)
+        );
+        assert_eq!(Element::from_part_name("part_scope_01_lens_01"), None);
+        assert_eq!(Element::from_part_name("part_grip_01"), None);
+        assert_eq!(
+            Element::from_part_name("part_body_ele_rainbowvomit_cor_fire_shock"),
+            Some(Element::Corrosive),
+        );
     }
 
     mod rarity_tests {

@@ -102,10 +102,12 @@ async fn test_decode_flags_elements() {
 
     assert_eq!(status, StatusCode::OK);
 
+    // Hellwalker's fire element is intrinsic to the legendary part,
+    // not encoded as a separate element Part token
     let parts = body["parts"].as_array().unwrap();
     let element_count = parts.iter().filter(|p| p["is_element"] == true).count();
-    assert!(element_count > 0, "Fire shotgun should have element parts");
-    assert_eq!(body["element"], "Fire");
+    assert_eq!(element_count, 0);
+    assert_eq!(body["element"], serde_json::Value::Null);
 }
 
 #[tokio::test]

@@ -100,11 +100,12 @@ fn check_part_bounds(item: &ItemSerial) -> ValidationCheck {
 
     for token in &item.tokens {
         if let Token::Part { index, .. } = token {
-            if super::Element::from_index(*index).is_some() {
+            let part_name = super::resolve_part_name(category, *index);
+            if part_name.is_some_and(|n| super::Element::from_part_name(n).is_some()) {
                 continue;
             }
             checked += 1;
-            if super::resolve_part_name(category, *index).is_none() {
+            if part_name.is_none() {
                 return inconclusive(format!(
                     "part index {} unresolvable for category {}",
                     index, category
@@ -180,15 +181,15 @@ fn check_pool_membership(item: &ItemSerial) -> ValidationCheck {
             continue;
         };
 
-        // Element markers are identified separately, not part of the loot pool
-        if super::Element::from_index(*index).is_some() {
-            continue;
-        }
-
         let Some(name) = super::resolve_part_name(category, *index) else {
             unnamed += 1;
             continue;
         };
+
+        // Element parts are identified separately, not part of the loot pool
+        if super::Element::from_part_name(name).is_some() {
+            continue;
+        }
 
         if let Some(found) = crate::manifest::is_part_in_pool(category, name) {
             checked += 1;
