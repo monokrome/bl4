@@ -220,6 +220,47 @@ fn check_pool_membership(item: &ItemSerial) -> ValidationCheck {
     }
 }
 
+/// Slots that must contain at most one part in a valid item.
+const UNIQUE_SLOTS: &[&str] = &["foregrip"];
+
+/// Check that single-occupancy slots don't have duplicate parts.
+fn check_slot_uniqueness(item: &ItemSerial) -> ValidationCheck {
+    let parts = item.resolved_parts();
+    if parts.is_empty() {
+        return ValidationCheck {
+            name: "slot_uniqueness",
+            passed: None,
+            detail: "no parts to check".to_string(),
+        };
+    }
+
+    let mut slot_counts: std::collections::HashMap<&str, u32> = std::collections::HashMap::new();
+    for part in &parts {
+        if part.slot == "unknown" || part.is_element {
+            continue;
+        }
+        *slot_counts.entry(part.slot).or_default() += 1;
+    }
+
+    for slot in UNIQUE_SLOTS {
+        if let Some(&count) = slot_counts.get(slot) {
+            if count > 1 {
+                return ValidationCheck {
+                    name: "slot_uniqueness",
+                    passed: Some(false),
+                    detail: format!("slot '{}' has {} parts (expected 1)", slot, count),
+                };
+            }
+        }
+    }
+
+    ValidationCheck {
+        name: "slot_uniqueness",
+        passed: Some(true),
+        detail: "all single-slot constraints satisfied".to_string(),
+    }
+}
+
 impl ItemSerial {
     /// Validate this serial's plausibility.
     ///
@@ -233,6 +274,7 @@ impl ItemSerial {
             check_part_bounds(self),
             check_part_count(self),
             check_pool_membership(self),
+            check_slot_uniqueness(self),
         ];
 
         let has_failure = checks.iter().any(|c| c.passed == Some(false));
@@ -333,13 +375,14 @@ mod tests {
     fn test_validation_checks_all_present() {
         let item = ItemSerial::decode("@Ugr$ZCm/&tH!t{KgK/Shxu>k").unwrap();
         let result = item.validate();
-        assert_eq!(result.checks.len(), 4);
+        assert_eq!(result.checks.len(), 5);
 
         let check_names: Vec<&str> = result.checks.iter().map(|c| c.name).collect();
         assert!(check_names.contains(&"level_range"));
         assert!(check_names.contains(&"part_bounds"));
         assert!(check_names.contains(&"part_count"));
         assert!(check_names.contains(&"pool_membership"));
+        assert!(check_names.contains(&"slot_uniqueness"));
     }
 
     #[test]
