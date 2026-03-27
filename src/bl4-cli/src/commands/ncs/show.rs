@@ -18,7 +18,7 @@ pub enum ShowMode {
     Tsv,
 }
 
-pub fn show_file(path: &Path, mode: &ShowMode) -> Result<()> {
+pub fn show_file(path: &Path, mode: ShowMode) -> Result<()> {
     let data = fs::read(path).context("Failed to read file")?;
 
     if matches!(mode, ShowMode::Hex) {
@@ -32,7 +32,7 @@ pub fn show_file(path: &Path, mode: &ShowMode) -> Result<()> {
         data
     };
 
-    match mode {
+    match &mode {
         ShowMode::Hex => unreachable!(),
         ShowMode::Json => {
             if let Some(doc) =

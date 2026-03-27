@@ -35,14 +35,17 @@ pub fn handle_ncs_command(command: NcsCommand) -> Result<()> {
             json,
             tsv,
         } => {
-            let mode = match (hex, json, tsv, raw) {
-                (true, _, _, _) => show::ShowMode::Hex,
-                (_, true, _, _) => show::ShowMode::Json,
-                (_, _, true, _) => show::ShowMode::Tsv,
-                (_, _, _, true) => show::ShowMode::Raw { all_strings },
-                _ => show::ShowMode::Document,
-            };
-            show::show_file(&path, &mode)
+            let mode = [hex, json, tsv, raw]
+                .iter()
+                .zip([
+                    show::ShowMode::Hex,
+                    show::ShowMode::Json,
+                    show::ShowMode::Tsv,
+                    show::ShowMode::Raw { all_strings },
+                ])
+                .find_map(|(&flag, mode)| flag.then_some(mode))
+                .unwrap_or(show::ShowMode::Document);
+            show::show_file(&path, mode)
         }
 
         NcsCommand::Search {
