@@ -1,13 +1,13 @@
 {
   "version": "0.8.3",
   "source": "BL4 Game Files",
-  "extract_path": "/home/polar/Documents/Borderlands 4/pakdata",
+  "extract_path": "/tmp/bl4_extract",
   "files": {
+    "weapon_types": "weapon_types.json",
     "rarity": "rarity.json",
     "manufacturers": "manufacturers.json",
-    "weapon_types": "weapon_types.json",
+    "gear_types": "gear_types.json",
     "elemental": "elemental.json",
-    "naming": "naming.json",
-    "gear_types": "gear_types.json"
+    "naming": "naming.json"
   }
 }

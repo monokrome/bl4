@@ -9,25 +9,20 @@
     "name": "Ripper",
     "path": "OakGame/Content/Gear/Weapons/_Manufacturer/BOR"
   },
-  "JAK": {
-    "code": "JAK",
-    "name": "Jakobs",
-    "path": "OakGame/Content/Gear/Weapons/_Manufacturer/JAK"
-  },
-  "DAD": {
-    "code": "DAD",
-    "name": "Daedalus",
-    "path": "OakGame/Content/Gear/Weapons/_Shared/Materials/DAD"
-  },
   "ORD": {
     "code": "ORD",
     "name": "Order",
     "path": "OakGame/Content/Gear/Weapons/_Shared/Materials/ORD"
   },
-  "VLA": {
-    "code": "VLA",
-    "name": "Vladof",
-    "path": "OakGame/Content/Gear/Weapons/_Shared/Materials/VLA"
+  "TOR": {
+    "code": "TOR",
+    "name": "Torgue",
+    "path": "OakGame/Content/Gear/Weapons/_Manufacturer/TOR"
+  },
+  "DAD": {
+    "code": "DAD",
+    "name": "Daedalus",
+    "path": "OakGame/Content/Gear/Weapons/_Shared/Materials/DAD"
   },
   "TED": {
     "code": "TED",
@@ -35,9 +30,14 @@
     "path": "OakGame/Content/Gear/Weapons/_Manufacturer/TED",
     "balance_data_path": "OakGame/Content/Gear/Weapons/_Shared/BalanceData/TED"
   },
-  "TOR": {
-    "code": "TOR",
-    "name": "Torgue",
-    "path": "OakGame/Content/Gear/Weapons/_Manufacturer/TOR"
+  "VLA": {
+    "code": "VLA",
+    "name": "Vladof",
+    "path": "OakGame/Content/Gear/Weapons/_Shared/Materials/VLA"
+  },
+  "JAK": {
+    "code": "JAK",
+    "name": "Jakobs",
+    "path": "OakGame/Content/Gear/Weapons/_Manufacturer/JAK"
   }
 }
