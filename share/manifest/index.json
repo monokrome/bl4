@@ -1,13 +1,13 @@
 {
-  "version": "0.7.6",
+  "version": "0.8.1",
   "source": "BL4 Game Files",
   "extract_path": "/tmp/bl4_extract",
   "files": {
-    "gear_types": "gear_types.json",
-    "elemental": "elemental.json",
-    "manufacturers": "manufacturers.json",
     "rarity": "rarity.json",
     "weapon_types": "weapon_types.json",
-    "naming": "naming.json"
+    "elemental": "elemental.json",
+    "manufacturers": "manufacturers.json",
+    "naming": "naming.json",
+    "gear_types": "gear_types.json"
   }
 }

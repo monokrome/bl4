@@ -9,8 +9,10 @@ np_atlien	Budget Deity
 np_atlinggun	Atling Gun
 np_axe	Buzz Axe
 np_ballista	Borstel Ballista
+np_barb	Barb'ara
 np_barrelaged	Oak-Aged Cask
 np_beegun	Birt's Bees
+np_bismuth	Bismuth-Tipped Dagger
 np_blockbuster	Blockbuster
 np_bloodstarved	Darkbeast
 np_bod	Bod
@@ -40,6 +42,7 @@ np_cm_ds_leg_03	Undead Eye
 np_cm_ds_leg_04	Kindread Spirits
 np_cm_ds_leg_05	Illusionist
 np_cm_ds_leg_06	Teen Witch
+np_cm_ds_leg_dlc1	Configuration
 np_cm_ds_leg_raid1	Misericorde
 np_cm_exo_01	Agente
 np_cm_exo_02	Genio
@@ -57,6 +60,7 @@ np_cm_exo_leg_03	Instigator
 np_cm_exo_leg_04	Buster
 np_cm_exo_leg_05	Esgrimidor
 np_cm_exo_leg_06	Grenazerker
+np_cm_exo_leg_cowbell	Reaparici
 np_cm_exo_leg_raid1	Overdriver
 np_cm_grav_01	Breaker
 np_cm_grav_02	Chemist
@@ -74,6 +78,7 @@ np_cm_grav_leg_03	Generator
 np_cm_grav_leg_04	Driver
 np_cm_grav_leg_05	Skeptic
 np_cm_grav_leg_06	Scientist
+np_cm_grav_leg_cowbell	Phlebotomist
 np_cm_grav_leg_raid1	Trooper
 np_cm_pal_01	Guardian
 np_cm_pal_02	Brawler
@@ -91,14 +96,36 @@ np_cm_pal_leg_03	Blacksmith
 np_cm_pal_leg_04	Shatterwight
 np_cm_pal_leg_05	Viking
 np_cm_pal_leg_06	Forge Master
+np_cm_pld_leg_cowbell	Tempest
 np_cm_pld_leg_raid1	Lamplighter
+np_cm_robo_01	Pistoleer
+np_cm_robo_02	Bane
+np_cm_robo_03	Gambler
+np_cm_robo_04	Puppeteer
+np_cm_robo_05	Swindler
+np_cm_robo_06	Antagonist
+np_cm_robo_07	Powderbot
+np_cm_robo_08	Triggerbot
+np_cm_robo_09	Crack Shot
+np_cm_robo_10	Pack Leader
+np_cm_robo_leg_01	Rounder
+np_cm_robo_leg_02	Ludopath
+np_cm_robo_leg_03	Hotshot
+np_cm_robo_leg_04	Cooler
+np_cm_robo_leg_05	Whale
+np_cm_robo_leg_06	Windrider
+np_cm_robo_leg_dlc1	Gamer
+np_cm_robo_leg_raid1	Hooligan
 np_coldshoulder	Cold Shoulder
 np_commbd	Forsaken Chaos
 np_compleat	Compleation
 np_complex_root	Complex Root
 np_conflux	Conflux
 np_convergence	Convergence
+np_crazedearl	Crazed Earl
 np_crowdsourced	Midnight Defiance
+np_crowsourced	Crow-Sourced
+np_dahlfather	Heimdahl
 np_demo	Hair Trigger
 np_discjockey	Disc Jockey
 np_disco_disc	Destructo Disco
@@ -106,7 +133,10 @@ np_dividedfocus	Divided Focus
 np_doeshot	Doeshot
 np_dualdamage	Aegon's Dream
 np_eigenburst	Eigenburst
+np_elpisstar	Elpis Star
+np_falke	Falke
 np_faultydetonator	Faulty Detonator
+np_fearstalker	Fearstalker
 np_finnity	Finnity XXX-L
 np_finnty_upgrade	Upgraded Finnity XXX-L
 np_firepot	Firepot
@@ -116,7 +146,9 @@ np_firework	Matador's Match
 np_firstimpression	First Impression
 np_fisheye	Fisheye
 np_flare	Countermeasure
+np_flashcyclone	Flash Cyclone
 np_fleabag	Fleabag
+np_follower	Prowler
 np_fuse	Fuse
 np_gammavoid	Gamma Void
 np_gmr	G.M.R.
@@ -187,8 +219,11 @@ np_heavyturret	Husky Friend
 np_heavyweight	Heavyweight
 np_hellfire	Hellfire
 np_hellwalker	Hellwalker
+np_hemorrhage	Hemorrhage
 np_hoarder	Hoarder
+np_honeybadger	Honey Badger
 np_hopscotch	Hopscotch
+np_ichor	Ichor
 np_inscriber	Inscriber
 np_javelin	Sprezzatura
 np_jetset	Jetsetter
@@ -197,6 +232,7 @@ np_kaoson	Kaoson
 np_katagawa	Katagawa's Revenge
 np_kickballer	Kickballer
 np_kingsgambit	King's Gambit
+np_lasercutter	Laser-Cutter
 np_laserdisc	Laser Disker
 np_leadballoon	Lead Balloon
 np_lightning	Sparky Shield
@@ -229,6 +265,7 @@ np_rainmaker	Rainmaker
 np_rangefinder	Rangefinder
 np_ravenfire	Ravenfire
 np_recursive	Recursive
+np_reminisce	Reminisce
 np_repkit_aug_d_aoe_heal	Aerosolized
 np_repkit_aug_d_damage_reduction	Reinforcing
 np_repkit_aug_d_elem_immune_corrosive	Neutralizing
@@ -284,6 +321,8 @@ np_repkit_uni_bor_augmenter	Augmenter AF1000
 np_repkit_uni_dad_healthraiser	Healthraiser
 np_repkit_uni_jak_defibrillator	Defibrillator
 np_repkit_uni_mal_bloodanalyzer	Blood Analyzer
+np_repkit_uni_mal_geigerroid	Geiger-Roid
+np_repkit_uni_ord_paleblood	Blood Moon
 np_repkit_uni_ord_triplebypass	Triple Bypass
 np_repkit_uni_ted_killspring	Kill Spring
 np_repkit_uni_tor_shinywarpaint	Shiny War Paint
@@ -297,6 +336,7 @@ np_rowan	Rowan's Charge
 np_rowdy	Rowdy Rider
 np_rubber	Jelly
 np_rubysgrasp	Ruby's Grasp
+np_scootshoot	Scoot'n'Shoot
 np_seamstress	Rooker
 np_seventh_sense	Seventh Sense
 np_shalashaska	Shalashaska
@@ -308,12 +348,14 @@ np_skully	Skully
 np_slippy	Slippy
 np_slugger	Hot Slugger
 np_songbird	Broken Wings
+np_soulsurvivor	Soul Survivor
 np_spinning_blade	Spinning Blade
 np_splatoon	Inkling
 np_star_helix	Star Helix
 np_stopgap	Stop Gap
 np_stray	Stray
 np_streamer	Streamer
+np_sunspot	Sunspot
 np_superconductingplasmacoil	Superconducting Plasma Coil
 np_supernova	Extra Medium
 np_supersoldier	Super Soldier
@@ -430,6 +472,7 @@ np_turret_name_vla_longbarrel	VLALONG
 np_turret_name_vla_rocket	VLARocket
 np_turret_name_vla_shotgun	VLASHOTGUN
 np_undershield	Undershield
+np_unstable_kor	Unstable Kor
 np_urchin	Urchin
 np_vamoose	Vamoose
 np_waterfall	Waterfall

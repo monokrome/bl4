@@ -1,5 +1,265 @@
 [
   {
+    "name": "StatusEffect_Cryo_Pickle",
+    "path": "../../../OakGame/Content/DLC/Cowbell/Missions/Main/Mission_1/ASSETS/StatusEffect_Cryo_Pickle.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_ChargePool",
+      "strategy": null
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_Slow",
+        "guid": "00058a46-821f-a10b-2302-030103000000",
+        "row_name": "GbxStatusEffectNotifyEventData_Core_Added"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "00058a46-821f-a10b-2302-030103000000"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_Bismuth_Shock",
+    "path": "../../../OakGame/Content/DLC/Cowbell/Gear/Gadgets/Uniques/StatusEffect_Bismuth_Shock.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": null
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "110ceca4-8cc2-4c86-9246-f2560c91088f",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "110ceca4-8cc2-4c86-9246-f2560c91088f"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_Bismuth_Cryo",
+    "path": "../../../OakGame/Content/DLC/Cowbell/Gear/Gadgets/Uniques/StatusEffect_Bismuth_Cryo.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": null
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "110ceca4-8cc2-4c86-9246-f2560c91088f",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "110ceca4-8cc2-4c86-9246-f2560c91088f"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_Bismuth_Corrosive",
+    "path": "../../../OakGame/Content/DLC/Cowbell/Gear/Gadgets/Uniques/StatusEffect_Bismuth_Corrosive.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": null
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "110ceca4-8cc2-4c86-9246-f2560c91088f",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "110ceca4-8cc2-4c86-9246-f2560c91088f"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_Bismuth_Radiation",
+    "path": "../../../OakGame/Content/DLC/Cowbell/Gear/Gadgets/Uniques/StatusEffect_Bismuth_Radiation.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": null
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "110ceca4-8cc2-4c86-9246-f2560c91088f",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "110ceca4-8cc2-4c86-9246-f2560c91088f"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_Bismuth_Fire",
+    "path": "../../../OakGame/Content/DLC/Cowbell/Gear/Gadgets/Uniques/StatusEffect_Bismuth_Fire.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": null
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "110ceca4-8cc2-4c86-9246-f2560c91088f",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "110ceca4-8cc2-4c86-9246-f2560c91088f"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_SoulSurvivor",
+    "path": "../../../OakGame/Content/DLC/Cowbell/Gear/Weapons/Uniques/StatusEffect_SoulSurvivor.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "c587111f-c149-49f3-b5f0-5422ad0b12b3",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "c587111f-c149-49f3-b5f0-5422ad0b12b3"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_Slow",
+    "path": "../../../OakGame/Content/GameData/StatusEffects/StatusEffect_Slow.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_Slow",
+        "guid": "321ee27c-e2d0-402d-935e-e7e8e7115df0",
+        "row_name": "GbxStatusEffectSeverityGenerator_Curve"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "321ee27c-e2d0-402d-935e-e7e8e7115df0"
+    ],
+    "tags": []
+  },
+  {
+    "name": "SE_Robo_Jinxed",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/Trait/Data/SE_Robo_Jinxed.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "b4fcb939-fa40-449f-9136-62bc3c7be29a",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "b4fcb939-fa40-449f-9136-62bc3c7be29a"
+    ],
+    "tags": []
+  },
+  {
+    "name": "SE_Robo_Totem_MaxHealth",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/ActionSkills/Cleromancy/Data/SE_Robo_Totem_MaxHealth.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "3670cf60-3224-4388-a1c1-b4cb9dc52dff",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "3670cf60-3224-4388-a1c1-b4cb9dc52dff"
+    ],
+    "tags": []
+  },
+  {
+    "name": "SE_Robo_Card_WretchedShadows",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/ActionSkills/SleightOfHand/Data/SE_Robo_Card_WretchedShadows.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "70e4cbed-6205-4e9e-bf0b-ef4936cc6c93",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "70e4cbed-6205-4e9e-bf0b-ef4936cc6c93"
+    ],
+    "tags": []
+  },
+  {
+    "name": "SE_Robo_BoneShard",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/Trait/Data/SE_Robo_BoneShard.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "38c4f5e7-ac38-498c-8ebe-3fbf55cbfa02",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "38c4f5e7-ac38-498c-8ebe-3fbf55cbfa02"
+    ],
+    "tags": []
+  },
+  {
+    "name": "SE_Robo_Totem_StopHealthDrain",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/ActionSkills/Cleromancy/Data/SE_Robo_Totem_StopHealthDrain.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "3670cf60-3224-4388-a1c1-b4cb9dc52dff",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "3670cf60-3224-4388-a1c1-b4cb9dc52dff"
+    ],
+    "tags": []
+  },
+  {
     "name": "StatusEffect_JAK_Shalashaska",
     "path": "../../../OakGame/Content/DLC/Cello/Gear/Weapons/Uniques/StatusEffect_JAK_Shalashaska.uasset",
     "driver": {
@@ -276,26 +536,6 @@
     "notify_events": [],
     "guids": [
       "1af4006c-4e23-45da-9a58-61399f56ffaa"
-    ],
-    "tags": []
-  },
-  {
-    "name": "StatusEffect_Slow",
-    "path": "../../../OakGame/Content/GameData/StatusEffects/StatusEffect_Slow.uasset",
-    "driver": {
-      "class_name": "GbxStatusEffectDriver_InstanceStack",
-      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
-    },
-    "aspects": [
-      {
-        "class_name": "GbxStatusEffectAspectData_Slow",
-        "guid": "321ee27c-e2d0-402d-935e-e7e8e7115df0",
-        "row_name": "GbxStatusEffectSeverityGenerator_Curve"
-      }
-    ],
-    "notify_events": [],
-    "guids": [
-      "321ee27c-e2d0-402d-935e-e7e8e7115df0"
     ],
     "tags": []
   },

@@ -1,5 +1,113 @@
 [
   {
+    "name": "SkillParam_Robo_CM_Raid1",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/ClassMods/Data/SkillParam_Robo_CM_Raid1.uasset",
+    "variant": 1,
+    "guid": "b659a40a-f3b2-41a1-b4ca-462417f17ee1"
+  },
+  {
+    "name": "SkillParam_Robo_CM_L04",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/ClassMods/Data/SkillParam_Robo_CM_L04.uasset",
+    "variant": 1,
+    "guid": "b659a40a-f3b2-41a1-b4ca-462417f17ee1"
+  },
+  {
+    "name": "SkillParam_Robo_CM_L05",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/ClassMods/Data/SkillParam_Robo_CM_L05.uasset",
+    "variant": 1,
+    "guid": "b659a40a-f3b2-41a1-b4ca-462417f17ee1"
+  },
+  {
+    "name": "SkillParam_Crossfire_Sequence",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/ActionSkills/Crossfire/Data/SkillParam_Crossfire_Sequence.uasset",
+    "variant": 2,
+    "guid": "02515650-a3f5-4d31-af22-eb155a21d83d"
+  },
+  {
+    "name": "SkillParam_Robo_CM_L02",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/ClassMods/Data/SkillParam_Robo_CM_L02.uasset",
+    "variant": 1,
+    "guid": "b659a40a-f3b2-41a1-b4ca-462417f17ee1"
+  },
+  {
+    "name": "SkillParam_Robo_CM_DLC1",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/ClassMods/Data/SkillParam_Robo_CM_DLC1.uasset",
+    "variant": 1,
+    "guid": "b659a40a-f3b2-41a1-b4ca-462417f17ee1"
+  },
+  {
+    "name": "SkillParam_Robo_CM_L01",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/ClassMods/Data/SkillParam_Robo_CM_L01.uasset",
+    "variant": 1,
+    "guid": "b659a40a-f3b2-41a1-b4ca-462417f17ee1"
+  },
+  {
+    "name": "SkillParam_Robo_CM_L03",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/ClassMods/Data/SkillParam_Robo_CM_L03.uasset",
+    "variant": 1,
+    "guid": "b659a40a-f3b2-41a1-b4ca-462417f17ee1"
+  },
+  {
+    "name": "SkillParam_Crossfire_CamLockTarget",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/ActionSkills/Crossfire/Data/SkillParam_Crossfire_CamLockTarget.uasset",
+    "variant": 7,
+    "guid": "b0705c1c-91d9-4140-80f4-a40e6075fe74"
+  },
+  {
+    "name": "SkillParam_Crossfire_PendingFireTarget_L",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/ActionSkills/Crossfire/Data/SkillParam_Crossfire_PendingFireTarget_L.uasset",
+    "variant": 7,
+    "guid": "74ca3e80-f1f6-4f85-95a4-7df606d19b02"
+  },
+  {
+    "name": "Skill_Param_Robo_Card_Left",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/ActionSkills/SleightOfHand/Data/Skill_Param_Robo_Card_Left.uasset",
+    "variant": 2,
+    "guid": "c00eba8f-11ed-440f-8122-7fa9ec95f498"
+  },
+  {
+    "name": "SkillParam_Crossfire_PendingFireTarget_R",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/ActionSkills/Crossfire/Data/SkillParam_Crossfire_PendingFireTarget_R.uasset",
+    "variant": 7,
+    "guid": "74ca3e80-f1f6-4f85-95a4-7df606d19b02"
+  },
+  {
+    "name": "SkillParam_Robo_16_Legerdemain_MaxAmmo",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/passives/Data/SkillParam_Robo_16_Legerdemain_MaxAmmo.uasset",
+    "variant": 3,
+    "guid": "1ab04728-9dd4-4be3-a176-ceedb34535a2"
+  },
+  {
+    "name": "Skill_Param_Robo_Card_Right",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/ActionSkills/SleightOfHand/Data/Skill_Param_Robo_Card_Right.uasset",
+    "variant": 2,
+    "guid": "c00eba8f-11ed-440f-8122-7fa9ec95f498"
+  },
+  {
+    "name": "Skill_Param_Robo_Card_RelativeViewOffset",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/ActionSkills/SleightOfHand/Data/Skill_Param_Robo_Card_RelativeViewOffset.uasset",
+    "variant": 4,
+    "guid": "dd2f2c63-4d1b-45f0-b398-2c86abff14d2"
+  },
+  {
+    "name": "SkillParam_Robo_CM_L06",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/ClassMods/Data/SkillParam_Robo_CM_L06.uasset",
+    "variant": 1,
+    "guid": "b659a40a-f3b2-41a1-b4ca-462417f17ee1"
+  },
+  {
+    "name": "SkillParam_Robo_Windfall_FortuneStacksLost",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/Trait/Data/SkillParam_Robo_Windfall_FortuneStacksLost.uasset",
+    "variant": 2,
+    "guid": "8f9b4041-43c2-48a3-8c8b-005bbe5d988b"
+  },
+  {
+    "name": "SkillParam_Robo_35_TheFurues_FireRateDelta",
+    "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/passives/Data/SkillParam_Robo_35_TheFurues_FireRateDelta.uasset",
+    "variant": 3,
+    "guid": "1ab04728-9dd4-4be3-a176-ceedb34535a2"
+  },
+  {
     "name": "SkillParam_Exo_70_BoomingBusiness_Rank",
     "path": "../../../OakGame/Content/PlayerCharacters/ExoSoldier/Passives/Gimmick/Data/SkillParam_Exo_70_BoomingBusiness_Rank.uasset",
     "variant": 3,
