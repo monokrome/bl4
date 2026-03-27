@@ -21,59 +21,43 @@ pub async fn decode_serial(
     State(state): State<Arc<AppState>>,
     Json(req): Json<DecodeRequest>,
 ) -> Result<Json<DecodeResponse>, (StatusCode, String)> {
-    let item = bl4::ItemSerial::decode(&req.serial)
+    let resolved = bl4::resolve::full_resolve(&req.serial)
         .map_err(|e| (StatusCode::BAD_REQUEST, format!("Failed to decode: {}", e)))?;
 
     if state.db.add_item(&req.serial).await.is_ok() {
         let _ = state.db.set_source(&req.serial, "community:decode").await;
     }
 
-    let (manufacturer, weapon_type) = if let Some(mfg_id) = item.manufacturer {
-        bl4::parts::weapon_info_from_first_varint(mfg_id)
-            .map(|(m, w)| (Some(m.to_string()), Some(w.to_string())))
-            .unwrap_or((None, None))
-    } else {
-        (None, None)
-    };
-
-    let level = item
-        .level
-        .and_then(bl4::parts::level_from_code)
-        .map(|(capped, _)| capped as u32);
-
-    let rarity = item.rarity_name().map(String::from);
-    let element = item.element_names();
-
-    let parts: Vec<PartInfo> = item
-        .resolved_parts()
-        .into_iter()
+    let parts: Vec<PartInfo> = resolved
+        .parts
+        .iter()
         .map(|p| PartInfo {
             index: p.index,
             name: p.name.map(String::from),
-            short_name: p.short_name,
+            short_name: p.short_name.clone(),
             slot: p.slot.to_string(),
             is_element: p.is_element,
         })
         .collect();
 
-    let string_tokens: Vec<StringToken> = item
-        .string_tokens()
-        .into_iter()
+    let string_tokens: Vec<StringToken> = resolved
+        .strings
+        .iter()
         .map(|t| StringToken {
-            asset_path: t.asset_path,
-            short_name: t.short_name,
+            asset_path: t.asset_path.clone(),
+            short_name: t.short_name.clone(),
         })
         .collect();
 
     Ok(Json(DecodeResponse {
         serial: req.serial,
-        format: item.format.to_string(),
-        category: item.item_type_description().to_string(),
-        manufacturer,
-        weapon_type,
-        level,
-        rarity,
-        element,
+        format: resolved.serial.format.to_string(),
+        category: resolved.serial.item_type_description().to_string(),
+        manufacturer: resolved.manufacturer.clone(),
+        weapon_type: resolved.weapon_type.clone(),
+        level: resolved.level.map(|l| l as u32),
+        rarity: resolved.serial.rarity_name().map(String::from),
+        element: resolved.serial.element_names(),
         parts,
         string_tokens,
     }))

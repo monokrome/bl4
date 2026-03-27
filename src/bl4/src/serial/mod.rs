@@ -11,6 +11,7 @@
 mod base85;
 mod bitstream;
 mod rarity;
+pub mod resolve;
 mod validate;
 
 use base85::{decode_base85, encode_base85, mirror_byte};

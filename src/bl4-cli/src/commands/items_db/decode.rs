@@ -61,30 +61,6 @@ fn set_decoded_with_confidence(
     Ok(())
 }
 
-/// Calculate decode confidence based on how many parts we can resolve names for.
-///
-/// Returns a confidence percentage (0.0 to 1.0) and a Confidence level.
-/// - 95%+ resolved parts with a name → Inferred (high confidence)
-/// - Below 95% → Uncertain
-fn calculate_decode_confidence(decoded: &bl4::ItemSerial) -> (f64, bl4_idb::Confidence) {
-    let parts = decoded.parts_with_names();
-    if parts.is_empty() {
-        return (0.0, bl4_idb::Confidence::Uncertain);
-    }
-
-    let total = parts.len();
-    let resolved = parts.iter().filter(|(_, name, _)| name.is_some()).count();
-    let ratio = resolved as f64 / total as f64;
-
-    let confidence = if ratio >= 0.95 {
-        bl4_idb::Confidence::Inferred
-    } else {
-        bl4_idb::Confidence::Uncertain
-    };
-
-    (ratio, confidence)
-}
-
 /// Handle `idb decode-all`
 pub fn decode_all(db: &Path) -> Result<()> {
     let wdb = bl4_idb::SqliteDb::open(db)?;
@@ -96,64 +72,43 @@ pub fn decode_all(db: &Path) -> Result<()> {
     let mut validated = [0u32; 3]; // [legal, illegal, unknown]
 
     for item in &items {
-        match bl4::ItemSerial::decode(&item.serial) {
-            Ok(decoded_item) => {
-                let (mfg, wtype) = if let Some(mfg_id) = decoded_item.manufacturer {
-                    bl4::parts::weapon_info_from_first_varint(mfg_id)
-                        .map(|(m, w)| (Some(m.to_string()), Some(w.to_string())))
-                        .unwrap_or((None, None))
-                } else if let Some(group_id) = decoded_item.part_group_id() {
-                    let cat_name = bl4::parts::category_name(group_id);
-                    (None, cat_name.map(|s| s.to_string()))
-                } else {
-                    (None, None)
-                };
-
-                if let Some(mfg) = &mfg {
+        match bl4::resolve::full_resolve(&item.serial) {
+            Ok(resolved) => {
+                if let Some(mfg) = &resolved.manufacturer {
                     set_decoded(&wdb, &item.serial, "manufacturer", mfg)?;
                 }
-                if let Some(wtype) = &wtype {
+                if let Some(wtype) = &resolved.weapon_type {
                     set_decoded(&wdb, &item.serial, "weapon_type", wtype)?;
                 }
-                if let Some(level) = decoded_item
-                    .level
-                    .and_then(bl4::parts::level_from_code)
-                    .map(|(capped, _raw)| capped)
-                {
+                if let Some(level) = resolved.level {
                     set_decoded(&wdb, &item.serial, "level", &level.to_string())?;
                 }
-                if let Some(element) = decoded_item.element_names() {
+                if let Some(element) = resolved.serial.element_names() {
                     set_decoded(&wdb, &item.serial, "element", &element)?;
                 }
-                if let Some(rarity) = decoded_item.rarity_name() {
+                if let Some(rarity) = resolved.serial.rarity_name() {
                     set_decoded(&wdb, &item.serial, "rarity", rarity)?;
                 }
                 set_decoded(
                     &wdb,
                     &item.serial,
                     "item_type",
-                    decoded_item.item_type_description(),
+                    resolved.serial.item_type_description(),
                 )?;
 
-                let parts_with_names = decoded_item.parts_with_names();
-                let is_legendary = decoded_item
-                    .rarity
-                    .map(|r| matches!(r, bl4::serial::Rarity::Legendary))
-                    .unwrap_or(false);
+                let confidence_ratio = resolved.confidence.unwrap_or(0.0);
+                let decode_confidence = if confidence_ratio >= 0.95 {
+                    bl4_idb::Confidence::Inferred
+                } else {
+                    bl4_idb::Confidence::Uncertain
+                };
 
-                let (confidence_ratio, decode_confidence) =
-                    calculate_decode_confidence(&decoded_item);
-
-                if let Some(name) = crate::commands::serial::resolve_item_name(
-                    &parts_with_names,
-                    decoded_item.parts_category(),
-                    is_legendary,
-                ) {
+                if let Some(name) = &resolved.name {
                     set_decoded_with_confidence(
                         &wdb,
                         &item.serial,
                         "name",
-                        &name,
+                        name,
                         decode_confidence,
                     )?;
                 }
@@ -166,12 +121,13 @@ pub fn decode_all(db: &Path) -> Result<()> {
                     decode_confidence,
                 )?;
 
-                let parts_summary = decoded_item.parts_summary();
+                let parts_summary = resolved.serial.parts_summary();
                 if !parts_summary.is_empty() {
                     set_decoded(&wdb, &item.serial, "parts", &parts_summary)?;
                 }
 
-                let new_parts = build_item_parts(&decoded_item, mfg.as_deref());
+                let new_parts =
+                    build_item_parts(&resolved.serial, resolved.manufacturer.as_deref());
                 if !new_parts.is_empty() {
                     let _ = wdb.set_parts(&item.serial, &new_parts, "decoder");
                 }
@@ -184,7 +140,9 @@ pub fn decode_all(db: &Path) -> Result<()> {
                     )?;
                 }
 
-                let validation = decoded_item.validate();
+                let validation = resolved
+                    .validation
+                    .unwrap_or_else(|| resolved.serial.validate());
                 let legality_str = validation.legality.to_string();
                 let _ = set_decoded(&wdb, &item.serial, "legal", &legality_str);
                 match validation.legality {
