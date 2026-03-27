@@ -28,7 +28,11 @@ pub enum NcsCommand {
         /// Path to decompressed NCS file
         path: PathBuf,
 
-        /// Show all strings (not just entry names)
+        /// Show raw string-based output instead of structured Document
+        #[arg(long)]
+        raw: bool,
+
+        /// Show all strings (not just entry names, requires --raw)
         #[arg(short, long)]
         all_strings: bool,
 

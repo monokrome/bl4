@@ -29,11 +29,25 @@ pub fn handle_ncs_command(command: NcsCommand) -> Result<()> {
 
         NcsCommand::Show {
             path,
+            raw,
             all_strings,
             hex,
             json,
             tsv,
-        } => show::show_file(&path, all_strings, hex, json, tsv),
+        } => {
+            let mode = if hex {
+                show::ShowMode::Hex
+            } else if json {
+                show::ShowMode::Json
+            } else if tsv {
+                show::ShowMode::Tsv
+            } else if raw {
+                show::ShowMode::Raw { all_strings }
+            } else {
+                show::ShowMode::Document
+            };
+            show::show_file(&path, &mode)
+        }
 
         NcsCommand::Search {
             path,
