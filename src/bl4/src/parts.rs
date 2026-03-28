@@ -152,9 +152,9 @@ pub fn category_name(category: i64) -> Option<&'static str> {
 /// Returns (decoded_level, raw_decoded_value) tuple.
 ///
 /// With correct bit ordering, the VarInt value IS the level directly.
-/// Valid levels are 1-50.
+/// Valid levels are 1-60 (cap raised from 50 in v1.5).
 pub fn level_from_code(code: u64) -> Option<(u8, u8)> {
-    if matches!(code, 1..=50) {
+    if matches!(code, 1..=60) {
         Some((code as u8, code as u8))
     } else {
         None
@@ -165,7 +165,7 @@ pub fn level_from_code(code: u64) -> Option<(u8, u8)> {
 ///
 /// With correct bit ordering, code = level directly.
 pub fn code_from_level(level: u8) -> Option<u64> {
-    if level == 0 || level > 50 {
+    if level == 0 || level > 60 {
         return None;
     }
     Some(level as u64)
@@ -254,8 +254,9 @@ mod tests {
         assert_eq!(level_from_code(1), Some((1, 1)));
         assert_eq!(level_from_code(30), Some((30, 30)));
         assert_eq!(level_from_code(50), Some((50, 50)));
+        assert_eq!(level_from_code(60), Some((60, 60)));
         assert_eq!(level_from_code(0), None);
-        assert_eq!(level_from_code(51), None);
+        assert_eq!(level_from_code(61), None);
     }
 
     #[test]
@@ -285,9 +286,10 @@ mod tests {
         assert_eq!(code_from_level(16), Some(16));
         assert_eq!(code_from_level(30), Some(30));
         assert_eq!(code_from_level(50), Some(50));
+        assert_eq!(code_from_level(60), Some(60));
         // Invalid
         assert_eq!(code_from_level(0), None);
-        assert_eq!(code_from_level(51), None);
+        assert_eq!(code_from_level(61), None);
     }
 
     #[test]

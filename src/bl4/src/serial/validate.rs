@@ -62,18 +62,18 @@ fn count_parts(tokens: &[Token]) -> usize {
         .count()
 }
 
-/// Check level range: must be 1-50 if present
+/// Check level range: must be 1-60 if present (cap raised from 50 in v1.5)
 fn check_level(item: &ItemSerial) -> ValidationCheck {
     match item.level {
-        Some(level) if (1..=50).contains(&level) => ValidationCheck {
+        Some(level) if (1..=60).contains(&level) => ValidationCheck {
             name: "level_range",
             passed: Some(true),
-            detail: format!("level {} in valid range 1-50", level),
+            detail: format!("level {} in valid range 1-60", level),
         },
         Some(level) => ValidationCheck {
             name: "level_range",
             passed: Some(false),
-            detail: format!("level {} outside valid range 1-50", level),
+            detail: format!("level {} outside valid range 1-60", level),
         },
         None => ValidationCheck {
             name: "level_range",
