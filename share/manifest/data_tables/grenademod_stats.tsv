@@ -1,0 +1,14 @@
+row_name	default
+Damage	0.125000
+Force	0.500000
+CritChance	0.150000
+CritDamage	0.500000
+Radius	0.250000
+StatusDamage	0.200000
+StatusChance	0.100000
+CryoImpact	0.125000
+Cooldown	0.125000
+ProjectileSpeed	0.500000
+HomingTurnScale	0.500000
+ExtraCharge	
+Transfusion	0.100000

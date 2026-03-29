@@ -169,22 +169,12 @@ fn print_tags(tags: &[Tag]) {
 fn print_entry(entry: &Entry, indent: usize) {
     let pad = " ".repeat(indent);
     let serial_index = extract_serialindex(&entry.value);
+    let formatted = format_value_expanded(&entry.value, indent + 2);
 
     if let Some(idx) = serial_index {
-        println!(
-            "{}[{}] {} = {}",
-            pad,
-            idx,
-            entry.key,
-            format_value_short(&entry.value)
-        );
+        println!("{}[{}] {} = {}", pad, idx, entry.key, formatted);
     } else {
-        println!(
-            "{}{} = {}",
-            pad,
-            entry.key,
-            format_value_short(&entry.value)
-        );
+        println!("{}{} = {}", pad, entry.key, formatted);
     }
 
     for dep in &entry.dep_entries {
@@ -221,24 +211,31 @@ fn extract_serialindex(value: &Value) -> Option<u32> {
     None
 }
 
-fn format_value_short(value: &Value) -> String {
+fn format_value_expanded(value: &Value, indent: usize) -> String {
     match value {
         Value::Null => "null".to_string(),
         Value::Leaf(s) => s.clone(),
         Value::Ref { r#ref } => format!("-> {}", r#ref),
-        Value::Array(arr) => format!("[{} items]", arr.len()),
-        Value::Map(map) => {
-            let pairs: Vec<String> = map
+        Value::Array(arr) => {
+            let items: Vec<String> = arr
                 .iter()
-                .take(4)
-                .map(|(k, v)| format!("{}: {}", k, format_value_inline(v)))
+                .map(|v| format_value_expanded(v, indent + 2))
                 .collect();
-            let suffix = if map.len() > 4 {
-                format!(", ... +{}", map.len() - 4)
-            } else {
-                String::new()
-            };
-            format!("{{{}{}}}", pairs.join(", "), suffix)
+            format!("[{}]", items.join(", "))
+        }
+        Value::Map(map) => {
+            let pad = " ".repeat(indent);
+            let mut keys: Vec<&String> = map.keys().collect();
+            keys.sort();
+            let pairs: Vec<String> = keys
+                .iter()
+                .map(|k| {
+                    let v = &map[*k];
+                    let formatted = format_value_expanded(v, indent + 2);
+                    format!("{}{}: {}", pad, k, formatted)
+                })
+                .collect();
+            format!("{{\n{}\n{}}}", pairs.join("\n"), " ".repeat(indent.saturating_sub(2)))
         }
     }
 }
