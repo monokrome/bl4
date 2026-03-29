@@ -99,23 +99,25 @@ pub fn resolve_elements(mut item: DecodedItem) -> DecodedItem {
     item
 }
 
-/// Resolve item name via 3-pass legendary + generic fallback.
-pub fn resolve_name(mut item: DecodedItem) -> DecodedItem {
-    let parts_with_names = item.serial.parts_with_names();
-    let is_legendary = is_legendary_from_parts(&item.parts);
-
-    item.name = resolve_item_name(&parts_with_names, item.category, is_legendary);
+/// Resolve rarity from comp parts, falling back to header-derived rarity.
+///
+/// The header rarity (`serial.rarity`) is unreliable for many items. The
+/// authoritative source is the rarity comp slot: `comp_05_legendary_*`
+/// means legendary, `comp_04_epic` means epic, etc. An item with both
+/// `comp_04_epic` and `comp_05_legendary_*` is epic — the legendary comp
+/// grants special behavior but doesn't change the item's rarity tier.
+pub fn resolve_rarity(mut item: DecodedItem) -> DecodedItem {
+    let rarity_from_parts = rarity_from_comp_parts(&item.parts);
+    if rarity_from_parts.is_some() {
+        item.rarity = rarity_from_parts;
+    }
     item
 }
 
-/// Determine if an item is legendary by checking its rarity comp parts.
-///
-/// An item is legendary only if it has comp_05_legendary_* without a lower
-/// base rarity comp (comp_01 through comp_04). Purple items can carry a
-/// legendary comp for special behavior without being legendary themselves.
-fn is_legendary_from_parts(parts: &[ResolvedPart]) -> bool {
+fn rarity_from_comp_parts(parts: &[ResolvedPart]) -> Option<Rarity> {
     let mut has_legendary = false;
-    let mut has_base_rarity = false;
+    let mut base_tier: Option<u8> = None;
+
     for part in parts {
         if part.slot != "rarity" {
             continue;
@@ -125,13 +127,45 @@ fn is_legendary_from_parts(parts: &[ResolvedPart]) -> bool {
             None => continue,
         };
         let segment = name.split('.').next_back().unwrap_or(name);
+
         if segment.starts_with("comp_05_legendary") {
             has_legendary = true;
-        } else if segment.starts_with("comp_0") {
-            has_base_rarity = true;
+        } else if let Some(rest) = segment.strip_prefix("comp_0") {
+            // comp_01 = Common, comp_02 = Uncommon, comp_03 = Rare, comp_04 = Epic
+            let tier = rest.as_bytes().first().copied().unwrap_or(0);
+            if tier.is_ascii_digit() {
+                let t = tier - b'0';
+                base_tier = Some(base_tier.map_or(t, |b: u8| b.max(t)));
+            }
         }
     }
-    has_legendary && !has_base_rarity
+
+    // A base rarity comp (01-04) always wins. comp_05_legendary is only
+    // the rarity when it appears alone (no base comp coexists).
+    match base_tier {
+        Some(1) => Some(Rarity::Common),
+        Some(2) => Some(Rarity::Uncommon),
+        Some(3) => Some(Rarity::Rare),
+        Some(4) => Some(Rarity::Epic),
+        None if has_legendary => Some(Rarity::Legendary),
+        _ => None,
+    }
+}
+
+/// Resolve item name. Legendary items go through the 3-pass legendary
+/// resolver; everything else falls through to generic name lookup.
+pub fn resolve_name(mut item: DecodedItem) -> DecodedItem {
+    let parts_with_names = item.serial.parts_with_names();
+    let is_legendary = item.rarity == Some(Rarity::Legendary);
+
+    item.name = if is_legendary {
+        resolve_legendary_name(&parts_with_names, item.category)
+            .or_else(|| resolve_generic_name(&parts_with_names, item.category))
+    } else {
+        resolve_generic_name(&parts_with_names, item.category)
+    };
+
+    item
 }
 
 /// Run validation checks.
@@ -140,33 +174,25 @@ pub fn validate(mut item: DecodedItem) -> DecodedItem {
     item
 }
 
-/// Run the full pipeline: decode → category → identity → parts → elements → name → validate.
+/// Run the full pipeline: decode → category → identity → parts → elements → rarity → name → validate.
 pub fn full_resolve(serial: &str) -> Result<DecodedItem, SerialError> {
     let item = decode(serial)?;
-    Ok(validate(resolve_name(resolve_elements(resolve_parts(
-        resolve_identity(resolve_category(item)),
+    Ok(validate(resolve_name(resolve_rarity(resolve_elements(
+        resolve_parts(resolve_identity(resolve_category(item))),
     )))))
 }
 
 // --- Name Resolution (moved from bl4-cli) ---
 
-/// Resolve an item name for any item.
-///
-/// For unique/legendary items, uses comp/barrel-based resolution.
-/// For generic items, uses part names with category context.
-pub fn resolve_item_name(
+/// Resolve a generic (non-legendary) item name from manifest part lookups.
+pub fn resolve_generic_name(
     parts: &[(u64, Option<&'static str>, Vec<u64>)],
     category: Option<i64>,
-    is_legendary: bool,
 ) -> Option<String> {
-    if let Some(name) = resolve_legendary_name(parts, category, is_legendary) {
-        return Some(name);
-    }
-
     for (_index, name, _values) in parts {
         if let Some(n) = name {
             let segment = n.split('.').next_back().unwrap_or(n);
-            if !is_legendary && segment.starts_with("comp_05_legendary_") {
+            if segment.starts_with("comp_05_legendary_") {
                 continue;
             }
             if let Some(display) = manifest::item_name_from_part(segment, category) {
@@ -174,23 +200,37 @@ pub fn resolve_item_name(
             }
         }
     }
-
     None
+}
+
+/// Resolve an item name using any strategy (legendary + generic fallback).
+///
+/// Kept for backward compatibility with callers that pass `is_legendary`.
+pub fn resolve_item_name(
+    parts: &[(u64, Option<&'static str>, Vec<u64>)],
+    category: Option<i64>,
+    is_legendary: bool,
+) -> Option<String> {
+    if is_legendary {
+        if let Some(name) = resolve_legendary_name(parts, category) {
+            return Some(name);
+        }
+    }
+    resolve_generic_name(parts, category)
 }
 
 /// Three-pass legendary name resolution:
 /// 1. comp_05_legendary_* suffix
 /// 2. Legendary barrel suffix
 /// 3. Per-category NCS metadata (if legendary with generic barrel)
+///
+/// Only called for items already determined to be legendary.
 pub fn resolve_legendary_name(
     parts: &[(u64, Option<&'static str>, Vec<u64>)],
     category: Option<i64>,
-    is_legendary: bool,
 ) -> Option<String> {
-    if is_legendary {
-        if let Some(name) = name_from_legendary_comp(parts) {
-            return Some(name);
-        }
+    if let Some(name) = name_from_legendary_comp(parts) {
+        return Some(name);
     }
 
     let (barrel_result, generic_barrel_base) = name_from_barrel(parts);
@@ -198,11 +238,7 @@ pub fn resolve_legendary_name(
         return Some(name);
     }
 
-    if is_legendary {
-        return name_from_category_metadata(category, generic_barrel_base);
-    }
-
-    None
+    name_from_category_metadata(category, generic_barrel_base)
 }
 
 fn name_from_legendary_comp(parts: &[(u64, Option<&'static str>, Vec<u64>)]) -> Option<String> {
@@ -398,14 +434,40 @@ mod tests {
     #[test]
     fn resolve_name_from_comp() {
         let parts = vec![(83, Some("JAK_PS.comp_05_legendary_shalashaska"), vec![])];
-        let name = resolve_item_name(&parts, Some(3), true);
+        let name = resolve_legendary_name(&parts, Some(3));
         assert_eq!(name.as_deref(), Some("Shalashaska"));
     }
 
     #[test]
     fn resolve_name_no_match() {
         let parts = vec![(1, Some("JAK_PS.part_body"), vec![])];
-        let name = resolve_legendary_name(&parts, Some(3), false);
+        let name = resolve_legendary_name(&parts, Some(3));
         assert!(name.is_none());
+    }
+
+    #[test]
+    fn resolve_rarity_from_parts() {
+        let item = full_resolve("@UgbV{rFme!K<aW?mRG/*lsIsVasB@@vs7=*D^+EkX%/f+A00}").unwrap();
+        assert_eq!(item.rarity, Some(Rarity::Legendary));
+    }
+
+    #[test]
+    fn resolve_rarity_epic_with_legendary_comp() {
+        // Epic item with comp_04_epic + comp_05_legendary_* should resolve as Epic
+        let item =
+            full_resolve("@UgfIh4FpCJ&`GZQM3YDlv4IO&aKh!={NYtn1phBTWp<bcNApi").unwrap();
+        assert_eq!(item.rarity, Some(Rarity::Epic));
+    }
+
+    #[test]
+    fn generic_name_skips_legendary_comp() {
+        let parts = vec![
+            (1, Some("TOR_SG.comp_04_epic"), vec![]),
+            (2, Some("TOR_SG.comp_05_legendary_linebacker"), vec![]),
+            (3, Some("TOR_SG.part_barrel_01"), vec![]),
+        ];
+        let name = resolve_generic_name(&parts, Some(10));
+        // Should NOT resolve to "Linebacker"
+        assert!(name.as_deref() != Some("Linebacker"));
     }
 }
