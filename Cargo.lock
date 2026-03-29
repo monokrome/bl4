@@ -391,7 +391,7 @@ dependencies = [
 
 [[package]]
 name = "bl4"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "adler",
  "aes",
@@ -413,7 +413,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-cli"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "anyhow",
  "bl4",
@@ -444,7 +444,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-community"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "anyhow",
  "axum",
@@ -467,7 +467,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-idb"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "anyhow",
  "chrono",
@@ -487,7 +487,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-ncs"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "anyhow",
  "byteorder",
@@ -505,7 +505,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-preload"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "backtrace",
  "ctor",
@@ -515,7 +515,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-save-editor"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "anyhow",
  "axum",
@@ -2676,20 +2676,8 @@ checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
 
 [[package]]
 name = "oodle_loader"
-version = "0.2.2"
-source = "git+https://github.com/trumank/repak.git#84a6a1408c2343e84a9e3b9372c8412611887e5a"
-dependencies = [
- "hex",
- "libloading",
- "sha2",
- "thiserror 2.0.17",
- "ureq 3.1.4",
-]
-
-[[package]]
-name = "oodle_loader"
 version = "0.2.3"
-source = "git+https://github.com/monokrome/repak.git?branch=fix%2Fskip-deleted-pak-entries#4a03957e21f54dfc83f0bd6ecd23da3041fbb078"
+source = "git+https://github.com/trumank/repak.git#355b5f62f51959c7cc6dd5a51708646ef483065d"
 dependencies = [
  "hex",
  "libloading",
@@ -3338,32 +3326,15 @@ checksum = "7a2d987857b319362043e95f5353c0535c1f58eec5336fdfcf626430af7def58"
 
 [[package]]
 name = "repak"
-version = "0.2.2"
-source = "git+https://github.com/trumank/repak.git#84a6a1408c2343e84a9e3b9372c8412611887e5a"
-dependencies = [
- "aes",
- "byteorder",
- "flate2",
- "hex",
- "lz4_flex 0.12.0",
- "oodle_loader 0.2.2",
- "sha1",
- "strum",
- "thiserror 2.0.17",
- "zstd 0.13.3",
-]
-
-[[package]]
-name = "repak"
 version = "0.2.3"
-source = "git+https://github.com/monokrome/repak.git?branch=fix%2Fskip-deleted-pak-entries#4a03957e21f54dfc83f0bd6ecd23da3041fbb078"
+source = "git+https://github.com/trumank/repak.git#355b5f62f51959c7cc6dd5a51708646ef483065d"
 dependencies = [
  "aes",
  "byteorder",
  "flate2",
  "hex",
  "lz4_flex 0.12.0",
- "oodle_loader 0.2.3",
+ "oodle_loader",
  "sha1",
  "strum",
  "thiserror 2.0.17",
@@ -3392,10 +3363,10 @@ dependencies = [
  "jmap",
  "key-mutex",
  "lz4_flex 0.11.5",
- "oodle_loader 0.2.2",
+ "oodle_loader",
  "pariter",
  "rayon",
- "repak 0.2.2",
+ "repak",
  "ser-hex",
  "serde",
  "serde_json",
@@ -4725,7 +4696,7 @@ checksum = "562d481066bde0658276a35467c4af00bdc6ee726305698a55b86e61d7ad82bb"
 
 [[package]]
 name = "uextract"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "anyhow",
  "byteorder",
@@ -4735,7 +4706,7 @@ dependencies = [
  "image",
  "indicatif 0.17.11",
  "rayon",
- "repak 0.2.3",
+ "repak",
  "retoc",
  "serde",
  "serde_json",
