@@ -45,6 +45,10 @@ pub fn dispatch_save(args: SaveArgs) -> Result<()> {
             raw,
         }) => commands::save::set(&args, path, value, raw),
 
+        Some(SaveAction::Campaign { ref action }) => {
+            commands::campaign::handle(&args, action)
+        }
+
         None => {
             if args.validate_items {
                 commands::save::validate_items(&args)?;

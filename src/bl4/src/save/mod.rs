@@ -2,6 +2,7 @@
 //!
 //! This module provides high-level APIs for working with Borderlands 4 save files.
 
+pub mod campaign;
 mod changeset;
 mod fod;
 mod state_flags;
@@ -208,6 +209,19 @@ impl SaveFile {
     /// Returns the number of zones modified.
     pub fn clear_map(&mut self, zone: Option<&str>) -> Result<usize, SaveError> {
         fod::clear_map(&mut self.data, zone)
+    }
+
+    /// Get campaign progression status for all main story mission sets.
+    pub fn campaign_status(&self) -> Vec<campaign::CampaignEntry> {
+        campaign::get_campaign_status(&self.data)
+    }
+
+    /// Apply campaign progress changes to this save file.
+    pub fn apply_campaign_progress(
+        &mut self,
+        changes: &campaign::CampaignChanges,
+    ) -> Result<(), SaveError> {
+        campaign::apply_campaign_progress(&mut self.data, changes)
     }
 }
 

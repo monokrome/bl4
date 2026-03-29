@@ -46,6 +46,8 @@ fn main() {
         "data_tables/table_bossreplay_costs.tsv",
     );
     copy_manifest_file(&manifest, &out_dir, "item_names.tsv");
+    copy_manifest_file(&manifest, &out_dir, "missions/mission_sets.tsv");
+    copy_manifest_file(&manifest, &out_dir, "missions/missions.tsv");
 
     build_parts_database(&manifest, &out_dir);
 }

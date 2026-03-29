@@ -1,0 +1,289 @@
+//! Mission graph data for campaign progression.
+//!
+//! Embedded from `share/manifest/missions/` TSVs. Provides the dependency
+//! graph of mission sets and per-mission metadata (region, type, difficulty).
+
+use once_cell::sync::Lazy;
+use std::collections::HashMap;
+
+static MISSION_SETS_TSV: &str = include_str!(concat!(env!("OUT_DIR"), "/mission_sets.tsv"));
+static MISSIONS_TSV: &str = include_str!(concat!(env!("OUT_DIR"), "/missions.tsv"));
+
+#[derive(Debug, Clone)]
+pub struct MissionSet {
+    pub name: String,
+    pub prerequisite: Option<String>,
+    pub category: String,
+    pub chained: bool,
+    pub region: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct Mission {
+    pub name: String,
+    pub mission_set: String,
+    pub mission_type: String,
+    pub world_region: String,
+    pub zone: String,
+    pub difficulty: String,
+}
+
+static MISSION_SETS: Lazy<HashMap<String, MissionSet>> = Lazy::new(|| {
+    let mut map = HashMap::new();
+    for line in MISSION_SETS_TSV.lines().skip(1) {
+        let cols: Vec<&str> = line.split('\t').collect();
+        if cols.len() < 5 {
+            continue;
+        }
+        let prereq = if cols[1].is_empty() {
+            None
+        } else {
+            Some(cols[1].to_string())
+        };
+        let ms = MissionSet {
+            name: cols[0].to_string(),
+            prerequisite: prereq,
+            category: cols[2].to_string(),
+            chained: cols[3] == "true",
+            region: cols[4].to_string(),
+        };
+        map.insert(ms.name.clone(), ms);
+    }
+    map
+});
+
+static MISSIONS: Lazy<HashMap<String, Mission>> = Lazy::new(|| {
+    let mut map = HashMap::new();
+    for line in MISSIONS_TSV.lines().skip(1) {
+        let cols: Vec<&str> = line.split('\t').collect();
+        if cols.len() < 6 {
+            continue;
+        }
+        let m = Mission {
+            name: cols[0].to_string(),
+            mission_set: cols[1].to_string(),
+            mission_type: cols[2].to_string(),
+            world_region: cols[3].to_string(),
+            zone: cols[4].to_string(),
+            difficulty: cols[5].to_string(),
+        };
+        map.insert(m.name.clone(), m);
+    }
+    map
+});
+
+/// Get a mission set by name.
+pub fn mission_set(name: &str) -> Option<&'static MissionSet> {
+    MISSION_SETS.get(name)
+}
+
+/// Get a mission by name.
+pub fn mission(name: &str) -> Option<&'static Mission> {
+    MISSIONS.get(name)
+}
+
+/// All mission sets.
+pub fn all_mission_sets() -> &'static HashMap<String, MissionSet> {
+    &MISSION_SETS
+}
+
+/// All missions.
+pub fn all_missions() -> &'static HashMap<String, Mission> {
+    &MISSIONS
+}
+
+/// Returns the main story mission sets in topological order (prerequisite chain).
+///
+/// Filters to `category == "main"` sets, then sorts by walking the prerequisite
+/// chain from the root (prisonprologue, which has no prerequisite).
+pub fn main_story_order() -> Vec<&'static MissionSet> {
+    // Build forward graph: prereq -> [dependents]
+    let mut forward: HashMap<&str, Vec<&str>> = HashMap::new();
+    let mut roots = Vec::new();
+
+    for ms in MISSION_SETS.values() {
+        if ms.category != "main" {
+            continue;
+        }
+        match &ms.prerequisite {
+            Some(prereq) => {
+                forward.entry(prereq.as_str()).or_default().push(&ms.name);
+            }
+            None => roots.push(ms.name.as_str()),
+        }
+    }
+
+    // BFS from roots to get topological order
+    let mut order = Vec::new();
+    let mut queue = std::collections::VecDeque::new();
+    let mut visited = std::collections::HashSet::new();
+
+    // Start from prisonprologue if it exists, otherwise use all roots
+    let start = roots
+        .iter()
+        .find(|r| r.contains("prisonprologue"))
+        .copied()
+        .unwrap_or_else(|| roots.first().copied().unwrap_or(""));
+
+    if !start.is_empty() {
+        queue.push_back(start);
+    }
+
+    while let Some(current) = queue.pop_front() {
+        if !visited.insert(current) {
+            continue;
+        }
+        if let Some(ms) = MISSION_SETS.get(current) {
+            order.push(ms);
+        }
+        if let Some(children) = forward.get(current) {
+            let mut sorted = children.clone();
+            sorted.sort();
+            for child in sorted {
+                queue.push_back(child);
+            }
+        }
+    }
+
+    order
+}
+
+/// Compute all prerequisite mission sets for a target (inclusive).
+///
+/// Walks backward through the prerequisite chain, collecting every
+/// mission set that must be completed before the target can be active.
+/// Returns them in topological order (roots first, target last).
+pub fn prerequisites_for(target: &str) -> Vec<&'static MissionSet> {
+    let mut ancestors = Vec::new();
+    let mut current = Some(target.to_string());
+    let mut visited = std::collections::HashSet::new();
+
+    while let Some(name) = current {
+        if !visited.insert(name.clone()) {
+            break;
+        }
+        if let Some(ms) = MISSION_SETS.get(&name) {
+            ancestors.push(ms);
+            current = ms.prerequisite.clone();
+        } else {
+            break;
+        }
+    }
+
+    ancestors.reverse();
+    ancestors
+}
+
+/// Find the first mission belonging to a mission set.
+pub fn first_mission_in_set(set_name: &str) -> Option<&'static Mission> {
+    // Try the obvious name derivation first (missionset_main_X → mission_main_X)
+    let mission_name = set_name
+        .replace("missionset_", "mission_")
+        // Handle suffixes like "grasslands2a" → "grasslands2"
+        .trim_end_matches(|c: char| c.is_ascii_lowercase() && !c.is_ascii_digit())
+        .to_string();
+
+    if let Some(m) = MISSIONS.get(&mission_name) {
+        return Some(m);
+    }
+
+    // Fallback: search all missions for matching mission_set
+    MISSIONS
+        .values()
+        .find(|m| m.mission_set.to_lowercase() == set_name)
+}
+
+/// Resolve a short mission name to a full mission set name.
+///
+/// Accepts: "grasslands1", "missionset_main_grasslands1", "mountains2a", etc.
+pub fn resolve_mission_set_name(input: &str) -> Option<&'static str> {
+    let lower = input.to_lowercase();
+
+    // Try exact match first
+    if MISSION_SETS.contains_key(&lower) {
+        return MISSION_SETS.get(&lower).map(|ms| ms.name.as_str());
+    }
+
+    // Try with missionset_main_ prefix
+    let with_prefix = format!("missionset_main_{}", lower);
+    if MISSION_SETS.contains_key(&with_prefix) {
+        return MISSION_SETS.get(&with_prefix).map(|ms| ms.name.as_str());
+    }
+
+    None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mission_sets_loaded() {
+        let sets = all_mission_sets();
+        assert!(sets.len() > 20, "Expected 20+ mission sets, got {}", sets.len());
+        assert!(sets.contains_key("missionset_main_prisonprologue"));
+    }
+
+    #[test]
+    fn test_missions_loaded() {
+        let missions = all_missions();
+        assert!(missions.len() > 100, "Expected 100+ missions, got {}", missions.len());
+        assert!(missions.contains_key("mission_main_prisonprologue"));
+    }
+
+    #[test]
+    fn test_main_story_order() {
+        let order = main_story_order();
+        assert!(!order.is_empty());
+        assert_eq!(order[0].name, "missionset_main_prisonprologue");
+        // Beach should follow prologue
+        let beach_pos = order.iter().position(|ms| ms.name.contains("beach"));
+        assert!(beach_pos.is_some());
+        assert!(beach_pos.unwrap() > 0);
+    }
+
+    #[test]
+    fn test_prerequisites_for() {
+        let prereqs = prerequisites_for("missionset_main_grasslands1");
+        assert!(prereqs.len() >= 3); // prologue, beach, grasslands1
+        assert_eq!(prereqs[0].name, "missionset_main_prisonprologue");
+        assert_eq!(prereqs.last().unwrap().name, "missionset_main_grasslands1");
+    }
+
+    #[test]
+    fn test_resolve_mission_set_name() {
+        assert_eq!(
+            resolve_mission_set_name("grasslands1"),
+            Some("missionset_main_grasslands1")
+        );
+        assert_eq!(
+            resolve_mission_set_name("missionset_main_beach"),
+            Some("missionset_main_beach")
+        );
+        assert_eq!(resolve_mission_set_name("nonexistent"), None);
+    }
+
+    #[test]
+    fn test_branch_point() {
+        // grasslands2a should have multiple successors
+        let order = main_story_order();
+        let g2a_pos = order
+            .iter()
+            .position(|ms| ms.name == "missionset_main_grasslands2a")
+            .unwrap();
+        // After grasslands2a, multiple sets should appear
+        let after_g2a: Vec<_> = order[g2a_pos + 1..]
+            .iter()
+            .take(3)
+            .map(|ms| ms.name.as_str())
+            .collect();
+        // Should contain the three branches
+        assert!(
+            after_g2a.iter().any(|n| n.contains("grasslands2b")
+                || n.contains("mountains1")
+                || n.contains("shatteredlands1")),
+            "Expected branch after grasslands2a, got {:?}",
+            after_g2a
+        );
+    }
+}

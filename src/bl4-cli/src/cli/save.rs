@@ -90,4 +90,26 @@ pub enum SaveAction {
         #[arg(short, long)]
         raw: bool,
     },
+
+    /// Campaign progression commands
+    Campaign {
+        #[command(subcommand)]
+        action: CampaignAction,
+    },
+}
+
+#[derive(Subcommand)]
+pub enum CampaignAction {
+    /// List main story missions with completion status
+    List,
+
+    /// Set campaign progress to a specific mission
+    Set {
+        /// Mission name (e.g. "grasslands1", "mountains2a", "searchforlilith")
+        mission: String,
+
+        /// Skip confirmation prompt
+        #[arg(short = 'y', long)]
+        yes: bool,
+    },
 }

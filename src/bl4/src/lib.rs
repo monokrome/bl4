@@ -39,6 +39,7 @@
 pub mod backup;
 pub mod crypto;
 pub mod manifest;
+pub mod missions;
 pub mod parts;
 pub mod reference;
 pub mod save;

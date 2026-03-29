@@ -2,6 +2,7 @@
 //!
 //! Each subcommand has its own module with handler functions.
 
+pub mod campaign;
 pub mod configure;
 pub mod drops;
 pub mod items_db;
