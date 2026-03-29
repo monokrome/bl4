@@ -102,13 +102,36 @@ pub fn resolve_elements(mut item: DecodedItem) -> DecodedItem {
 /// Resolve item name via 3-pass legendary + generic fallback.
 pub fn resolve_name(mut item: DecodedItem) -> DecodedItem {
     let parts_with_names = item.serial.parts_with_names();
-    let is_legendary = item
-        .rarity
-        .map(|r| matches!(r, Rarity::Legendary))
-        .unwrap_or(false);
+    let is_legendary = is_legendary_from_parts(&item.parts);
 
     item.name = resolve_item_name(&parts_with_names, item.category, is_legendary);
     item
+}
+
+/// Determine if an item is legendary by checking its rarity comp parts.
+///
+/// An item is legendary only if it has comp_05_legendary_* without a lower
+/// base rarity comp (comp_01 through comp_04). Purple items can carry a
+/// legendary comp for special behavior without being legendary themselves.
+fn is_legendary_from_parts(parts: &[ResolvedPart]) -> bool {
+    let mut has_legendary = false;
+    let mut has_base_rarity = false;
+    for part in parts {
+        if part.slot != "rarity" {
+            continue;
+        }
+        let name = match part.name {
+            Some(n) => n,
+            None => continue,
+        };
+        let segment = name.split('.').next_back().unwrap_or(name);
+        if segment.starts_with("comp_05_legendary") {
+            has_legendary = true;
+        } else if segment.starts_with("comp_0") {
+            has_base_rarity = true;
+        }
+    }
+    has_legendary && !has_base_rarity
 }
 
 /// Run validation checks.
@@ -142,7 +165,11 @@ pub fn resolve_item_name(
 
     for (_index, name, _values) in parts {
         if let Some(n) = name {
-            if let Some(display) = manifest::item_name_from_part(n, category) {
+            let segment = n.split('.').next_back().unwrap_or(n);
+            if !is_legendary && segment.starts_with("comp_05_legendary_") {
+                continue;
+            }
+            if let Some(display) = manifest::item_name_from_part(segment, category) {
                 return Some(display.to_string());
             }
         }
@@ -160,8 +187,10 @@ pub fn resolve_legendary_name(
     category: Option<i64>,
     is_legendary: bool,
 ) -> Option<String> {
-    if let Some(name) = name_from_legendary_comp(parts) {
-        return Some(name);
+    if is_legendary {
+        if let Some(name) = name_from_legendary_comp(parts) {
+            return Some(name);
+        }
     }
 
     let (barrel_result, generic_barrel_base) = name_from_barrel(parts);
@@ -355,9 +384,21 @@ mod tests {
     }
 
     #[test]
+    fn full_resolve_epic_with_legendary_comp() {
+        // Epic Torgue Shotgun with comp_04_epic + comp_05_legendary_linebacker.
+        // Should resolve as "Rider" (generic name), not "Linebacker" (legendary name).
+        let item =
+            full_resolve("@UgfIh4FpCJ&`GZQM3YDlv4IO&aKh!={NYtn1phBTWp<bcNApi").unwrap();
+        assert_eq!(item.name.as_deref(), Some("Rider"));
+        assert_eq!(item.manufacturer.as_deref(), Some("Torgue"));
+        assert_eq!(item.weapon_type.as_deref(), Some("Shotgun"));
+        assert_eq!(item.level, Some(11));
+    }
+
+    #[test]
     fn resolve_name_from_comp() {
         let parts = vec![(83, Some("JAK_PS.comp_05_legendary_shalashaska"), vec![])];
-        let name = resolve_item_name(&parts, Some(3), false);
+        let name = resolve_item_name(&parts, Some(3), true);
         assert_eq!(name.as_deref(), Some("Shalashaska"));
     }
 

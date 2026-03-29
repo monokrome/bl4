@@ -138,11 +138,29 @@ pub fn decode(
 
     let parts = item.parts_with_names();
 
-    // Build header with item name
-    let is_legendary = item
-        .rarity
-        .map(|r| r == bl4::serial::Rarity::Legendary)
-        .unwrap_or(false);
+    // Derive legendary status from rarity comp parts, not the (unimplemented)
+    // rarity field. An item with both comp_04_epic and comp_05_legendary_* is
+    // epic, not legendary.
+    let core_parts = item.resolved_parts();
+    let is_legendary = {
+        let mut has_leg = false;
+        let mut has_base = false;
+        for p in &core_parts {
+            if p.slot != "rarity" {
+                continue;
+            }
+            let name = match p.name {
+                Some(n) => n.split('.').next_back().unwrap_or(n),
+                None => continue,
+            };
+            if name.starts_with("comp_05_legendary") {
+                has_leg = true;
+            } else if name.starts_with("comp_0") {
+                has_base = true;
+            }
+        }
+        has_leg && !has_base
+    };
     let legendary_name =
         bl4::resolve::resolve_item_name(&parts, item.parts_category(), is_legendary);
     let base_name = if let Some((mfr, weapon_type)) = item.weapon_info() {
