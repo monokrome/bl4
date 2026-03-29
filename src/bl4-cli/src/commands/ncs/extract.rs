@@ -7,7 +7,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use super::types::{
-    FileInfo, ItemParts, LegendaryComposition, ManufacturerMapping, NexusSerializedEntry, PartIndex,
+    FileInfo, ItemParts, LegendaryComposition, ManufacturerMapping, MissionEntry, MissionSetEntry,
+    NexusSerializedEntry, PartIndex,
 };
 
 /// Known weapon manufacturers
@@ -97,6 +98,11 @@ pub fn extract_by_type(
     // Manifest export (parts_database + category_names)
     if extract_type == "manifest" || extract_type == "parts-manifest" {
         return export_parts_manifest(path, output, json);
+    }
+
+    // Mission graph extraction (mission sets + individual missions)
+    if extract_type == "missions" || extract_type == "mission-graph" {
+        return extract_missions(path, output, json);
     }
 
     let mut extracted = Vec::new();
@@ -1081,6 +1087,536 @@ fn build_serial_decoder(path: &Path, output: Option<&Path>, json: bool) -> Resul
     }
 
     Ok(())
+}
+
+/// Extract mission graph from missionset*.bin and Mission*.bin NCS files.
+///
+/// Produces:
+/// - mission_sets.tsv: dependency graph of mission sets (prerequisite chain)
+/// - missions.tsv: individual missions with location, type, difficulty
+fn extract_missions(path: &Path, output: Option<&Path>, json: bool) -> Result<()> {
+    let mut mission_sets = Vec::new();
+    let mut missions = Vec::new();
+    let mut sets_processed = 0;
+    let mut missions_processed = 0;
+
+    eprintln!("Scanning for mission NCS files...");
+
+    for entry in walkdir::WalkDir::new(path)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.file_type().is_file())
+    {
+        let file_path = entry.path();
+        let filename = file_path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("");
+
+        if !filename.ends_with(".bin") {
+            continue;
+        }
+
+        let is_missionset = filename.starts_with("missionset");
+        let is_mission = filename.starts_with("Mission");
+
+        if !is_missionset && !is_mission {
+            continue;
+        }
+
+        let Some(doc) = parse_ncs_file(file_path) else {
+            continue;
+        };
+
+        if is_missionset {
+            let extracted = extract_mission_sets_from_doc(&doc);
+            if !extracted.is_empty() {
+                eprintln!("  {}: {} mission sets", filename, extracted.len());
+                mission_sets.extend(extracted);
+                sets_processed += 1;
+            }
+        }
+
+        if is_mission {
+            let extracted = extract_missions_from_doc(&doc);
+            if !extracted.is_empty() {
+                eprintln!("  {}: {} missions", filename, extracted.len());
+                missions.extend(extracted);
+                missions_processed += 1;
+            }
+        }
+    }
+
+    // Deduplicate mission sets: keep the entry with the most info (has prerequisite)
+    deduplicate_mission_sets(&mut mission_sets);
+
+    // Deduplicate missions: keep the entry with the most info
+    deduplicate_missions(&mut missions);
+
+    mission_sets.sort_by(|a, b| a.mission_set.cmp(&b.mission_set));
+    missions.sort_by(|a, b| a.mission.cmp(&b.mission));
+
+    eprintln!("\nExtraction complete:");
+    eprintln!("  Mission set files: {}", sets_processed);
+    eprintln!("  Mission files: {}", missions_processed);
+    eprintln!("  Unique mission sets: {}", mission_sets.len());
+    eprintln!("  Unique missions: {}", missions.len());
+
+    if json {
+        let combined = serde_json::json!({
+            "mission_sets": mission_sets,
+            "missions": missions,
+        });
+        let output_str = serde_json::to_string_pretty(&combined)?;
+        if let Some(output_path) = output {
+            fs::write(output_path, &output_str)?;
+            println!("Wrote mission graph to {}", output_path.display());
+        } else {
+            println!("{}", output_str);
+        }
+    } else if let Some(output_path) = output {
+        let missions_dir = output_path.join("missions");
+        fs::create_dir_all(&missions_dir)?;
+
+        // mission_sets.tsv
+        let mut out =
+            String::from("mission_set\tprerequisite\tcategory\tchained\tregion\n");
+        for ms in &mission_sets {
+            out.push_str(&format!(
+                "{}\t{}\t{}\t{}\t{}\n",
+                ms.mission_set, ms.prerequisite, ms.category, ms.chained, ms.region,
+            ));
+        }
+        let sets_path = missions_dir.join("mission_sets.tsv");
+        fs::write(&sets_path, &out)?;
+        println!(
+            "Wrote {} mission sets to {}",
+            mission_sets.len(),
+            sets_path.display()
+        );
+
+        // missions.tsv
+        let mut out = String::from(
+            "mission\tmission_set\tmission_type\tworld_region\tzone\tdifficulty\treplay_station\tdialog_script\n",
+        );
+        for m in &missions {
+            out.push_str(&format!(
+                "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
+                m.mission,
+                m.mission_set,
+                m.mission_type,
+                m.world_region,
+                m.zone,
+                m.difficulty,
+                m.replay_station,
+                m.dialog_script,
+            ));
+        }
+        let missions_path = missions_dir.join("missions.tsv");
+        fs::write(&missions_path, &out)?;
+        println!(
+            "Wrote {} missions to {}",
+            missions.len(),
+            missions_path.display()
+        );
+    } else {
+        // Print to stdout
+        println!("# Mission Sets");
+        println!("mission_set\tprerequisite\tcategory\tchained\tregion");
+        for ms in &mission_sets {
+            println!(
+                "{}\t{}\t{}\t{}\t{}",
+                ms.mission_set, ms.prerequisite, ms.category, ms.chained, ms.region,
+            );
+        }
+        println!("\n# Missions");
+        println!("mission\tmission_set\tmission_type\tworld_region\tzone\tdifficulty\treplay_station\tdialog_script");
+        for m in &missions {
+            println!(
+                "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
+                m.mission,
+                m.mission_set,
+                m.mission_type,
+                m.world_region,
+                m.zone,
+                m.difficulty,
+                m.replay_station,
+                m.dialog_script,
+            );
+        }
+    }
+
+    Ok(())
+}
+
+/// Extract mission set dependency data from a parsed NCS document.
+fn extract_mission_sets_from_doc(doc: &bl4_ncs::document::Document) -> Vec<MissionSetEntry> {
+    use bl4_ncs::document::Value;
+
+    let mut results = Vec::new();
+
+    for table in doc.tables.values() {
+        for record in &table.records {
+            for entry in &record.entries {
+                let key = &entry.key;
+
+                if !key.starts_with("missionset_") {
+                    continue;
+                }
+
+                let value_map = match &entry.value {
+                    Value::Map(m) => m,
+                    _ => continue,
+                };
+
+                let category = classify_mission_set(key);
+
+                let prerequisite =
+                    extract_prerequisite_from_value(value_map).unwrap_or_default();
+
+                let chained = value_map
+                    .get("bchained")
+                    .and_then(|v| match v {
+                        Value::Leaf(s) => Some(s.as_str()),
+                        _ => None,
+                    })
+                    .map(|s| s == "true")
+                    .unwrap_or(false);
+
+                let region = extract_region_from_key(key);
+
+                results.push(MissionSetEntry {
+                    mission_set: key.clone(),
+                    prerequisite,
+                    category: category.to_string(),
+                    chained,
+                    region,
+                });
+            }
+        }
+    }
+
+    results
+}
+
+/// Extract individual mission data from a parsed NCS document.
+fn extract_missions_from_doc(doc: &bl4_ncs::document::Document) -> Vec<MissionEntry> {
+    use bl4_ncs::document::Value;
+
+    let mut results = Vec::new();
+
+    for table in doc.tables.values() {
+        for record in &table.records {
+            for entry in &record.entries {
+                let key = &entry.key;
+
+                let is_mission = key.starts_with("mission_main_")
+                    || key.starts_with("mission_side_")
+                    || key.starts_with("mission_micro_")
+                    || key.starts_with("mission_dlc_")
+                    || key.starts_with("mission_cello_")
+                    || key.starts_with("grasslands_side_")
+                    || key.starts_with("grasslands_survivalists")
+                    || key.starts_with("micro_")
+                    || key.starts_with("zoneactivity_")
+                    || key.starts_with("contract_")
+                    || key.starts_with("event_");
+
+                if !is_mission {
+                    continue;
+                }
+
+                let value_map = match &entry.value {
+                    Value::Map(m) => m,
+                    _ => continue,
+                };
+
+                let get_leaf = |key: &str| -> String {
+                    value_map
+                        .get(key)
+                        .and_then(|v| match v {
+                            Value::Leaf(s) => Some(s.clone()),
+                            _ => None,
+                        })
+                        .unwrap_or_default()
+                };
+
+                let mission_type = get_leaf("missiontype");
+                let world_region =
+                    strip_ncs_ref(&get_leaf("worldregion"), "game_region");
+                let zone = extract_zone_from_value(value_map);
+                let difficulty = strip_ncs_ref(
+                    &get_leaf("missiondifficulty"),
+                    "ui_mission_difficulty",
+                );
+                let mission_set =
+                    strip_ncs_ref(&get_leaf("missionset"), "missionset");
+                let replay_station =
+                    strip_ncs_ref(&get_leaf("replaytravelstation"), "map");
+                let dialog_script = strip_ncs_ref(
+                    &get_leaf("missiondialogscript"),
+                    "dialogscript",
+                );
+
+                results.push(MissionEntry {
+                    mission: key.clone(),
+                    mission_set,
+                    mission_type,
+                    world_region,
+                    zone,
+                    difficulty,
+                    replay_station,
+                    dialog_script,
+                });
+            }
+        }
+    }
+
+    results
+}
+
+/// Strip NCS type references like "game_region'grasslands'" → "grasslands"
+fn strip_ncs_ref(s: &str, prefix: &str) -> String {
+    if s.is_empty() {
+        return String::new();
+    }
+    let pattern = format!("{}'", prefix);
+    if let Some(rest) = s.strip_prefix(&pattern) {
+        rest.trim_end_matches('\'').to_string()
+    } else {
+        s.to_string()
+    }
+}
+
+/// Extract zone name from NCS Value map (zone.def = "map'World_P.Zone_X'")
+fn extract_zone_from_value(
+    map: &std::collections::HashMap<String, bl4_ncs::document::Value>,
+) -> String {
+    use bl4_ncs::document::Value;
+
+    let zone_val = match map.get("zone") {
+        Some(Value::Map(m)) => m,
+        _ => return String::new(),
+    };
+
+    let def_str = match zone_val.get("def") {
+        Some(Value::Leaf(s)) => s.as_str(),
+        _ => return String::new(),
+    };
+
+    if let Some(idx) = def_str.find("Zone_") {
+        let rest = &def_str[idx + 5..];
+        rest.trim_end_matches('\'').to_string()
+    } else {
+        String::new()
+    }
+}
+
+/// Extract prerequisite mission set from generateddependencies nested structure.
+///
+/// NCS structure:
+/// ```text
+/// generateddependencies:
+///   dependency:
+///     - dependency1:
+///         completed: "missionset'MissionSet_Main_Beach'"
+/// ```
+fn extract_prerequisite_from_value(
+    map: &std::collections::HashMap<String, bl4_ncs::document::Value>,
+) -> Option<String> {
+    use bl4_ncs::document::Value;
+
+    let gdeps = match map.get("generateddependencies") {
+        Some(Value::Map(m)) => m,
+        _ => return None,
+    };
+
+    let dep_array = match gdeps.get("dependency") {
+        Some(Value::Array(a)) => a,
+        _ => return None,
+    };
+
+    for dep_item in dep_array {
+        let dep_map = match dep_item {
+            Value::Map(m) => m,
+            _ => continue,
+        };
+
+        for inner_val in dep_map.values() {
+            let inner_map = match inner_val {
+                Value::Map(m) => m,
+                _ => continue,
+            };
+
+            if let Some(Value::Leaf(completed)) = inner_map.get("completed") {
+                if let Some(rest) = completed.strip_prefix("missionset'") {
+                    let name = rest.trim_end_matches('\'').to_lowercase();
+                    return Some(name);
+                }
+            }
+        }
+    }
+
+    None
+}
+
+/// Classify a mission set key into a category.
+fn classify_mission_set(key: &str) -> &'static str {
+    if key.contains("_main_") && key.contains("postgame") {
+        "postgame"
+    } else if key.contains("_main_") {
+        "main"
+    } else if key.contains("_side_") {
+        "side"
+    } else if key.contains("_micro_") {
+        "micro"
+    } else if key.contains("_vault_") {
+        "vault"
+    } else if key.contains("_dlc_") || key.contains("_cello") || key.contains("_banjo") || key.contains("_cowbell") {
+        "dlc"
+    } else if key.contains("zoneactivity_") {
+        "zoneactivity"
+    } else {
+        "other"
+    }
+}
+
+/// Extract region name from a mission set key.
+///
+/// Patterns:
+/// - `missionset_main_grasslands2a` → `grasslands`
+/// - `missionset_side_citya` → `city`
+/// - `missionset_vault_mountains` → `mountains`
+/// - `missionset_zoneactivity_crawler` → (empty, per-mission)
+fn extract_region_from_key(key: &str) -> String {
+    if key.contains("zoneactivity_")
+        || key.contains("_dlc_")
+        || key.contains("_cowbell")
+        || key.contains("_banjo")
+        || key.contains("_cello")
+        || key.contains("_raid")
+        || key.contains("circleofslaughter")
+        || key.contains("storysofar")
+        || key.contains("_postgame")
+    {
+        return String::new();
+    }
+
+    // Split by underscore and find the region segment
+    // missionset_{type}_{region}{suffix}
+    // The type is main/side/micro/vault, and the region follows it
+    let prefixes = [
+        "missionset_main_",
+        "missionset_side_",
+        "missionset_micro_",
+        "missionset_vault_",
+    ];
+
+    for prefix in prefixes {
+        if let Some(rest) = key.strip_prefix(prefix) {
+            // rest is e.g. "grasslands2a", "citya", "mountains"
+            // Strip trailing suffix: digits and single lowercase letters
+            let region = rest.trim_end_matches(|c: char| c.is_ascii_digit());
+            // Also strip a single trailing lowercase letter (a, b, c, d, e)
+            let region = if region.len() > 1
+                && region
+                    .as_bytes()
+                    .last()
+                    .map(|b| b.is_ascii_lowercase())
+                    .unwrap_or(false)
+            {
+                // Only strip if it looks like a suffix (single char at end of a known region)
+                let candidate = &region[..region.len() - 1];
+                let known_regions = [
+                    "grasslands",
+                    "grasslands1",
+                    "grasslands2",
+                    "grasslands3",
+                    "mountains",
+                    "mountains1",
+                    "mountains2",
+                    "mountains3",
+                    "shatteredlands",
+                    "shatteredlands1",
+                    "shatteredlands2",
+                    "shatteredlands3",
+                    "city",
+                    "city1",
+                    "city2",
+                    "city3",
+                    "elpis",
+                    "beach",
+                    "prisonprologue",
+                    "noobisland",
+                    "searchforlilith",
+                    "cowbell",
+                    "speakeasy",
+                    "cityepilogue",
+                ];
+                if known_regions.contains(&candidate) {
+                    candidate
+                } else {
+                    region
+                }
+            } else {
+                region
+            };
+            return region.to_string();
+        }
+    }
+
+    String::new()
+}
+
+/// Deduplicate mission sets, preferring entries with more data.
+fn deduplicate_mission_sets(sets: &mut Vec<MissionSetEntry>) {
+    let mut best: BTreeMap<String, MissionSetEntry> = BTreeMap::new();
+    for ms in sets.drain(..) {
+        let existing = best.get(&ms.mission_set);
+        let replace = match existing {
+            None => true,
+            Some(e) => {
+                // Prefer entry with prerequisite info
+                (!e.prerequisite.is_empty() && ms.prerequisite.is_empty())
+                    || (ms.prerequisite.len() > e.prerequisite.len())
+                    || (ms.chained && !e.chained)
+            }
+        };
+        if replace {
+            best.insert(ms.mission_set.clone(), ms);
+        }
+    }
+    *sets = best.into_values().collect();
+}
+
+/// Deduplicate missions, preferring entries with more data.
+fn deduplicate_missions(missions: &mut Vec<MissionEntry>) {
+    let mut best: BTreeMap<String, MissionEntry> = BTreeMap::new();
+    for m in missions.drain(..) {
+        let score = |e: &MissionEntry| -> usize {
+            [
+                &e.mission_set,
+                &e.mission_type,
+                &e.world_region,
+                &e.zone,
+                &e.difficulty,
+                &e.replay_station,
+                &e.dialog_script,
+            ]
+            .iter()
+            .filter(|s| !s.is_empty())
+            .count()
+        };
+        let existing = best.get(&m.mission);
+        let replace = match existing {
+            None => true,
+            Some(e) => score(&m) > score(e),
+        };
+        if replace {
+            best.insert(m.mission.clone(), m);
+        }
+    }
+    *missions = best.into_values().collect();
 }
 
 /// Convert a human-readable name to a filename slug (lowercase, spaces → underscores)

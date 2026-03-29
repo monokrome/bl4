@@ -88,3 +88,26 @@ pub struct ManufacturerMapping {
     /// Display name (e.g., "Ripper", "Daedalus")
     pub name: String,
 }
+
+/// Mission set entry from missionset*.bin NCS files
+#[derive(Debug, Serialize, Clone)]
+pub struct MissionSetEntry {
+    pub mission_set: String,
+    pub prerequisite: String,
+    pub category: String,
+    pub chained: bool,
+    pub region: String,
+}
+
+/// Individual mission entry from Mission*.bin NCS files
+#[derive(Debug, Serialize, Clone)]
+pub struct MissionEntry {
+    pub mission: String,
+    pub mission_set: String,
+    pub mission_type: String,
+    pub world_region: String,
+    pub zone: String,
+    pub difficulty: String,
+    pub replay_station: String,
+    pub dialog_script: String,
+}
