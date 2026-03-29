@@ -480,42 +480,13 @@ pub fn max_part_index(category: i64) -> Option<i64> {
     MAX_PART_INDEX.get(&category).copied()
 }
 
-/// Shared vertical category IDs for fallback part lookup.
-///
-/// When a part index doesn't resolve in the item's per-category parts,
-/// it may belong to a shared vertical (stat mods, barrels, grips, etc.)
-/// that uses the same index space across multiple item categories.
-pub const SHARED_VERTICAL_CATEGORIES: &[i64] = &[
-    10001, // stat_group2 (176-247) + barrel pool (1-94)
-    10002, // stat_group3 (104-175) + barrel_acc (61-78)
-    10003, // rarity_component (1-541) + tediore_acc (9-55)
-    10004, // firmware (27-248) + foregrip (21-82)
-    10005, // barrel pool alt (1-94) + grip (42-83)
-    10006, // barrel_acc alt (1-78) + magazine (1-87)
-    10007, // magazine_acc (27-89) + tediore_acc (9-55)
-    10008, // foregrip alt (21-82) + tediore_secondary_acc (14-17)
-    10009, // grip alt (42-83) + secondary_ammo (61-64)
-    1,     // base shared parts (rarity, elements, secondary elements)
-];
-
 /// Get a part's index by category and name (reverse lookup).
 ///
-/// Tries the item's own category first, then falls back to shared
-/// vertical categories. Names are normalized (manufacturer prefix stripped).
+/// Looks up only within the item's own category. Names are normalized
+/// (manufacturer prefix stripped).
 pub fn part_index(category: i64, name: &str) -> Option<i64> {
     let bare = normalize_part_name(name).to_string();
-    if let Some(&idx) = PARTS_BY_NAME.get(&(category, bare.clone())) {
-        return Some(idx);
-    }
-    for &shared_cat in SHARED_VERTICAL_CATEGORIES {
-        if shared_cat == category {
-            continue;
-        }
-        if let Some(&idx) = PARTS_BY_NAME.get(&(shared_cat, bare.clone())) {
-            return Some(idx);
-        }
-    }
-    None
+    PARTS_BY_NAME.get(&(category, bare)).copied()
 }
 
 /// Get the number of known parts for a category.

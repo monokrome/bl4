@@ -20,7 +20,6 @@ use bitstream::{BitReader, BitWriter};
 pub use rarity::RarityEstimate;
 pub use validate::{Legality, ValidationCheck, ValidationResult};
 
-use crate::manifest::SHARED_VERTICAL_CATEGORIES;
 use crate::parts::{
     category_from_varbit, level_from_code, manufacturer_name, serial_id_to_parts_category,
     varbit_divisor, weapon_info_from_first_varint,
@@ -840,32 +839,14 @@ fn extract_rarity(tokens: &[Token], is_varbit_first: bool) -> Option<Rarity> {
     }
 }
 
-/// Resolve a part index to a name, trying per-category first then shared verticals.
+/// Resolve a part index to a name within its category.
+///
+/// Each category has its own flat index space. An index that doesn't
+/// exist in the per-category table is genuinely unknown — shared
+/// vertical tables are ambiguous (same index maps to different parts
+/// across categories) and must not be used as fallback.
 pub(crate) fn resolve_part_name(category: i64, index: u64) -> Option<&'static str> {
-    // Try per-category lookup first (works for all item types)
-    if let Some(name) = crate::manifest::part_name(category, index as i64) {
-        return Some(name);
-    }
-
-    // Only fall back to shared verticals if index is ABOVE per-category range.
-    // Indices within the per-category range that don't exist there are ambiguous —
-    // multiple shared categories can claim the same index with different parts.
-    let max = crate::manifest::max_part_index(category).unwrap_or(0);
-    if (index as i64) <= max {
-        return None;
-    }
-
-    // Fall back to shared vertical categories
-    for &shared_cat in SHARED_VERTICAL_CATEGORIES {
-        if shared_cat == category {
-            continue;
-        }
-        if let Some(name) = crate::manifest::part_name(shared_cat, index as i64) {
-            return Some(name);
-        }
-    }
-
-    None
+    crate::manifest::part_name(category, index as i64)
 }
 
 impl ItemSerial {
