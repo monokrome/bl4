@@ -79,8 +79,25 @@ pub fn decode(
     parts_db: &Path,
     remove: &[String],
     add: &[String],
+    level: Option<u8>,
 ) -> Result<()> {
     let item = bl4::ItemSerial::decode(serial).context("Failed to decode serial")?;
+
+    // Level editing: modify the level in the header, re-encode, and decode
+    if let Some(new_level) = level {
+        if new_level == 0 {
+            bail!("Level must be at least 1, got {}", new_level);
+        }
+        let modified = item
+            .with_level(new_level)
+            .context("Could not find level token in serial header")?;
+        let new_serial = modified.encode_from_tokens();
+        println!("Modified serial: {}\n", new_serial);
+        return decode(
+            &new_serial, verbose, debug, analyze, rarity, short, parts_db,
+            remove, add, None,
+        );
+    }
 
     // Part editing: modify tokens, re-encode, and decode the result
     if !remove.is_empty() || !add.is_empty() {
@@ -133,6 +150,7 @@ pub fn decode(
             parts_db,
             &[],
             &[],
+            None,
         );
     }
 

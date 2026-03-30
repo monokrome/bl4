@@ -230,6 +230,17 @@ pub fn map_only(args: &SaveArgs) -> Result<()> {
     with_save_file(args, |_| Ok(()))
 }
 
+/// Handle `save --set-item-level`
+pub fn set_item_level(args: &SaveArgs, level: u8) -> Result<()> {
+    with_save_file(args, |save| {
+        let mut changeset = bl4::ChangeSet::new();
+        let count = changeset.set_all_item_levels(save, level);
+        changeset.apply(save)?;
+        eprintln!("Updated {} items to level {}", count, level);
+        Ok(())
+    })
+}
+
 /// Handle `save --validate-items`
 pub fn validate_items(args: &SaveArgs) -> Result<()> {
     use bl4::serial::Legality;

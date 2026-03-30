@@ -41,6 +41,10 @@ pub enum SerialCommand {
         /// Add a part by name (repeatable)
         #[arg(long, action = clap::ArgAction::Append)]
         add: Vec<String>,
+
+        /// Set item level
+        #[arg(long)]
+        level: Option<u8>,
     },
 
     /// Re-encode a serial (for testing round-trip encoding)

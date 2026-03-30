@@ -20,6 +20,10 @@ pub struct SaveArgs {
     #[arg(long)]
     pub validate_items: bool,
 
+    /// Set all items to a specific level
+    #[arg(long)]
+    pub set_item_level: Option<u8>,
+
     /// Steam ID (uses configured default if not provided)
     #[arg(short, long)]
     pub steam_id: Option<String>,

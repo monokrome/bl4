@@ -53,6 +53,9 @@ pub fn dispatch_save(args: SaveArgs) -> Result<()> {
             if args.validate_items {
                 commands::save::validate_items(&args)?;
             }
+            if let Some(level) = args.set_item_level {
+                return commands::save::set_item_level(&args, level);
+            }
             if args.map.is_some() {
                 commands::save::map_only(&args)
             } else if args.validate_items {
@@ -77,8 +80,9 @@ pub fn dispatch_serial(command: SerialCommand) -> Result<()> {
             parts_db,
             remove,
             add,
+            level,
         } => commands::serial::decode(
-            &serial, verbose, debug, analyze, rarity, short, &parts_db, &remove, &add,
+            &serial, verbose, debug, analyze, rarity, short, &parts_db, &remove, &add, level,
         ),
 
         SerialCommand::Encode { serial } => commands::serial::encode(&serial),
