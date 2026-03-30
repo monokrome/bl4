@@ -22,11 +22,11 @@ fn main() {
             .tokens
             .iter()
             .map(|t| match t {
-                Token::VarInt(v) => format!("VI({})", v),
-                Token::VarBit(v) => format!("VB({})", v),
+                Token::Var { val: v, encoding: bl4::serial::VarEncoding::Int } => format!("VI({})", v),
+                Token::Var { val: v, encoding: bl4::serial::VarEncoding::Bit } => format!("VB({})", v),
                 Token::Separator => "SEP".to_string(),
                 Token::SoftSeparator => "SOFT".to_string(),
-                Token::Part { index, values } => {
+                Token::Part { index, values, .. } => {
                     if values.is_empty() {
                         format!("P({})", index)
                     } else {
@@ -44,8 +44,8 @@ fn main() {
             .iter()
             .take_while(|t| !matches!(t, Token::Separator))
             .map(|t| match t {
-                Token::VarInt(v) => format!("vi={}", v),
-                Token::VarBit(v) => format!("vb={}", v),
+                Token::Var { val: v, encoding: bl4::serial::VarEncoding::Int } => format!("vi={}", v),
+                Token::Var { val: v, encoding: bl4::serial::VarEncoding::Bit } => format!("vb={}", v),
                 Token::SoftSeparator => "soft".to_string(),
                 _ => "?".to_string(),
             })

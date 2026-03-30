@@ -134,6 +134,7 @@ pub fn decode(
             new_tokens.push(bl4::serial::Token::Part {
                 index: index as u64,
                 values: vec![],
+                encoding: bl4::serial::PartEncoding::None,
             });
         }
 
@@ -359,8 +360,8 @@ fn analyze_first_token(item: &bl4::ItemSerial) -> Result<()> {
 
     if let Some(first_token) = item.tokens.first() {
         let value = match first_token {
-            Token::VarInt(v) => Some((*v, "VarInt")),
-            Token::VarBit(v) => Some((*v, "VarBit")),
+            Token::Var { val: v, encoding: bl4::serial::VarEncoding::Int } => Some((*v, "VarInt")),
+            Token::Var { val: v, encoding: bl4::serial::VarEncoding::Bit } => Some((*v, "VarBit")),
             _ => None,
         };
 
@@ -375,7 +376,7 @@ fn analyze_first_token(item: &bl4::ItemSerial) -> Result<()> {
             // Decode Part Group ID based on format and token value
             println!("Part Group ID decoding:");
             match first_token {
-                Token::VarBit(v) => {
+                Token::Var { val: v, encoding: bl4::serial::VarEncoding::Bit } => {
                     if let Some(cat) = item.part_group_id() {
                         let divisor = if *v >= 131_072 { 8192 } else { 384 };
                         let offset = value % divisor;
@@ -393,7 +394,7 @@ fn analyze_first_token(item: &bl4::ItemSerial) -> Result<()> {
                         println!("  Identified: {}", name);
                     }
                 }
-                Token::VarInt(_) => {
+                Token::Var { encoding: bl4::serial::VarEncoding::Int, .. } => {
                     if let Some((mfr, wtype)) = item.weapon_info() {
                         println!("  VarInt-first: serial ID {} → {} {}", value, mfr, wtype);
                     } else {
@@ -668,7 +669,7 @@ pub fn modify(base: &str, source: &str, parts: &str) -> Result<()> {
         .tokens
         .iter()
         .filter_map(|t| {
-            if let Token::Part { index, values } = t {
+            if let Token::Part { index, values, .. } = t {
                 Some((*index, values.clone()))
             } else {
                 None
@@ -681,7 +682,7 @@ pub fn modify(base: &str, source: &str, parts: &str) -> Result<()> {
         .tokens
         .iter()
         .map(|t| {
-            if let Token::Part { index, values } = t {
+            if let Token::Part { index, values, .. } = t {
                 if part_indices.contains(index) {
                     if let Some(source_values) = source_parts.get(index) {
                         println!(
@@ -691,6 +692,7 @@ pub fn modify(base: &str, source: &str, parts: &str) -> Result<()> {
                         return Token::Part {
                             index: *index,
                             values: source_values.clone(),
+                            encoding: bl4::serial::PartEncoding::None,
                         };
                     }
                 }

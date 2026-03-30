@@ -15,7 +15,7 @@ pub mod resolve;
 mod validate;
 
 use base85::{decode_base85, encode_base85, mirror_byte};
-use bitstream::{BitReader, BitWriter, PatchWriter};
+use bitstream::{BitReader, BitWriter};
 
 pub use rarity::RarityEstimate;
 pub use validate::{Legality, ValidationCheck, ValidationResult};
@@ -231,15 +231,68 @@ impl std::fmt::Display for SerialFormat {
     }
 }
 
+/// Whether a numeric value is encoded as VarInt or VarBit.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum VarEncoding {
+    Int, // 100 prefix + nibble-based variable-length
+    Bit, // 110 prefix + length-prefixed value
+}
+
+/// How a Part token's values were encoded in the original bitstream.
+///
+/// The game uses three encodings for the data after a Part's index VARINT.
+/// NONE and LIST-with-empty-list are semantically identical (both = no values)
+/// but use different bit widths (3 vs 5 bits). The encoder must preserve the
+/// original encoding to produce byte-identical output.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum PartEncoding {
+    /// type=0, subtype=10 — no values (3 bits)
+    None,
+    /// type=1, value, 000 — single VARINT value (variable width)
+    Single,
+    /// type=0, subtype=01, values..., 00 — value list with terminator (5+ bits)
+    List,
+}
+
 /// Token types in the bitstream
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
-    Separator,                             // 00
-    SoftSeparator,                         // 01
-    VarInt(u64),                           // 100 + varint data
-    VarBit(u64),                           // 110 + varbit data
-    Part { index: u64, values: Vec<u64> }, // 101 + part data
-    String(String),                        // 111 + length + ascii
+    Separator,                                        // 00
+    SoftSeparator,                                    // 01
+    Var { val: u64, encoding: VarEncoding },           // 100/110 + data
+    Part { index: u64, values: Vec<u64>, encoding: PartEncoding }, // 101 + part data
+    String(String),                                   // 111 + length + ascii
+}
+
+#[allow(non_snake_case)]
+impl Token {
+    /// Create a VarInt token.
+    pub fn VarInt(v: u64) -> Self {
+        Token::Var { val: v, encoding: VarEncoding::Int }
+    }
+    /// Create a VarBit token.
+    pub fn VarBit(v: u64) -> Self {
+        Token::Var { val: v, encoding: VarEncoding::Bit }
+    }
+    /// True if this is a Var token (VarInt or VarBit).
+    pub fn is_var(&self) -> bool {
+        matches!(self, Token::Var { .. })
+    }
+    /// True if this is a VarInt-encoded Var token.
+    pub fn is_varint(&self) -> bool {
+        matches!(self, Token::Var { encoding: VarEncoding::Int, .. })
+    }
+    /// True if this is a VarBit-encoded Var token.
+    pub fn is_varbit(&self) -> bool {
+        matches!(self, Token::Var { encoding: VarEncoding::Bit, .. })
+    }
+    /// Get the value if this is a Var token.
+    pub fn var_val(&self) -> Option<u64> {
+        match self {
+            Token::Var { val, .. } => Some(*val),
+            _ => None,
+        }
+    }
 }
 
 /// A fully-resolved part from a decoded serial.
@@ -314,37 +367,22 @@ fn encode_tokens(tokens: &[Token]) -> Vec<u8> {
             Token::SoftSeparator => {
                 writer.write_bits(0b01, 2);
             }
-            Token::VarInt(v) => {
-                writer.write_bits(TokenPrefix::VarInt as u64, 3);
-                writer.write_varint(*v);
+            Token::Var { val, encoding } => {
+                match encoding {
+                    VarEncoding::Int => {
+                        writer.write_bits(TokenPrefix::VarInt as u64, 3);
+                        writer.write_varint(*val);
+                    }
+                    VarEncoding::Bit => {
+                        writer.write_bits(TokenPrefix::VarBit as u64, 3);
+                        writer.write_varbit(*val);
+                    }
+                }
             }
-            Token::VarBit(v) => {
-                writer.write_bits(TokenPrefix::VarBit as u64, 3);
-                writer.write_varbit(*v);
-            }
-            Token::Part { index, values } => {
+            Token::Part { index, values, encoding } => {
                 writer.write_bits(TokenPrefix::Part as u64, 3);
                 writer.write_varint(*index);
-
-                if values.is_empty() {
-                    // SUBTYPE_NONE: type=0, subtype=10
-                    writer.write_bits(0, 1);
-                    writer.write_bits(0b10, 2);
-                } else if values.len() == 1 {
-                    // SUBTYPE_INT: type=1, value, 000 terminator
-                    writer.write_bits(1, 1);
-                    writer.write_varint(values[0]);
-                    writer.write_bits(0b000, 3);
-                } else {
-                    // SUBTYPE_LIST: type=0, subtype=01, values, 00 terminator
-                    writer.write_bits(0, 1);
-                    writer.write_bits(0b01, 2);
-                    for v in values {
-                        writer.write_bits(TokenPrefix::VarInt as u64, 3);
-                        writer.write_varint(*v);
-                    }
-                    writer.write_bits(0b00, 2); // Separator to terminate
-                }
+                encode_part_values(&mut writer, values, *encoding);
             }
             Token::String(s) => {
                 writer.write_bits(TokenPrefix::String as u64, 3);
@@ -357,6 +395,35 @@ fn encode_tokens(tokens: &[Token]) -> Vec<u8> {
     }
 
     writer.finish()
+}
+
+fn encode_part_values(writer: &mut BitWriter, values: &[u64], encoding: PartEncoding) {
+    match encoding {
+        PartEncoding::None => {
+            writer.write_bits(0, 1);
+            writer.write_bits(0b10, 2);
+        }
+        PartEncoding::Single => {
+            writer.write_bits(1, 1);
+            writer.write_varint(values.first().copied().unwrap_or(0));
+            writer.write_bits(0b000, 3);
+        }
+        PartEncoding::List => {
+            writer.write_bits(0, 1);
+            writer.write_bits(0b01, 2);
+            for v in values {
+                writer.write_bits(TokenPrefix::VarInt as u64, 3);
+                writer.write_varint(*v);
+            }
+            // Only write the 00 terminator when the list has entries.
+            // Empty lists are implicitly terminated by the next token's
+            // prefix bits, which the decoder's read_part_value_list
+            // rewinds past when they don't form a valid VarInt/VarBit prefix.
+            if !values.is_empty() {
+                writer.write_bits(0b00, 2);
+            }
+        }
+    }
 }
 
 /// Parse tokens from bitstream
@@ -408,10 +475,12 @@ const PART_TYPE_SINGLE: u64 = 1;
 const PART_SUBTYPE_NONE: u64 = 0b10;
 const PART_SUBTYPE_LIST: u64 = 0b01;
 
-/// Parse Part token data after the index has been read
-fn parse_part_values(reader: &mut BitReader) -> Vec<u64> {
+/// Parse Part token data after the index has been read.
+///
+/// Returns the values and the encoding variant used in the bitstream.
+fn parse_part_values(reader: &mut BitReader) -> (Vec<u64>, PartEncoding) {
     let Some(type_flag) = reader.read_bits(1) else {
-        return Vec::new();
+        return (Vec::new(), PartEncoding::None);
     };
 
     if type_flag == PART_TYPE_SINGLE {
@@ -420,17 +489,19 @@ fn parse_part_values(reader: &mut BitReader) -> Vec<u64> {
             values.push(val);
         }
         let _ = reader.read_bits(3); // 000 terminator
-        return values;
+        return (values, PartEncoding::Single);
     }
 
     let Some(subtype) = reader.read_bits(2) else {
-        return Vec::new();
+        return (Vec::new(), PartEncoding::None);
     };
 
     match subtype {
-        PART_SUBTYPE_NONE => Vec::new(),
-        PART_SUBTYPE_LIST => read_part_value_list(reader),
-        _ => Vec::new(),
+        PART_SUBTYPE_NONE => (Vec::new(), PartEncoding::None),
+        PART_SUBTYPE_LIST => (read_part_value_list(reader), PartEncoding::List),
+        // Unknown subtypes (0b00, 0b11) — consume the bits, treat as no values,
+        // but preserve as List encoding since that matches the bit width (type=0 + 2-bit subtype)
+        _ => (Vec::new(), PartEncoding::List),
     }
 }
 
@@ -491,8 +562,12 @@ fn parse_string_token(reader: &mut BitReader) -> Option<Token> {
 /// Parse tokens with 3-bit prefix (100, 101, 110, 111)
 fn parse_3bit_token(reader: &mut BitReader, prefix: TokenPrefix, debug: bool) -> Option<Token> {
     match prefix {
-        TokenPrefix::VarInt => reader.read_varint().map(Token::VarInt),
-        TokenPrefix::VarBit => reader.read_varbit().map(Token::VarBit),
+        TokenPrefix::VarInt => reader
+            .read_varint()
+            .map(|v| Token::Var { val: v, encoding: VarEncoding::Int }),
+        TokenPrefix::VarBit => reader
+            .read_varbit()
+            .map(|v| Token::Var { val: v, encoding: VarEncoding::Bit }),
         TokenPrefix::Part => {
             let index = reader.read_varint()?;
             if index > MAX_REASONABLE_PART_INDEX {
@@ -504,8 +579,8 @@ fn parse_3bit_token(reader: &mut BitReader, prefix: TokenPrefix, debug: bool) ->
                 }
                 return None;
             }
-            let values = parse_part_values(reader);
-            Some(Token::Part { index, values })
+            let (values, encoding) = parse_part_values(reader);
+            Some(Token::Part { index, values, encoding })
         }
         TokenPrefix::String => parse_string_token(reader),
     }
@@ -729,7 +804,7 @@ fn collect_varints(tokens: &[Token]) -> (Vec<u64>, Vec<u64>) {
 
     for token in tokens {
         match token {
-            Token::VarInt(v) => {
+            Token::Var { val: v, encoding: VarEncoding::Int } => {
                 if seen_sep {
                     after_sep.push(*v);
                 } else {
@@ -752,7 +827,7 @@ fn extract_equipment_header(tokens: &[Token]) -> HeaderInfo {
         .iter()
         .take_while(|t| !matches!(t, Token::Separator))
         .filter_map(|t| {
-            if let Token::VarInt(v) = t {
+            if let Token::Var { val: v, encoding: VarEncoding::Int } = t {
                 Some(*v)
             } else {
                 None
@@ -821,7 +896,7 @@ fn extract_elements(tokens: &[Token], category: i64) -> Vec<Element> {
 fn extract_rarity(tokens: &[Token], is_varbit_first: bool) -> Option<Rarity> {
     if is_varbit_first {
         let first_varbit = tokens.iter().find_map(|t| {
-            if let Token::VarBit(v) = t {
+            if let Token::Var { val: v, encoding: VarEncoding::Bit } = t {
                 Some(*v)
             } else {
                 None
@@ -860,7 +935,7 @@ impl ItemSerial {
         let mut reader = BitReader::new(raw_bytes.clone());
         let (tokens, token_bit_offsets) = parse_tokens(&mut reader);
 
-        let format = if matches!(tokens.first(), Some(Token::VarBit(_))) {
+        let format = if matches!(tokens.first(), Some(Token::Var { encoding: VarEncoding::Bit, .. })) {
             SerialFormat::VarBitFirst
         } else {
             SerialFormat::VarIntFirst
@@ -876,7 +951,7 @@ impl ItemSerial {
             tokens
                 .iter()
                 .find_map(|t| {
-                    if let Token::VarBit(v) = t {
+                    if let Token::Var { val: v, encoding: VarEncoding::Bit } = t {
                         Some(category_from_varbit(*v))
                     } else {
                         None
@@ -926,99 +1001,40 @@ impl ItemSerial {
     /// This attempts to encode tokens back to bytes, but may not preserve
     /// all original data like item type encoding.
     pub fn encode_from_tokens(&self) -> String {
-        // Encode tokens to bytes
-        let bytes = encode_tokens(&self.tokens);
-
-        // Mirror all bits (reverse of decode)
-        let mirrored: Vec<u8> = bytes.iter().map(|&b| mirror_byte(b)).collect();
-
-        // Encode to Base85
-        let encoded = encode_base85(&mirrored);
-
-        // Build final serial with prefix (@U; the rest is encoded in the base85 payload)
-        format!("@U{}", encoded)
-    }
-
-    /// Encode a token's prefix + value to determine its bit width.
-    fn encoded_bit_width(token: &Token) -> Option<usize> {
-        let mut writer = BitWriter::new();
-        match token {
-            Token::VarInt(v) => {
-                writer.write_bits(TokenPrefix::VarInt as u64, 3);
-                writer.write_varint(*v);
-            }
-            Token::VarBit(v) => {
-                writer.write_bits(TokenPrefix::VarBit as u64, 3);
-                writer.write_varbit(*v);
-            }
-            _ => return None,
-        }
-        Some(writer.bit_offset())
+        Self::encode_tokens_to_serial(&self.tokens)
     }
 
     /// Create a new ItemSerial with a modified level.
     ///
-    /// Patches the level value directly in the raw bytes at its known bit
-    /// offset, preserving all other bits exactly. Only works when the new
-    /// level encodes to the same bit width as the original.
+    /// Replaces the 4th header value (VarInt for weapons, VarBit for equipment)
+    /// with the encoded level code, then re-encodes the full serial.
     pub fn with_level(&self, level: u8) -> Option<Self> {
         let new_code = crate::parts::code_from_level(level)?;
-
-        // Find the 4th header value token (the level)
+        let mut tokens = self.tokens.clone();
         let mut header_count = 0u32;
-        let mut level_token_idx = None;
-        for (i, token) in self.tokens.iter().enumerate() {
+        for token in &mut tokens {
             match token {
-                Token::VarInt(_) | Token::VarBit(_) => {
+                Token::Var { val, .. } => {
                     header_count += 1;
                     if header_count == 4 {
-                        level_token_idx = Some(i);
-                        break;
+                        *val = new_code;
+                        let new_serial = Self::encode_tokens_to_serial(&tokens);
+                        return ItemSerial::decode(&new_serial).ok();
                     }
                 }
                 Token::Separator => break,
                 _ => {}
             }
         }
-        let token_idx = level_token_idx?;
-        let bit_offset = *self.token_bit_offsets.get(token_idx)?;
+        None
+    }
 
-        // Encode old and new tokens to verify same bit width
-        let token = &self.tokens[token_idx];
-        let old_width = Self::encoded_bit_width(token)?;
-        let new_token = match token {
-            Token::VarInt(_) => Token::VarInt(new_code),
-            Token::VarBit(_) => Token::VarBit(new_code),
-            _ => return None,
-        };
-        let new_width = Self::encoded_bit_width(&new_token)?;
-
-        if old_width != new_width {
-            return None;
-        }
-
-        // Write the new token directly into raw_bytes using BitReader's
-        // bit addressing convention (MSB-first within each byte).
-        let mut patched = self.raw_bytes.clone();
-        let mut writer = PatchWriter::new(&mut patched, bit_offset);
-        match &new_token {
-            Token::VarInt(v) => {
-                writer.write_bits(TokenPrefix::VarInt as u64, 3);
-                writer.write_varint(*v);
-            }
-            Token::VarBit(v) => {
-                writer.write_bits(TokenPrefix::VarBit as u64, 3);
-                writer.write_varbit(*v);
-            }
-            _ => return None,
-        }
-
-        // Re-encode to base85
-        let unmirrored: Vec<u8> = patched.iter().map(|&b| mirror_byte(b)).collect();
-        let encoded = encode_base85(&unmirrored);
-        let new_serial = format!("@U{}", encoded);
-
-        ItemSerial::decode(&new_serial).ok()
+    /// Encode tokens to a complete serial string.
+    fn encode_tokens_to_serial(tokens: &[Token]) -> String {
+        let bytes = encode_tokens(tokens);
+        let mirrored: Vec<u8> = bytes.iter().map(|&b| mirror_byte(b)).collect();
+        let encoded = encode_base85(&mirrored);
+        format!("@U{}", encoded)
     }
 
     /// Create a new ItemSerial with modified tokens
@@ -1055,9 +1071,8 @@ impl ItemSerial {
             match token {
                 Token::Separator => output.push('|'),
                 Token::SoftSeparator => output.push_str(", "),
-                Token::VarInt(v) => output.push_str(&format!("{}", v)),
-                Token::VarBit(v) => output.push_str(&format!("{}", v)),
-                Token::Part { index, values } => {
+                Token::Var { val: v, .. } => output.push_str(&format!("{}", v)),
+                Token::Part { index, values, .. } => {
                     if values.is_empty() {
                         output.push_str(&format!("{{{}}}", index));
                     } else if values.len() == 1 {
@@ -1120,7 +1135,7 @@ impl ItemSerial {
     ///
     /// Returns None for VarBit-first formats or if the ID is unknown.
     pub fn weapon_info(&self) -> Option<(&'static str, &'static str)> {
-        let is_varint_first = matches!(self.tokens.first(), Some(Token::VarInt(_)));
+        let is_varint_first = matches!(self.tokens.first(), Some(Token::Var { encoding: VarEncoding::Int, .. }));
         if is_varint_first {
             self.manufacturer.and_then(weapon_info_from_first_varint)
         } else {
@@ -1134,14 +1149,14 @@ impl ItemSerial {
     /// and extracts the NCS category ID. Returns None for VarInt-first items.
     pub fn part_group_id(&self) -> Option<i64> {
         let first_varbit = self.tokens.iter().find_map(|t| {
-            if let Token::VarBit(v) = t {
+            if let Token::Var { val: v, encoding: VarEncoding::Bit } = t {
                 Some(*v)
             } else {
                 None
             }
         })?;
 
-        if !matches!(self.tokens.first(), Some(Token::VarBit(_))) {
+        if !matches!(self.tokens.first(), Some(Token::Var { encoding: VarEncoding::Bit, .. })) {
             return None;
         }
 
@@ -1169,7 +1184,7 @@ impl ItemSerial {
         self.tokens
             .iter()
             .filter_map(|t| {
-                if let Token::Part { index, values } = t {
+                if let Token::Part { index, values, .. } = t {
                     Some((*index, values.clone()))
                 } else {
                     None
@@ -1633,14 +1648,14 @@ mod tests {
         for s in &serials {
             if let Ok(item) = ItemSerial::decode(s) {
                 match item.tokens.first() {
-                    Some(Token::VarInt(_)) => {
+                    Some(Token::Var { encoding: VarEncoding::Int, .. }) => {
                         // VarInt-first: level code is header VarInt[3]
                         let header: Vec<u64> = item
                             .tokens
                             .iter()
                             .take_while(|t| !matches!(t, Token::Separator))
                             .filter_map(|t| {
-                                if let Token::VarInt(v) = t {
+                                if let Token::Var { val: v, encoding: VarEncoding::Int } = t {
                                     Some(*v)
                                 } else {
                                     None
@@ -1653,7 +1668,7 @@ mod tests {
                             no_level += 1;
                         }
                     }
-                    Some(Token::VarBit(v)) => {
+                    Some(Token::Var { val: v, encoding: VarEncoding::Bit }) => {
                         let divisor = crate::parts::varbit_divisor(*v);
                         let remainder = v % divisor;
                         *varbit_remainders.entry(remainder).or_default() += 1;
@@ -1696,7 +1711,7 @@ mod tests {
         println!("\n=== Dead zone codes (51-127) detail ===");
         for s in &serials {
             if let Ok(item) = ItemSerial::decode(s) {
-                if !matches!(item.tokens.first(), Some(Token::VarInt(_))) {
+                if !matches!(item.tokens.first(), Some(Token::Var { encoding: VarEncoding::Int, .. })) {
                     continue;
                 }
                 let header: Vec<u64> = item
@@ -1704,7 +1719,7 @@ mod tests {
                     .iter()
                     .take_while(|t| !matches!(t, Token::Separator))
                     .filter_map(|t| {
-                        if let Token::VarInt(v) = t {
+                        if let Token::Var { val: v, encoding: VarEncoding::Int } = t {
                             Some(*v)
                         } else {
                             None
@@ -1726,7 +1741,7 @@ mod tests {
         println!("\n=== High codes (>145, non-standard rarity) detail ===");
         for s in &serials {
             if let Ok(item) = ItemSerial::decode(s) {
-                if !matches!(item.tokens.first(), Some(Token::VarInt(_))) {
+                if !matches!(item.tokens.first(), Some(Token::Var { encoding: VarEncoding::Int, .. })) {
                     continue;
                 }
                 let header: Vec<u64> = item
@@ -1734,7 +1749,7 @@ mod tests {
                     .iter()
                     .take_while(|t| !matches!(t, Token::Separator))
                     .filter_map(|t| {
-                        if let Token::VarInt(v) = t {
+                        if let Token::Var { val: v, encoding: VarEncoding::Int } = t {
                             Some(*v)
                         } else {
                             None
@@ -1756,7 +1771,7 @@ mod tests {
         let mut vi2: BTreeMap<u64, usize> = BTreeMap::new();
         for s in &serials {
             if let Ok(item) = ItemSerial::decode(s) {
-                if !matches!(item.tokens.first(), Some(Token::VarInt(_))) {
+                if !matches!(item.tokens.first(), Some(Token::Var { encoding: VarEncoding::Int, .. })) {
                     continue;
                 }
                 let header: Vec<u64> = item
@@ -1764,7 +1779,7 @@ mod tests {
                     .iter()
                     .take_while(|t| !matches!(t, Token::Separator))
                     .filter_map(|t| {
-                        if let Token::VarInt(v) = t {
+                        if let Token::Var { val: v, encoding: VarEncoding::Int } = t {
                             Some(*v)
                         } else {
                             None
@@ -1787,7 +1802,7 @@ mod tests {
         let mut vi3_when_4: BTreeMap<u64, usize> = BTreeMap::new();
         for s in &serials {
             if let Ok(item) = ItemSerial::decode(s) {
-                if !matches!(item.tokens.first(), Some(Token::VarInt(_))) {
+                if !matches!(item.tokens.first(), Some(Token::Var { encoding: VarEncoding::Int, .. })) {
                     continue;
                 }
                 let header: Vec<u64> = item
@@ -1795,7 +1810,7 @@ mod tests {
                     .iter()
                     .take_while(|t| !matches!(t, Token::Separator))
                     .filter_map(|t| {
-                        if let Token::VarInt(v) = t {
+                        if let Token::Var { val: v, encoding: VarEncoding::Int } = t {
                             Some(*v)
                         } else {
                             None
@@ -1828,7 +1843,7 @@ mod tests {
         println!("\n=== VarInt[2]=4 item serials ===");
         for s in &serials {
             if let Ok(item) = ItemSerial::decode(s) {
-                if !matches!(item.tokens.first(), Some(Token::VarInt(_))) {
+                if !matches!(item.tokens.first(), Some(Token::Var { encoding: VarEncoding::Int, .. })) {
                     continue;
                 }
                 let header: Vec<u64> = item
@@ -1836,7 +1851,7 @@ mod tests {
                     .iter()
                     .take_while(|t| !matches!(t, Token::Separator))
                     .filter_map(|t| {
-                        if let Token::VarInt(v) = t {
+                        if let Token::Var { val: v, encoding: VarEncoding::Int } = t {
                             Some(*v)
                         } else {
                             None
@@ -1903,7 +1918,7 @@ mod tests {
             let mut index_values: BTreeMap<u64, Vec<&Vec<u64>>> = BTreeMap::new();
             for item in items.iter() {
                 for token in &item.tokens {
-                    if let Token::Part { index, values } = token {
+                    if let Token::Part { index, values, .. } = token {
                         index_values.entry(*index).or_default().push(values);
                     }
                 }
@@ -1966,7 +1981,7 @@ mod tests {
         println!("\n=== STRING TOKENS IN VARBIT-FIRST ITEMS ===");
         let mut string_values: BTreeMap<String, usize> = BTreeMap::new();
         for item in &decoded {
-            if !matches!(item.tokens.first(), Some(Token::VarBit(_))) {
+            if !matches!(item.tokens.first(), Some(Token::Var { encoding: VarEncoding::Bit, .. })) {
                 continue;
             }
             for token in &item.tokens {
@@ -1997,8 +2012,8 @@ mod tests {
                 .map(|t| match t {
                     Token::Separator => "|",
                     Token::SoftSeparator => ".",
-                    Token::VarInt(_) => "I",
-                    Token::VarBit(_) => "B",
+                    Token::Var { encoding: VarEncoding::Int, .. } => "I",
+                    Token::Var { encoding: VarEncoding::Bit, .. } => "B",
                     Token::Part { .. } => "P",
                     Token::String(_) => "S",
                 })
