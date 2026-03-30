@@ -15,7 +15,7 @@ pub mod resolve;
 mod validate;
 
 use base85::{decode_base85, encode_base85, mirror_byte};
-use bitstream::{BitReader, BitWriter};
+use bitstream::{BitReader, BitWriter, PatchWriter};
 
 pub use rarity::RarityEstimate;
 pub use validate::{Legality, ValidationCheck, ValidationResult};
@@ -939,28 +939,86 @@ impl ItemSerial {
         format!("@U{}", encoded)
     }
 
+    /// Encode a token's prefix + value to determine its bit width.
+    fn encoded_bit_width(token: &Token) -> Option<usize> {
+        let mut writer = BitWriter::new();
+        match token {
+            Token::VarInt(v) => {
+                writer.write_bits(TokenPrefix::VarInt as u64, 3);
+                writer.write_varint(*v);
+            }
+            Token::VarBit(v) => {
+                writer.write_bits(TokenPrefix::VarBit as u64, 3);
+                writer.write_varbit(*v);
+            }
+            _ => return None,
+        }
+        Some(writer.bit_offset())
+    }
+
     /// Create a new ItemSerial with a modified level.
     ///
-    /// Replaces the 4th header value (VarInt for weapons, VarBit for equipment)
-    /// with the encoded level code, then re-encodes the serial.
+    /// Patches the level value directly in the raw bytes at its known bit
+    /// offset, preserving all other bits exactly. Only works when the new
+    /// level encodes to the same bit width as the original.
     pub fn with_level(&self, level: u8) -> Option<Self> {
-        let code = crate::parts::code_from_level(level)?;
-        let mut tokens = self.tokens.clone();
+        let new_code = crate::parts::code_from_level(level)?;
+
+        // Find the 4th header value token (the level)
         let mut header_count = 0u32;
-        for token in &mut tokens {
+        let mut level_token_idx = None;
+        for (i, token) in self.tokens.iter().enumerate() {
             match token {
-                Token::VarInt(v) | Token::VarBit(v) => {
+                Token::VarInt(_) | Token::VarBit(_) => {
                     header_count += 1;
                     if header_count == 4 {
-                        *v = code;
-                        return Some(self.with_tokens(tokens));
+                        level_token_idx = Some(i);
+                        break;
                     }
                 }
                 Token::Separator => break,
                 _ => {}
             }
         }
-        None
+        let token_idx = level_token_idx?;
+        let bit_offset = *self.token_bit_offsets.get(token_idx)?;
+
+        // Encode old and new tokens to verify same bit width
+        let token = &self.tokens[token_idx];
+        let old_width = Self::encoded_bit_width(token)?;
+        let new_token = match token {
+            Token::VarInt(_) => Token::VarInt(new_code),
+            Token::VarBit(_) => Token::VarBit(new_code),
+            _ => return None,
+        };
+        let new_width = Self::encoded_bit_width(&new_token)?;
+
+        if old_width != new_width {
+            return None;
+        }
+
+        // Write the new token directly into raw_bytes using BitReader's
+        // bit addressing convention (MSB-first within each byte).
+        let mut patched = self.raw_bytes.clone();
+        let mut writer = PatchWriter::new(&mut patched, bit_offset);
+        match &new_token {
+            Token::VarInt(v) => {
+                writer.write_bits(TokenPrefix::VarInt as u64, 3);
+                writer.write_varint(*v);
+            }
+            Token::VarBit(v) => {
+                writer.write_bits(TokenPrefix::VarBit as u64, 3);
+                writer.write_varbit(*v);
+            }
+            _ => return None,
+        }
+
+        // Re-encode to base85
+        let unmirrored: Vec<u8> = patched.iter().map(|&b| mirror_byte(b)).collect();
+        let encoded = encode_base85(&unmirrored);
+        let new_serial = format!("@U{}", encoded);
+
+        ItemSerial::decode(&new_serial).ok()
     }
 
     /// Create a new ItemSerial with modified tokens
@@ -2124,5 +2182,51 @@ mod tests {
             eprintln!("  part_group_id: {:?}", item.part_group_id());
             eprintln!("  parts_category: {:?}", item.parts_category());
         }
+    }
+
+    #[test]
+    fn test_with_level_identity() {
+        // with_level(same) should produce an identical serial
+        let serials = &[
+            "@Ugr$xKm/)}}!pQufM-}RPG}y!%8r1pL0ss",          // VarBit repair kit, level 50
+            "@Ugr$ZCm/&tH!t{KgK/Shxu>k",                     // VarBit repair kit, level 33
+            "@UgfIh4FpCJ&`GZQM3YDlv4IO&aKh!={NYtn1phBTWp<bcNApi", // VarInt weapon, level 11
+        ];
+        for serial in serials {
+            let item = ItemSerial::decode(serial).unwrap();
+            let level = item.level.unwrap() as u8;
+            let same = item.with_level(level).unwrap();
+            assert_eq!(
+                hex::encode(&item.raw_bytes),
+                hex::encode(&same.raw_bytes),
+                "with_level({}) should be identity for {}",
+                level,
+                serial,
+            );
+        }
+    }
+
+    #[test]
+    fn test_with_level_minimal_diff() {
+        // with_level(60) on a level-50 item should only change level bits
+        let serial = "@Ugr$xKm/)}}!pQufM-}RPG}y!%8r1pL0ss";
+        let item = ItemSerial::decode(serial).unwrap();
+        let modified = item.with_level(60).unwrap();
+
+        assert_eq!(item.raw_bytes.len(), modified.raw_bytes.len(), "Length changed");
+        assert_eq!(modified.level, Some(60));
+
+        let diffs: Vec<usize> = item.raw_bytes
+            .iter()
+            .zip(modified.raw_bytes.iter())
+            .enumerate()
+            .filter(|(_, (a, b))| a != b)
+            .map(|(i, _)| i)
+            .collect();
+        assert!(
+            diffs.len() <= 2,
+            "Too many byte differences: {:?}",
+            diffs
+        );
     }
 }

@@ -91,7 +91,7 @@ pub fn decode(
         let modified = item
             .with_level(new_level)
             .context("Could not find level token in serial header")?;
-        let new_serial = modified.encode_from_tokens();
+        let new_serial = modified.original.clone();
         println!("Modified serial: {}\n", new_serial);
         return decode(
             &new_serial, verbose, debug, analyze, rarity, short, parts_db,

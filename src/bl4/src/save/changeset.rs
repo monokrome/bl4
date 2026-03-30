@@ -277,7 +277,7 @@ impl ChangeSet {
             let Some(modified) = item.with_level(level) else {
                 continue;
             };
-            let new_serial = modified.encode_from_tokens();
+            let new_serial = modified.original.clone();
             self.add(path, serde_yaml::Value::String(new_serial));
             count += 1;
         }

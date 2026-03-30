@@ -173,9 +173,73 @@ impl BitWriter {
         self.write_bits(reverse_bits_in_width(value, bits_needed), bits_needed);
     }
 
+    /// Current bit position in the stream
+    pub fn bit_offset(&self) -> usize {
+        self.bit_offset
+    }
+
     /// Get the final bytes (padded to byte boundary)
     pub fn finish(self) -> Vec<u8> {
         self.bytes
+    }
+}
+
+/// Overwrites bits in an existing byte slice at a specific offset.
+/// Uses the same MSB-first convention as BitReader, so bits written
+/// here will be read back identically by BitReader at the same offset.
+pub(crate) struct PatchWriter<'a> {
+    bytes: &'a mut [u8],
+    bit_offset: usize,
+}
+
+impl<'a> PatchWriter<'a> {
+    pub fn new(bytes: &'a mut [u8], start_offset: usize) -> Self {
+        Self {
+            bytes,
+            bit_offset: start_offset,
+        }
+    }
+
+    /// Write N bits (MSB-first, matching BitReader convention)
+    pub fn write_bits(&mut self, value: u64, count: usize) {
+        for i in (0..count).rev() {
+            let bit = ((value >> i) & 1) as u8;
+            let byte_idx = self.bit_offset / 8;
+            let bit_idx = 7 - (self.bit_offset % 8);
+
+            if byte_idx < self.bytes.len() {
+                self.bytes[byte_idx] =
+                    (self.bytes[byte_idx] & !(1 << bit_idx)) | (bit << bit_idx);
+            }
+            self.bit_offset += 1;
+        }
+    }
+
+    /// Write a VARINT using the same encoding as BitWriter
+    pub fn write_varint(&mut self, value: u64) {
+        let mut remaining = value;
+        loop {
+            let nibble = remaining & 0xF;
+            remaining >>= 4;
+            self.write_bits(reverse_bits_in_width(nibble, 4), 4);
+            if remaining == 0 {
+                self.write_bits(0, 1);
+                break;
+            } else {
+                self.write_bits(1, 1);
+            }
+        }
+    }
+
+    /// Write a VARBIT using the same encoding as BitWriter
+    pub fn write_varbit(&mut self, value: u64) {
+        if value == 0 {
+            self.write_bits(0, 5);
+            return;
+        }
+        let bits_needed = 64 - value.leading_zeros() as usize;
+        self.write_bits(reverse_bits_in_width(bits_needed as u64, 5), 5);
+        self.write_bits(reverse_bits_in_width(value, bits_needed), bits_needed);
     }
 }
 
