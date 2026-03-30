@@ -148,30 +148,72 @@ pub fn main_story_order() -> Vec<&'static MissionSet> {
     order
 }
 
+/// The three branch endpoints that must all be completed before the
+/// story continues past the open-world section. The NCS data only
+/// records one prerequisite per mission set, but the game requires
+/// all three branches to converge at searchforlilith.
+const CONVERGENCE_BRANCHES: &[&str] = &[
+    "missionset_main_grasslands3",
+    "missionset_main_mountains3",
+    "missionset_main_shatteredlands3",
+];
+
+/// The mission set where the three branches converge.
+const CONVERGENCE_POINT: &str = "missionset_main_searchforlilith";
+
 /// Compute all prerequisite mission sets for a target (inclusive).
 ///
 /// Walks backward through the prerequisite chain, collecting every
 /// mission set that must be completed before the target can be active.
 /// Returns them in topological order (roots first, target last).
+///
+/// At the convergence point (searchforlilith), all three open-world
+/// branches are required, not just the grasslands chain recorded in
+/// the NCS dependency data.
 pub fn prerequisites_for(target: &str) -> Vec<&'static MissionSet> {
-    let mut ancestors = Vec::new();
-    let mut current = Some(target.to_string());
     let mut visited = std::collections::HashSet::new();
+    let mut ancestors = Vec::new();
+
+    collect_prerequisites(target, &mut ancestors, &mut visited);
+
+    // Deduplicate while preserving order (earlier entries first)
+    let mut seen = std::collections::HashSet::new();
+    ancestors.retain(|ms| seen.insert(ms.name.as_str()));
+
+    ancestors
+}
+
+fn collect_prerequisites(
+    target: &str,
+    ancestors: &mut Vec<&MissionSet>,
+    visited: &mut std::collections::HashSet<String>,
+) {
+    // Walk backward through single-prerequisite chain
+    let mut chain = Vec::new();
+    let mut current = Some(target.to_string());
 
     while let Some(name) = current {
         if !visited.insert(name.clone()) {
             break;
         }
+
+        // At the convergence point, pull in all three branches
+        if name == CONVERGENCE_POINT {
+            for &branch_end in CONVERGENCE_BRANCHES {
+                collect_prerequisites(branch_end, ancestors, visited);
+            }
+        }
+
         if let Some(ms) = MISSION_SETS.get(&name) {
-            ancestors.push(ms);
+            chain.push(ms);
             current = ms.prerequisite.clone();
         } else {
             break;
         }
     }
 
-    ancestors.reverse();
-    ancestors
+    chain.reverse();
+    ancestors.extend(chain);
 }
 
 /// Find the first mission belonging to a mission set.
@@ -261,6 +303,45 @@ mod tests {
             Some("missionset_main_beach")
         );
         assert_eq!(resolve_mission_set_name("nonexistent"), None);
+    }
+
+    #[test]
+    fn test_convergence_includes_all_branches() {
+        let prereqs = prerequisites_for("missionset_main_searchforlilith");
+        let names: Vec<&str> = prereqs.iter().map(|ms| ms.name.as_str()).collect();
+
+        // Must include all three branch endpoints
+        assert!(names.contains(&"missionset_main_grasslands3"), "missing grasslands3");
+        assert!(names.contains(&"missionset_main_mountains3"), "missing mountains3");
+        assert!(names.contains(&"missionset_main_shatteredlands3"), "missing shatteredlands3");
+
+        // Must include branch interiors too
+        assert!(names.contains(&"missionset_main_mountains1"), "missing mountains1");
+        assert!(names.contains(&"missionset_main_shatteredlands1"), "missing shatteredlands1");
+
+        // Target should be last
+        assert_eq!(prereqs.last().unwrap().name, "missionset_main_searchforlilith");
+    }
+
+    #[test]
+    fn test_post_convergence_includes_all_branches() {
+        // Anything after searchforlilith should also include all branches
+        let prereqs = prerequisites_for("missionset_main_elpis");
+        let names: Vec<&str> = prereqs.iter().map(|ms| ms.name.as_str()).collect();
+        assert!(names.contains(&"missionset_main_mountains3"));
+        assert!(names.contains(&"missionset_main_shatteredlands3"));
+        assert!(names.contains(&"missionset_main_searchforlilith"));
+    }
+
+    #[test]
+    fn test_branch_only_does_not_include_other_branches() {
+        // Setting to mountains2a should NOT include shatteredlands or grasslands2b+
+        let prereqs = prerequisites_for("missionset_main_mountains2a");
+        let names: Vec<&str> = prereqs.iter().map(|ms| ms.name.as_str()).collect();
+        assert!(names.contains(&"missionset_main_mountains1"));
+        assert!(names.contains(&"missionset_main_grasslands2a")); // shared root
+        assert!(!names.contains(&"missionset_main_shatteredlands1"));
+        assert!(!names.contains(&"missionset_main_grasslands2b"));
     }
 
     #[test]
