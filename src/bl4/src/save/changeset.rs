@@ -263,6 +263,27 @@ impl ChangeSet {
         );
     }
 
+    /// Set item level on all serials in a save file.
+    ///
+    /// Decodes each serial, re-encodes at the target level, and adds
+    /// the updated serial to the changeset. Returns the number of
+    /// serials successfully updated.
+    pub fn set_all_item_levels(&mut self, save: &super::SaveFile, level: u8) -> u32 {
+        let mut count = 0u32;
+        for (path, serial) in save.collect_serial_paths() {
+            let Ok(item) = crate::serial::ItemSerial::decode(&serial) else {
+                continue;
+            };
+            let Some(modified) = item.with_level(level) else {
+                continue;
+            };
+            let new_serial = modified.encode_from_tokens();
+            self.add(path, serde_yaml::Value::String(new_serial));
+            count += 1;
+        }
+        count
+    }
+
     /// Clear an equipped slot (unequip item).
     pub fn unequip_slot(&mut self, slot: u8) {
         let _ = self.add_raw(

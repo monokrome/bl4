@@ -939,6 +939,30 @@ impl ItemSerial {
         format!("@U{}", encoded)
     }
 
+    /// Create a new ItemSerial with a modified level.
+    ///
+    /// Replaces the 4th header value (VarInt for weapons, VarBit for equipment)
+    /// with the encoded level code, then re-encodes the serial.
+    pub fn with_level(&self, level: u8) -> Option<Self> {
+        let code = crate::parts::code_from_level(level)?;
+        let mut tokens = self.tokens.clone();
+        let mut header_count = 0u32;
+        for token in &mut tokens {
+            match token {
+                Token::VarInt(v) | Token::VarBit(v) => {
+                    header_count += 1;
+                    if header_count == 4 {
+                        *v = code;
+                        return Some(self.with_tokens(tokens));
+                    }
+                }
+                Token::Separator => break,
+                _ => {}
+            }
+        }
+        None
+    }
+
     /// Create a new ItemSerial with modified tokens
     pub fn with_tokens(&self, tokens: Vec<Token>) -> Self {
         let category = self.parts_category().unwrap_or(-1);

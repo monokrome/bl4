@@ -223,6 +223,16 @@ impl SaveFile {
     ) -> Result<(), SaveError> {
         campaign::apply_campaign_progress(&mut self.data, changes)
     }
+
+    /// Collect all YAML paths that contain item serials.
+    ///
+    /// Walks the entire YAML tree looking for keys named "serial" whose
+    /// values are strings starting with '@'. Returns (path, serial) pairs.
+    pub fn collect_serial_paths(&self) -> Vec<(String, String)> {
+        let mut results = Vec::new();
+        collect_serials_recursive(&self.data, String::new(), &mut results);
+        results
+    }
 }
 
 impl fmt::Debug for SaveFile {
@@ -240,6 +250,40 @@ impl fmt::Debug for SaveFile {
 }
 
 // Internal helper functions
+
+fn collect_serials_recursive(
+    value: &serde_yaml::Value,
+    path: String,
+    results: &mut Vec<(String, String)>,
+) {
+    match value {
+        serde_yaml::Value::Mapping(map) => {
+            for (k, v) in map {
+                let key = k.as_str().unwrap_or("");
+                let child_path = if path.is_empty() {
+                    key.to_string()
+                } else {
+                    format!("{}.{}", path, key)
+                };
+                if key == "serial" {
+                    if let Some(s) = v.as_str() {
+                        if s.starts_with('@') {
+                            results.push((child_path.clone(), s.to_string()));
+                        }
+                    }
+                }
+                collect_serials_recursive(v, child_path, results);
+            }
+        }
+        serde_yaml::Value::Sequence(seq) => {
+            for (i, item) in seq.iter().enumerate() {
+                let child_path = format!("{}[{}]", path, i);
+                collect_serials_recursive(item, child_path, results);
+            }
+        }
+        _ => {}
+    }
+}
 
 fn query_yaml_path<'a>(
     value: &'a serde_yaml::Value,
