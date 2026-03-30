@@ -399,14 +399,18 @@ state:
 
 Known character XP thresholds:
 
-| Level | XP Required |
-|-------|-------------|
-| 1 | 0 |
-| 2 | 1,100 |
-| 30 | 821,362 |
-| 50 | 3,430,207 |
+| Level | XP Required | Source |
+|-------|-------------|--------|
+| 1 | 0 | exact |
+| 2 | 1,100 | exact |
+| 30 | 821,362 | exact |
+| 50 | 3,430,207 | exact |
+| 55 | ~4,407,000 | estimated |
+| 60 | ~5,710,000 | tested |
 
-The curve follows approximately `XP ≈ 202 × level^2.44`.
+For levels 1-50, the curve follows approximately `XP ≈ 202 × level^2.44`.
+
+For DLC levels 51-60, the XP-per-level bar grows linearly: each level requires roughly `167,900 + 13,700 × (level - 50)` more XP than the previous. Estimates were derived from in-game save editing tests and are accurate to within ~1%.
 
 **Specialization levels** use separate XP tracked independently:
 
