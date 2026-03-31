@@ -3,8 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build"
+    "wasm": "wasm-pack build ../../bl4 --target web --features wasm && cp ../../bl4/pkg/* src/wasm/",
+    "dev": "pnpm wasm && vite",
+    "build": "pnpm wasm && vite build"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
