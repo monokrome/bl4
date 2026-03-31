@@ -1,39 +1,22 @@
 {
-  "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/crates/tauri-cli/schema.json",
   "productName": "BL4 Save Editor",
-  "version": "0.6.0",
-  "identifier": "me.monokro.bl4-save-editor",
+  "version": "0.8.4",
+  "identifier": "com.monokrome.bl4se",
   "build": {
-    "frontendDist": "ui/dist",
     "devUrl": "http://localhost:5173",
+    "frontendDist": "../ui/dist",
     "beforeDevCommand": "pnpm dev",
-    "beforeBuildCommand": "pnpm build",
-    "features": ["tauri"]
+    "beforeBuildCommand": "pnpm build"
   },
   "app": {
     "windows": [
       {
         "title": "BL4 Save Editor",
-        "width": 1200,
-        "height": 800,
-        "resizable": true,
-        "fullscreen": false
+        "width": 1024,
+        "height": 768
       }
-    ],
-    "security": {
-      "csp": null
-    }
-  },
-  "bundle": {
-    "active": true,
-    "targets": "all",
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
     ]
   },
+  "bundle": {},
   "plugins": {}
 }
