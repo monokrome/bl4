@@ -3,6 +3,8 @@
 use anyhow::Result;
 use std::collections::HashMap;
 use std::path::Path;
+
+use super::forward_slash;
 use walkdir::WalkDir;
 
 use super::super::property_parsing::{extract_strings, parse_property_strings, AssetInfo};
@@ -40,7 +42,7 @@ pub fn extract_naming_data(extract_dir: &Path) -> Result<HashMap<String, AssetIn
                 .unwrap_or_default(),
             path: asset_path
                 .strip_prefix(extract_dir)
-                .map(|p| p.to_string_lossy().to_string())
+                .map(|p| forward_slash(p))
                 .ok(),
             stats: None,
             properties: None,

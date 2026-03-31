@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
+use super::forward_slash;
 use super::types::{manufacturer_names, Manufacturer, ManufacturerRef, WeaponType};
 
 /// Extract manufacturers from game files by walking directory structure
@@ -72,7 +73,7 @@ pub fn extract_manufacturers(extract_dir: &Path) -> HashMap<String, Manufacturer
                         let rel_path = entry
                             .path()
                             .strip_prefix(extract_dir)
-                            .map(|p| p.to_string_lossy().to_string())
+                            .map(|p| forward_slash(p))
                             .ok();
 
                         // Determine path type based on search location
@@ -131,7 +132,7 @@ pub fn extract_weapon_types(extract_dir: &Path) -> HashMap<String, WeaponType> {
                 let rel_path = entry
                     .path()
                     .strip_prefix(extract_dir)
-                    .map(|p| p.to_string_lossy().to_string())
+                    .map(|p| forward_slash(p))
                     .unwrap_or_default();
 
                 let mut manufacturers = Vec::new();
@@ -142,7 +143,7 @@ pub fn extract_weapon_types(extract_dir: &Path) -> HashMap<String, WeaponType> {
                             let mfr_rel_path = mfr_entry
                                 .path()
                                 .strip_prefix(extract_dir)
-                                .map(|p| p.to_string_lossy().to_string())
+                                .map(|p| forward_slash(p))
                                 .unwrap_or_default();
 
                             manufacturers.push(ManufacturerRef {
