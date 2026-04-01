@@ -6,6 +6,7 @@ pub mod campaign;
 mod changeset;
 pub mod entitlements;
 mod fod;
+mod session;
 mod state_flags;
 
 pub use changeset::ChangeSet;
