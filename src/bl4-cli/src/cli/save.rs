@@ -95,17 +95,28 @@ pub enum SaveAction {
         raw: bool,
     },
 
-    /// Campaign progression commands
+    /// Mission progression commands
+    Missions {
+        #[command(subcommand)]
+        action: MissionsAction,
+    },
+
+    /// Campaign progression commands (alias for missions)
+    #[command(hide = true)]
     Campaign {
         #[command(subcommand)]
-        action: CampaignAction,
+        action: MissionsAction,
     },
 }
 
-#[derive(Subcommand)]
-pub enum CampaignAction {
-    /// List main story missions with completion status
-    List,
+#[derive(Subcommand, Clone)]
+pub enum MissionsAction {
+    /// List missions with completion status
+    List {
+        /// Filter by category (main, dlc, side, micro, vault, all)
+        #[arg(default_value = "main")]
+        category: String,
+    },
 
     /// Set campaign progress to a specific mission
     Set {

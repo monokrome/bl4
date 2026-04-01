@@ -30,6 +30,7 @@ pub struct CampaignEntry {
     pub mission_set: String,
     pub status: CampaignStatus,
     pub region: String,
+    pub category: String,
 }
 
 /// Description of changes that will be applied by `set_campaign_progress`.
@@ -44,20 +45,53 @@ pub struct CampaignChanges {
 ///
 /// Returns main story mission sets in order with their completion status.
 pub fn get_campaign_status(data: &serde_yaml::Value) -> Vec<CampaignEntry> {
-    let order = missions::main_story_order();
-    let missions_node = &data["missions"];
+    get_mission_status(data, Some("main"))
+}
 
-    order
-        .iter()
+/// Read mission status for all categories, or a specific category.
+///
+/// Pass `None` to get all mission sets, or `Some("main")`, `Some("dlc")`, etc.
+pub(crate) fn get_mission_status(
+    data: &serde_yaml::Value,
+    category: Option<&str>,
+) -> Vec<CampaignEntry> {
+    let missions_node = &data["missions"];
+    let all_sets = missions::all_mission_sets();
+
+    // For "main", use the ordered chain
+    if category == Some("main") {
+        let order = missions::main_story_order();
+        return order
+            .iter()
+            .map(|ms| {
+                let status = read_set_status(missions_node, &ms.name);
+                CampaignEntry {
+                    mission_set: ms.name.clone(),
+                    status,
+                    region: ms.region.clone(),
+                    category: ms.category.clone(),
+                }
+            })
+            .collect();
+    }
+
+    // For other categories (or all), collect and sort by name
+    let mut entries: Vec<CampaignEntry> = all_sets
+        .values()
+        .filter(|ms| category.map_or(true, |c| ms.category == c))
         .map(|ms| {
             let status = read_set_status(missions_node, &ms.name);
             CampaignEntry {
                 mission_set: ms.name.clone(),
                 status,
                 region: ms.region.clone(),
+                category: ms.category.clone(),
             }
         })
-        .collect()
+        .collect();
+
+    entries.sort_by(|a, b| a.mission_set.cmp(&b.mission_set));
+    entries
 }
 
 /// Compute what changes are needed to set progress to a target mission set.
@@ -90,27 +124,73 @@ pub fn plan_campaign_progress(target: &str) -> Option<CampaignChanges> {
     })
 }
 
+/// Known DLC mission set groups. Each DLC may have multiple mission sets
+/// that must all be completed together.
+const DLC_GROUPS: &[(&str, &[&str])] = &[
+    (
+        "cowbell",
+        &[
+            "missionset_main_cowbell_unlock",
+            "missionset_main_cowbell",
+        ],
+    ),
+    ("cello", &["missionset_dlc_cello"]),
+    ("banjo", &["missionset_dlc_banjo"]),
+    ("raid1", &["missionset_dlc_raid1"]),
+];
+
+/// Plan completion of a DLC by name.
+///
+/// Returns the list of mission sets to mark as completed, or `None` if
+/// the DLC name isn't recognized.
+pub fn plan_dlc_completion(dlc_name: &str) -> Option<CampaignChanges> {
+    let lower = dlc_name.to_lowercase();
+
+    let sets = DLC_GROUPS
+        .iter()
+        .find(|(name, _)| *name == lower)
+        .map(|(_, sets)| *sets)?;
+
+    let all_completed: Vec<String> = sets.iter().map(|s| s.to_string()).collect();
+    let last_set = all_completed.last()?.clone();
+    let active_mission = missions::first_mission_in_set(&last_set)
+        .map(|m| m.name.clone())
+        .unwrap_or_else(|| last_set.replace("missionset_", "mission_"));
+
+    Some(CampaignChanges {
+        completed_sets: all_completed,
+        active_set: last_set,
+        active_mission,
+    })
+}
+
 /// Apply campaign progress changes to save data.
 ///
-/// Marks all prerequisite sets as completed and the target as active.
+/// For main story: marks prerequisite sets as completed and target as active.
+/// For DLC completion: marks all sets as completed (no active set).
 pub fn apply_campaign_progress(
     data: &mut serde_yaml::Value,
     changes: &CampaignChanges,
 ) -> Result<(), SaveError> {
     ensure_missions_structure(data);
 
-    // Mark all prerequisite sets as completed
+    // Check if the active set is in the completed list (DLC completion)
+    let all_completed = changes.completed_sets.contains(&changes.active_set);
+
+    // Mark all completed sets
     for set_name in &changes.completed_sets {
         mark_set_completed(data, set_name);
     }
 
-    // Mark the target set as active with its first mission active
-    mark_set_active(data, &changes.active_set, &changes.active_mission);
+    if !all_completed {
+        // Main story: mark the target set as active with its first mission
+        mark_set_active(data, &changes.active_set, &changes.active_mission);
 
-    // Update tracked missions
-    let tracked_name = title_case_mission(&changes.active_mission);
-    data["missions"]["tracked_missions"] =
-        serde_yaml::Value::Sequence(vec![serde_yaml::Value::String(tracked_name)]);
+        // Update tracked missions
+        let tracked_name = title_case_mission(&changes.active_mission);
+        data["missions"]["tracked_missions"] =
+            serde_yaml::Value::Sequence(vec![serde_yaml::Value::String(tracked_name)]);
+    }
 
     Ok(())
 }
@@ -180,22 +260,20 @@ fn build_completed_set_entry(set_name: &str) -> serde_yaml::Mapping {
         serde_yaml::Value::String("completed".to_string()),
     );
 
-    if let Some(mission) = missions::first_mission_in_set(set_name) {
-        let mut mission_entry = serde_yaml::Mapping::new();
-        mission_entry.insert(
-            serde_yaml::Value::String("ui_flags".to_string()),
-            serde_yaml::Value::Number(1.into()),
-        );
-        mission_entry.insert(
-            serde_yaml::Value::String("status".to_string()),
-            serde_yaml::Value::String("completed".to_string()),
-        );
-
+    let all_missions = missions::missions_in_set(set_name);
+    if !all_missions.is_empty() {
         let mut missions_map = serde_yaml::Mapping::new();
-        missions_map.insert(
-            serde_yaml::Value::String(mission.name.clone()),
-            serde_yaml::Value::Mapping(mission_entry),
-        );
+        for mission in &all_missions {
+            let mut mission_entry = serde_yaml::Mapping::new();
+            mission_entry.insert(
+                serde_yaml::Value::String("status".to_string()),
+                serde_yaml::Value::String("completed".to_string()),
+            );
+            missions_map.insert(
+                serde_yaml::Value::String(mission.name.clone()),
+                serde_yaml::Value::Mapping(mission_entry),
+            );
+        }
         set_entry.insert(
             serde_yaml::Value::String("missions".to_string()),
             serde_yaml::Value::Mapping(missions_map),

@@ -45,7 +45,8 @@ pub fn dispatch_save(args: SaveArgs) -> Result<()> {
             raw,
         }) => commands::save::set(&args, path, value, raw),
 
-        Some(SaveAction::Campaign { ref action }) => {
+        Some(SaveAction::Missions { ref action })
+        | Some(SaveAction::Campaign { ref action }) => {
             commands::campaign::handle(&args, action)
         }
 

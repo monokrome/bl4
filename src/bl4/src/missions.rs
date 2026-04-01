@@ -216,6 +216,17 @@ fn collect_prerequisites(
     ancestors.extend(chain);
 }
 
+/// Find all missions belonging to a mission set.
+pub fn missions_in_set(set_name: &str) -> Vec<&'static Mission> {
+    let lower = set_name.to_lowercase();
+    let mut result: Vec<&Mission> = MISSIONS
+        .values()
+        .filter(|m| m.mission_set.to_lowercase() == lower)
+        .collect();
+    result.sort_by(|a, b| a.name.cmp(&b.name));
+    result
+}
+
 /// Find the first mission belonging to a mission set.
 pub fn first_mission_in_set(set_name: &str) -> Option<&'static Mission> {
     // Try the obvious name derivation first (missionset_main_X → mission_main_X)
@@ -246,10 +257,12 @@ pub fn resolve_mission_set_name(input: &str) -> Option<&'static str> {
         return MISSION_SETS.get(&lower).map(|ms| ms.name.as_str());
     }
 
-    // Try with missionset_main_ prefix
-    let with_prefix = format!("missionset_main_{}", lower);
-    if MISSION_SETS.contains_key(&with_prefix) {
-        return MISSION_SETS.get(&with_prefix).map(|ms| ms.name.as_str());
+    // Try with common prefixes
+    for prefix in &["missionset_main_", "missionset_dlc_"] {
+        let with_prefix = format!("{}{}", prefix, lower);
+        if let Some(ms) = MISSION_SETS.get(&with_prefix) {
+            return Some(ms.name.as_str());
+        }
     }
 
     None

@@ -1,28 +1,30 @@
-//! Campaign progression command handlers
+//! Mission progression command handlers
 
 use anyhow::{bail, Result};
 use std::io::{self, BufRead, Write};
 
-use crate::cli::{CampaignAction, SaveArgs};
+use crate::cli::{MissionsAction, SaveArgs};
 use crate::commands::save::get_steam_id;
 
-pub fn handle(args: &SaveArgs, action: &CampaignAction) -> Result<()> {
+pub fn handle(args: &SaveArgs, action: &MissionsAction) -> Result<()> {
     match action {
-        CampaignAction::List => list(args),
-        CampaignAction::Set { mission, yes } => set(args, mission, *yes),
+        MissionsAction::List { category } => list(args, category),
+        MissionsAction::Set { mission, yes } => set(args, mission, *yes),
     }
 }
 
-fn list(args: &SaveArgs) -> Result<()> {
+fn list(args: &SaveArgs, category: &str) -> Result<()> {
     let steam_id = get_steam_id(args.steam_id.clone())?;
     let encrypted = std::fs::read(&args.input)?;
     let yaml_data = bl4::decrypt_sav(&encrypted, &steam_id)?;
     let save = bl4::SaveFile::from_yaml(&yaml_data)?;
 
-    let status = save.campaign_status();
+    let filter = if category == "all" { None } else { Some(category.as_ref()) };
+
+    let status = save.mission_status(filter);
 
     if status.is_empty() {
-        println!("No main story missions found in manifest.");
+        println!("No missions found for category '{}'.", category);
         return Ok(());
     }
 
@@ -32,7 +34,17 @@ fn list(args: &SaveArgs) -> Result<()> {
         .max()
         .unwrap_or(20);
 
+    // Group by category if showing all
+    let mut last_category = String::new();
     for entry in &status {
+        if filter.is_none() && entry.category != last_category {
+            if !last_category.is_empty() {
+                println!();
+            }
+            println!("{}:", entry.category.to_uppercase());
+            last_category = entry.category.clone();
+        }
+
         let icon = match entry.status {
             bl4::save::campaign::CampaignStatus::Completed => "[x]",
             bl4::save::campaign::CampaignStatus::Active => "[>]",
@@ -53,24 +65,36 @@ fn list(args: &SaveArgs) -> Result<()> {
 }
 
 fn set(args: &SaveArgs, mission: &str, skip_confirm: bool) -> Result<()> {
-    let resolved = bl4::missions::resolve_mission_set_name(mission);
-    if resolved.is_none() {
-        bail!(
-            "Unknown mission: '{}'\n\nUse 'bl4 save <file> campaign list' to see available missions.\n\
-            Short names like 'grasslands1', 'mountains2a', 'searchforlilith' are accepted.",
-            mission
+    // Try DLC completion first, then main story progression
+    let changes = bl4::save::campaign::plan_dlc_completion(mission)
+        .or_else(|| bl4::save::campaign::plan_campaign_progress(mission));
+
+    let changes = match changes {
+        Some(c) => c,
+        None => {
+            bail!(
+                "Unknown mission: '{}'\n\nUse 'bl4 save <file> missions list' to see available missions.\n\
+                Short names like 'grasslands1', 'cowbell', 'cello' are accepted.",
+                mission
+            );
+        }
+    };
+
+    let all_completed = changes.completed_sets.contains(&changes.active_set);
+
+    if all_completed {
+        println!("DLC will be marked as completed:");
+    } else {
+        println!(
+            "Mission progress will be set to: {}",
+            short_name(&changes.active_set)
         );
     }
-
-    let changes = bl4::save::campaign::plan_campaign_progress(mission)
-        .ok_or_else(|| anyhow::anyhow!("Failed to compute campaign changes for '{}'", mission))?;
-
-    println!("Campaign progress will be set to: {}", short_name(&changes.active_set));
     println!();
 
     if !changes.completed_sets.is_empty() {
         println!(
-            "The following {} mission(s) will be marked completed:",
+            "The following {} mission set(s) will be marked completed:",
             changes.completed_sets.len()
         );
         for set_name in &changes.completed_sets {
@@ -79,12 +103,14 @@ fn set(args: &SaveArgs, mission: &str, skip_confirm: bool) -> Result<()> {
         println!();
     }
 
-    println!(
-        "Active mission: {} ({})",
-        changes.active_mission,
-        short_name(&changes.active_set)
-    );
-    println!();
+    if !all_completed {
+        println!(
+            "Active mission: {} ({})",
+            changes.active_mission,
+            short_name(&changes.active_set)
+        );
+        println!();
+    }
 
     if !skip_confirm {
         print!("Apply these changes? [y/N] ");
@@ -108,7 +134,7 @@ fn set(args: &SaveArgs, mission: &str, skip_confirm: bool) -> Result<()> {
         Ok(())
     })?;
 
-    println!("Campaign progress updated.");
+    println!("Mission progress updated.");
 
     Ok(())
 }
@@ -116,5 +142,7 @@ fn set(args: &SaveArgs, mission: &str, skip_confirm: bool) -> Result<()> {
 fn short_name(set_name: &str) -> &str {
     set_name
         .strip_prefix("missionset_main_")
+        .or_else(|| set_name.strip_prefix("missionset_dlc_"))
+        .or_else(|| set_name.strip_prefix("missionset_"))
         .unwrap_or(set_name)
 }
