@@ -4,10 +4,12 @@
 
 pub mod campaign;
 mod changeset;
+pub mod entitlements;
 mod fod;
 mod state_flags;
 
 pub use changeset::ChangeSet;
+pub use entitlements::Entitlements;
 pub use state_flags::StateFlags;
 
 use std::fmt;
@@ -222,6 +224,13 @@ impl SaveFile {
         changes: &campaign::CampaignChanges,
     ) -> Result<(), SaveError> {
         campaign::apply_campaign_progress(&mut self.data, changes)
+    }
+
+    /// Detect entitlements (pre-order, premium edition, etc.) from profile data.
+    ///
+    /// Only meaningful on profile.sav — character saves don't contain unlockables.
+    pub fn entitlements(&self) -> Entitlements {
+        entitlements::detect_entitlements(&self.data)
     }
 
     /// Collect all YAML paths that contain item serials.
