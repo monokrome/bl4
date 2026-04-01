@@ -6,11 +6,12 @@ pub mod campaign;
 mod changeset;
 pub mod entitlements;
 mod fod;
-mod session;
+pub mod session;
 mod state_flags;
 
 pub use changeset::ChangeSet;
 pub use entitlements::Entitlements;
+pub use session::{SaveSession, SaveState};
 pub use state_flags::StateFlags;
 
 use std::fmt;

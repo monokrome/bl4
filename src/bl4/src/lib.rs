@@ -60,7 +60,7 @@ pub use parts::{
     varbit_from_category, weapon_level_code,
 };
 #[doc(inline)]
-pub use save::{ChangeSet, Entitlements, SaveError, SaveFile, StateFlags};
+pub use save::{ChangeSet, Entitlements, SaveError, SaveFile, SaveSession, SaveState, StateFlags};
 #[doc(inline)]
 pub use serial::resolve::{self as resolve, DecodedItem};
 #[doc(inline)]
