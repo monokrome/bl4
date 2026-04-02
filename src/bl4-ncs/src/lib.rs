@@ -75,10 +75,10 @@ pub use inventory::{
 };
 pub use item_names::{extract_from_directory as extract_item_names, ItemNameEntry};
 pub mod mission_names;
-pub use mission_names::{extract_from_directory as extract_mission_names, MissionNameEntry};
 pub use manifest::{
     scan as scan_for_ncs_manifests, Entry as NcsManifestEntry, Manifest as NcsManifest,
 };
+pub use mission_names::{extract_from_directory as extract_mission_names, MissionNameEntry};
 pub use name_data::{extract_from_directory as extract_name_data, NameDataEntry, NameDataMap};
 pub use pak::{
     extract_from_directory, is_ncs_file, type_from_filename, DirectoryReader, ExtractedNcs,

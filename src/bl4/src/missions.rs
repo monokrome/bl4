@@ -357,14 +357,22 @@ mod tests {
     #[test]
     fn test_mission_sets_loaded() {
         let sets = all_mission_sets();
-        assert!(sets.len() > 20, "Expected 20+ mission sets, got {}", sets.len());
+        assert!(
+            sets.len() > 20,
+            "Expected 20+ mission sets, got {}",
+            sets.len()
+        );
         assert!(sets.contains_key("missionset_main_prisonprologue"));
     }
 
     #[test]
     fn test_missions_loaded() {
         let missions = all_missions();
-        assert!(missions.len() > 100, "Expected 100+ missions, got {}", missions.len());
+        assert!(
+            missions.len() > 100,
+            "Expected 100+ missions, got {}",
+            missions.len()
+        );
         assert!(missions.contains_key("mission_main_prisonprologue"));
     }
 
@@ -406,16 +414,34 @@ mod tests {
         let names: Vec<&str> = prereqs.iter().map(|ms| ms.name.as_str()).collect();
 
         // Must include all three branch endpoints
-        assert!(names.contains(&"missionset_main_grasslands3"), "missing grasslands3");
-        assert!(names.contains(&"missionset_main_mountains3"), "missing mountains3");
-        assert!(names.contains(&"missionset_main_shatteredlands3"), "missing shatteredlands3");
+        assert!(
+            names.contains(&"missionset_main_grasslands3"),
+            "missing grasslands3"
+        );
+        assert!(
+            names.contains(&"missionset_main_mountains3"),
+            "missing mountains3"
+        );
+        assert!(
+            names.contains(&"missionset_main_shatteredlands3"),
+            "missing shatteredlands3"
+        );
 
         // Must include branch interiors too
-        assert!(names.contains(&"missionset_main_mountains1"), "missing mountains1");
-        assert!(names.contains(&"missionset_main_shatteredlands1"), "missing shatteredlands1");
+        assert!(
+            names.contains(&"missionset_main_mountains1"),
+            "missing mountains1"
+        );
+        assert!(
+            names.contains(&"missionset_main_shatteredlands1"),
+            "missing shatteredlands1"
+        );
 
         // Target should be last
-        assert_eq!(prereqs.last().unwrap().name, "missionset_main_searchforlilith");
+        assert_eq!(
+            prereqs.last().unwrap().name,
+            "missionset_main_searchforlilith"
+        );
     }
 
     #[test]

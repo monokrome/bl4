@@ -123,10 +123,7 @@ pub fn plan_campaign_progress(target: &str) -> Option<CampaignChanges> {
 const DLC_GROUPS: &[(&str, &[&str])] = &[
     (
         "cowbell",
-        &[
-            "missionset_main_cowbell_unlock",
-            "missionset_main_cowbell",
-        ],
+        &["missionset_main_cowbell_unlock", "missionset_main_cowbell"],
     ),
     ("cello", &["missionset_dlc_cello"]),
     ("banjo", &["missionset_dlc_banjo"]),
@@ -306,8 +303,7 @@ fn ensure_missions_structure(data: &mut serde_yaml::Value) {
         data["missions"] = serde_yaml::Value::Mapping(serde_yaml::Mapping::new());
     }
     if data["missions"]["local_sets"].is_null() {
-        data["missions"]["local_sets"] =
-            serde_yaml::Value::Mapping(serde_yaml::Mapping::new());
+        data["missions"]["local_sets"] = serde_yaml::Value::Mapping(serde_yaml::Mapping::new());
     }
 }
 
@@ -490,9 +486,15 @@ missions:
     fn test_plan_campaign_progress() {
         let changes = plan_campaign_progress("grasslands1").unwrap();
         assert_eq!(changes.active_set, "missionset_main_grasslands1");
-        assert!(changes.completed_sets.contains(&"missionset_main_prisonprologue".to_string()));
-        assert!(changes.completed_sets.contains(&"missionset_main_beach".to_string()));
-        assert!(!changes.completed_sets.contains(&"missionset_main_grasslands1".to_string()));
+        assert!(changes
+            .completed_sets
+            .contains(&"missionset_main_prisonprologue".to_string()));
+        assert!(changes
+            .completed_sets
+            .contains(&"missionset_main_beach".to_string()));
+        assert!(!changes
+            .completed_sets
+            .contains(&"missionset_main_grasslands1".to_string()));
     }
 
     #[test]
@@ -502,9 +504,8 @@ missions:
         apply_campaign_progress(&mut data, &changes).unwrap();
 
         // Prologue should be completed
-        let prologue_status = data["missions"]["local_sets"]["missionset_main_prisonprologue"]
-            ["status"]
-            .as_str();
+        let prologue_status =
+            data["missions"]["local_sets"]["missionset_main_prisonprologue"]["status"].as_str();
         assert_eq!(prologue_status, Some("completed"));
 
         // Beach should be completed
@@ -513,8 +514,8 @@ missions:
         assert_eq!(beach_status, Some("completed"));
 
         // Grasslands1 should be active
-        let g1_mission = &data["missions"]["local_sets"]["missionset_main_grasslands1"]
-            ["missions"]["mission_main_grasslands1"]["status"];
+        let g1_mission = &data["missions"]["local_sets"]["missionset_main_grasslands1"]["missions"]
+            ["mission_main_grasslands1"]["status"];
         assert_eq!(g1_mission.as_str(), Some("Active"));
     }
 

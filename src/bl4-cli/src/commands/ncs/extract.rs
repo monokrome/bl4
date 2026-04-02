@@ -1108,10 +1108,7 @@ fn extract_missions(path: &Path, output: Option<&Path>, json: bool) -> Result<()
         .filter(|e| e.file_type().is_file())
     {
         let file_path = entry.path();
-        let filename = file_path
-            .file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or("");
+        let filename = file_path.file_name().and_then(|n| n.to_str()).unwrap_or("");
 
         if !filename.ends_with(".bin") {
             continue;
@@ -1179,8 +1176,7 @@ fn extract_missions(path: &Path, output: Option<&Path>, json: bool) -> Result<()
         fs::create_dir_all(&missions_dir)?;
 
         // mission_sets.tsv
-        let mut out =
-            String::from("mission_set\tprerequisite\tcategory\tchained\tregion\n");
+        let mut out = String::from("mission_set\tprerequisite\tcategory\tchained\tregion\n");
         for ms in &mission_sets {
             out.push_str(&format!(
                 "{}\t{}\t{}\t{}\t{}\n",
@@ -1271,8 +1267,7 @@ fn extract_mission_sets_from_doc(doc: &bl4_ncs::document::Document) -> Vec<Missi
 
                 let category = classify_mission_set(key);
 
-                let prerequisite =
-                    extract_prerequisite_from_value(value_map).unwrap_or_default();
+                let prerequisite = extract_prerequisite_from_value(value_map).unwrap_or_default();
 
                 let chained = value_map
                     .get("bchained")
@@ -1342,21 +1337,13 @@ fn extract_missions_from_doc(doc: &bl4_ncs::document::Document) -> Vec<MissionEn
                 };
 
                 let mission_type = get_leaf("missiontype");
-                let world_region =
-                    strip_ncs_ref(&get_leaf("worldregion"), "game_region");
+                let world_region = strip_ncs_ref(&get_leaf("worldregion"), "game_region");
                 let zone = extract_zone_from_value(value_map);
-                let difficulty = strip_ncs_ref(
-                    &get_leaf("missiondifficulty"),
-                    "ui_mission_difficulty",
-                );
-                let mission_set =
-                    strip_ncs_ref(&get_leaf("missionset"), "missionset");
-                let replay_station =
-                    strip_ncs_ref(&get_leaf("replaytravelstation"), "map");
-                let dialog_script = strip_ncs_ref(
-                    &get_leaf("missiondialogscript"),
-                    "dialogscript",
-                );
+                let difficulty =
+                    strip_ncs_ref(&get_leaf("missiondifficulty"), "ui_mission_difficulty");
+                let mission_set = strip_ncs_ref(&get_leaf("missionset"), "missionset");
+                let replay_station = strip_ncs_ref(&get_leaf("replaytravelstation"), "map");
+                let dialog_script = strip_ncs_ref(&get_leaf("missiondialogscript"), "dialogscript");
 
                 results.push(MissionEntry {
                     mission: key.clone(),
@@ -1472,7 +1459,11 @@ fn classify_mission_set(key: &str) -> &'static str {
         "micro"
     } else if key.contains("_vault_") {
         "vault"
-    } else if key.contains("_dlc_") || key.contains("_cello") || key.contains("_banjo") || key.contains("_cowbell") {
+    } else if key.contains("_dlc_")
+        || key.contains("_cello")
+        || key.contains("_banjo")
+        || key.contains("_cowbell")
+    {
         "dlc"
     } else if key.contains("zoneactivity_") {
         "zoneactivity"

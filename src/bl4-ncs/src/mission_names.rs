@@ -161,12 +161,13 @@ mod tests {
         let entries = extract_from_directory(&ncs_dir);
         assert!(!entries.is_empty(), "Should find mission names");
 
-        let out_path = ncs_dir
-            .parent()
-            .unwrap()
-            .join("missions/mission_names.tsv");
+        let out_path = ncs_dir.parent().unwrap().join("missions/mission_names.tsv");
         write_tsv(&entries, &out_path).unwrap();
-        eprintln!("Wrote {} mission names to {}", entries.len(), out_path.display());
+        eprintln!(
+            "Wrote {} mission names to {}",
+            entries.len(),
+            out_path.display()
+        );
 
         for entry in &entries {
             eprintln!("  {} → {}", entry.internal_name, entry.display_name);

@@ -19,7 +19,11 @@ fn list(args: &SaveArgs, category: &str) -> Result<()> {
     let yaml_data = bl4::decrypt_sav(&encrypted, &steam_id)?;
     let save = bl4::SaveFile::from_yaml(&yaml_data)?;
 
-    let filter = if category == "all" { None } else { Some(category) };
+    let filter = if category == "all" {
+        None
+    } else {
+        Some(category)
+    };
 
     let status = save.mission_status(filter);
 
@@ -165,9 +169,7 @@ fn confirm() -> Result<bool> {
         .unwrap_or(false))
 }
 
-fn plan_generic_set_completion(
-    name: &str,
-) -> Option<bl4::save::campaign::CampaignChanges> {
+fn plan_generic_set_completion(name: &str) -> Option<bl4::save::campaign::CampaignChanges> {
     let resolved = bl4::missions::resolve_mission_set_name(name)?;
     Some(bl4::save::campaign::CampaignChanges {
         completed_sets: vec![resolved.to_string()],

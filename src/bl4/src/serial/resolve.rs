@@ -423,8 +423,7 @@ mod tests {
     fn full_resolve_epic_with_legendary_comp() {
         // Epic Torgue Shotgun with comp_04_epic + comp_05_legendary_linebacker.
         // Should resolve as "Rider" (generic name), not "Linebacker" (legendary name).
-        let item =
-            full_resolve("@UgfIh4FpCJ&`GZQM3YDlv4IO&aKh!={NYtn1phBTWp<bcNApi").unwrap();
+        let item = full_resolve("@UgfIh4FpCJ&`GZQM3YDlv4IO&aKh!={NYtn1phBTWp<bcNApi").unwrap();
         assert_eq!(item.name.as_deref(), Some("Rider"));
         assert_eq!(item.manufacturer.as_deref(), Some("Torgue"));
         assert_eq!(item.weapon_type.as_deref(), Some("Shotgun"));
@@ -454,8 +453,7 @@ mod tests {
     #[test]
     fn resolve_rarity_epic_with_legendary_comp() {
         // Epic item with comp_04_epic + comp_05_legendary_* should resolve as Epic
-        let item =
-            full_resolve("@UgfIh4FpCJ&`GZQM3YDlv4IO&aKh!={NYtn1phBTWp<bcNApi").unwrap();
+        let item = full_resolve("@UgfIh4FpCJ&`GZQM3YDlv4IO&aKh!={NYtn1phBTWp<bcNApi").unwrap();
         assert_eq!(item.rarity, Some(Rarity::Epic));
     }
 

@@ -64,7 +64,13 @@ fn rarity_tier_number(rarity: &Rarity) -> u8 {
 /// For VarBit-first (equipment): uses category_name → parse manufacturer + type.
 fn extract_codes(serial: &ItemSerial) -> Option<(String, String)> {
     // VarInt-first: weapon_info() returns (manufacturer_name, weapon_type_name)
-    if matches!(serial.tokens.first(), Some(Token::Var { encoding: VarEncoding::Int, .. })) {
+    if matches!(
+        serial.tokens.first(),
+        Some(Token::Var {
+            encoding: VarEncoding::Int,
+            ..
+        })
+    ) {
         let (mfr_name, type_name) = serial.weapon_info()?;
         let mfr_code = manufacturer_by_name(mfr_name)?.code;
         let type_code = weapon_type_by_name(type_name)?.code;

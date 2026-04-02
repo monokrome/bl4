@@ -94,8 +94,16 @@ pub fn decode(
         let new_serial = modified.original.clone();
         println!("Modified serial: {}\n", new_serial);
         return decode(
-            &new_serial, verbose, debug, analyze, rarity, short, parts_db,
-            remove, add, None,
+            &new_serial,
+            verbose,
+            debug,
+            analyze,
+            rarity,
+            short,
+            parts_db,
+            remove,
+            add,
+            None,
         );
     }
 
@@ -360,8 +368,14 @@ fn analyze_first_token(item: &bl4::ItemSerial) -> Result<()> {
 
     if let Some(first_token) = item.tokens.first() {
         let value = match first_token {
-            Token::Var { val: v, encoding: bl4::serial::VarEncoding::Int } => Some((*v, "VarInt")),
-            Token::Var { val: v, encoding: bl4::serial::VarEncoding::Bit } => Some((*v, "VarBit")),
+            Token::Var {
+                val: v,
+                encoding: bl4::serial::VarEncoding::Int,
+            } => Some((*v, "VarInt")),
+            Token::Var {
+                val: v,
+                encoding: bl4::serial::VarEncoding::Bit,
+            } => Some((*v, "VarBit")),
             _ => None,
         };
 
@@ -376,7 +390,10 @@ fn analyze_first_token(item: &bl4::ItemSerial) -> Result<()> {
             // Decode Part Group ID based on format and token value
             println!("Part Group ID decoding:");
             match first_token {
-                Token::Var { val: v, encoding: bl4::serial::VarEncoding::Bit } => {
+                Token::Var {
+                    val: v,
+                    encoding: bl4::serial::VarEncoding::Bit,
+                } => {
                     if let Some(cat) = item.part_group_id() {
                         let divisor = if *v >= 131_072 { 8192 } else { 384 };
                         let offset = value % divisor;
@@ -394,7 +411,10 @@ fn analyze_first_token(item: &bl4::ItemSerial) -> Result<()> {
                         println!("  Identified: {}", name);
                     }
                 }
-                Token::Var { encoding: bl4::serial::VarEncoding::Int, .. } => {
+                Token::Var {
+                    encoding: bl4::serial::VarEncoding::Int,
+                    ..
+                } => {
                     if let Some((mfr, wtype)) = item.weapon_info() {
                         println!("  VarInt-first: serial ID {} → {} {}", value, mfr, wtype);
                     } else {

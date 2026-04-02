@@ -235,7 +235,11 @@ fn format_value_expanded(value: &Value, indent: usize) -> String {
                     format!("{}{}: {}", pad, k, formatted)
                 })
                 .collect();
-            format!("{{\n{}\n{}}}", pairs.join("\n"), " ".repeat(indent.saturating_sub(2)))
+            format!(
+                "{{\n{}\n{}}}",
+                pairs.join("\n"),
+                " ".repeat(indent.saturating_sub(2))
+            )
         }
     }
 }

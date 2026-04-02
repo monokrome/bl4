@@ -257,22 +257,35 @@ pub enum PartEncoding {
 /// Token types in the bitstream
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
-    Separator,                                        // 00
-    SoftSeparator,                                    // 01
-    Var { val: u64, encoding: VarEncoding },           // 100/110 + data
-    Part { index: u64, values: Vec<u64>, encoding: PartEncoding }, // 101 + part data
-    String(String),                                   // 111 + length + ascii
+    Separator,     // 00
+    SoftSeparator, // 01
+    Var {
+        val: u64,
+        encoding: VarEncoding,
+    }, // 100/110 + data
+    Part {
+        index: u64,
+        values: Vec<u64>,
+        encoding: PartEncoding,
+    }, // 101 + part data
+    String(String), // 111 + length + ascii
 }
 
 #[allow(non_snake_case)]
 impl Token {
     /// Create a VarInt token.
     pub fn VarInt(v: u64) -> Self {
-        Token::Var { val: v, encoding: VarEncoding::Int }
+        Token::Var {
+            val: v,
+            encoding: VarEncoding::Int,
+        }
     }
     /// Create a VarBit token.
     pub fn VarBit(v: u64) -> Self {
-        Token::Var { val: v, encoding: VarEncoding::Bit }
+        Token::Var {
+            val: v,
+            encoding: VarEncoding::Bit,
+        }
     }
     /// True if this is a Var token (VarInt or VarBit).
     pub fn is_var(&self) -> bool {
@@ -280,11 +293,23 @@ impl Token {
     }
     /// True if this is a VarInt-encoded Var token.
     pub fn is_varint(&self) -> bool {
-        matches!(self, Token::Var { encoding: VarEncoding::Int, .. })
+        matches!(
+            self,
+            Token::Var {
+                encoding: VarEncoding::Int,
+                ..
+            }
+        )
     }
     /// True if this is a VarBit-encoded Var token.
     pub fn is_varbit(&self) -> bool {
-        matches!(self, Token::Var { encoding: VarEncoding::Bit, .. })
+        matches!(
+            self,
+            Token::Var {
+                encoding: VarEncoding::Bit,
+                ..
+            }
+        )
     }
     /// Get the value if this is a Var token.
     pub fn var_val(&self) -> Option<u64> {
@@ -367,19 +392,21 @@ fn encode_tokens(tokens: &[Token]) -> Vec<u8> {
             Token::SoftSeparator => {
                 writer.write_bits(0b01, 2);
             }
-            Token::Var { val, encoding } => {
-                match encoding {
-                    VarEncoding::Int => {
-                        writer.write_bits(TokenPrefix::VarInt as u64, 3);
-                        writer.write_varint(*val);
-                    }
-                    VarEncoding::Bit => {
-                        writer.write_bits(TokenPrefix::VarBit as u64, 3);
-                        writer.write_varbit(*val);
-                    }
+            Token::Var { val, encoding } => match encoding {
+                VarEncoding::Int => {
+                    writer.write_bits(TokenPrefix::VarInt as u64, 3);
+                    writer.write_varint(*val);
                 }
-            }
-            Token::Part { index, values, encoding } => {
+                VarEncoding::Bit => {
+                    writer.write_bits(TokenPrefix::VarBit as u64, 3);
+                    writer.write_varbit(*val);
+                }
+            },
+            Token::Part {
+                index,
+                values,
+                encoding,
+            } => {
                 writer.write_bits(TokenPrefix::Part as u64, 3);
                 writer.write_varint(*index);
                 encode_part_values(&mut writer, values, *encoding);
@@ -562,12 +589,14 @@ fn parse_string_token(reader: &mut BitReader) -> Option<Token> {
 /// Parse tokens with 3-bit prefix (100, 101, 110, 111)
 fn parse_3bit_token(reader: &mut BitReader, prefix: TokenPrefix, debug: bool) -> Option<Token> {
     match prefix {
-        TokenPrefix::VarInt => reader
-            .read_varint()
-            .map(|v| Token::Var { val: v, encoding: VarEncoding::Int }),
-        TokenPrefix::VarBit => reader
-            .read_varbit()
-            .map(|v| Token::Var { val: v, encoding: VarEncoding::Bit }),
+        TokenPrefix::VarInt => reader.read_varint().map(|v| Token::Var {
+            val: v,
+            encoding: VarEncoding::Int,
+        }),
+        TokenPrefix::VarBit => reader.read_varbit().map(|v| Token::Var {
+            val: v,
+            encoding: VarEncoding::Bit,
+        }),
         TokenPrefix::Part => {
             let index = reader.read_varint()?;
             if index > MAX_REASONABLE_PART_INDEX {
@@ -580,7 +609,11 @@ fn parse_3bit_token(reader: &mut BitReader, prefix: TokenPrefix, debug: bool) ->
                 return None;
             }
             let (values, encoding) = parse_part_values(reader);
-            Some(Token::Part { index, values, encoding })
+            Some(Token::Part {
+                index,
+                values,
+                encoding,
+            })
         }
         TokenPrefix::String => parse_string_token(reader),
     }
@@ -804,7 +837,10 @@ fn collect_varints(tokens: &[Token]) -> (Vec<u64>, Vec<u64>) {
 
     for token in tokens {
         match token {
-            Token::Var { val: v, encoding: VarEncoding::Int } => {
+            Token::Var {
+                val: v,
+                encoding: VarEncoding::Int,
+            } => {
                 if seen_sep {
                     after_sep.push(*v);
                 } else {
@@ -827,7 +863,11 @@ fn extract_equipment_header(tokens: &[Token]) -> HeaderInfo {
         .iter()
         .take_while(|t| !matches!(t, Token::Separator))
         .filter_map(|t| {
-            if let Token::Var { val: v, encoding: VarEncoding::Int } = t {
+            if let Token::Var {
+                val: v,
+                encoding: VarEncoding::Int,
+            } = t
+            {
                 Some(*v)
             } else {
                 None
@@ -896,7 +936,11 @@ fn extract_elements(tokens: &[Token], category: i64) -> Vec<Element> {
 fn extract_rarity(tokens: &[Token], is_varbit_first: bool) -> Option<Rarity> {
     if is_varbit_first {
         let first_varbit = tokens.iter().find_map(|t| {
-            if let Token::Var { val: v, encoding: VarEncoding::Bit } = t {
+            if let Token::Var {
+                val: v,
+                encoding: VarEncoding::Bit,
+            } = t
+            {
                 Some(*v)
             } else {
                 None
@@ -935,7 +979,13 @@ impl ItemSerial {
         let mut reader = BitReader::new(raw_bytes.clone());
         let (tokens, token_bit_offsets) = parse_tokens(&mut reader);
 
-        let format = if matches!(tokens.first(), Some(Token::Var { encoding: VarEncoding::Bit, .. })) {
+        let format = if matches!(
+            tokens.first(),
+            Some(Token::Var {
+                encoding: VarEncoding::Bit,
+                ..
+            })
+        ) {
             SerialFormat::VarBitFirst
         } else {
             SerialFormat::VarIntFirst
@@ -951,7 +1001,11 @@ impl ItemSerial {
             tokens
                 .iter()
                 .find_map(|t| {
-                    if let Token::Var { val: v, encoding: VarEncoding::Bit } = t {
+                    if let Token::Var {
+                        val: v,
+                        encoding: VarEncoding::Bit,
+                    } = t
+                    {
                         Some(category_from_varbit(*v))
                     } else {
                         None
@@ -1135,7 +1189,13 @@ impl ItemSerial {
     ///
     /// Returns None for VarBit-first formats or if the ID is unknown.
     pub fn weapon_info(&self) -> Option<(&'static str, &'static str)> {
-        let is_varint_first = matches!(self.tokens.first(), Some(Token::Var { encoding: VarEncoding::Int, .. }));
+        let is_varint_first = matches!(
+            self.tokens.first(),
+            Some(Token::Var {
+                encoding: VarEncoding::Int,
+                ..
+            })
+        );
         if is_varint_first {
             self.manufacturer.and_then(weapon_info_from_first_varint)
         } else {
@@ -1149,14 +1209,24 @@ impl ItemSerial {
     /// and extracts the NCS category ID. Returns None for VarInt-first items.
     pub fn part_group_id(&self) -> Option<i64> {
         let first_varbit = self.tokens.iter().find_map(|t| {
-            if let Token::Var { val: v, encoding: VarEncoding::Bit } = t {
+            if let Token::Var {
+                val: v,
+                encoding: VarEncoding::Bit,
+            } = t
+            {
                 Some(*v)
             } else {
                 None
             }
         })?;
 
-        if !matches!(self.tokens.first(), Some(Token::Var { encoding: VarEncoding::Bit, .. })) {
+        if !matches!(
+            self.tokens.first(),
+            Some(Token::Var {
+                encoding: VarEncoding::Bit,
+                ..
+            })
+        ) {
             return None;
         }
 
@@ -1648,14 +1718,21 @@ mod tests {
         for s in &serials {
             if let Ok(item) = ItemSerial::decode(s) {
                 match item.tokens.first() {
-                    Some(Token::Var { encoding: VarEncoding::Int, .. }) => {
+                    Some(Token::Var {
+                        encoding: VarEncoding::Int,
+                        ..
+                    }) => {
                         // VarInt-first: level code is header VarInt[3]
                         let header: Vec<u64> = item
                             .tokens
                             .iter()
                             .take_while(|t| !matches!(t, Token::Separator))
                             .filter_map(|t| {
-                                if let Token::Var { val: v, encoding: VarEncoding::Int } = t {
+                                if let Token::Var {
+                                    val: v,
+                                    encoding: VarEncoding::Int,
+                                } = t
+                                {
                                     Some(*v)
                                 } else {
                                     None
@@ -1668,7 +1745,10 @@ mod tests {
                             no_level += 1;
                         }
                     }
-                    Some(Token::Var { val: v, encoding: VarEncoding::Bit }) => {
+                    Some(Token::Var {
+                        val: v,
+                        encoding: VarEncoding::Bit,
+                    }) => {
                         let divisor = crate::parts::varbit_divisor(*v);
                         let remainder = v % divisor;
                         *varbit_remainders.entry(remainder).or_default() += 1;
@@ -1711,7 +1791,13 @@ mod tests {
         println!("\n=== Dead zone codes (51-127) detail ===");
         for s in &serials {
             if let Ok(item) = ItemSerial::decode(s) {
-                if !matches!(item.tokens.first(), Some(Token::Var { encoding: VarEncoding::Int, .. })) {
+                if !matches!(
+                    item.tokens.first(),
+                    Some(Token::Var {
+                        encoding: VarEncoding::Int,
+                        ..
+                    })
+                ) {
                     continue;
                 }
                 let header: Vec<u64> = item
@@ -1719,7 +1805,11 @@ mod tests {
                     .iter()
                     .take_while(|t| !matches!(t, Token::Separator))
                     .filter_map(|t| {
-                        if let Token::Var { val: v, encoding: VarEncoding::Int } = t {
+                        if let Token::Var {
+                            val: v,
+                            encoding: VarEncoding::Int,
+                        } = t
+                        {
                             Some(*v)
                         } else {
                             None
@@ -1741,7 +1831,13 @@ mod tests {
         println!("\n=== High codes (>145, non-standard rarity) detail ===");
         for s in &serials {
             if let Ok(item) = ItemSerial::decode(s) {
-                if !matches!(item.tokens.first(), Some(Token::Var { encoding: VarEncoding::Int, .. })) {
+                if !matches!(
+                    item.tokens.first(),
+                    Some(Token::Var {
+                        encoding: VarEncoding::Int,
+                        ..
+                    })
+                ) {
                     continue;
                 }
                 let header: Vec<u64> = item
@@ -1749,7 +1845,11 @@ mod tests {
                     .iter()
                     .take_while(|t| !matches!(t, Token::Separator))
                     .filter_map(|t| {
-                        if let Token::Var { val: v, encoding: VarEncoding::Int } = t {
+                        if let Token::Var {
+                            val: v,
+                            encoding: VarEncoding::Int,
+                        } = t
+                        {
                             Some(*v)
                         } else {
                             None
@@ -1771,7 +1871,13 @@ mod tests {
         let mut vi2: BTreeMap<u64, usize> = BTreeMap::new();
         for s in &serials {
             if let Ok(item) = ItemSerial::decode(s) {
-                if !matches!(item.tokens.first(), Some(Token::Var { encoding: VarEncoding::Int, .. })) {
+                if !matches!(
+                    item.tokens.first(),
+                    Some(Token::Var {
+                        encoding: VarEncoding::Int,
+                        ..
+                    })
+                ) {
                     continue;
                 }
                 let header: Vec<u64> = item
@@ -1779,7 +1885,11 @@ mod tests {
                     .iter()
                     .take_while(|t| !matches!(t, Token::Separator))
                     .filter_map(|t| {
-                        if let Token::Var { val: v, encoding: VarEncoding::Int } = t {
+                        if let Token::Var {
+                            val: v,
+                            encoding: VarEncoding::Int,
+                        } = t
+                        {
                             Some(*v)
                         } else {
                             None
@@ -1802,7 +1912,13 @@ mod tests {
         let mut vi3_when_4: BTreeMap<u64, usize> = BTreeMap::new();
         for s in &serials {
             if let Ok(item) = ItemSerial::decode(s) {
-                if !matches!(item.tokens.first(), Some(Token::Var { encoding: VarEncoding::Int, .. })) {
+                if !matches!(
+                    item.tokens.first(),
+                    Some(Token::Var {
+                        encoding: VarEncoding::Int,
+                        ..
+                    })
+                ) {
                     continue;
                 }
                 let header: Vec<u64> = item
@@ -1810,7 +1926,11 @@ mod tests {
                     .iter()
                     .take_while(|t| !matches!(t, Token::Separator))
                     .filter_map(|t| {
-                        if let Token::Var { val: v, encoding: VarEncoding::Int } = t {
+                        if let Token::Var {
+                            val: v,
+                            encoding: VarEncoding::Int,
+                        } = t
+                        {
                             Some(*v)
                         } else {
                             None
@@ -1843,7 +1963,13 @@ mod tests {
         println!("\n=== VarInt[2]=4 item serials ===");
         for s in &serials {
             if let Ok(item) = ItemSerial::decode(s) {
-                if !matches!(item.tokens.first(), Some(Token::Var { encoding: VarEncoding::Int, .. })) {
+                if !matches!(
+                    item.tokens.first(),
+                    Some(Token::Var {
+                        encoding: VarEncoding::Int,
+                        ..
+                    })
+                ) {
                     continue;
                 }
                 let header: Vec<u64> = item
@@ -1851,7 +1977,11 @@ mod tests {
                     .iter()
                     .take_while(|t| !matches!(t, Token::Separator))
                     .filter_map(|t| {
-                        if let Token::Var { val: v, encoding: VarEncoding::Int } = t {
+                        if let Token::Var {
+                            val: v,
+                            encoding: VarEncoding::Int,
+                        } = t
+                        {
                             Some(*v)
                         } else {
                             None
@@ -1981,7 +2111,13 @@ mod tests {
         println!("\n=== STRING TOKENS IN VARBIT-FIRST ITEMS ===");
         let mut string_values: BTreeMap<String, usize> = BTreeMap::new();
         for item in &decoded {
-            if !matches!(item.tokens.first(), Some(Token::Var { encoding: VarEncoding::Bit, .. })) {
+            if !matches!(
+                item.tokens.first(),
+                Some(Token::Var {
+                    encoding: VarEncoding::Bit,
+                    ..
+                })
+            ) {
                 continue;
             }
             for token in &item.tokens {
@@ -2012,8 +2148,14 @@ mod tests {
                 .map(|t| match t {
                     Token::Separator => "|",
                     Token::SoftSeparator => ".",
-                    Token::Var { encoding: VarEncoding::Int, .. } => "I",
-                    Token::Var { encoding: VarEncoding::Bit, .. } => "B",
+                    Token::Var {
+                        encoding: VarEncoding::Int,
+                        ..
+                    } => "I",
+                    Token::Var {
+                        encoding: VarEncoding::Bit,
+                        ..
+                    } => "B",
                     Token::Part { .. } => "P",
                     Token::String(_) => "S",
                 })
@@ -2203,8 +2345,8 @@ mod tests {
     fn test_with_level_identity() {
         // with_level(same) should produce an identical serial
         let serials = &[
-            "@Ugr$xKm/)}}!pQufM-}RPG}y!%8r1pL0ss",          // VarBit repair kit, level 50
-            "@Ugr$ZCm/&tH!t{KgK/Shxu>k",                     // VarBit repair kit, level 33
+            "@Ugr$xKm/)}}!pQufM-}RPG}y!%8r1pL0ss", // VarBit repair kit, level 50
+            "@Ugr$ZCm/&tH!t{KgK/Shxu>k",           // VarBit repair kit, level 33
             "@UgfIh4FpCJ&`GZQM3YDlv4IO&aKh!={NYtn1phBTWp<bcNApi", // VarInt weapon, level 11
         ];
         for serial in serials {
@@ -2228,20 +2370,21 @@ mod tests {
         let item = ItemSerial::decode(serial).unwrap();
         let modified = item.with_level(60).unwrap();
 
-        assert_eq!(item.raw_bytes.len(), modified.raw_bytes.len(), "Length changed");
+        assert_eq!(
+            item.raw_bytes.len(),
+            modified.raw_bytes.len(),
+            "Length changed"
+        );
         assert_eq!(modified.level, Some(60));
 
-        let diffs: Vec<usize> = item.raw_bytes
+        let diffs: Vec<usize> = item
+            .raw_bytes
             .iter()
             .zip(modified.raw_bytes.iter())
             .enumerate()
             .filter(|(_, (a, b))| a != b)
             .map(|(i, _)| i)
             .collect();
-        assert!(
-            diffs.len() <= 2,
-            "Too many byte differences: {:?}",
-            diffs
-        );
+        assert!(diffs.len() <= 2, "Too many byte differences: {:?}", diffs);
     }
 }
