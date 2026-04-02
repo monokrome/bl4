@@ -52,13 +52,19 @@ fn list(args: &SaveArgs, category: &str) -> Result<()> {
         };
 
         let name = short_name(&entry.mission_set);
-        let region = if entry.region.is_empty() {
-            String::new()
-        } else {
-            format!("  ({})", entry.region)
+
+        // Try to find the display name from the first mission in this set
+        let friendly = bl4::missions::first_mission_in_set(&entry.mission_set)
+            .and_then(|m| bl4::missions::display_name(&m.name));
+
+        let suffix = match (friendly, entry.region.as_str()) {
+            (Some(f), "") => format!("  ({})", f),
+            (Some(f), r) => format!("  ({}, {})", f, r),
+            (None, "") => String::new(),
+            (None, r) => format!("  ({})", r),
         };
 
-        println!("{} {:<width$}{}", icon, name, region, width = max_name + 2);
+        println!("{} {:<width$}{}", icon, name, suffix, width = max_name + 2);
     }
 
     Ok(())

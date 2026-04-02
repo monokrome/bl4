@@ -8,6 +8,7 @@ use std::collections::HashMap;
 
 static MISSION_SETS_TSV: &str = include_str!(concat!(env!("OUT_DIR"), "/mission_sets.tsv"));
 static MISSIONS_TSV: &str = include_str!(concat!(env!("OUT_DIR"), "/missions.tsv"));
+static MISSION_NAMES_TSV: &str = include_str!(concat!(env!("OUT_DIR"), "/mission_names.tsv"));
 
 #[derive(Debug, Clone)]
 pub struct MissionSet {
@@ -71,6 +72,31 @@ static MISSIONS: Lazy<HashMap<String, Mission>> = Lazy::new(|| {
     }
     map
 });
+
+/// Internal name → display name
+static DISPLAY_NAMES: Lazy<HashMap<String, String>> = Lazy::new(|| {
+    let mut map = HashMap::new();
+    for line in MISSION_NAMES_TSV.lines().skip(1) {
+        let cols: Vec<&str> = line.split('\t').collect();
+        if cols.len() >= 2 && !cols[1].is_empty() {
+            map.insert(cols[0].to_string(), cols[1].to_string());
+        }
+    }
+    map
+});
+
+/// Display name (lowercase) → internal name
+static DISPLAY_NAME_REVERSE: Lazy<HashMap<String, String>> = Lazy::new(|| {
+    DISPLAY_NAMES
+        .iter()
+        .map(|(k, v)| (v.to_lowercase(), k.clone()))
+        .collect()
+});
+
+/// Get the display name for a mission, if known.
+pub fn display_name(internal_name: &str) -> Option<&'static str> {
+    DISPLAY_NAMES.get(internal_name).map(|s| s.as_str())
+}
 
 /// Get a mission set by name.
 pub fn mission_set(name: &str) -> Option<&'static MissionSet> {
@@ -248,7 +274,7 @@ pub fn first_mission_in_set(set_name: &str) -> Option<&'static Mission> {
 
 /// Resolve a short mission name to a full individual mission name.
 ///
-/// Accepts: "huntedpart1", "mission_micro_huntedpart1", "safehaven", etc.
+/// Accepts: "huntedpart1", "mission_micro_huntedpart1", "Recruitment Drive", etc.
 pub fn resolve_mission_name(input: &str) -> Option<&'static Mission> {
     let lower = input.to_lowercase();
 
@@ -264,6 +290,13 @@ pub fn resolve_mission_name(input: &str) -> Option<&'static Mission> {
     ] {
         let with_prefix = format!("{}{}", prefix, lower);
         if let Some(m) = MISSIONS.get(&with_prefix) {
+            return Some(m);
+        }
+    }
+
+    // Try display name lookup
+    if let Some(internal) = DISPLAY_NAME_REVERSE.get(&lower) {
+        if let Some(m) = MISSIONS.get(internal) {
             return Some(m);
         }
     }
@@ -294,6 +327,16 @@ pub fn resolve_mission_set_name(input: &str) -> Option<&'static str> {
         let with_prefix = format!("{}{}", prefix, lower);
         if let Some(ms) = MISSION_SETS.get(&with_prefix) {
             return Some(ms.name.as_str());
+        }
+    }
+
+    // Try display name → mission → mission set
+    if let Some(internal) = DISPLAY_NAME_REVERSE.get(&lower) {
+        if let Some(m) = MISSIONS.get(internal) {
+            let set_lower = m.mission_set.to_lowercase();
+            if let Some(ms) = MISSION_SETS.get(&set_lower) {
+                return Some(ms.name.as_str());
+            }
         }
     }
 

@@ -74,6 +74,8 @@ pub use inventory::{
     ItemParts, LegendaryComposition, PartIndices, RawStringEntry, SerialIndex, StringNumericPair,
 };
 pub use item_names::{extract_from_directory as extract_item_names, ItemNameEntry};
+pub mod mission_names;
+pub use mission_names::{extract_from_directory as extract_mission_names, MissionNameEntry};
 pub use manifest::{
     scan as scan_for_ncs_manifests, Entry as NcsManifestEntry, Manifest as NcsManifest,
 };

@@ -1,0 +1,217 @@
+mission	display_name
+mission_cello_pearl_gear_gen	Ordonite Processor
+mission_city_side_overwritingawrong	Overwriting a Wrong
+mission_contractdlc1_bounty_creep	Bounty: Kill a boss{Boss_Name_Text}
+mission_contractdlc1_patrol_creep	Patrol: Creeps
+mission_contractdlc1_search_creep	Trace: {Target_Object}
+mission_dlc1_elpisfall_large	DebugOnly: Elpis Fall
+mission_dlc1_elpisfall_single	DebugOnly: Elpis Fall
+mission_dlc1_lostsoul_childsnatcher	Lost Soul - The Child Snatcher
+mission_dlc1_lostsoul_confrontation	Lost Soul - The Confrontation
+mission_dlc1_lostsoul_ghosthunted	Lost Soul - Ghost Hunted
+mission_dlc1_lostsoul_ghoststory1	Lost Soul - Ghost Story 1
+mission_dlc1_lostsoul_ghoststory2	Lost Soul - Ghost Story 2
+mission_dlc1_lostsoul_ghoststory3	Lost Soul - Ghost Story 3
+mission_dlc1_lostsoul_hauntedhaunting	Lost Soul - Haunted Haunting
+mission_dlc1_lostsoul_predator	Lost Soul - Predator Becomes Prey
+mission_dlc1_lostsoul_slipped	Lost Soul - Slipped Into The Dead Dimension
+mission_dlc1_lostsoul_workinglate	Lost Soul - Working Late
+mission_dlc1_riftboss	Nightmare Rift Boss
+mission_dlc1_spookystory_buyerremorse	Spooky Story - Buyer's Remorse
+mission_dlc1_spookystory_lallorona1	Spooky Story - La Llorona 1
+mission_dlc1_spookystory_lallorona2	Spooky Story - La Llorona 2
+mission_dlc1_spookystory_lallorona3	Spooky Story - La Llorona 3
+mission_dlc1_spookystory_lucine1	Spooky Story - Lucine 1
+mission_dlc1_spookystory_lucine2	Spooky Story - Lucine 2
+mission_dlc1_spookystory_lucine3	Spooky Story - Lucine 3
+mission_dlc1_spookystory_lucine4	Spooky Story - Lucine 4
+mission_dlc1_spookystory_lucine5	Spooky Story - Lucine 5
+mission_dlc1_spookystory_lucineintro	Spooky Story - Lucine Intro
+mission_dlc1_spookystory_prettiersmile	Spooky Story - Prettier Smile
+mission_dlc1_spookystory_voodoo	Spooky Story - Voodoo Death
+mission_dlc_banjo	The War On Mercenary Day
+mission_dlc_cello	The Cursed Mine
+mission_dlc_raid1	The Wrath of Bloomreaper
+mission_dynamicevents_fight_ordernpc_mulstamp	Reinforcements
+mission_event_aircargo	Event_AirCargo
+mission_event_dogfight	DebugOnly:DogFight Event
+mission_event_elpis_fall	DebugOnly: Elpis Fall
+mission_event_elpisfall3	DebugOnly: Elpis Fall
+mission_event_helpnpc_searchitem	HelpNPC_SearchItem
+mission_main_beach	Recruitment Drive
+mission_main_city1	The Falling Wall
+mission_main_city1_b	Means of Ascent
+mission_main_city2	Plan Z
+mission_main_city3	The Timekeeper's Order
+mission_main_cityepilogue	Secrets of the Vault
+mission_main_cowbell0	An Invitation
+mission_main_cowbell1	On Icebound Shores Abandoned
+mission_main_cowbell2	Hearing Things
+mission_main_cowbell3	It Grows Below
+mission_main_cowbell4	What Lies Dreaming
+mission_main_cowbell5	Damnation Encroaches
+mission_main_elpis	Another Day, Another Universe
+mission_main_grasslands1	Down and Outbound
+mission_main_grasslands2	A Lot to Process
+mission_main_grasslands2b	One Fell Swoop
+mission_main_grasslands3	Rush the Gate
+mission_main_mountains1	Shadow of the Mountain
+mission_main_mountains2	Crystal Brawl
+mission_main_mountains2b	Dark Subject
+mission_main_mountains3	His Vile Sanctum
+mission_main_prisonprologue	Guns Blazing
+mission_main_searchforlilith	Rising Action
+mission_main_shatteredlands1	Wrath of the Ripper Queen
+mission_main_shatteredlands1b	Siege and Destroy
+mission_main_shatteredlands2	Unpaid Tab
+mission_main_shatteredlands3	Her Flaming Vision
+mission_micro_andwelcometothejam	And Welcome to the Jam
+mission_micro_backmccrackypt1	Crack This Guy's Back
+mission_micro_backmccrackypt2	Crack This Guy's Back - Setting the Mood
+mission_micro_backmccrackypt3	Crack This Guy's Back - Advanced Maneuver
+mission_micro_blackmarket	The Black Market
+mission_micro_catnapping	The Cat's Pajamas
+mission_micro_heistrecruits_demo	Scoundrel Roundup: Kilo
+mission_micro_heistrecruits_intro	Scoundrel Roundup: Shim
+mission_micro_heistrecruits_tech	Scoundrel Roundup: Glitch
+mission_micro_hosting	Host in the Shell
+mission_micro_huntedpart1	The Neverending Quarry
+mission_micro_huntedpart2	A Quarry of Epic Proportions
+mission_micro_huntedpart3	The Final Quarrel
+mission_micro_icefishing	Ice Fishing
+mission_micro_joeandsue	Joe & Sue
+mission_micro_operation	Doc of the Bay
+mission_micro_powercoreplinko	PowerDrop
+mission_micro_rainbowegg	Brew-ha-ha
+mission_micro_resistance	Old Tricks
+mission_micro_theentertainment	La-La-Last Call
+mission_micro_thesupply	Ain't No Sham in It
+mission_micro_whackathresher	Whack-A-Thresher
+mission_micro_whodidit	Yes, Chef
+mission_micro_zanzibart	Forgive Me
+mission_migrationevent_dlc1_dahl	MigrationEvent_DLC1_Dahl
+mission_migrationevent_dlc1_kraggon	MigrationEvent_DLC1_Dahl
+mission_migrationevent_dlc1_scav	MigrationEvent_DLC1_Dahl
+mission_npcmoment_speakeasy_nachosconvo	NPC Moment - Nachos Convo
+mission_npcmoments_general_enemybullynpc_order01	NPC Moments - NPC to Enemy
+mission_npcmoments_general_enemychatter_psycho01	NPC Moments - Enemy to Enemy
+mission_npcmoments_general_npcchatter01	NPC Moments - NPC to NPC
+mission_npcmoments_gra_fa_claptrapchat	Claptrap Chat
+mission_npcmoments_gra_fa_orderinterrogation	Order Interrogation
+mission_npcmoments_gra_fa_orderprisonbreak	Order Prison Break
+mission_npcmoments_gra_fa_stolenmachineparts	Stolen Machine Parts
+mission_npcmoments_gra_fa_talltales	Tall Tales
+mission_npcmoments_gra_hub_aboutrush	About Rush
+mission_npcmoments_gra_hub_legendofsal	Legend Of Chuzz
+mission_npcmoments_gra_ow_dinnerconversation	Dinner Conversation
+mission_npcmoments_gra_ow_inventorycheck	Inventory Check
+mission_npcmoments_gra_ow_kidsthesedays	What's With Kids These Days
+mission_npcmoments_gra_ow_legendofvaulthunter	Legend of the Vault Hunters
+mission_npcmoments_gra_ow_ordervsripper	Order vs Ripper
+mission_npcmoments_gra_ow_ripperbreakup	Ripper Break-Up
+mission_npcmoments_gra_ow_ripperfuneral	Ripper Funeral
+mission_npcmoments_gra_ow_rockandroll	Rock and Roll
+mission_npcmoments_gra_ow_synthdetainsgrazer	Synth Detains Grazer
+mission_npcmoments_gra_ow_synthshootingconvo	Synth Shooting Conversation
+mission_npcmoments_gra_sh_augbounders	Augbounders
+mission_npcmoments_gra_sh_electidefector	Electi Defector
+mission_npcmoments_hub_outbounderlosinghope	Outbounders Losing Hope
+mission_npcmoments_mou_hub_augerdiscussion	NPC Moment - Auger Discussion
+mission_npcmoments_sha_fa_electibeingmocked	NPC Moment - Electi Being Mocked
+mission_npcmoments_sha_fa_electifriend	NPC Moment - Electi Friend
+mission_npcmoments_sha_fa_electirebels	NPC Moment - Electi Rebels
+mission_npcmoments_sha_fa_housediscussion	NPC Moment - House Discussion
+mission_npcmoments_sha_fa_ripperrobbery	NPC Moment - Ripper Robbery
+mission_npcmoments_sha_hub_electichess	NPC Moment - Electi Chess
+mission_npcmoments_sha_hub_ripperqueendefeated	NPC Moment - Ripper Queen Defeated
+mission_npcmoments_sha_hub_threshertalk	NPC Moment - Thresher Talk
+mission_npcmoments_sha_ow_callisloyalty	NPC Moment - Callis' Loyalty
+mission_npcmoments_sha_ow_electimoletalk	NPC Moment - Electi Mole Talk
+mission_npcmoments_sha_ow_mourningtheripperqueen	NPC Moment - Mourning the Ripper Queen
+mission_npcmoments_sha_ow_orderdefection	NPC Moment - Order Defection
+mission_npcmoments_sha_ow_psychoargument	NPC Moment - Psycho Argument
+mission_npcmoments_sha_ow_ripperandorderstandoff	NPC Moment - Ripper And Order Standoff
+mission_npcmoments_sha_ow_ripperexistentialconvo	NPC Moment - Ripper Existential Convo
+mission_npcmoments_sha_ow_selfripping	NPC Moment - Self Ripping
+mission_npcmoments_sha_ow_timeoffrequest	NPC Moment - Time Off Request
+mission_npcmoments_sha_sh_bolttalk	NPC Moment - Electi Chess
+mission_npcmoments_sha_sh_electidistrust	NPC Moment - Electi Distrust
+mission_pearlgen_gra	Ordonite Up!
+mission_pearlgen_mou	Ordonite Up!
+mission_pearlgen_sha	Ordonite Up!
+mission_repeatable_raid1	Bloomreaper: Time Attack
+mission_repeatable_raid1_uvhm	Bloomreaper: Ultimate Vault Hunter
+mission_side_agreatdisturbance	Fault Hunting
+mission_side_belowthesurface	Below the Surface
+mission_side_castingcall	The Power Ballad of Rodd Vomit
+mission_side_city_aaaforeffort	AAA for Effort
+mission_side_city_waterthechances	Love in the Time of Eridium Poisoning
+mission_side_clapgen	Potty Mouth
+mission_side_dutybeyonddeath	Voices Carry
+mission_side_electifactionmission1	The Council Divided
+mission_side_electifactionmission2	A Traitor Within
+mission_side_electifactionmission3	The Mole's Gambit
+mission_side_flatkairoser	Flat Kairoser
+mission_side_grasslandsvault	Primordial Vault: Fadefields
+mission_side_heist	The Kairos Job
+mission_side_invasive1	Symbiotic Security
+mission_side_invasive2	Symbiotic Security Part 2
+mission_side_invasiveinvis	Side_Invasive_INVIS
+mission_side_lifecoach	Sage Against the Machine
+mission_side_lifespurpose	Ready to Blow
+mission_side_madscientist	A Call for Help
+mission_side_mountainsfaction1	Mob Mentality
+mission_side_mountainsfaction2	Mob Rules
+mission_side_mountainsfaction3	Angry Mob
+mission_side_mountainsfaction4	Mob Justice
+mission_side_murdermysterynpcspawnshattered	Murder Mystery
+mission_side_noescaperoom	No-Escape Room
+mission_side_obstaclecourse_grapple	Peak Performance
+mission_side_obstaclecourseglide	Father of the Glide
+mission_side_oldraymondpart1	Old Raymond
+mission_side_oldraymondpart2	Old Lads
+mission_side_onegassyissue	One Gassy Issue
+mission_side_planetaryescape	Exit Through the Rift Shop
+mission_side_resonatorvault	Primordial Vault: Carcadia Burn
+mission_side_romeoandromeo	Star-Crossed
+mission_side_safehaven	A Humble Abode
+mission_side_seedsofrevolutionpart1	Bad Seed
+mission_side_seedsofrevolutionpart2	Bad Seed Pt. 2
+mission_side_summoningcircle	Summoner's Gift
+mission_side_thecure	Hangover Helper
+mission_side_thepriceoffreedompart1	Price of Freedom
+mission_side_thepriceoffreedompart2	Price of Freedom Pt. 2
+mission_side_thepriceoffreedompart3	Price of Freedom Pt. 3
+mission_side_theweirdwayhome	It's a Whole Phase Situation
+mission_side_thresherrancher	Breeding Daisies
+mission_side_unfinishedbusiness	Ghost Stories
+mission_side_vault_glide	Primordial Vault: Terminus Range
+mission_side_vending	Vend of the Line
+mission_side_whatlurksbeneath	One Slimy Issue
+mission_worldbossevent_creature_october	Rift Champion
+mission_worldbossevent_default	Rift Champion
+mission_worldbossevent_default2	Rift Champion
+mission_worldbossevent_default3	Rift Champion
+mission_worldbossevent_order_october	Rift Champion
+mission_worldbossevent_ripper_october	Rift Champion
+mission_worldevent_colosseum	The Goredello
+mission_worldevent_colosseum_v2	The Goredello
+mission_worldevent_enterairship	Airship
+mission_worldevent_enterairship_interior_base	World Event: Sabotage Order Base
+mission_worldevent_enterairship_interior_wave1	World Event: Sabotage Order Base
+mission_worldevent_enterairship_interior_wave1_lighting_alarm	World Event: Sabotage Order Base
+mission_worldevent_enterairship_interior_wave1_lighting_normal	World Event: Sabotage Order Base
+mission_worldevent_enterairship_interior_wave2	World Event: Sabotage Order Base
+mission_worldevent_enterairship_interior_wave2_lighting_alarm	World Event: Sabotage Order Base
+mission_worldevent_enterairship_interior_wave2_lighting_normal	World Event: Sabotage Order Base
+mission_worldevent_enterairship_interior_wave2a	World Event: Sabotage Order Base
+mission_worldevent_enterairship_interior_wave3	World Event: Sabotage Order Base
+mission_worldevent_enterairship_interior_wave3_lighting_alarm	World Event: Sabotage Order Base
+mission_worldevent_enterairship_interior_wave3_lighting_normal	World Event: Sabotage Order Base
+mission_worldevent_enterairship_interior_wave3a	World Event: Sabotage Order Base
+mission_worldevent_enterairship_interior_wave4	World Event: Sabotage Order Base
+mission_worldevent_enterairship_interior_wave4_lighting_alarm	World Event: Sabotage Order Base
+mission_worldevent_enterairship_interior_wave4_lighting_normal	World Event: Sabotage Order Base
+mission_worldevent_meteor_lighting_powered	World Event: Sabotage Order Base
+mission_worldevent_meteor_lighting_unpowered	World Event: Sabotage Order Base
+mission_worldevent_meteordestroyer	Creep Impact

@@ -291,6 +291,30 @@ pub fn handle_manifest(
             }
         }
 
+        // Extract mission display names
+        println!("\n=== Mission Names ===\n");
+        println!("Extracting mission display names from NCS data...");
+        let mission_name_entries = bl4_ncs::extract_mission_names(&ncs_dir);
+        if mission_name_entries.is_empty() {
+            eprintln!("  Warning: No mission names found in NCS data");
+        } else {
+            let missions_dir = output.join("missions");
+            fs::create_dir_all(&missions_dir).ok();
+            let names_path = missions_dir.join("mission_names.tsv");
+            match bl4_ncs::mission_names::write_tsv(&mission_name_entries, &names_path) {
+                Ok(()) => {
+                    println!(
+                        "  {} mission names → {}",
+                        mission_name_entries.len(),
+                        names_path.display()
+                    );
+                }
+                Err(e) => {
+                    eprintln!("  Warning: Failed to write mission names: {}", e);
+                }
+            }
+        }
+
         // Generate drops manifest (uses data tables for boss names)
         println!("\n=== Drops Manifest ===\n");
         println!("Generating drops manifest from NCS data...");
