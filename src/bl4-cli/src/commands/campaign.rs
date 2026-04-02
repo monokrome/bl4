@@ -172,9 +172,7 @@ fn plan_generic_set_completion(
     Some(bl4::save::campaign::CampaignChanges {
         completed_sets: vec![resolved.to_string()],
         active_set: resolved.to_string(),
-        active_mission: bl4::missions::first_mission_in_set(resolved)
-            .map(|m| m.name.clone())
-            .unwrap_or_else(|| resolved.replace("missionset_", "mission_")),
+        active_mission: bl4::missions::mission_name_for_set(resolved),
     })
 }
 

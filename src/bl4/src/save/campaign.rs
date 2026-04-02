@@ -111,19 +111,10 @@ pub fn plan_campaign_progress(target: &str) -> Option<CampaignChanges> {
     let (completed, active) = prereqs.split_at(prereqs.len() - 1);
     let active_set = &active[0];
 
-    let active_mission = missions::first_mission_in_set(&active_set.name)
-        .map(|m| m.name.clone())
-        .unwrap_or_else(|| {
-            active_set
-                .name
-                .replace("missionset_", "mission_")
-                .to_string()
-        });
-
     Some(CampaignChanges {
         completed_sets: completed.iter().map(|ms| ms.name.clone()).collect(),
         active_set: active_set.name.clone(),
-        active_mission,
+        active_mission: missions::mission_name_for_set(&active_set.name),
     })
 }
 
@@ -156,14 +147,11 @@ pub fn plan_dlc_completion(dlc_name: &str) -> Option<CampaignChanges> {
 
     let all_completed: Vec<String> = sets.iter().map(|s| s.to_string()).collect();
     let last_set = all_completed.last()?.clone();
-    let active_mission = missions::first_mission_in_set(&last_set)
-        .map(|m| m.name.clone())
-        .unwrap_or_else(|| last_set.replace("missionset_", "mission_"));
 
     Some(CampaignChanges {
         completed_sets: all_completed,
-        active_set: last_set,
-        active_mission,
+        active_set: last_set.clone(),
+        active_mission: missions::mission_name_for_set(&last_set),
     })
 }
 

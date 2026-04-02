@@ -253,6 +253,13 @@ pub fn missions_in_set(set_name: &str) -> Vec<&'static Mission> {
     result
 }
 
+/// Get the mission name for a set, with fallback derivation from the set name.
+pub fn mission_name_for_set(set_name: &str) -> String {
+    first_mission_in_set(set_name)
+        .map(|m| m.name.clone())
+        .unwrap_or_else(|| set_name.replace("missionset_", "mission_"))
+}
+
 /// Find the first mission belonging to a mission set.
 pub fn first_mission_in_set(set_name: &str) -> Option<&'static Mission> {
     // Try the obvious name derivation first (missionset_main_X → mission_main_X)
