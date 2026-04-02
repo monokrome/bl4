@@ -78,7 +78,10 @@ pub(crate) fn get_mission_status(
     // For other categories (or all), collect and sort by name
     let mut entries: Vec<CampaignEntry> = all_sets
         .values()
-        .filter(|ms| category.map_or(true, |c| ms.category == c))
+        .filter(|ms| match category {
+            Some(c) => ms.category == c,
+            None => true,
+        })
         .map(|ms| {
             let status = read_set_status(missions_node, &ms.name);
             CampaignEntry {
@@ -194,51 +197,8 @@ pub fn complete_single_mission(
         local.insert(set_key.clone(), serde_yaml::Value::Mapping(set_entry));
     }
 
-    // Get or create the missions map within the set
-    let set_data = local
-        .get_mut(&set_key)
-        .and_then(|v| v.as_mapping_mut())
-        .ok_or_else(|| SaveError::KeyNotFound(set_name.clone()))?;
-
-    if !set_data.contains_key(serde_yaml::Value::String("missions".to_string())) {
-        set_data.insert(
-            serde_yaml::Value::String("missions".to_string()),
-            serde_yaml::Value::Mapping(serde_yaml::Mapping::new()),
-        );
-    }
-
-    let missions_map = set_data
-        .get_mut(serde_yaml::Value::String("missions".to_string()))
-        .and_then(|v| v.as_mapping_mut())
-        .ok_or_else(|| SaveError::KeyNotFound("missions".to_string()))?;
-
-    // Mark the mission as completed
-    let mut mission_entry = serde_yaml::Mapping::new();
-    mission_entry.insert(
-        serde_yaml::Value::String("status".to_string()),
-        serde_yaml::Value::String("completed".to_string()),
-    );
-    mission_entry.insert(
-        serde_yaml::Value::String("ui_flags".to_string()),
-        serde_yaml::Value::Number(1.into()),
-    );
-
-    // If mission already exists, preserve existing data and update status
-    if let Some(existing) = missions_map.get_mut(&mission_key) {
-        if let Some(m) = existing.as_mapping_mut() {
-            m.insert(
-                serde_yaml::Value::String("status".to_string()),
-                serde_yaml::Value::String("completed".to_string()),
-            );
-            m.insert(
-                serde_yaml::Value::String("ui_flags".to_string()),
-                serde_yaml::Value::Number(1.into()),
-            );
-            m.remove(serde_yaml::Value::String("objectives".to_string()));
-        }
-    } else {
-        missions_map.insert(mission_key, serde_yaml::Value::Mapping(mission_entry));
-    }
+    let missions_map = ensure_missions_in_set(local, &set_key, set_name)?;
+    upsert_completed_mission(missions_map, &mission_key);
 
     Ok(())
 }
@@ -275,6 +235,59 @@ pub fn apply_campaign_progress(
 }
 
 // --- Internal helpers ---
+
+fn ensure_missions_in_set<'a>(
+    local: &'a mut serde_yaml::Mapping,
+    set_key: &serde_yaml::Value,
+    set_name: &str,
+) -> Result<&'a mut serde_yaml::Mapping, SaveError> {
+    let set_data = local
+        .get_mut(set_key)
+        .and_then(|v| v.as_mapping_mut())
+        .ok_or_else(|| SaveError::KeyNotFound(set_name.to_string()))?;
+
+    if !set_data.contains_key(serde_yaml::Value::String("missions".to_string())) {
+        set_data.insert(
+            serde_yaml::Value::String("missions".to_string()),
+            serde_yaml::Value::Mapping(serde_yaml::Mapping::new()),
+        );
+    }
+
+    set_data
+        .get_mut(serde_yaml::Value::String("missions".to_string()))
+        .and_then(|v| v.as_mapping_mut())
+        .ok_or_else(|| SaveError::KeyNotFound("missions".to_string()))
+}
+
+fn upsert_completed_mission(
+    missions_map: &mut serde_yaml::Mapping,
+    mission_key: &serde_yaml::Value,
+) {
+    if let Some(existing) = missions_map.get_mut(mission_key) {
+        if let Some(m) = existing.as_mapping_mut() {
+            m.insert(
+                serde_yaml::Value::String("status".to_string()),
+                serde_yaml::Value::String("completed".to_string()),
+            );
+            m.insert(
+                serde_yaml::Value::String("ui_flags".to_string()),
+                serde_yaml::Value::Number(1.into()),
+            );
+            m.remove(serde_yaml::Value::String("objectives".to_string()));
+        }
+    } else {
+        let mut entry = serde_yaml::Mapping::new();
+        entry.insert(
+            serde_yaml::Value::String("status".to_string()),
+            serde_yaml::Value::String("completed".to_string()),
+        );
+        entry.insert(
+            serde_yaml::Value::String("ui_flags".to_string()),
+            serde_yaml::Value::Number(1.into()),
+        );
+        missions_map.insert(mission_key.clone(), serde_yaml::Value::Mapping(entry));
+    }
+}
 
 fn read_set_status(missions: &serde_yaml::Value, set_name: &str) -> CampaignStatus {
     // Check local_sets first (completed sets live here)

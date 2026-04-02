@@ -48,12 +48,12 @@ pub fn detect_entitlements(data: &serde_yaml::Value) -> Entitlements {
                 continue;
             };
 
-            let suffix = name.split('.').last().unwrap_or(name);
+            let suffix = name.split('.').next_back().unwrap_or(name);
 
             if suffix.contains(PREORDER_MARKER) {
                 result.preorder = true;
             }
-            if PREMIUM_MARKERS.iter().any(|m| suffix == *m) {
+            if PREMIUM_MARKERS.contains(&suffix) {
                 result.premium_edition = true;
             }
             if suffix.contains(GOLDEN_POWER_MARKER) {

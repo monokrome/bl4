@@ -19,7 +19,7 @@ fn list(args: &SaveArgs, category: &str) -> Result<()> {
     let yaml_data = bl4::decrypt_sav(&encrypted, &steam_id)?;
     let save = bl4::SaveFile::from_yaml(&yaml_data)?;
 
-    let filter = if category == "all" { None } else { Some(category.as_ref()) };
+    let filter = if category == "all" { None } else { Some(category) };
 
     let status = save.mission_status(filter);
 
@@ -77,11 +77,9 @@ fn set(args: &SaveArgs, mission: &str, skip_confirm: bool) -> Result<()> {
         println!("  Set: {}", m.mission_set);
         println!();
 
-        if !skip_confirm {
-            if !confirm()? {
-                println!("Aborted.");
-                return Ok(());
-            }
+        if !skip_confirm && !confirm()? {
+            println!("Aborted.");
+            return Ok(());
         }
 
         crate::commands::save::with_save_file(args, |save| {
@@ -141,11 +139,9 @@ fn set(args: &SaveArgs, mission: &str, skip_confirm: bool) -> Result<()> {
         println!();
     }
 
-    if !skip_confirm {
-        if !confirm()? {
-            println!("Aborted.");
-            return Ok(());
-        }
+    if !skip_confirm && !confirm()? {
+        println!("Aborted.");
+        return Ok(());
     }
 
     crate::commands::save::with_save_file(args, |save| {
