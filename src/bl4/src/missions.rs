@@ -246,6 +246,31 @@ pub fn first_mission_in_set(set_name: &str) -> Option<&'static Mission> {
         .find(|m| m.mission_set.to_lowercase() == set_name)
 }
 
+/// Resolve a short mission name to a full individual mission name.
+///
+/// Accepts: "huntedpart1", "mission_micro_huntedpart1", "safehaven", etc.
+pub fn resolve_mission_name(input: &str) -> Option<&'static Mission> {
+    let lower = input.to_lowercase();
+
+    if let Some(m) = MISSIONS.get(&lower) {
+        return Some(m);
+    }
+
+    for prefix in &[
+        "mission_main_",
+        "mission_dlc_",
+        "mission_side_",
+        "mission_micro_",
+    ] {
+        let with_prefix = format!("{}{}", prefix, lower);
+        if let Some(m) = MISSIONS.get(&with_prefix) {
+            return Some(m);
+        }
+    }
+
+    None
+}
+
 /// Resolve a short mission name to a full mission set name.
 ///
 /// Accepts: "grasslands1", "missionset_main_grasslands1", "mountains2a", etc.
@@ -258,7 +283,14 @@ pub fn resolve_mission_set_name(input: &str) -> Option<&'static str> {
     }
 
     // Try with common prefixes
-    for prefix in &["missionset_main_", "missionset_dlc_"] {
+    for prefix in &[
+        "missionset_main_",
+        "missionset_dlc_",
+        "missionset_side_",
+        "missionset_micro_",
+        "missionset_vault_",
+        "missionset_zoneactivity_",
+    ] {
         let with_prefix = format!("{}{}", prefix, lower);
         if let Some(ms) = MISSION_SETS.get(&with_prefix) {
             return Some(ms.name.as_str());

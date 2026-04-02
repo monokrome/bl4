@@ -65,16 +65,39 @@ fn list(args: &SaveArgs, category: &str) -> Result<()> {
 }
 
 fn set(args: &SaveArgs, mission: &str, skip_confirm: bool) -> Result<()> {
-    // Try DLC completion first, then main story progression
+    // Try individual mission first
+    if let Some(m) = bl4::missions::resolve_mission_name(mission) {
+        println!("Will mark mission as completed: {}", m.name);
+        println!("  Set: {}", m.mission_set);
+        println!();
+
+        if !skip_confirm {
+            if !confirm()? {
+                println!("Aborted.");
+                return Ok(());
+            }
+        }
+
+        crate::commands::save::with_save_file(args, |save| {
+            save.complete_mission(&m.name)?;
+            Ok(())
+        })?;
+
+        println!("Mission completed.");
+        return Ok(());
+    }
+
+    // Try DLC completion, then main story progression, then generic set completion
     let changes = bl4::save::campaign::plan_dlc_completion(mission)
-        .or_else(|| bl4::save::campaign::plan_campaign_progress(mission));
+        .or_else(|| bl4::save::campaign::plan_campaign_progress(mission))
+        .or_else(|| plan_generic_set_completion(mission));
 
     let changes = match changes {
         Some(c) => c,
         None => {
             bail!(
-                "Unknown mission: '{}'\n\nUse 'bl4 save <file> missions list' to see available missions.\n\
-                Short names like 'grasslands1', 'cowbell', 'cello' are accepted.",
+                "Unknown mission: '{}'\n\nUse 'bl4 save <file> missions list all' to see available missions.\n\
+                Accepts: mission names, set names, or DLC names (cowbell, cello, etc.)",
                 mission
             );
         }
@@ -83,7 +106,7 @@ fn set(args: &SaveArgs, mission: &str, skip_confirm: bool) -> Result<()> {
     let all_completed = changes.completed_sets.contains(&changes.active_set);
 
     if all_completed {
-        println!("DLC will be marked as completed:");
+        println!("Will be marked as completed:");
     } else {
         println!(
             "Mission progress will be set to: {}",
@@ -113,17 +136,7 @@ fn set(args: &SaveArgs, mission: &str, skip_confirm: bool) -> Result<()> {
     }
 
     if !skip_confirm {
-        print!("Apply these changes? [y/N] ");
-        io::stdout().flush()?;
-
-        let stdin = io::stdin();
-        let response = stdin.lock().lines().next();
-        let confirmed = response
-            .and_then(|r| r.ok())
-            .map(|r| r.trim().eq_ignore_ascii_case("y"))
-            .unwrap_or(false);
-
-        if !confirmed {
+        if !confirm()? {
             println!("Aborted.");
             return Ok(());
         }
@@ -137,6 +150,30 @@ fn set(args: &SaveArgs, mission: &str, skip_confirm: bool) -> Result<()> {
     println!("Mission progress updated.");
 
     Ok(())
+}
+
+fn confirm() -> Result<bool> {
+    print!("Apply these changes? [y/N] ");
+    io::stdout().flush()?;
+    let stdin = io::stdin();
+    let response = stdin.lock().lines().next();
+    Ok(response
+        .and_then(|r| r.ok())
+        .map(|r| r.trim().eq_ignore_ascii_case("y"))
+        .unwrap_or(false))
+}
+
+fn plan_generic_set_completion(
+    name: &str,
+) -> Option<bl4::save::campaign::CampaignChanges> {
+    let resolved = bl4::missions::resolve_mission_set_name(name)?;
+    Some(bl4::save::campaign::CampaignChanges {
+        completed_sets: vec![resolved.to_string()],
+        active_set: resolved.to_string(),
+        active_mission: bl4::missions::first_mission_in_set(resolved)
+            .map(|m| m.name.clone())
+            .unwrap_or_else(|| resolved.replace("missionset_", "mission_")),
+    })
 }
 
 fn short_name(set_name: &str) -> &str {

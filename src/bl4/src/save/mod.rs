@@ -220,12 +220,24 @@ impl SaveFile {
         campaign::get_campaign_status(&self.data)
     }
 
+    /// Mark a single mission as completed.
+    pub fn complete_mission(&mut self, mission_name: &str) -> Result<(), SaveError> {
+        campaign::complete_single_mission(&mut self.data, mission_name)
+    }
+
     /// Apply campaign progress changes to this save file.
     pub fn apply_campaign_progress(
         &mut self,
         changes: &campaign::CampaignChanges,
     ) -> Result<(), SaveError> {
         campaign::apply_campaign_progress(&mut self.data, changes)
+    }
+
+    /// Get mission status for a specific category (or all).
+    ///
+    /// Categories: "main", "dlc", "side", "micro", "vault", or pass `None` for all.
+    pub fn mission_status(&self, category: Option<&str>) -> Vec<campaign::CampaignEntry> {
+        campaign::get_mission_status(&self.data, category)
     }
 
     /// Detect entitlements (pre-order, premium edition, etc.) from profile data.

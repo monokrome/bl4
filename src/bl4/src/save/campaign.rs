@@ -164,6 +164,85 @@ pub fn plan_dlc_completion(dlc_name: &str) -> Option<CampaignChanges> {
     })
 }
 
+/// Mark a single mission as completed within its parent set.
+///
+/// Does not change the set-level status — only the individual mission.
+pub fn complete_single_mission(
+    data: &mut serde_yaml::Value,
+    mission_name: &str,
+) -> Result<(), SaveError> {
+    let mission = missions::resolve_mission_name(mission_name)
+        .ok_or_else(|| SaveError::KeyNotFound(format!("mission '{}'", mission_name)))?;
+
+    let set_name = &mission.mission_set;
+    ensure_missions_structure(data);
+
+    let set_key = serde_yaml::Value::String(set_name.to_lowercase());
+    let mission_key = serde_yaml::Value::String(mission.name.clone());
+
+    // Ensure the set exists in local_sets
+    let local = data["missions"]["local_sets"]
+        .as_mapping_mut()
+        .ok_or_else(|| SaveError::KeyNotFound("local_sets".to_string()))?;
+
+    if !local.contains_key(&set_key) {
+        let mut set_entry = serde_yaml::Mapping::new();
+        set_entry.insert(
+            serde_yaml::Value::String("missions".to_string()),
+            serde_yaml::Value::Mapping(serde_yaml::Mapping::new()),
+        );
+        local.insert(set_key.clone(), serde_yaml::Value::Mapping(set_entry));
+    }
+
+    // Get or create the missions map within the set
+    let set_data = local
+        .get_mut(&set_key)
+        .and_then(|v| v.as_mapping_mut())
+        .ok_or_else(|| SaveError::KeyNotFound(set_name.clone()))?;
+
+    if !set_data.contains_key(serde_yaml::Value::String("missions".to_string())) {
+        set_data.insert(
+            serde_yaml::Value::String("missions".to_string()),
+            serde_yaml::Value::Mapping(serde_yaml::Mapping::new()),
+        );
+    }
+
+    let missions_map = set_data
+        .get_mut(serde_yaml::Value::String("missions".to_string()))
+        .and_then(|v| v.as_mapping_mut())
+        .ok_or_else(|| SaveError::KeyNotFound("missions".to_string()))?;
+
+    // Mark the mission as completed
+    let mut mission_entry = serde_yaml::Mapping::new();
+    mission_entry.insert(
+        serde_yaml::Value::String("status".to_string()),
+        serde_yaml::Value::String("completed".to_string()),
+    );
+    mission_entry.insert(
+        serde_yaml::Value::String("ui_flags".to_string()),
+        serde_yaml::Value::Number(1.into()),
+    );
+
+    // If mission already exists, preserve existing data and update status
+    if let Some(existing) = missions_map.get_mut(&mission_key) {
+        if let Some(m) = existing.as_mapping_mut() {
+            m.insert(
+                serde_yaml::Value::String("status".to_string()),
+                serde_yaml::Value::String("completed".to_string()),
+            );
+            m.insert(
+                serde_yaml::Value::String("ui_flags".to_string()),
+                serde_yaml::Value::Number(1.into()),
+            );
+            m.remove(serde_yaml::Value::String("objectives".to_string()));
+        }
+    } else {
+        missions_map.insert(mission_key, serde_yaml::Value::Mapping(mission_entry));
+    }
+
+    Ok(())
+}
+
 /// Apply campaign progress changes to save data.
 ///
 /// For main story: marks prerequisite sets as completed and target as active.
