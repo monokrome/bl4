@@ -856,6 +856,30 @@ fn collect_varints(tokens: &[Token]) -> (Vec<u64>, Vec<u64>) {
 
 /// Extract header info from equipment format (VarBit-first)
 ///
+fn resolve_category_from_tokens(
+    tokens: &[Token],
+    header: &HeaderInfo,
+    format: SerialFormat,
+) -> i64 {
+    if format == SerialFormat::VarBitFirst {
+        tokens
+            .iter()
+            .find_map(|t| match t {
+                Token::Var {
+                    val: v,
+                    encoding: VarEncoding::Bit,
+                } => Some(category_from_varbit(*v)),
+                _ => None,
+            })
+            .unwrap_or(-1)
+    } else {
+        header
+            .manufacturer
+            .map(|id| serial_id_to_parts_category(id) as i64)
+            .unwrap_or(-1)
+    }
+}
+
 /// Header structure: VarBit(category), [SoftSep, VarInt]*, Separator
 /// Level is the last VarInt before the first Separator.
 fn extract_equipment_header(tokens: &[Token]) -> HeaderInfo {
@@ -997,27 +1021,7 @@ impl ItemSerial {
             extract_weapon_header(&tokens)
         };
 
-        let category = if format == SerialFormat::VarBitFirst {
-            tokens
-                .iter()
-                .find_map(|t| {
-                    if let Token::Var {
-                        val: v,
-                        encoding: VarEncoding::Bit,
-                    } = t
-                    {
-                        Some(category_from_varbit(*v))
-                    } else {
-                        None
-                    }
-                })
-                .unwrap_or(-1)
-        } else {
-            header
-                .manufacturer
-                .map(|id| serial_id_to_parts_category(id) as i64)
-                .unwrap_or(-1)
-        };
+        let category = resolve_category_from_tokens(&tokens, &header, format);
         let elements = extract_elements(&tokens, category);
         let rarity = extract_rarity(&tokens, format == SerialFormat::VarBitFirst);
 

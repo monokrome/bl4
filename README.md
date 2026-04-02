@@ -10,6 +10,22 @@ These are unofficial tools. Borderlands and related trademarks are property of
 Gearbox Software and 2K. This project is not affiliated with or endorsed by
 Gearbox or 2K, nor does it claim to be.
 
+## Features
+
+- [Configuration](#configuration)
+- [Save Files](#save-files) — decrypt, encrypt, edit, query, modify
+  - [Level Scaling](#level-scaling) — set all items to a target level
+  - [Map Reveal](#map-reveal) — reveal or clear fog-of-discovery
+  - [Mission Progress](#mission-progress) — list and set campaign/DLC/side mission progression
+  - [Item Validation](#item-validation) — check all items for legality
+- [Item Serials](#item-serials) — decode, encode, compare, modify, validate
+- [Items Database](#items-database) — track, identify, and analyze items across saves
+- [Drop Rates](#drop-rates) — query drop sources and legendary locations
+- [Parts Database](#parts-database) — query weapon/equipment part manifests
+- [NCS Parser](#ncs-parser) — parse game binary configuration files
+- [UE5 Asset Extraction](#ue5-asset-extraction) — extract assets from pak files
+- [Library Usage](#library-usage) — use bl4 as a Rust dependency
+
 ## Crates
 
 | Crate | Description |
@@ -19,9 +35,8 @@ Gearbox or 2K, nor does it claim to be.
 | `bl4-idb` | Items database (SQLite/PostgreSQL, sync/async) |
 | `bl4-ncs` | Nexus Config Store parser (game binary config format) |
 | `bl4-community` | Community API server (Axum) |
-| `bl4-save-editor` | GUI save editor (Tauri) |
+| `bl4-save-editor` | GUI save editor (Tauri + WASM) |
 | `uextract` | UE5 IoStore/pak extractor |
-| `bl4-preload` | LD_PRELOAD instrumentation library |
 
 ## Installation
 
@@ -34,18 +49,19 @@ cargo build --release -p bl4-cli
 
 Binary location: `target/release/bl4`
 
-## Usage
-
-### Configuration
+## Configuration
 
 ```bash
+# Set your Steam ID (required for save encryption/decryption)
 bl4 configure --steam-id 76561197960521364
+
+# Show current configuration
 bl4 configure --show
 ```
 
 Steam ID is required for encryption/decryption. Find it in your Steam profile URL.
 
-### Save Commands
+## Save Files
 
 `bl4 save 1.sav` or shorthand `bl4 1.sav` — both work.
 
@@ -61,7 +77,7 @@ bl4 1.sav encrypt save.yaml
 bl4 1.sav edit
 
 # Query values
-bl4 1.sav get
+bl4 1.sav get --all
 bl4 1.sav get --level
 bl4 1.sav get --money
 bl4 1.sav get --info
@@ -70,22 +86,92 @@ bl4 1.sav get "state.currencies.cash"
 # Set values
 bl4 1.sav set "state.experience[0].level" 50
 bl4 1.sav set "state.currencies.cash" 999999
+```
 
-# Fog-of-discovery map manipulation
+### Level Scaling
+
+```bash
+# Set all items in a save to level 60
+bl4 1.sav --set-item-level 60
+
+# Change level on a single serial
+bl4 serial decode --level 60 '@Ugr$xKm/)}}!pQufM-}RPG}y!%8r1pL0ss'
+```
+
+### Map Reveal
+
+```bash
+# Reveal entire fog-of-discovery map
 bl4 1.sav --map reveal
-bl4 1.sav --map clear --zone "Crimson Badlands"
 
+# Clear the map
+bl4 1.sav --map clear
+
+# Reveal/clear a specific zone only
+bl4 1.sav --map reveal --zone "Crimson Badlands"
+```
+
+### Mission Progress
+
+List and modify campaign progression, DLC completion, and side missions.
+
+```bash
+# List main story progress
+bl4 1.sav missions list
+
+# List all mission categories
+bl4 1.sav missions list all
+
+# List a specific category (main, side, micro, dlc, vault, zoneactivity)
+bl4 1.sav missions list side
+
+# Set campaign progress to a specific point
+# Shows what will change and asks for confirmation
+bl4 1.sav missions set grasslands1
+bl4 1.sav missions set mountains2a
+bl4 1.sav missions set searchforlilith
+bl4 1.sav missions set elpis
+bl4 1.sav missions set cityepilogue
+
+# Skip confirmation
+bl4 1.sav missions set mountains1 -y
+
+# Complete a DLC
+bl4 1.sav missions set cowbell
+bl4 1.sav missions set cello
+
+# Complete a specific mission
+bl4 1.sav missions set huntedpart1
+```
+
+Setting campaign progress automatically marks all prerequisite missions as
+completed. At the three-way branch point (Grasslands/Mountains/Shattered Lands),
+setting progress past `searchforlilith` completes all three branches.
+
+### Item Validation
+
+```bash
 # Validate all items in a save
 bl4 1.sav --validate-items
 ```
 
-### Item Serial Commands
+## Item Serials
 
 ```bash
 # Decode a serial
 bl4 serial decode '@Ugr$ZCm/&tH!t{KgK/Shxu>k'
+
+# Verbose decode (shows all parts, tokens, hex dump)
 bl4 serial decode '@Ugr$ZCm/&tH!t{KgK/Shxu>k' --verbose
+
+# Decode with rarity estimation
 bl4 serial decode '@Ugr$ZCm/&tH!t{KgK/Shxu>k' --rarity
+
+# Change item level
+bl4 serial decode --level 60 '@Ugr$xKm/)}}!pQufM-}RPG}y!%8r1pL0ss'
+
+# Test round-trip encoding
+bl4 serial encode '@Ugr$ZCm/&tH!t{KgK/Shxu>k'
 
 # Validate serial legality
 bl4 serial validate '@Ugr$ZCm/&tH!t{KgK/Shxu>k'
@@ -95,13 +181,16 @@ bl4 serial validate '@Ugr$ZCm/&tH!t{KgK/Shxu>k' --verbose
 bl4 serial compare '<serial1>' '<serial2>'
 
 # Modify serial (swap parts from source into base)
-bl4 serial modify '<base>' '<source>' <parts>
+bl4 serial modify '<base>' '<source>' --parts barrel,grip
+
+# Add or remove parts
+bl4 serial decode '<serial>' --add part_barrel_01 --remove part_barrel_02
 
 # Batch decode serials to binary
 bl4 serial batch-decode serials.txt output.bin
 ```
 
-### Items Database
+## Items Database
 
 Track, identify, and analyze items across saves:
 
@@ -130,61 +219,7 @@ bl4 idb publish --server https://api.example.com
 bl4 idb pull --server https://api.example.com
 ```
 
-### NCS (Nexus Config Store)
-
-Parse and extract data from the game's binary configuration format:
-
-```bash
-# Scan a directory for NCS file types
-bl4 ncs scan /path/to/decompressed/
-
-# Show contents of an NCS file
-bl4 ncs show inv0.bin
-
-# Extract manifests (parts database, category names)
-bl4 ncs extract -t manifest /path/to/decompressed/
-
-# Search for patterns across NCS files
-bl4 ncs search /path/to/decompressed/ "weapon_ps"
-
-# Decompress NCS from a .pak file
-bl4 ncs decompress game.pak -o ./ncs/ --raw
-
-# Decompress a single .ncs file
-bl4 ncs decompress Nexus-Data-inv0.ncs -o inv0.bin --raw
-```
-
-#### Regenerating Manifests from Scratch
-
-The manifest is assembled from three data sources: game memory (part
-indices, usmap schema), PAK assets (manufacturers, weapon types, gear
-types, elements, rarities, stats), and NCS files (parts database,
-category names). Requires the `research` feature:
-`cargo build -p bl4-cli --features research`.
-
-The `bl4 manifest` command runs the full pipeline in one shot:
-
-```bash
-# Full regeneration from game Paks + memory dump
-bl4 manifest /path/to/game/Paks/ -d game.bin
-
-# With a pre-extracted usmap (skips memory dump step)
-bl4 manifest /path/to/game/Paks/ -m game.usmap
-
-# Skip memory entirely (NCS + PAK extraction only)
-bl4 manifest /path/to/game/Paks/ --skip-memory
-
-# Resume from existing uextract output
-bl4 manifest /path/to/game/Paks/ -d game.bin --skip-extract --extracted /tmp/bl4_extract
-
-# Custom output directory
-bl4 manifest /path/to/game/Paks/ -d game.bin -o share/manifest/
-```
-
-Output lands in `share/manifest/` by default. Individual steps can also
-be run separately via `bl4 memory`, `bl4 extract`, and `bl4 ncs`.
-
-### Drop Rates
+## Drop Rates
 
 Query drop rates and legendary item sources:
 
@@ -200,7 +235,7 @@ bl4 drops list --sources
 bl4 drops list --items
 ```
 
-### Parts Database
+## Parts Database
 
 Query the parts manifest:
 
@@ -209,26 +244,34 @@ Query the parts manifest:
 bl4 parts "Jakobs Pistol"
 ```
 
-### Memory Tools
+## NCS Parser
 
-Read and analyze live game process memory or dump files:
+Parse and extract data from the game's binary configuration format:
 
 ```bash
-# Attach to live process
-bl4 memory info
-bl4 memory objects --class WeaponData
-bl4 memory fname 12345
+# Show contents of an NCS file (fully expanded)
+bl4 ncs show inv0.bin
 
-# Work with dump files
-bl4 memory --dump game.bin info
-bl4 memory --dump game.bin scan "48 8B 05 ?? ?? ?? ??"
+# Show as JSON
+bl4 ncs show inv0.bin --json
 
-# LD_PRELOAD instrumentation
-bl4 memory preload run -- wine Borderlands4.exe
-bl4 memory preload watch /tmp/bl4_log
+# Scan a directory for NCS file types
+bl4 ncs scan /path/to/decompressed/
+
+# Search for patterns across NCS files
+bl4 ncs search /path/to/decompressed/ "weapon_ps"
+
+# Extract parts manifest
+bl4 ncs extract -t manifest /path/to/decompressed/
+
+# Extract mission graph (dependency chain + metadata)
+bl4 ncs extract -t missions /path/to/decompressed/
+
+# Decompress NCS from a .pak file
+bl4 ncs decompress game.pak -o ./ncs/ --raw
 ```
 
-### UE5 Asset Extraction
+## UE5 Asset Extraction
 
 ```bash
 # Extract all assets from pak files
@@ -237,15 +280,15 @@ uextract /path/to/Paks -o extracted/
 # Filter by path pattern
 uextract /path/to/Paks -f "ItemSerialPart" -o parts/
 
-# List contents without extracting
-uextract list /path/to/Paks
+# Limit parallelism
+uextract /path/to/Paks -o extracted/ -j 4
 ```
 
 ## Library Usage
 
 ```toml
 [dependencies]
-bl4 = "0.6"
+bl4 = { git = "https://github.com/monokrome/bl4" }
 ```
 
 ```rust
@@ -268,16 +311,33 @@ fs::write("1.sav", encrypted)?;
 ### Serial Decoding
 
 ```rust
-use bl4::ItemSerial;
+use bl4::{ItemSerial, resolve};
 
-let item = ItemSerial::decode("@Ugr$ZCm/&tH!t{KgK/Shxu>k")?;
+// Full pipeline: decode -> resolve category/identity/parts/rarity/name -> validate
+let item = resolve::full_resolve("@Ugr$ZCm/&tH!t{KgK/Shxu>k")?;
+println!("{:?} {:?} {:?}", item.name, item.manufacturer, item.level);
 
-if let Some((mfr, wtype)) = item.weapon_info() {
-    println!("{} {}", mfr, wtype);
+// Or decode without resolution
+let serial = ItemSerial::decode("@Ugr$ZCm/&tH!t{KgK/Shxu>k")?;
+let validation = serial.validate();
+println!("Legality: {}", validation.legality);
+```
+
+### Campaign Progress
+
+```rust
+use bl4::{SaveFile, missions, save::campaign};
+
+let save = SaveFile::from_yaml(&yaml_data)?;
+
+// List main story status
+for entry in save.campaign_status() {
+    println!("{}: {}", entry.mission_set, entry.status);
 }
 
-let validation = item.validate();
-println!("Legality: {}", validation.legality);
+// Plan and apply progress
+let changes = campaign::plan_campaign_progress("mountains2a").unwrap();
+save.apply_campaign_progress(&changes)?;
 ```
 
 ## Save File Format
