@@ -18,5 +18,9 @@
     ]
   },
   "bundle": {},
-  "plugins": {}
+  "plugins": {
+    "fs": {
+      "requireLiteralLeadingDot": false
+    }
+  }
 }

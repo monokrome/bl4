@@ -16,6 +16,8 @@ path = "src/lib.rs"
 [dependencies]
 bl4 = { path = "../bl4" }
 tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
 serde.workspace = true
 serde_json.workspace = true
 
