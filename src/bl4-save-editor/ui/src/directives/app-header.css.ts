@@ -5,8 +5,8 @@ export const root = style({
   display: 'flex',
   alignItems: 'flex-start',
   justifyContent: 'space-between',
-  height: '40px',
-  padding: '0 20px',
+  height: '44px',
+  padding: '0 1em',
   background: vars.color.orange,
   flexShrink: 0,
   overflow: 'visible',
@@ -21,9 +21,7 @@ export const title = style({
   color: vars.color.bgDeep,
   letterSpacing: '5px',
   textTransform: 'uppercase',
-  lineHeight: 1,
-  position: 'relative',
-  top: '-8px',
+  lineHeight: 0.7
 });
 
 export const toggle = style({
@@ -33,7 +31,7 @@ export const toggle = style({
   alignItems: 'center',
   justifyContent: 'center',
   background: 'none',
-  border: `1px solid ${vars.color.bgDeep}`,
+  border: 'none',
   color: vars.color.bgDeep,
   fontFamily: vars.font.mono,
   fontSize: '18px',
