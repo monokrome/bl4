@@ -241,12 +241,27 @@ fn add_class_mod_firmware(tokens: &[Token], fw_index: i64) -> Vec<Token> {
 }
 
 /// Add firmware to equipment that doesn't have it.
-/// Inserts a VarInt before the final Separator.
+///
+/// If the item has a trailing VarInt section (SoftSep + VarInts before
+/// final Separator), inserts the firmware VarInt at the end of that section.
+/// If there's no trailing section, the item type may not support firmware
+/// addition and this returns the tokens unchanged.
 fn add_equipment_firmware(tokens: &[Token], fw_index: i64) -> Vec<Token> {
     let mut result = tokens.to_vec();
-    let insert_pos = result.iter().rposition(|t| matches!(t, Token::Separator))
-        .unwrap_or(result.len());
-    result.insert(insert_pos, Token::VarInt(fw_index as u64));
+
+    // Find the last SoftSeparator — marks the start of the trailing VarInt section
+    let last_soft_sep = result.iter().rposition(|t| matches!(t, Token::SoftSeparator));
+
+    if let Some(soft_pos) = last_soft_sep {
+        // Has a trailing section — find the first Separator after it and insert before it
+        let insert_pos = result[soft_pos..].iter()
+            .position(|t| matches!(t, Token::Separator))
+            .map(|p| p + soft_pos)
+            .unwrap_or(result.len());
+        result.insert(insert_pos, Token::VarInt(fw_index as u64));
+    }
+    // No trailing section — can't safely add firmware
+
     result
 }
 
