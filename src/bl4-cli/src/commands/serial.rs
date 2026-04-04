@@ -780,7 +780,7 @@ pub fn batch_decode(input: &Path, output: &Path) -> Result<()> {
 }
 
 /// View or modify class mod skills
-pub fn skills(serial: &str, list: bool, adds: &[String], removes: &[String], force: bool) -> Result<()> {
+pub fn skills(serial: &str, list: bool, color_filter: Option<&str>, adds: &[String], removes: &[String], force: bool) -> Result<()> {
     let item = bl4::ItemSerial::decode(serial).context("Failed to decode serial")?;
     let category = item
         .parts_category()
@@ -798,6 +798,10 @@ pub fn skills(serial: &str, list: bool, adds: &[String], removes: &[String], for
 
         let mut skills = bl4::manifest::skills_for_category(category);
         skills.sort_by(|a, b| a.1.tree_name.cmp(&b.1.tree_name).then(a.0.cmp(b.0)));
+
+        if let Some(color) = color_filter {
+            skills.retain(|(_, info)| info.tree_color == color);
+        }
 
         let mut current_tree = "";
         for (pos, info) in &skills {

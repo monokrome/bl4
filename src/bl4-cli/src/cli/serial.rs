@@ -93,6 +93,18 @@ pub enum SerialCommand {
         #[arg(short, long)]
         list: bool,
 
+        /// Filter --list to red tree skills
+        #[arg(long)]
+        red: bool,
+
+        /// Filter --list to green tree skills
+        #[arg(long)]
+        green: bool,
+
+        /// Filter --list to blue tree skills
+        #[arg(long)]
+        blue: bool,
+
         /// Add a skill: 'Name@Tier' (repeatable)
         #[arg(long, action = clap::ArgAction::Append)]
         add: Vec<String>,
