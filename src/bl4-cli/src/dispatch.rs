@@ -101,6 +101,14 @@ pub fn dispatch_serial(command: SerialCommand) -> Result<()> {
             commands::serial::validate(&serials, verbose)
         }
 
+        SerialCommand::Firmware {
+            serial,
+            list,
+            set,
+            clear,
+            force,
+        } => commands::serial::firmware(&serial, list, set.as_deref(), clear, force),
+
         SerialCommand::BatchDecode { input, output } => {
             commands::serial::batch_decode(&input, &output)
         }

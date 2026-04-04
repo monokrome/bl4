@@ -415,7 +415,7 @@ fn encode_tokens(tokens: &[Token]) -> Vec<u8> {
                 writer.write_bits(TokenPrefix::String as u64, 3);
                 writer.write_varint(s.len() as u64);
                 for ch in s.bytes() {
-                    writer.write_bits(ch as u64, 7);
+                    writer.write_bits(mirror_bits(ch, 7) as u64, 7);
                 }
             }
         }

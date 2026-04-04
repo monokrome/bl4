@@ -118,6 +118,28 @@ pub enum SerialCommand {
         force: bool,
     },
 
+    /// View or modify equipment firmware
+    Firmware {
+        /// Item serial to inspect/modify
+        serial: String,
+
+        /// List available firmware for this item type
+        #[arg(short, long)]
+        list: bool,
+
+        /// Set firmware by name (e.g., 'deadeye', 'heating_up')
+        #[arg(long)]
+        set: Option<String>,
+
+        /// Remove firmware from the item
+        #[arg(long)]
+        clear: bool,
+
+        /// Skip confirmation
+        #[arg(long)]
+        force: bool,
+    },
+
     /// Batch decode serials from a file to binary output
     BatchDecode {
         /// Input file with one serial per line

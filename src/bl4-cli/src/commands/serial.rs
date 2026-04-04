@@ -909,3 +909,97 @@ pub fn skills(serial: &str, list: bool, color_filter: Option<&str>, adds: &[Stri
 
     Ok(())
 }
+
+/// View or modify equipment firmware
+pub fn firmware(serial: &str, list: bool, set: Option<&str>, clear: bool, force: bool) -> Result<()> {
+    let item = bl4::ItemSerial::decode(serial).context("Failed to decode serial")?;
+    let category = item
+        .parts_category()
+        .context("Cannot determine item category")?;
+
+    let cat_name = bl4::manifest::category_name(category).unwrap_or("Unknown");
+
+    // List available firmware
+    if list {
+        println!("Available firmware for {} (category {}):\n", cat_name, category);
+        for (idx, name) in bl4::firmware::available_firmware(category) {
+            let display = name.strip_prefix("part_firmware_").unwrap_or(&name);
+            println!("  [{}] {}", idx, display);
+        }
+        return Ok(());
+    }
+
+    // Show current firmware
+    let current = bl4::firmware::detect(&item.tokens, category);
+    if set.is_none() && !clear {
+        println!("{} (category {})", cat_name, category);
+        match &current {
+            Some(fw) => {
+                let display = fw.name.strip_prefix("part_firmware_").unwrap_or(&fw.name);
+                println!("Firmware: {} (index {} in category {})", display, fw.index, fw.category);
+            }
+            None => println!("Firmware: none"),
+        }
+        return Ok(());
+    }
+
+    // Clear firmware
+    if clear {
+        if current.is_none() {
+            println!("No firmware to remove.");
+            return Ok(());
+        }
+        let fw = current.as_ref().unwrap();
+        let display = fw.name.strip_prefix("part_firmware_").unwrap_or(&fw.name);
+
+        if !force {
+            println!("Remove firmware: {}", display);
+            print!("Apply? [y/N] ");
+            std::io::Write::flush(&mut std::io::stdout())?;
+            let mut input = String::new();
+            std::io::stdin().read_line(&mut input)?;
+            if !input.trim().eq_ignore_ascii_case("y") {
+                println!("Cancelled.");
+                return Ok(());
+            }
+        }
+
+        let new_tokens = bl4::firmware::remove(&item.tokens, category);
+        let modified = item.with_tokens(new_tokens);
+        println!("{}", modified.encode_from_tokens());
+        return Ok(());
+    }
+
+    // Set firmware
+    if let Some(name) = set {
+        let (fw_cat, fw_idx) = bl4::firmware::resolve_firmware(name, category)
+            .map_err(|e| anyhow::anyhow!(e))?;
+
+        let new_name = bl4::manifest::part_name(fw_cat, fw_idx).unwrap_or("unknown");
+        let new_display = new_name.strip_prefix("part_firmware_").unwrap_or(new_name);
+
+        if !force {
+            match &current {
+                Some(fw) => {
+                    let old_display = fw.name.strip_prefix("part_firmware_").unwrap_or(&fw.name);
+                    println!("Firmware: {} -> {}", old_display, new_display);
+                }
+                None => println!("Firmware: (none) -> {}", new_display),
+            }
+            print!("Apply? [y/N] ");
+            std::io::Write::flush(&mut std::io::stdout())?;
+            let mut input = String::new();
+            std::io::stdin().read_line(&mut input)?;
+            if !input.trim().eq_ignore_ascii_case("y") {
+                println!("Cancelled.");
+                return Ok(());
+            }
+        }
+
+        let new_tokens = bl4::firmware::apply(&item.tokens, fw_idx, category);
+        let modified = item.with_tokens(new_tokens);
+        println!("{}", modified.encode_from_tokens());
+    }
+
+    Ok(())
+}
