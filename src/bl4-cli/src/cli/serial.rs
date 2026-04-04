@@ -89,6 +89,10 @@ pub enum SerialCommand {
         /// Class mod serial to inspect/modify
         serial: String,
 
+        /// List all available skills for this class mod
+        #[arg(short, long)]
+        list: bool,
+
         /// Add a skill: 'Name@Tier' (repeatable)
         #[arg(long, action = clap::ArgAction::Append)]
         add: Vec<String>,

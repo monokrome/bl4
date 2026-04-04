@@ -125,6 +125,12 @@ fn resolve_skill_name(name: &str, category: i64) -> Result<String, String> {
         return Ok(bare.to_string());
     }
 
+    // Try as part position by checking if tier_1 exists in the parts database
+    let test_part = format!("passive_{}_tier_1", bare);
+    if manifest::part_index(category, &test_part).is_some() {
+        return Ok(bare.to_string());
+    }
+
     // Try as display name (case-insensitive)
     if let Some(pos) = manifest::skill_position_from_name(category, name) {
         return Ok(pos.to_string());

@@ -780,7 +780,7 @@ pub fn batch_decode(input: &Path, output: &Path) -> Result<()> {
 }
 
 /// View or modify class mod skills
-pub fn skills(serial: &str, adds: &[String], removes: &[String], force: bool) -> Result<()> {
+pub fn skills(serial: &str, list: bool, adds: &[String], removes: &[String], force: bool) -> Result<()> {
     let item = bl4::ItemSerial::decode(serial).context("Failed to decode serial")?;
     let category = item
         .parts_category()
@@ -789,6 +789,27 @@ pub fn skills(serial: &str, adds: &[String], removes: &[String], force: bool) ->
     if !bl4::skills::is_class_mod(category) {
         let name = bl4::manifest::category_name(category).unwrap_or("Unknown");
         bail!("Not a class mod (category {} = {})", category, name);
+    }
+
+    // List available skills
+    if list {
+        let cat_name = bl4::manifest::category_name(category).unwrap_or("Unknown");
+        println!("Available skills for {} (category {}):\n", cat_name, category);
+
+        let mut skills = bl4::manifest::skills_for_category(category);
+        skills.sort_by(|a, b| a.1.tree_name.cmp(&b.1.tree_name).then(a.0.cmp(b.0)));
+
+        let mut current_tree = "";
+        for (pos, info) in &skills {
+            if info.tree_name != current_tree {
+                current_tree = &info.tree_name;
+                let color = &info.tree_color;
+                println!("  {} ({}):", current_tree, color);
+            }
+            println!("    {} ({})", info.display_name, pos);
+        }
+
+        return Ok(());
     }
 
     let current = bl4::skills::decode_skills(&item.tokens, category);

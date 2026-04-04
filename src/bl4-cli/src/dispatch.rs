@@ -107,10 +107,11 @@ pub fn dispatch_serial(command: SerialCommand) -> Result<()> {
 
         SerialCommand::Skills {
             serial,
+            list,
             add,
             remove,
             force,
-        } => commands::serial::skills(&serial, &add, &remove, force),
+        } => commands::serial::skills(&serial, list, &add, &remove, force),
     }
 }
 
