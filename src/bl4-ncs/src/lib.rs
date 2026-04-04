@@ -75,10 +75,14 @@ pub use inventory::{
 };
 pub use item_names::{extract_from_directory as extract_item_names, ItemNameEntry};
 pub mod mission_names;
+pub mod skill_trees;
+pub mod tooltips;
 pub use manifest::{
     scan as scan_for_ncs_manifests, Entry as NcsManifestEntry, Manifest as NcsManifest,
 };
 pub use mission_names::{extract_from_directory as extract_mission_names, MissionNameEntry};
+pub use skill_trees::{extract_from_directory as extract_skill_trees, SkillTreeEntry};
+pub use tooltips::{extract_from_directory as extract_tooltips, TooltipEntry};
 pub use name_data::{extract_from_directory as extract_name_data, NameDataEntry, NameDataMap};
 pub use pak::{
     extract_from_directory, is_ncs_file, type_from_filename, DirectoryReader, ExtractedNcs,

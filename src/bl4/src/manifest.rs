@@ -525,6 +525,104 @@ pub fn legendary_barrel_alias(category: i64, barrel_base: &str) -> Option<&'stat
         })
 }
 
+// ============================================================================
+// Skill Trees
+// ============================================================================
+
+const SKILL_TREES_TSV: &str = include_str!(concat!(env!("OUT_DIR"), "/skill_trees.tsv"));
+const TOOLTIPS_TSV: &str = include_str!(concat!(env!("OUT_DIR"), "/tooltips.tsv"));
+
+#[derive(Debug, Clone)]
+pub struct SkillInfo {
+    pub display_name: String,
+    pub tooltip_key: String,
+    pub tree_color: String,
+    pub tree_name: String,
+}
+
+/// tooltip_key (lowercased) -> display_name
+static TOOLTIP_NAMES: Lazy<HashMap<String, String>> = Lazy::new(|| {
+    TOOLTIPS_TSV
+        .lines()
+        .filter(|l| !l.starts_with("key") && !l.is_empty())
+        .filter_map(|line| {
+            let mut cols = line.splitn(2, '\t');
+            let key = cols.next()?.to_lowercase();
+            let name = cols.next()?.to_string();
+            Some((key, name))
+        })
+        .collect()
+});
+
+/// (category, position) -> SkillInfo
+static SKILL_TREES: Lazy<HashMap<(i64, String), SkillInfo>> = Lazy::new(|| {
+    SKILL_TREES_TSV
+        .lines()
+        .filter(|l| !l.starts_with("category") && !l.is_empty())
+        .filter_map(|line| {
+            let mut cols = line.splitn(5, '\t');
+            let category = cols.next()?.parse::<i64>().ok()?;
+            let position = cols.next()?.to_string();
+            let tooltip_key = cols.next()?.to_string();
+            let tree_color = cols.next().unwrap_or("").to_string();
+            let tree_name = cols.next().unwrap_or("").to_string();
+
+            let display_name = TOOLTIP_NAMES
+                .get(&tooltip_key.to_lowercase())
+                .cloned()
+                .unwrap_or_default();
+
+            Some(((category, position), SkillInfo { display_name, tooltip_key, tree_color, tree_name }))
+        })
+        .collect()
+});
+
+/// lowercased display name -> Vec<(category, position)>
+static SKILL_BY_DISPLAY_NAME: Lazy<HashMap<String, Vec<(i64, String)>>> = Lazy::new(|| {
+    let mut map: HashMap<String, Vec<(i64, String)>> = HashMap::new();
+    for ((cat, pos), info) in SKILL_TREES.iter() {
+        if !info.display_name.is_empty() {
+            map.entry(info.display_name.to_lowercase())
+                .or_default()
+                .push((*cat, pos.clone()));
+        }
+    }
+    map
+});
+
+/// Parse a passive part name into (position, tier).
+///
+/// `"passive_green_1_2_tier_3"` → `Some(("green_1_2", 3))`
+/// `"passive_blue_left_4_1_tier_5"` → `Some(("blue_left_4_1", 5))`
+pub fn parse_passive_part(name: &str) -> Option<(&str, u8)> {
+    let rest = name.strip_prefix("passive_")?;
+    let tier_pos = rest.rfind("_tier_")?;
+    let position = &rest[..tier_pos];
+    let tier: u8 = rest[tier_pos + 6..].parse().ok()?;
+    Some((position, tier))
+}
+
+/// Look up display name for a skill position in a category.
+pub fn skill_display_name(category: i64, position: &str) -> Option<&'static SkillInfo> {
+    SKILL_TREES.get(&(category, position.to_string()))
+}
+
+/// Reverse lookup: find position from display name, scoped to a category.
+pub fn skill_position_from_name(category: i64, name: &str) -> Option<&'static str> {
+    let entries = SKILL_BY_DISPLAY_NAME.get(&name.to_lowercase())?;
+    entries.iter()
+        .find(|(cat, _)| *cat == category)
+        .map(|(_, pos)| pos.as_str())
+}
+
+/// List all skills for a category.
+pub fn skills_for_category(category: i64) -> Vec<(&'static str, &'static SkillInfo)> {
+    SKILL_TREES.iter()
+        .filter(|((cat, _), _)| *cat == category)
+        .map(|((_, pos), info)| (pos.as_str(), info))
+        .collect()
+}
+
 /// Check if manifest data is loaded (forces initialization)
 pub fn is_loaded() -> bool {
     // Access lazy statics to force initialization

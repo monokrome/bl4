@@ -1,0 +1,459 @@
+category	position	tooltip_key	tree_color	tree_name
+254	blue_1_1	ToolTip_DS_P_SanguineBrood	blue	The Fourth Seal
+254	blue_1_2	ToolTip_DS_P_DeadHands	blue	The Fourth Seal
+254	blue_1_3	ToolTip_DS_P_SpectralWeapons	blue	The Fourth Seal
+254	blue_1_5	ToolTip_DS_P_DemonicInscriptions	blue	The Fourth Seal
+254	blue_2_1	ToolTip_DS_P_BanefulWeaponry	blue	The Fourth Seal
+254	blue_2_3	ToolTip_DS_P_GrimSuffering	blue	The Fourth Seal
+254	blue_2_5	ToolTip_DS_P_Curse	blue	The Fourth Seal
+254	blue_3_1	ToolTip_DS_P_BloodSacrifice	blue	The Fourth Seal
+254	blue_3_2	ToolTip_DS_P_GraveFiends	blue	The Fourth Seal
+254	blue_3_4	ToolTip_DS_P_GraveQuickening	blue	The Fourth Seal
+254	blue_3_5	ToolTip_DS_P_ExtraCursed	blue	The Fourth Seal
+254	blue_left_4_1	ToolTip_DS_P_CorrodingAttunement	blue	The Fourth Seal
+254	blue_left_4_3	ToolTip_DS_P_PrismaticPoisons	blue	The Fourth Seal
+254	blue_left_5_1	ToolTip_DS_P_CriticalSuffering	blue	The Fourth Seal
+254	blue_left_5_2	ToolTip_DS_P_Assassin	blue	The Fourth Seal
+254	blue_left_5_3	ToolTip_DS_P_HotSwap	blue	The Fourth Seal
+254	blue_left_6_1	ToolTip_DS_P_CorrodingInfluence	blue	The Fourth Seal
+254	blue_left_6_2	Tooltip_DarkSiren_ActionSkill_PhaseShard_Capstone_SpectralArmory	blue	The Fourth Seal
+254	blue_mid_4_1	ToolTip_DS_P_FireyAttunement	blue	The Fourth Seal
+254	blue_mid_4_3	ToolTip_DS_P_Tameshigiri	blue	The Fourth Seal
+254	blue_mid_5_1	ToolTip_DS_P_Reverberations	blue	The Fourth Seal
+254	blue_mid_5_3	tooltip_ds_p_phasedagger	blue	The Fourth Seal
+254	blue_mid_6_1	ToolTip_DS_P_FieryInfluence	blue	The Fourth Seal
+254	blue_mid_6_2	Tooltip_DarkSiren_ActionSkill_PhaseShard_Capstone_GrimReaper	blue	The Fourth Seal
+254	blue_mid_6_3	ToolTip_DS_P_Volley	blue	The Fourth Seal
+254	blue_right_4_1	ToolTip_DS_P_CorrodingArmaments	blue	The Fourth Seal
+254	blue_right_4_3	ToolTip_DS_P_CommandingAttunement	blue	The Fourth Seal
+254	blue_right_5_1	ToolTip_DS_P_SpiritBomb	blue	The Fourth Seal
+254	blue_right_5_2	ToolTip_DS_P_AncientRites	blue	The Fourth Seal
+254	blue_right_5_3	ToolTip_DS_P_Deathstraction	blue	The Fourth Seal
+254	blue_right_6_1	ToolTip_DS_P_ResoundingEchoes	blue	The Fourth Seal
+254	blue_right_6_2	Tooltip_DarkSiren_ActionSkill_PhaseShard_Capstone_Weaver	blue	The Fourth Seal
+254	green_1_1	ToolTip_DS_P_GunsAndNeedles	green	Vexcalation
+254	green_1_2	ToolTip_DS_P_VolatileEssence	green	Vexcalation
+254	green_1_3	ToolTip_DS_P_DrainingAttunement	green	Vexcalation
+254	green_1_5	ToolTip_DS_P_GraveSights	green	Vexcalation
+254	green_2_1	ToolTip_DS_P_Stimpack	green	Vexcalation
+254	green_2_3	ToolTip_DS_P_Bleed	green	Vexcalation
+254	green_2_5	ToolTip_DS_P_InfusedBullets	green	Vexcalation
+254	green_3_2	ToolTip_DS_P_PhaseSync	green	Vexcalation
+254	green_3_3	ToolTip_DS_P_KineticInfluence	green	Vexcalation
+254	green_3_4	ToolTip_DS_P_GravePower	green	Vexcalation
+254	green_3_5	ToolTip_DS_P_TargetPrescience	green	Vexcalation
+254	green_left_4_1	ToolTip_DS_P_RadiatingAttunement	green	Vexcalation
+254	green_left_4_3	ToolTip_DS_P_VorpalSpirits	green	Vexcalation
+254	green_left_5_1	ToolTip_DS_P_RadioactiveResonance	green	Vexcalation
+254	green_left_5_2	ToolTip_DS_P_RefreshingWaters	green	Vexcalation
+254	green_left_5_3	ToolTip_DS_P_SpiritCooling	green	Vexcalation
+254	green_left_6_1	ToolTip_DS_P_RadiatingInfluence	green	Vexcalation
+254	green_left_6_2	ToolTip_DarkSiren_ActionSkill_PhaseAvatar_Capstone_Phasegeist	green	Vexcalation
+254	green_mid_4_1	ToolTip_DS_P_WomboCombo	green	Vexcalation
+254	green_mid_4_3	ToolTip_DS_P_VorpalMind	green	Vexcalation
+254	green_mid_5_1	ToolTip_DS_P_PhasePocket	green	Vexcalation
+254	green_mid_5_2	ToolTip_DS_P_Extra	green	Vexcalation
+254	green_mid_5_3	ToolTip_DS_P_GraveElements	green	Vexcalation
+254	green_mid_6_2	ToolTip_DarkSiren_ActionSkill_PhaseAvatar_Capstone_Resonance	green	Vexcalation
+254	green_mid_6_3	ToolTip_DS_P_SpiritedAway	green	Vexcalation
+254	green_right_4_1	ToolTip_DS_P_GraveVitality	green	Vexcalation
+254	green_right_4_3	ToolTip_DS_P_Enlightenment	green	Vexcalation
+254	green_right_5_1	ToolTip_DS_P_PhaseExtension	green	Vexcalation
+254	green_right_5_2	ToolTip_DS_P_BloodShot	green	Vexcalation
+254	green_right_5_3	ToolTip_DS_P_DrainingEssence	green	Vexcalation
+254	green_right_6_2	ToolTip_DarkSiren_ActionSkill_PhaseAvatar_Capstone_Necrophase	green	Vexcalation
+254	green_right_6_3	ToolTip_DS_P_BloodIsPower	green	Vexcalation
+254	red_1_1	ToolTip_DS_P_GraveSustain	red	Here Comes Trouble
+254	red_1_2	ToolTip_DS_P_PhaseBullets	red	Here Comes Trouble
+254	red_1_3	ToolTip_DS_P_Overpowered	red	Here Comes Trouble
+254	red_1_5	ToolTip_DS_P_PhasePlating	red	Here Comes Trouble
+254	red_2_1	ToolTip_DS_P_GraveCommand	red	Here Comes Trouble
+254	red_2_3	ToolTip_DS_P_Overprotective	red	Here Comes Trouble
+254	red_2_5	ToolTip_DS_P_Summoner	red	Here Comes Trouble
+254	red_3_1	ToolTip_DS_P_PhaseHarvest	red	Here Comes Trouble
+254	red_3_2	ToolTip_DS_P_ClawAndBang	red	Here Comes Trouble
+254	red_3_3	ToolTip_DS_P_Overseer	red	Here Comes Trouble
+254	red_3_5	ToolTip_DS_P_VorpalFiends	red	Here Comes Trouble
+254	red_left_4_1	ToolTip_DS_P_CryonicAttunement	red	Here Comes Trouble
+254	red_left_4_3	ToolTip_DS_P_PrimedAndReady	red	Here Comes Trouble
+254	red_left_5_1	ToolTip_DS_P_Overspirited	red	Here Comes Trouble
+254	red_left_5_2	ToolTip_DS_P_ExplosiveFiends	red	Here Comes Trouble
+254	red_left_5_3	ToolTip_DS_P_HardenedSpirit	red	Here Comes Trouble
+254	red_left_6_1	ToolTip_DS_P_CryonicInfluence	red	Here Comes Trouble
+254	red_left_6_2	ToolTip_DarkSiren_ActionSkill_PhaseFamiliar_Capstone_ArmoredBeast	red	Here Comes Trouble
+254	red_mid_4_1	ToolTip_DS_P_ElementalEssence	red	Here Comes Trouble
+254	red_mid_4_3	ToolTip_DS_P_KeenFiends	red	Here Comes Trouble
+254	red_mid_5_1	ToolTip_DS_P_TheReaping	red	Here Comes Trouble
+254	red_mid_5_2	ToolTip_DS_P_GraveSacrifice	red	Here Comes Trouble
+254	red_mid_5_3	ToolTip_DS_P_PreservingEssence	red	Here Comes Trouble
+254	red_mid_6_1	ToolTip_DS_P_TailWhip	red	Here Comes Trouble
+254	red_mid_6_2	ToolTip_DarkSiren_ActionSkill_PhaseFamiliar_Capstone_IllusoryBeast	red	Here Comes Trouble
+254	red_right_4_1	ToolTip_DS_P_ShockingAttunement	red	Here Comes Trouble
+254	red_right_4_3	ToolTip_DS_P_GraveShock	red	Here Comes Trouble
+254	red_right_5_1	ToolTip_DS_P_UndeadWire	red	Here Comes Trouble
+254	red_right_5_2	ToolTip_DS_P_GravyDrain	red	Here Comes Trouble
+254	red_right_5_3	ToolTip_DS_P_RunicMedicine	red	Here Comes Trouble
+254	red_right_6_1	ToolTip_DS_P_ShockingInfluence	red	Here Comes Trouble
+254	red_right_6_2	ToolTip_DarkSiren_ActionSkill_PhaseFamiliar_Capstone_ApexBeast	red	Here Comes Trouble
+255	blue_1_1	ToolTip_PLD_P_WrathOfNature	blue	Vengeance
+255	blue_1_3	ToolTip_PLD_P_Demolitionist	blue	Vengeance
+255	blue_1_4	ToolTip_PLD_P_Resolute	blue	Vengeance
+255	blue_1_5	ToolTip_PLD_P_Battleborn	blue	Vengeance
+255	blue_2_1	ToolTip_PLD_P_Perpetual	blue	Vengeance
+255	blue_2_3	ToolTip_PLD_P_FrostBite	blue	Vengeance
+255	blue_2_5	ToolTip_PLD_P_Vigor	blue	Vengeance
+255	blue_3_1	ToolTip_PLD_P_BulletHail	blue	Vengeance
+255	blue_3_2	ToolTip_PLD_P_Machinist	blue	Vengeance
+255	blue_3_3	ToolTip_PLD_P_AncientWays	blue	Vengeance
+255	blue_3_5	ToolTip_PLD_P_FeedbackLoop	blue	Vengeance
+255	blue_left_4_1	ToolTip_PLD_P_Wildfire	blue	Vengeance
+255	blue_left_4_3	ToolTip_PLD_P_FlameAffinity	blue	Vengeance
+255	blue_left_5_1	ToolTip_PLD_P_BallisticShielding	blue	Vengeance
+255	blue_left_5_2	ToolTip_PLD_P_DiscoInferno	blue	Vengeance
+255	blue_left_5_3	ToolTip_PLD_P_Worldbreaker	blue	Vengeance
+255	blue_left_6_2	ToolTip_PLD_AS_Scourge_ForgeSkill_ForstfireWall	blue	Vengeance
+255	blue_left_6_3	ToolTip_PLD_P_Attenuation	blue	Vengeance
+255	blue_mid_4_1	ToolTip_PLD_P_CryoAffinity	blue	Vengeance
+255	blue_mid_4_3	ToolTip_PLD_P_BrittleHallowPoints	blue	Vengeance
+255	blue_mid_5_1	ToolTip_PLD_P_ElementalEchoes	blue	Vengeance
+255	blue_mid_5_2	ToolTip_PLD_P_ElementalSurge	blue	Vengeance
+255	blue_mid_5_3	ToolTip_PLD_P_AgeOfIce	blue	Vengeance
+255	blue_mid_6_1	ToolTip_PLD_P_SplitEchoes	blue	Vengeance
+255	blue_mid_6_2	ToolTip_PLD_AS_Scourge_ForgeSkill_Fissure	blue	Vengeance
+255	blue_right_4_1	ToolTip_PLD_P_Flashbang	blue	Vengeance
+255	blue_right_4_3	ToolTip_PLD_P_ShockAffinity	blue	Vengeance
+255	blue_right_5_1	ToolTip_PLD_P_Tactician	blue	Vengeance
+255	blue_right_5_2	ToolTip_PLD_P_Forecast	blue	Vengeance
+255	blue_right_5_3	ToolTip_PLD_P_ElementalBolt	blue	Vengeance
+255	blue_right_6_2	ToolTip_PLD_AS_Scourge_ForgeSkill_StormSmite	blue	Vengeance
+255	blue_right_6_3	ToolTip_PLD_P_HighVoltage	blue	Vengeance
+255	green_1_1	ToolTip_PLD_P_CastIron	green	Cybernetics
+255	green_1_2	ToolTip_PLD_P_BuildingStorm	green	Cybernetics
+255	green_1_4	ToolTip_PLD_P_WeaponMaster	green	Cybernetics
+255	green_1_5	ToolTip_PLD_P_RapidReload	green	Cybernetics
+255	green_2_1	ToolTip_PLD_P_DestructionEngine	green	Cybernetics
+255	green_2_3	ToolTip_PLD_P_TemperedFlame	green	Cybernetics
+255	green_2_5	ToolTip_PLD_P_BoltAction	green	Cybernetics
+255	green_3_1	ToolTip_PLD_P_Excitable	green	Cybernetics
+255	green_3_3	ToolTip_PLD_P_TwinnedArmaments	green	Cybernetics
+255	green_3_4	ToolTip_PLD_P_LockedIn	green	Cybernetics
+255	green_3_5	ToolTip_PLD_P_StormsHerald	green	Cybernetics
+255	green_left_4_1	ToolTip_PLD_P_TemperedIce	green	Cybernetics
+255	green_left_4_3	ToolTip_PLD_P_DetonationStation	green	Cybernetics
+255	green_left_5_1	ToolTip_PLD_P_EmpoweredWeapons	green	Cybernetics
+255	green_left_5_2	ToolTip_PLD_P_Engineering	green	Cybernetics
+255	green_left_5_3	ToolTip_PLD_P_Annihilation	green	Cybernetics
+255	green_left_6_1	ToolTip_PLD_P_OrdainedHammer	green	Cybernetics
+255	green_left_6_2	ToolTip_PLD_AS_Warforge_ForgeSkill_BoomingBlows	green	Cybernetics
+255	green_mid_4_1	ToolTip_PLD_P_Escalation	green	Cybernetics
+255	green_mid_4_3	ToolTip_PLD_P_TemperedLightning	green	Cybernetics
+255	green_mid_5_1	ToolTip_PLD_P_IronDome	green	Cybernetics
+255	green_mid_5_2	ToolTip_PLD_P_LightningRod	green	Cybernetics
+255	green_mid_5_3	ToolTip_PLD_P_QuickenedWeapons	green	Cybernetics
+255	green_mid_6_2	ToolTip_PLD_AS_Warforge_ForgeSkill_StormShatter	green	Cybernetics
+255	green_mid_6_3	ToolTip_PLD_P_SharpendWeapons	green	Cybernetics
+255	green_right_4_1	ToolTip_PLD_P_CryogenicImpulse	green	Cybernetics
+255	green_right_4_3	ToolTip_PLD_P_RagingInferno	green	Cybernetics
+255	green_right_5_1	ToolTip_PLD_P_Brightburn	green	Cybernetics
+255	green_right_5_2	ToolTip_PLD_P_HeatExchange	green	Cybernetics
+255	green_right_5_3	ToolTip_PLD_P_ElementalFont	green	Cybernetics
+255	green_right_6_1	ToolTip_PLD_P_PullOfTheElements	green	Cybernetics
+255	green_right_6_2	ToolTip_PLD_AS_Warforge_ForgeSkill_Conflangarang	green	Cybernetics
+255	red_1_1	ToolTip_PLD_P_AdaptiveCharge	red	Calamity
+255	red_1_3	ToolTip_PLD_P_FierySpirit	red	Calamity
+255	red_1_4	ToolTip_PLD_P_BrassKnuckles	red	Calamity
+255	red_1_5	ToolTip_PLD_P_ArmoredPlating	red	Calamity
+255	red_2_1	ToolTip_PLD_P_WieldTheStorm	red	Calamity
+255	red_2_3	ToolTip_PLD_P_WeakeningBlast	red	Calamity
+255	red_2_5	ToolTip_PLD_P_DoomFist	red	Calamity
+255	red_3_1	ToolTip_PLD_P_ForgedInSteel	red	Calamity
+255	red_3_2	ToolTip_PLD_P_Bulletstorm	red	Calamity
+255	red_3_4	ToolTip_PLD_P_Momentum	red	Calamity
+255	red_3_5	ToolTip_PLD_P_TheBestDefense	red	Calamity
+255	red_left_4_1	ToolTip_PLD_P_Berserk	red	Calamity
+255	red_left_4_3	ToolTip_PLD_P_Bloodlust	red	Calamity
+255	red_left_5_1	ToolTip_PLD_P_SeeingRed	red	Calamity
+255	red_left_5_2	ToolTip_PLD_P_EmergencyRefresh	red	Calamity
+255	red_left_5_3	ToolTip_PLD_P_Titan	red	Calamity
+255	red_left_6_1	ToolTip_PLD_P_AncestralStrikes	red	Calamity
+255	red_left_6_2	ToolTip_PLD_AS_WeaponMaster_Forgeskill_2HAxe	red	Calamity
+255	red_mid_4_1	ToolTip_PLD_P_IntoTheFray	red	Calamity
+255	red_mid_4_3	ToolTip_PLD_P_Spartan	red	Calamity
+255	red_mid_5_1	ToolTip_PLD_P_Harbinger	red	Calamity
+255	red_mid_5_2	ToolTip_PLD_P_Rearm	red	Calamity
+255	red_mid_5_3	ToolTip_PLD_P_WeakeningBlows	red	Calamity
+255	red_mid_6_2	ToolTip_PLD_AS_WeaponMaster_Forgeskill_2HHammer	red	Calamity
+255	red_mid_6_3	ToolTip_PLD_P_FlareUp	red	Calamity
+255	red_right_4_1	ToolTip_PLD_P_Cataclysm	red	Calamity
+255	red_right_4_3	ToolTip_PLD_P_StoppingPower	red	Calamity
+255	red_right_5_1	ToolTip_PLD_P_Judgement	red	Calamity
+255	red_right_5_2	ToolTip_PLD_P_ThunderClap	red	Calamity
+255	red_right_5_3	ToolTip_PLD_P_ShieldMatrix	red	Calamity
+255	red_right_6_1	ToolTip_PLD_P_ElectricalFire	red	Calamity
+255	red_right_6_2	ToolTip_PLD_AS_WeaponMaster_Forgeskill_2HSword	red	Calamity
+256	blue_1_1	tooltip_exo_passive_01_rinse	blue	People Person
+256	blue_1_3	tooltip_exo_passive_02_LasJaras	blue	People Person
+256	blue_1_5	tooltip_exo_passive_03_TheThrill	blue	People Person
+256	blue_2_1	tooltip_exo_passive_04_Preparado	blue	People Person
+256	blue_2_3	tooltip_exo_passive_05_PaDentro	blue	People Person
+256	blue_2_5	tooltip_exo_passive_06_Arriba	blue	People Person
+256	blue_3_1	tooltip_exo_passive_07_FirstImpression	blue	People Person
+256	blue_3_2	tooltip_exo_passive_08_AlCentro	blue	People Person
+256	blue_3_4	tooltip_exo_passive_09_MetalManagement	blue	People Person
+256	blue_3_5	tooltip_exo_passive_10_Abajo	blue	People Person
+256	blue_left_4_1	tooltip_exo_passive_11_BrainDrump	blue	People Person
+256	blue_left_4_3	tooltip_exo_passive_12_Conductivo	blue	People Person
+256	blue_left_5_2	tooltip_exo_passive_13_ElCatrin	blue	People Person
+256	blue_left_6_1	tooltip_exo_passive_14_Awe	blue	People Person
+256	blue_left_6_2	tooltip_exo_bunkerBuster_capstone_taserface	blue	People Person
+256	blue_left_6_3	tooltip_exo_passive_15_Fiesta	blue	People Person
+256	blue_mid_4_1	tooltip_exo_passive_16_DroneDefense	blue	People Person
+256	blue_mid_4_3	tooltip_exo_passive_17_ElSoldado	blue	People Person
+256	blue_mid_5_2	tooltip_exo_passive_18_theRightTools	blue	People Person
+256	blue_mid_5_3	tooltip_exo_passive_19_Debtonation	blue	People Person
+256	blue_mid_6_1	tooltip_exo_passive_20_DroneAssault	blue	People Person
+256	blue_mid_6_2	tooltip_exo_bunkerBuster_capstone_hazardousPayload	blue	People Person
+256	blue_right_4_1	tooltip_exo_passive_21_Jaque	blue	People Person
+256	blue_right_4_3	tooltip_exo_passive_22_LaGarza	blue	People Person
+256	blue_right_5_1	tooltip_exo_passive_23_Mate	blue	People Person
+256	blue_right_5_3	tooltip_exo_passive_24_Deadline	blue	People Person
+256	blue_right_6_2	tooltip_exo_bunkerBuster_capstone_laserFocused	blue	People Person
+256	blue_right_6_3	tooltip_exo_passive_25_PerMyLast	blue	People Person
+256	green_1_1	tooltip_exo_passive_53_HandshakeDeal	green	This Year's Gimmick
+256	green_1_3	tooltip_exo_passive_54_MidnightOil	green	This Year's Gimmick
+256	green_1_5	tooltip_exo_passive_55_Expedite	green	This Year's Gimmick
+256	green_2_1	tooltip_exo_passive_56_DialIn	green	This Year's Gimmick
+256	green_2_3	tooltip_exo_passive_57_ElCorazon	green	This Year's Gimmick
+256	green_2_5	tooltip_exo_passive_58_DiamondHands	green	This Year's Gimmick
+256	green_3_1	tooltip_exo_passive_59_Saldar	green	This Year's Gimmick
+256	green_3_2	tooltip_exo_passive_60_InTheZone	green	This Year's Gimmick
+256	green_3_3	tooltip_exo_passive_61_ToTheLast	green	This Year's Gimmick
+256	green_3_4	tooltip_exo_passive_62_HardSell	green	This Year's Gimmick
+256	green_left_4_1	tooltip_exo_passive_63_Blowout	green	This Year's Gimmick
+256	green_left_4_3	tooltip_exo_passive_64_ElParaguas	green	This Year's Gimmick
+256	green_left_5_2	tooltip_exo_passive_65_ProtectoPulse	green	This Year's Gimmick
+256	green_left_5_3	tooltip_exo_passive_66_ShockMarket	green	This Year's Gimmick
+256	green_left_6_1	tooltip_exo_passive_67_Liquidation	green	This Year's Gimmick
+256	green_left_6_2	tooltip_exo_heavyArms_capstone_whirlwind	green	This Year's Gimmick
+256	green_mid_4_1	tooltip_exo_passive_68_Artilleria	green	This Year's Gimmick
+256	green_mid_4_3	tooltip_exo_passive_69_collabrateIgnition	green	This Year's Gimmick
+256	green_mid_5_1	tooltip_exo_passive_70_BoomingBusiness	green	This Year's Gimmick
+256	green_mid_5_3	tooltip_exo_passive_71_Sinergia	green	This Year's Gimmick
+256	green_mid_6_1	tooltip_exo_passive_72_Hemolitions	green	This Year's Gimmick
+256	green_mid_6_2	tooltip_exo_heavyArms_capstone_chargeBurst	green	This Year's Gimmick
+256	green_mid_6_3	tooltip_exo_passive_73_ElDiabilito	green	This Year's Gimmick
+256	green_right_4_1	tooltip_exo_passive_74_ElBorracho	green	This Year's Gimmick
+256	green_right_4_3	tooltip_exo_passive_75_Empuje	green	This Year's Gimmick
+256	green_right_5_1	tooltip_exo_passive_76_SustainableEnergy	green	This Year's Gimmick
+256	green_right_5_2	tooltip_exo_passive_77_Motivar	green	This Year's Gimmick
+256	green_right_6_2	tooltip_exo_heavyArms_capstone_violentFrenzy	green	This Year's Gimmick
+256	green_right_6_3	tooltip_exo_passive_78_CruelAccrual	green	This Year's Gimmick
+256	red_1_1	tooltip_exo_passive_26_Sitiar	red	Remote Agent
+256	red_1_3	tooltip_exo_passive_27_DeftHands	red	Remote Agent
+256	red_1_5	tooltip_exo_passive_28_ShieldBarriest	red	Remote Agent
+256	red_2_1	tooltip_exo_passive_29_Juerga	red	Remote Agent
+256	red_2_3	tooltip_exo_passive_30_FieldRepairs	red	Remote Agent
+256	red_2_5	tooltip_exo_passive_31_CYA	red	Remote Agent
+256	red_3_1	tooltip_exo_passive_32_Resiliencia	red	Remote Agent
+256	red_3_2	tooltip_exo_passive_33_Maestro	red	Remote Agent
+256	red_3_3	tooltip_exo_passive_34_Venganza	red	Remote Agent
+256	red_3_5	tooltip_exo_passive_35_ElValiente	red	Remote Agent
+256	red_left_4_3	tooltip_exo_passive_36_AssymreticWarfare	red	Remote Agent
+256	red_left_5_1	tooltip_exo_passive_37_ErrantSpark	red	Remote Agent
+256	red_left_5_2	tooltip_exo_passive_38_Ardid	red	Remote Agent
+256	red_left_5_3	tooltip_exo_passive_39_RollingStone	red	Remote Agent
+256	red_left_6_1	tooltip_exo_passive_40_ProprietaryIncendiary	red	Remote Agent
+256	red_left_6_2	tooltip_exo_autoLock_capstone_moreOomph	red	Remote Agent
+256	red_left_6_3	tooltip_exo_passive_41_LaterialPlinking	red	Remote Agent
+256	red_mid_4_1	tooltip_exo_passive_42_Confeti	red	Remote Agent
+256	red_mid_4_3	tooltip_exo_passive_43_Vitriol	red	Remote Agent
+256	red_mid_5_1	tooltip_exo_passive_44_PainReaction	red	Remote Agent
+256	red_mid_5_3	tooltip_exo_passive_45_LightningRod	red	Remote Agent
+256	red_mid_6_1	tooltip_exo_passive_46_ElAlacrin	red	Remote Agent
+256	red_mid_6_2	tooltip_exo_autoLock_capstone_beamTeam	red	Remote Agent
+256	red_mid_6_3	tooltip_exo_passive_47_Inspirado	red	Remote Agent
+256	red_right_4_1	tooltip_exo_passive_48_Barrage	red	Remote Agent
+256	red_right_4_3	tooltip_exo_passive_49_Everdrive	red	Remote Agent
+256	red_right_5_1	tooltip_exo_passive_50_DevilMayCare	red	Remote Agent
+256	red_right_5_3	tooltip_exo_passive_51_Temerario	red	Remote Agent
+256	red_right_6_1	tooltip_exo_passive_52_Soltado	red	Remote Agent
+256	red_right_6_2	tooltip_exo_autoLock_capstone_rocketPods	red	Remote Agent
+259	blue_1_1	tooltip_grav_passive_58_QuantumImmortality	blue	Seize the Day
+259	blue_1_3	tooltip_grav_passive_60_ParallelCircuit	blue	Seize the Day
+259	blue_1_4	tooltip_grav_passive_61_PulseDrive	blue	Seize the Day
+259	blue_1_5	tooltip_grav_passive_59_MakeExtraordinary	blue	Seize the Day
+259	blue_2_1	tooltip_grav_passive_63_BrightFuture	blue	Seize the Day
+259	blue_2_3	tooltip_grav_passive_64_Negentropy	blue	Seize the Day
+259	blue_2_5	tooltip_grav_passive_62_PeriodicTableFlip	blue	Seize the Day
+259	blue_3_1	tooltip_grav_passive_08_RippleEffect	blue	Seize the Day
+259	blue_3_3	tooltip_grav_passive_67_PrecisionEngineering	blue	Seize the Day
+259	blue_3_4	tooltip_grav_passive_68_2Coolant4Schoolant	blue	Seize the Day
+259	blue_3_5	tooltip_grav_passive_65_Cryodynamics	blue	Seize the Day
+259	blue_left_4_1	tooltip_grav_passive_69_Concurrence	blue	Seize the Day
+259	blue_left_4_3	tooltip_grav_passive_72_ForceOfWill	blue	Seize the Day
+259	blue_left_5_1	tooltip_grav_passive_71_ControlGroup	blue	Seize the Day
+259	blue_left_5_3	tooltip_grav_passive_70_Slingshot	blue	Seize the Day
+259	blue_left_6_1	tooltip_grav_passive_73_FreezeFrame	blue	Seize the Day
+259	blue_left_6_2	tooltip_capstone_grav_stasis_particlediffuser	blue	Seize the Day
+259	blue_left_6_3	tooltip_grav_passive_74_StunLock	blue	Seize the Day
+259	blue_mid_4_1	tooltip_grav_passive_75_UnstoppableIceotope	blue	Seize the Day
+259	blue_mid_4_3	tooltip_grav_passive_76_KeepIceOnThat	blue	Seize the Day
+259	blue_mid_5_1	tooltip_grav_passive_77_EndothermicReaction	blue	Seize the Day
+259	blue_mid_5_2	tooltip_grav_passive_78_FlashFreeze	blue	Seize the Day
+259	blue_mid_5_3	tooltip_grav_passive_79_heatSink	blue	Seize the Day
+259	blue_mid_6_1	tooltip_grav_passive_80_TriplePoint	blue	Seize the Day
+259	blue_mid_6_2	tooltip_capstone_grav_stasis_nthdimension	blue	Seize the Day
+259	blue_right_4_1	tooltip_grav_passive_81_IndiscreteMathematics	blue	Seize the Day
+259	blue_right_4_3	tooltip_grav_passive_82_experimentation	blue	Seize the Day
+259	blue_right_5_1	tooltip_grav_passive_83_DominoEffect	blue	Seize the Day
+259	blue_right_5_2	tooltip_grav_passive_84_SustainedReaction	blue	Seize the Day
+259	blue_right_6_2	tooltip_capstone_grav_stasis_kineticchaos	blue	Seize the Day
+259	blue_right_6_3	tooltip_grav_passive_85_GordianKnot	blue	Seize the Day
+259	green_1_1	tooltip_grav_passive_01_MainsHum	green	Cosmic Brilliance
+259	green_1_2	tooltip_grav_passive_02_personalObservation	green	Cosmic Brilliance
+259	green_1_3	tooltip_grav_passive_03_ActionAtADistance	green	Cosmic Brilliance
+259	green_1_5	tooltip_grav_passive_04_momentum	green	Cosmic Brilliance
+259	green_2_1	tooltip_grav_passive_05_MassFunction	green	Cosmic Brilliance
+259	green_2_3	tooltip_grav_passive_06_NeutronDecay	green	Cosmic Brilliance
+259	green_2_5	tooltip_grav_passive_07_heatDeath	green	Cosmic Brilliance
+259	green_3_1	tooltip_grav_passive_66_CreativeOverflow	green	Cosmic Brilliance
+259	green_3_3	tooltip_grav_passive_09_ResonanceCascade	green	Cosmic Brilliance
+259	green_3_4	tooltip_grav_passive_10_ConfirmativeReality	green	Cosmic Brilliance
+259	green_3_5	tooltip_grav_passive_11_AbsoluteZero	green	Cosmic Brilliance
+259	green_left_4_1	tooltip_grav_passive_12_blueshift	green	Cosmic Brilliance
+259	green_left_4_3	tooltip_grav_passive_13_Decoherence	green	Cosmic Brilliance
+259	green_left_5_1	tooltip_grav_passive_14_LatentCharge	green	Cosmic Brilliance
+259	green_left_5_2	tooltip_grav_passive_15_FeedbackLoop	green	Cosmic Brilliance
+259	green_left_6_2	tooltip_capstone_grav_terminal_potentialtransference	green	Cosmic Brilliance
+259	green_left_6_3	tooltip_grav_passive_16_RunawayReaction	green	Cosmic Brilliance
+259	green_mid_4_1	tooltip_grav_passive_17_GammaRayBurst	green	Cosmic Brilliance
+259	green_mid_4_3	tooltip_grav_passive_18_CertaintyPrinciple	green	Cosmic Brilliance
+259	green_mid_5_2	tooltip_grav_passive_19_Jaunt	green	Cosmic Brilliance
+259	green_mid_5_3	tooltip_grav_passive_20_CriticalFunding	green	Cosmic Brilliance
+259	green_mid_6_1	tooltip_grav_passive_21_ExposedCore	green	Cosmic Brilliance
+259	green_mid_6_2	tooltip_capstone_grav_terminal_ultraviolentradiation	green	Cosmic Brilliance
+259	green_mid_6_3	tooltip_grav_passive_22_Meltdown	green	Cosmic Brilliance
+259	green_right_4_1	tooltip_grav_passive_23_Refraction	green	Cosmic Brilliance
+259	green_right_4_3	tooltip_grav_passive_24_ExcitedState	green	Cosmic Brilliance
+259	green_right_5_1	tooltip_grav_passive_25_Accretion	green	Cosmic Brilliance
+259	green_right_5_3	tooltip_grav_passive_26_DistributionFunction	green	Cosmic Brilliance
+259	green_right_6_1	tooltip_grav_passive_27_PencilsDown	green	Cosmic Brilliance
+259	green_right_6_2	tooltip_capstone_grav_terminal_halomotivator	green	Cosmic Brilliance
+259	green_right_6_3	tooltip_grav_passive_28_Annihilation	green	Cosmic Brilliance
+259	red_1_1	tooltip_grav_passive_29_Cyclotron	red	Creative Bursts
+259	red_1_2	tooltip_grav_passive_30_PPE	red	Creative Bursts
+259	red_1_4	tooltip_grav_passive_31_fuzzymath	red	Creative Bursts
+259	red_1_5	tooltip_grav_passive_32_FieldReadyPrototype	red	Creative Bursts
+259	red_2_1	tooltip_grav_passive_33_BleedingEdge_broken	red	Creative Bursts
+259	red_2_5	tooltip_grav_passive_34_Elementary	red	Creative Bursts
+259	red_3_1	tooltip_grav_passive_35_testSubjects	red	Creative Bursts
+259	red_3_2	tooltip_grav_passive_36_GetUpAndGo	red	Creative Bursts
+259	red_3_3	tooltip_grav_passive_37_ElephantsFoot	red	Creative Bursts
+259	red_3_4	tooltip_grav_passive_38_GreatRedDoT	red	Creative Bursts
+259	red_3_5	tooltip_grav_passive_39_Enriched	red	Creative Bursts
+259	red_left_4_1	tooltip_grav_passive_40_PracticalApplications	red	Creative Bursts
+259	red_left_4_3	tooltip_grav_passive_41_carryTheOne	red	Creative Bursts
+259	red_left_5_1	tooltip_grav_passive_42_CoreSample	red	Creative Bursts
+259	red_left_5_2	tooltip_grav_passive_43_breakTheIce	red	Creative Bursts
+259	red_left_6_1	tooltip_grav_passive_44_PowerCycle	red	Creative Bursts
+259	red_left_6_2	tooltip_capstone_grav_exodus_dynamism	red	Creative Bursts
+259	red_left_6_3	tooltip_grav_passive_45_ColdWelding	red	Creative Bursts
+259	red_mid_4_1	tooltip_grav_passive_46_PoisonedSun	red	Creative Bursts
+259	red_mid_4_3	tooltip_grav_passive_47_glowUp	red	Creative Bursts
+259	red_mid_5_1	tooltip_grav_passive_48_FissileLauncher	red	Creative Bursts
+259	red_mid_5_3	tooltip_grav_passive_49_ChainReactor	red	Creative Bursts
+259	red_mid_6_1	tooltip_grav_passive_50_Wasted	red	Creative Bursts
+259	red_mid_6_2	tooltip_capstone_grav_exodus_devastation	red	Creative Bursts
+259	red_mid_6_3	tooltip_grav_passive_51_DirtyBomb	red	Creative Bursts
+259	red_right_4_1	tooltip_grav_passive_52_HighlyEfficient	red	Creative Bursts
+259	red_right_4_3	tooltip_grav_passive_53_MechanicalBrilliance	red	Creative Bursts
+259	red_right_5_2	tooltip_grav_passive_54_Eureka	red	Creative Bursts
+259	red_right_5_3	tooltip_grav_passive_55_RoundingDown	red	Creative Bursts
+259	red_right_6_1	tooltip_grav_passive_56_AltFuelSource	red	Creative Bursts
+259	red_right_6_2	tooltip_capstone_grav_exodus_destruction	red	Creative Bursts
+259	red_right_6_3	tooltip_grav_passive_57_QED	red	Creative Bursts
+404	blue_1_1	tooltip_robo_passive_01_TableFLip	blue	Luck of the Draw
+404	blue_1_2	tooltip_robo_passive_02_HeroCall	blue	Luck of the Draw
+404	blue_1_4	tooltip_robo_passive_03_Steam	blue	Luck of the Draw
+404	blue_1_5	tooltip_robo_passive_04_alchemy	blue	Luck of the Draw
+404	blue_2_1	tooltip_robo_passive_24_ReadTheSigns	blue	Luck of the Draw
+404	blue_2_3	tooltip_robo_passive_06_SoundsOfRain	blue	Luck of the Draw
+404	blue_2_5	tooltip_robo_passive_07_TrickTaker	blue	Luck of the Draw
+404	blue_3_2	tooltip_robo_passive_09_LateScratch	blue	Luck of the Draw
+404	blue_3_3	tooltip_robo_passive_10_devilsTines_SoH	blue	Luck of the Draw
+404	blue_3_4	tooltip_robo_passive_11_DoubleDown	blue	Luck of the Draw
+404	blue_3_5	tooltip_robo_passive_12_wretchedShadows	blue	Luck of the Draw
+404	blue_left_4_1	tooltip_robo_passive_13_HighRoller	blue	Luck of the Draw
+404	blue_left_4_3	tooltip_robo_passive_14_TakeThePot	blue	Luck of the Draw
+404	blue_left_5_1	tooltip_robo_passive_15_StackTheDeck	blue	Luck of the Draw
+404	blue_left_5_2	tooltip_robo_passive_16_Legerdemain	blue	Luck of the Draw
+404	blue_left_5_3	tooltip_robo_passive_17_Fortuity	blue	Luck of the Draw
+404	blue_left_6_1	tooltip_robo_passive_18_DealersBluff	blue	Luck of the Draw
+404	blue_mid_4_1	tooltip_robo_passive_19_AceInTheHole	blue	Luck of the Draw
+404	blue_mid_4_3	tooltip_robo_passive_20_AroundTheCorner	blue	Luck of the Draw
+404	blue_mid_5_2	tooltip_robo_passive_22_TheHouse	blue	Luck of the Draw
+404	blue_mid_5_3	tooltip_robo_passive_21_C4SHGame	blue	Luck of the Draw
+404	blue_mid_6_1	tooltip_robo_passive_23_RiskyBusiness	blue	Luck of the Draw
+404	blue_mid_6_3	tooltip_robo_passive_05_ante	blue	Luck of the Draw
+404	blue_right_4_1	tooltip_robo_passive_25_TheTurn	blue	Luck of the Draw
+404	blue_right_4_3	tooltip_robo_passive_26_Payout	blue	Luck of the Draw
+404	blue_right_5_1	tooltip_robo_passive_27_BoomOrBus	blue	Luck of the Draw
+404	blue_right_5_2	tooltip_robo_passive_28_HeartOfTheCards	blue	Luck of the Draw
+404	blue_right_5_3	tooltip_robo_passive_29_RunningLuck	blue	Luck of the Draw
+404	blue_right_6_1	tooltip_robo_passive_30_HotStreak	blue	Luck of the Draw
+404	green_1_1	tooltip_robo_passive_58_LucksARobot	green	Roll the Bones
+404	green_1_3	tooltip_robo_passive_59_AllForOne	green	Roll the Bones
+404	green_1_5	tooltip_robo_passive_60_LuckyCharm	green	Roll the Bones
+404	green_2_1	tooltip_robo_passive_61_TheLuckyOne	green	Roll the Bones
+404	green_2_3	tooltip_robo_passive_62_RedMoonRising	green	Roll the Bones
+404	green_2_5	tooltip_robo_passive_63_RollingTheDeep	green	Roll the Bones
+404	green_3_1	tooltip_robo_passive_64_RidingHigh	green	Roll the Bones
+404	green_3_2	tooltip_robo_passive_65_GravePact	green	Roll the Bones
+404	green_3_3	tooltip_robo_passive_10_devilsTines_CL	green	Roll the Bones
+404	green_3_4	tooltip_robo_passive_75_DoubleTime	green	Roll the Bones
+404	green_3_5	tooltip_robo_passive_67_Luckless	green	Roll the Bones
+404	green_left_4_1	tooltip_robo_passive_68_CriticalRole	green	Roll the Bones
+404	green_left_4_3	tooltip_robo_passive_69_SpinOfFate	green	Roll the Bones
+404	green_left_5_1	tooltip_robo_passive_70_HighStakes	green	Roll the Bones
+404	green_left_5_3	tooltip_robo_passive_71_FortunesFavor	green	Roll the Bones
+404	green_left_6_1	tooltip_robo_passive_72_LetItRide	green	Roll the Bones
+404	green_left_6_3	tooltip_robo_passive_73_Wild	green	Roll the Bones
+404	green_mid_4_1	tooltip_robo_passive_74_PackMentality	green	Roll the Bones
+404	green_mid_4_3	tooltip_robo_passive_66_Undying	green	Roll the Bones
+404	green_mid_5_1	tooltip_robo_passive_76_LoadedDice	green	Roll the Bones
+404	green_mid_5_2	tooltip_robo_passive_77_ShadowsEmbrace	green	Roll the Bones
+404	green_mid_5_3	tooltip_robo_passive_78_Serendipity	green	Roll the Bones
+404	green_mid_6_1	tooltip_robo_passive_79_SidekicksRevenge	green	Roll the Bones
+404	green_mid_6_3	tooltip_robo_passive_80_AlphasCall	green	Roll the Bones
+404	green_right_4_1	tooltip_robo_passive_81_CursedCall	green	Roll the Bones
+404	green_right_4_3	tooltip_robo_passive_82_Haunted	green	Roll the Bones
+404	green_right_5_2	tooltip_robo_passive_83_GraveyardShift	green	Roll the Bones
+404	green_right_6_1	tooltip_robo_passive_84_SnakeEyes	green	Roll the Bones
+404	green_right_6_3	tooltip_robo_passive_85_WitchingHour	green	Roll the Bones
+404	red_1_1	tooltip_robo_passive_31_Unchained	red	Chaos Walking
+404	red_1_3	tooltip_robo_passive_32_DeathHunt	red	Chaos Walking
+404	red_1_4	tooltip_robo_passive_33_Determinator	red	Chaos Walking
+404	red_1_5	tooltip_robo_passive_34_HardBoiled	red	Chaos Walking
+404	red_2_3	tooltip_robo_passive_36_TheShootist	red	Chaos Walking
+404	red_2_5	tooltip_robo_passive_37_StandAndBleed	red	Chaos Walking
+404	red_3_1	tooltip_robo_passive_35_TheFuries	red	Chaos Walking
+404	red_3_2	tooltip_robo_passive_39_BoneShrapnel	red	Chaos Walking
+404	red_3_3	tooltip_robo_passive_10_devilsTines_CF	red	Chaos Walking
+404	red_3_4	tooltip_robo_passive_40_RideWithTheDevil	red	Chaos Walking
+404	red_3_5	tooltip_robo_passive_38_Unchained	red	Chaos Walking
+404	red_left_4_1	tooltip_robo_passive_42_Brimstone	red	Chaos Walking
+404	red_left_4_3	tooltip_robo_passive_43_TheClaim	red	Chaos Walking
+404	red_left_5_1	tooltip_robo_passive_44_TheGunfighter	red	Chaos Walking
+404	red_left_5_2	tooltip_robo_passive_45_DebtsToPay	red	Chaos Walking
+404	red_left_5_3	tooltip_robo_passive_46_HellAndBack	red	Chaos Walking
+404	red_left_6_1	tooltip_robo_passive_47_BloodOnElpis	red	Chaos Walking
+404	red_mid_4_1	tooltip_robo_passive_48_Lawless	red	Chaos Walking
+404	red_mid_4_3	tooltip_robo_passive_49_TNT	red	Chaos Walking
+404	red_mid_5_2	tooltip_robo_passive_50_WarWagon	red	Chaos Walking
+404	red_mid_5_3	tooltip_robo_passive_51_PaleRider	red	Chaos Walking
+404	red_mid_6_1	tooltip_robo_passive_52_Forsaken	red	Chaos Walking
+404	red_right_4_1	tooltip_robo_passive_53_TheWind	red	Chaos Walking
+404	red_right_4_3	tooltip_robo_passive_54_Maverick	red	Chaos Walking
+404	red_right_5_1	tooltip_robo_passive_55_Cottonmouth	red	Chaos Walking
+404	red_right_5_3	tooltip_robo_passive_56_BrokenArrow	red	Chaos Walking
+404	red_right_6_3	tooltip_robo_passive_57_BadMenMustBleed	red	Chaos Walking
