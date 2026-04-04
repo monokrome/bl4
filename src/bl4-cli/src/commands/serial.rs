@@ -911,7 +911,7 @@ pub fn skills(serial: &str, list: bool, color_filter: Option<&str>, adds: &[Stri
 }
 
 /// View or modify equipment firmware
-pub fn firmware(serial: &str, list: bool, set: Option<&str>, clear: bool, force: bool) -> Result<()> {
+pub fn firmware(serial: &str, list: bool, set: Option<&str>, force: bool) -> Result<()> {
     let item = bl4::ItemSerial::decode(serial).context("Failed to decode serial")?;
     let category = item
         .parts_category()
@@ -931,7 +931,7 @@ pub fn firmware(serial: &str, list: bool, set: Option<&str>, clear: bool, force:
 
     // Show current firmware
     let current = bl4::firmware::detect(&item.tokens, category);
-    if set.is_none() && !clear {
+    if set.is_none() {
         println!("{} (category {})", cat_name, category);
         match &current {
             Some(fw) => {
@@ -940,33 +940,6 @@ pub fn firmware(serial: &str, list: bool, set: Option<&str>, clear: bool, force:
             }
             None => println!("Firmware: none"),
         }
-        return Ok(());
-    }
-
-    // Clear firmware
-    if clear {
-        if current.is_none() {
-            println!("No firmware to remove.");
-            return Ok(());
-        }
-        let fw = current.as_ref().unwrap();
-        let display = fw.name.strip_prefix("part_firmware_").unwrap_or(&fw.name);
-
-        if !force {
-            println!("Remove firmware: {}", display);
-            print!("Apply? [y/N] ");
-            std::io::Write::flush(&mut std::io::stdout())?;
-            let mut input = String::new();
-            std::io::stdin().read_line(&mut input)?;
-            if !input.trim().eq_ignore_ascii_case("y") {
-                println!("Cancelled.");
-                return Ok(());
-            }
-        }
-
-        let new_tokens = bl4::firmware::remove(&item.tokens, category);
-        let modified = item.with_tokens(new_tokens);
-        println!("{}", modified.encode_from_tokens());
         return Ok(());
     }
 
@@ -996,7 +969,10 @@ pub fn firmware(serial: &str, list: bool, set: Option<&str>, clear: bool, force:
             }
         }
 
-        let new_tokens = bl4::firmware::apply(&item.tokens, fw_idx, category);
+        let new_tokens = bl4::firmware::apply(&item.tokens, fw_idx, category)
+            .ok_or_else(|| anyhow::anyhow!(
+                "This item doesn't have firmware. Adding firmware to items that don't already have it is not yet supported."
+            ))?;
         let modified = item.with_tokens(new_tokens);
         println!("{}", modified.encode_from_tokens());
     }

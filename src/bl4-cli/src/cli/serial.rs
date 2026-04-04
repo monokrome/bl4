@@ -131,10 +131,6 @@ pub enum SerialCommand {
         #[arg(long)]
         set: Option<String>,
 
-        /// Remove firmware from the item
-        #[arg(long)]
-        clear: bool,
-
         /// Skip confirmation
         #[arg(long)]
         force: bool,
