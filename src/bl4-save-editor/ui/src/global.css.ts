@@ -9,9 +9,14 @@ globalStyle('*', {
 
 globalStyle('html, body', {
   height: '100%',
-  background: vars.color.bgDeep,
+  background: vars.color.bg,
   color: vars.color.text,
   fontFamily: vars.font.body,
   fontSize: '14px',
   overflow: 'hidden',
+  userSelect: 'none',
+});
+
+globalStyle('textarea, input[type="text"], input[type="number"], [contenteditable]', {
+  userSelect: 'text',
 });

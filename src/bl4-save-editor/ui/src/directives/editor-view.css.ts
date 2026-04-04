@@ -4,6 +4,8 @@ import { vars } from '../theme.css.js';
 export const root = style({
   display: 'flex',
   flexDirection: 'column',
+  flex: 1,
+  minWidth: 0,
   height: '100%',
 });
 
@@ -35,8 +37,20 @@ export const sectionTab = style({
 });
 
 export const sectionTabActive = style({
-  color: vars.color.orange,
-  borderBottomColor: vars.color.orange,
+  color: vars.color.accent,
+  borderBottomColor: vars.color.accent,
+});
+
+export const saveName = style({
+  marginLeft: 'auto',
+  padding: '10px 18px',
+  fontFamily: vars.font.mono,
+  fontSize: '12px',
+  fontWeight: 600,
+  color: vars.color.textDim,
+  textTransform: 'uppercase',
+  letterSpacing: '1px',
+  whiteSpace: 'nowrap',
 });
 
 export const sectionContent = style({

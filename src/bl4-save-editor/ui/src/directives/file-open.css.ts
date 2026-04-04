@@ -36,8 +36,8 @@ const buttonBase = style({
   cursor: 'pointer',
   transition: 'background 0.15s, border-color 0.15s, color 0.15s',
   ':hover': {
-    background: vars.color.orangeDim,
-    borderColor: vars.color.orange,
+    background: vars.color.accentDim,
+    borderColor: vars.color.accent,
     color: vars.color.textBright,
   },
 });
@@ -62,7 +62,7 @@ export const steamIdLabel = style({
 export const steamIdInput = style({
   width: '280px',
   padding: '8px 12px',
-  background: vars.color.bgDeep,
+  background: vars.color.bg,
   border: `1px solid ${vars.color.border}`,
   color: vars.color.text,
   fontFamily: vars.font.mono,
@@ -70,7 +70,7 @@ export const steamIdInput = style({
   textAlign: 'center',
   outline: 'none',
   ':focus': {
-    borderColor: vars.color.orangeDim,
+    borderColor: vars.color.accentDim,
   },
 });
 
@@ -99,6 +99,6 @@ export const loading = style({
 export const loadingDot = style({
   width: '6px',
   height: '6px',
-  background: vars.color.orange,
+  background: vars.color.accent,
   animation: `${pulse} 1s ease-in-out infinite`,
 });

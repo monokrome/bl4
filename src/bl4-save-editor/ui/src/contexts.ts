@@ -1,4 +1,4 @@
-import { createContextKey, resolveContext } from 'gonia';
+import { createContextKey } from 'gonia';
 
 export interface SaveInfo {
   path: string;
@@ -20,13 +20,5 @@ export interface EditorState {
   error: string | null;
 }
 
-export const SteamIdKey = createContextKey<{ value: string }>('steamId');
-export const EditorKey = createContextKey<EditorState>('editor');
-
-export function requireContext<T>(element: Element, key: ReturnType<typeof createContextKey<T>>): T {
-  const ctx = resolveContext(element, key);
-  if (ctx === undefined) {
-    throw new Error(`Missing context provider for "${String(key)}". Ensure a parent element registers this context.`);
-  }
-  return ctx;
-}
+export const SteamIdContext = createContextKey<{ value: string }>('steamId');
+export const EditorContext = createContextKey<EditorState>('editor');

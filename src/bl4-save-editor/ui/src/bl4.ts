@@ -1,11 +1,12 @@
 import init, { decryptSav, encryptSav, SaveFile, ChangeSet } from './wasm/bl4.js';
 
-let initialized = false;
+let initPromise: Promise<void> | null = null;
 
 export async function initBl4(): Promise<void> {
-  if (initialized) return;
-  await init();
-  initialized = true;
+  if (!initPromise) {
+    initPromise = init();
+  }
+  await initPromise;
 }
 
 export { decryptSav, encryptSav, SaveFile, ChangeSet };

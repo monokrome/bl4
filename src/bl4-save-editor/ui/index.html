@@ -6,16 +6,16 @@
   <title>BL4 Save Editor</title>
 </head>
 <body>
-  <app-root g-class="[$styles.root, editor.drawerOpen ? $styles.drawerOpen : '']">
+  <app-root g-class="$styles.root">
     <app-header g-class="$styles.root">
       <span g-class="$styles.title">BL4EDIT</span>
       <button g-class="$styles.toggle" g-on="click: toggleDrawer" g-text="drawerIcon()"></button>
     </app-header>
 
     <div g-class="$styles.mainArea">
-      <div g-class="$styles.content">
+      <div g-class="[$styles.content, editor.activeSave ? $styles.contentWithEditor : '']">
 
-        <file-open g-show="editor.saves.length === 0 && !editor.activeSave" g-class="$styles.root">
+        <file-open g-show="showFileOpen()" g-class="$styles.root">
           <div g-class="$styles.steamIdSection">
             <label g-class="$styles.steamIdLabel">Steam ID</label>
             <input g-class="$styles.steamIdInput" type="text" g-model="steamId.value" />
@@ -29,34 +29,43 @@
           <div g-class="$styles.loading" g-show="editor.loading">Loading...</div>
         </file-open>
 
-        <save-list g-show="editor.saves.length > 0 && !editor.activeSave" g-class="$styles.root">
+        <save-list g-show="editor.saves.length > 0"
+                   g-class="[$styles.root, isCollapsed() ? $styles.collapsed : '']">
           <div g-for="save in editor.saves"
                g-on="click: select(save)"
-               g-class="[$styles.saveRow, isActive(save) ? $styles.saveRowActive : '']">
-            <span g-class="$styles.saveName" g-text="displayName(save)"></span>
-            <span g-class="$styles.saveHint" g-text="save.hint"></span>
+               g-class="$styles.saveRow">
+            <div g-class="$styles.segName" g-text="nameText(save)"></div>
+            <div g-class="$styles.segAttr" g-text="attrText(save)"></div>
+            <div g-class="$styles.segLevel">
+              <span g-text="levelText(save)"></span>
+              <span g-class="$styles.segFileName" g-text="fileName(save)"></span>
+            </div>
           </div>
         </save-list>
 
         <editor-view g-show="editor.activeSave" g-class="$styles.root">
           <div g-class="$styles.sectionTabs">
-            <button g-for="section in sections"
+            <button g-for="section in sections()"
                     g-text="section"
                     g-on="click: selectSection(section)"
                     g-class="[$styles.sectionTab, isSectionActive(section) ? $styles.sectionTabActive : '']">
             </button>
+            <span g-class="$styles.saveName" g-text="activeSaveName()"></span>
           </div>
           <div g-class="$styles.sectionContent" g-text="editor.activeSection + ' — coming soon'"></div>
         </editor-view>
 
       </div>
-
-      <aside g-class="$styles.drawer">
-        <div g-class="$styles.drawerInner">
-          <span g-class="$styles.drawerTitle">Tools</span>
-        </div>
-      </aside>
     </div>
+
+    <aside g-class="[$styles.drawer, editor.drawerOpen ? $styles.drawerOpen : '']">
+      <div g-class="$styles.drawerInner">
+        <div g-class="$styles.drawerHeader">
+          <span g-class="$styles.drawerTitle">Tools</span>
+          <button g-class="$styles.drawerClose" g-on="click: closeDrawer">×</button>
+        </div>
+      </div>
+    </aside>
   </app-root>
 
   <script type="module" src="/src/main.ts"></script>

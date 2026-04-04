@@ -5,10 +5,10 @@ export const root = style({
   display: 'flex',
   flexDirection: 'column',
   height: '100vh',
+  position: 'relative',
 });
 
 export const mainArea = style({
-  position: 'relative',
   flex: 1,
   overflow: 'hidden',
 });
@@ -17,7 +17,11 @@ export const content = style({
   width: '100%',
   height: '100%',
   overflowY: 'auto',
-  padding: '24px',
+});
+
+export const contentWithEditor = style({
+  display: 'flex',
+  flexDirection: 'row',
 });
 
 export const drawer = style({
@@ -30,12 +34,10 @@ export const drawer = style({
   background: vars.color.bgSurface,
   borderLeft: `1px solid ${vars.color.border}`,
   transition: 'width 0.2s ease',
-  zIndex: 20,
+  zIndex: 100,
 });
 
-export const drawerOpen = style({});
-
-globalStyle(`${drawerOpen} ${drawer}`, {
+export const drawerOpen = style({
   width: '320px',
 });
 
@@ -47,6 +49,13 @@ export const drawerInner = style({
   flexDirection: 'column',
 });
 
+export const drawerHeader = style({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: '16px',
+});
+
 export const drawerTitle = style({
   fontFamily: vars.font.mono,
   fontSize: '12px',
@@ -54,5 +63,17 @@ export const drawerTitle = style({
   color: vars.color.textDim,
   textTransform: 'uppercase',
   letterSpacing: '1px',
-  marginBottom: '16px',
+});
+
+export const drawerClose = style({
+  background: 'none',
+  border: 'none',
+  color: vars.color.textDim,
+  fontSize: '20px',
+  cursor: 'pointer',
+  padding: '4px 8px',
+  lineHeight: 1,
+  ':hover': {
+    color: vars.color.text,
+  },
 });

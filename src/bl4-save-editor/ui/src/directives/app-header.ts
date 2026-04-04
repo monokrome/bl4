@@ -1,5 +1,5 @@
 import { directive } from 'gonia';
-import { requireContext, EditorKey, type EditorState } from '../contexts.js';
+import { EditorContext, type EditorState } from '../contexts.js';
 
 interface AppHeaderScope {
   toggleDrawer: () => void;
@@ -14,13 +14,12 @@ function drawerIcon(editor: EditorState) {
   return editor.drawerOpen ? '>' : '<';
 }
 
-export function AppHeaderDirective($element: Element, $scope: AppHeaderScope) {
-  const editor = requireContext($element, EditorKey);
-
+export function AppHeaderDirective($element: Element, $scope: AppHeaderScope, editor: EditorState) {
   Object.assign($scope, {
     toggleDrawer: toggleDrawer.bind(null, editor),
     drawerIcon: drawerIcon.bind(null, editor),
   });
 }
+AppHeaderDirective.$inject = ['$element', '$scope'];
 
-directive('app-header', AppHeaderDirective, { scope: true });
+directive('app-header', AppHeaderDirective, { scope: true, using: [EditorContext] });
