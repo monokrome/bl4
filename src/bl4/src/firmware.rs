@@ -15,7 +15,7 @@
 //! flag and restructuring the header) which isn't reliably understood yet.
 
 use crate::manifest;
-use crate::serial::Token;
+use crate::serial::{PartEncoding, Token};
 
 /// Firmware category for class mods
 const CLASS_MOD_FIRMWARE_CATEGORY: u64 = 234;
@@ -169,21 +169,20 @@ pub fn available_firmware(item_category: i64) -> Vec<(i64, String)> {
     result
 }
 
-/// Replace firmware on a token stream that already has firmware.
-///
-/// Returns None if the item doesn't have firmware. Adding firmware to
-/// items without it is not yet supported (requires header mutation).
-pub fn apply(tokens: &[Token], fw_index: i64, item_category: i64) -> Option<Vec<Token>> {
+/// Set firmware on a token stream. Replaces existing firmware or adds new.
+pub fn apply(tokens: &[Token], fw_index: i64, item_category: i64) -> Vec<Token> {
     if crate::skills::is_class_mod(item_category) {
-        if detect_class_mod(tokens).is_none() {
-            return None;
+        if detect_class_mod(tokens).is_some() {
+            replace_class_mod_firmware(tokens, fw_index)
+        } else {
+            add_class_mod_firmware(tokens, fw_index)
         }
-        Some(replace_class_mod_firmware(tokens, fw_index))
     } else {
-        if detect_equipment(tokens, item_category).is_none() {
-            return None;
+        if detect_equipment(tokens, item_category).is_some() {
+            replace_equipment_firmware(tokens, fw_index, item_category)
+        } else {
+            add_equipment_firmware(tokens, fw_index)
         }
-        Some(replace_equipment_firmware(tokens, fw_index, item_category))
     }
 }
 
@@ -224,6 +223,30 @@ fn replace_equipment_firmware(tokens: &[Token], fw_index: i64, item_category: i6
             _ => continue,
         }
     }
+    result
+}
+
+/// Add firmware to a class mod that doesn't have it.
+/// Inserts a Part { index: 234, values: [fw_index] } before the final Separator.
+fn add_class_mod_firmware(tokens: &[Token], fw_index: i64) -> Vec<Token> {
+    let mut result = tokens.to_vec();
+    let insert_pos = result.iter().rposition(|t| matches!(t, Token::Separator))
+        .unwrap_or(result.len());
+    result.insert(insert_pos, Token::Part {
+        index: CLASS_MOD_FIRMWARE_CATEGORY,
+        values: vec![fw_index as u64],
+        encoding: PartEncoding::Single,
+    });
+    result
+}
+
+/// Add firmware to equipment that doesn't have it.
+/// Inserts a VarInt before the final Separator.
+fn add_equipment_firmware(tokens: &[Token], fw_index: i64) -> Vec<Token> {
+    let mut result = tokens.to_vec();
+    let insert_pos = result.iter().rposition(|t| matches!(t, Token::Separator))
+        .unwrap_or(result.len());
+    result.insert(insert_pos, Token::VarInt(fw_index as u64));
     result
 }
 

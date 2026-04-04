@@ -970,10 +970,7 @@ pub fn firmware(serial: &str, list: bool, set: Option<&str>, force: bool) -> Res
             }
         }
 
-        let new_tokens = bl4::firmware::apply(&item.tokens, fw_idx, category)
-            .ok_or_else(|| anyhow::anyhow!(
-                "This item doesn't have firmware. Adding firmware to items that don't already have it is not yet supported."
-            ))?;
+        let new_tokens = bl4::firmware::apply(&item.tokens, fw_idx, category);
         let modified = item.with_tokens(new_tokens);
         println!("{}", modified.encode_from_tokens());
     }
