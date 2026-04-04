@@ -936,7 +936,8 @@ pub fn firmware(serial: &str, list: bool, set: Option<&str>, force: bool) -> Res
         match &current {
             Some(fw) => {
                 let display = fw.name.strip_prefix("part_firmware_").unwrap_or(&fw.name);
-                println!("Firmware: {} (index {} in category {})", display, fw.index, fw.category);
+                let origin = if fw.transferred { "transferred" } else { "original" };
+                println!("Firmware: {} ({}, index {} in category {})", display, origin, fw.index, fw.category);
             }
             None => println!("Firmware: none"),
         }

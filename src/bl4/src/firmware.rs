@@ -29,6 +29,7 @@ pub struct DetectedFirmware {
     pub name: String,
     pub index: i64,
     pub category: i64,
+    pub transferred: bool,
 }
 
 /// Whether the token stream has the firmware flag
@@ -38,16 +39,16 @@ fn has_firmware_flag(tokens: &[Token]) -> bool {
 
 /// Detect firmware on an item from its token stream.
 pub fn detect(tokens: &[Token], item_category: i64) -> Option<DetectedFirmware> {
-    if crate::skills::is_class_mod(item_category) {
-        // Class mods require "ft" flag + Part { index: 234 }
-        if !has_firmware_flag(tokens) {
-            return None;
-        }
-        detect_class_mod(tokens)
+    let transferred = has_firmware_flag(tokens);
+
+    let mut result = if crate::skills::is_class_mod(item_category) {
+        detect_class_mod(tokens)?
     } else {
-        // Equipment: check last trailing VarInt against firmware parts list
-        detect_equipment(tokens, item_category)
-    }
+        detect_equipment(tokens, item_category)?
+    };
+
+    result.transferred = transferred;
+    Some(result)
 }
 
 /// Detect firmware on a class mod (Part with index 234)
@@ -63,6 +64,7 @@ fn detect_class_mod(tokens: &[Token]) -> Option<DetectedFirmware> {
                     name,
                     index: fw_idx,
                     category: CLASS_MOD_FIRMWARE_CATEGORY as i64,
+                    transferred: false, // caller sets this
                 });
             }
         }
@@ -89,6 +91,7 @@ fn detect_equipment(tokens: &[Token], item_category: i64) -> Option<DetectedFirm
                             name: name.to_string(),
                             index: fw_idx,
                             category: fw_category,
+                            transferred: false, // caller sets this
                         });
                     }
                 }
@@ -172,12 +175,11 @@ pub fn available_firmware(item_category: i64) -> Vec<(i64, String)> {
 /// items without it is not yet supported (requires header mutation).
 pub fn apply(tokens: &[Token], fw_index: i64, item_category: i64) -> Option<Vec<Token>> {
     if crate::skills::is_class_mod(item_category) {
-        if !has_firmware_flag(tokens) {
+        if detect_class_mod(tokens).is_none() {
             return None;
         }
         Some(replace_class_mod_firmware(tokens, fw_index))
     } else {
-        // Equipment: detect existing firmware by checking trailing VarInts
         if detect_equipment(tokens, item_category).is_none() {
             return None;
         }
