@@ -430,96 +430,80 @@ The actual level thresholds (e.g., "Jakobs Ricochet unlocks at level 15") are no
 
 ## Firmware
 
-Firmware is an equipment modifier that can be applied to class mods, enhancements, grenades/gadgets, and other non-weapon equipment. Each item can have at most one firmware. Firmware grants passive bonuses (e.g., Deadeye improves critical hit damage, Heating Up improves fire rate).
+Firmware is an equipment modifier that can be applied to class mods, enhancements, grenades/gadgets, shields, repair kits, and other non-weapon equipment. Each item can have at most one firmware. Firmware grants passive bonuses (e.g., Deadeye improves critical hit damage, Heating Up improves fire rate).
 
 ### Firmware Parts
 
-Firmware parts exist in two separate category pools with different indices:
+Firmware parts exist in per-item-type pools, each with their own indices:
 
-| Category | Pool | Items | Part Count |
-|----------|------|-------|-----------|
-| 234 | `class_mod-234.tsv` | Class mods | 21 firmware parts (indices 74-103) |
-| 247 | `enhancement-247.tsv` | Enhancements, gadgets | 21 firmware parts (indices 1-20, 103, 248) |
+| Category | Pool | Items |
+|----------|------|-------|
+| 234 | `class_mod-234.tsv` | Class mods |
+| 243 | `repair_kit-243.tsv` | Repair kits |
+| 244 | `heavy_weapon_gadget-244.tsv` | Heavy weapon gadgets |
+| 245 | `grenade_gadget-245.tsv` | Grenade gadgets |
+| 246 | `shield-246.tsv` | Shields |
+| 247 | `enhancement-247.tsv` | Enhancements |
 
-The same firmware (e.g., Deadeye) has different indices depending on whether it's on a class mod or other equipment:
-
-| Firmware | Category 234 (class mod) | Category 247 (equipment) |
-|----------|------------------------:|------------------------:|
-| Deadeye | 84 | 10 |
-| Rubberband Man | 83 | 9 |
-| Heating Up | 92 | 18 |
-| Atlas E.X. | 87 | 13 |
+The same firmware has different indices across pools. Manufacturer-specific items (e.g., 268=Jakobs Enhancement) use their base type's pool (247=Enhancement).
 
 ### Serial Encoding
 
-Firmware is encoded differently depending on the item type. In both cases, the presence of firmware is signaled by a `String("ft")` token in the header section (replacing a VarInt that would otherwise be there).
+#### Cross-Category Part Values
 
-#### Class Mods (VarInt-first format)
+Equipment items use cross-category Part tokens to reference parts from shared pools. A `Part { index: 246, values: [23] }` on a shield means "part 23 from the shield pool (category 246)".
 
-On class mods, firmware is encoded as a Part token appended after the skill parts:
+Part values can be encoded two ways:
+- **Single**: `Part { index: 246, values: [23], encoding: Single }` — one value inline
+- **List**: `Part { index: 246, values: [], encoding: List }` followed by `SoftSeparator` + VarInts — values stored as a list in a trailing section
 
-```text
-Without firmware:
-  [8] Var { val: 9 }          ← no firmware flag
-  ...
-  [N] Part { ... }            ← last skill part
-  [N+1] Separator             ← end
+The `SoftSeparator` after a `List`-encoded Part starts a value list. Each subsequent VarInt is an entry in that list, terminated by a `Separator`.
 
-With firmware:
-  [8] String("ft")            ← firmware flag replaces Var(9)
-  [9] SoftSeparator
-  [10] Var { val: 1 }
-  [11] Separator
-  ...
-  [N] Part { index: 234, values: [fw_index], encoding: Single }  ← firmware
-  [N+1] Separator             ← end
-```
+#### How Firmware Is Stored
 
-The firmware Part token uses:
-- `index: 234` — the firmware category ID (constant)
-- `values: [fw_index]` — the firmware part index within category 234
-- `encoding: Single` — single-value encoding
+Firmware is the last entry in the value list of the last cross-category Part token.
 
-#### Equipment (VarBit-first format: enhancements, gadgets)
-
-On equipment items, firmware is encoded as a VarInt appended to the trailing variable section:
+**Equipment without firmware** — the last cross-category Part uses `Single` encoding with its value inline:
 
 ```text
-Without firmware:
-  [8] Var { val: 2 }          ← no firmware flag
-  ...
-  [N] Part { ..., encoding: List }  ← last part (List encoding)
-  [N+1] SoftSeparator
-  [N+2] Var { val: ... }      ← stat/seed values
-  [N+3] Var { val: ... }
-  [N+4] Separator             ← end
-
-With firmware:
-  [8] String("ft")            ← firmware flag replaces Var(2)
-  [9] SoftSeparator
-  [10] Var { val: 1 }
-  [11] Separator
-  ...
-  [N] Part { ..., encoding: List }  ← last part (List encoding)
-  [N+1] SoftSeparator
-  [N+2] Var { val: ... }      ← stat/seed values
-  [N+3] Var { val: ... }
-  [N+4] Var { val: fw_index } ← firmware index in category 247
-  [N+5] Separator             ← end
+Part { index: 246, values: [41], encoding: Single }   ← pinpoint perk
+Separator
 ```
 
-The firmware index here references category 247 (shared enhancement pool), not category 234.
+**Equipment with firmware** — the last cross-category Part uses `List` encoding, and firmware is the last VarInt in the list:
 
-### Header Mutation
+```text
+Part { index: 246, values: [], encoding: List }
+SoftSeparator
+Var { val: 41 }     ← pinpoint perk (moved from Single value)
+Var { val: 9 }      ← firmware index (rubberband_man in shield pool)
+Separator
+```
 
-Adding firmware modifies the serial header. The token at position 8 changes:
+When firmware is transferred to an item, the game converts the last Part from `Single(value)` to `List`, moves the original value into the trailing VarInt section, and appends the firmware index.
 
-| Item Type | Without Firmware | With Firmware |
-|-----------|-----------------|---------------|
-| Class mod (VarInt-first) | `Var { val: 9 }` | `String("ft")` |
-| Equipment (VarBit-first) | `Var { val: 2 }` | `String("ft")` |
+**Items that already have a List-encoded Part** (most non-legendary equipment) simply get the firmware VarInt appended to the existing list.
 
-After the `String("ft")`, a new `SoftSeparator, Var { val: 1 }, Separator` sequence is inserted, shifting all subsequent token positions.
+#### Class Mods
+
+Class mods encode firmware differently: as a `Part { index: 234, values: [fw_index], encoding: Single }` token appended after the skill Parts. The firmware Part uses category 234 as both its index and its lookup pool.
+
+```text
+Part { index: 51, ... }      ← rarity
+Part { index: 15, ... }      ← body
+Part { index: 223, ... }     ← skill tiers...
+...
+Part { index: 234, values: [84], encoding: Single }  ← firmware (deadeye)
+SoftSeparator
+Var { val: 5 }               ← unknown
+Var { val: 66 }              ← unknown
+Var { val: 84 }              ← firmware index (redundant?)
+Separator
+```
+
+#### Transfer Flag
+
+The `String("ft")` token in the header means "firmware transferred" — the firmware was moved from another item. Items with original firmware do NOT have this flag. The flag has no effect on how firmware is read; it's metadata about provenance.
 
 ### Class Mod Skill Interaction
 

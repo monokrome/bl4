@@ -181,7 +181,7 @@ pub fn apply(tokens: &[Token], fw_index: i64, item_category: i64) -> Vec<Token> 
         if detect_equipment(tokens, item_category).is_some() {
             replace_equipment_firmware(tokens, fw_index, item_category)
         } else {
-            add_equipment_firmware(tokens, fw_index)
+            add_equipment_firmware(tokens, fw_index, item_category)
         }
     }
 }
@@ -242,25 +242,62 @@ fn add_class_mod_firmware(tokens: &[Token], fw_index: i64) -> Vec<Token> {
 
 /// Add firmware to equipment that doesn't have it.
 ///
-/// If the item has a trailing VarInt section (SoftSep + VarInts before
-/// final Separator), inserts the firmware VarInt at the end of that section.
-/// If there's no trailing section, the item type may not support firmware
-/// addition and this returns the tokens unchanged.
-fn add_equipment_firmware(tokens: &[Token], fw_index: i64) -> Vec<Token> {
+/// If the item already has a trailing VarInt section (List-encoded Part
+/// followed by SoftSep + VarInts), appends the firmware VarInt to it.
+///
+/// If the last cross-category Part uses Single encoding, converts it to
+/// List encoding, moves the original value into a trailing VarInt section,
+/// and appends the firmware VarInt.
+fn add_equipment_firmware(tokens: &[Token], fw_index: i64, item_category: i64) -> Vec<Token> {
+    let fw_pool = equipment_firmware_category(item_category) as u64;
     let mut result = tokens.to_vec();
 
-    // Find the last SoftSeparator — marks the start of the trailing VarInt section
-    let last_soft_sep = result.iter().rposition(|t| matches!(t, Token::SoftSeparator));
+    // Check if a trailing VarInt section already exists
+    let last_part_pos = result.iter().rposition(|t| matches!(t, Token::Part { .. }));
+    let has_trailing = last_part_pos.and_then(|pp| {
+        result[pp..].iter().position(|t| matches!(t, Token::SoftSeparator)).map(|p| p + pp)
+    });
 
-    if let Some(soft_pos) = last_soft_sep {
-        // Has a trailing section — find the first Separator after it and insert before it
+    if let Some(soft_pos) = has_trailing {
+        // Trailing section exists — append firmware VarInt before the first Separator after it
         let insert_pos = result[soft_pos..].iter()
             .position(|t| matches!(t, Token::Separator))
             .map(|p| p + soft_pos)
             .unwrap_or(result.len());
         result.insert(insert_pos, Token::VarInt(fw_index as u64));
+    } else {
+        // No trailing section — find the last cross-category Part from the firmware pool
+        // and convert it from Single to List
+        let target_pos = result.iter().rposition(|t| {
+            matches!(t, Token::Part { index, .. } if *index == fw_pool)
+        });
+
+        if let Some(pos) = target_pos {
+            if let Token::Part { index, values, .. } = &result[pos] {
+                let old_values = values.clone();
+                let old_index = *index;
+
+                // Convert to List with empty values
+                result[pos] = Token::Part {
+                    index: old_index,
+                    values: vec![],
+                    encoding: PartEncoding::List,
+                };
+
+                // Insert SoftSep + original values + firmware after the Part
+                let mut insert_pos = pos + 1;
+                result.insert(insert_pos, Token::SoftSeparator);
+                insert_pos += 1;
+
+                for val in &old_values {
+                    result.insert(insert_pos, Token::VarInt(*val));
+                    insert_pos += 1;
+                }
+
+                result.insert(insert_pos, Token::VarInt(fw_index as u64));
+            }
+        }
     }
-    // No trailing section — can't safely add firmware
 
     result
 }
