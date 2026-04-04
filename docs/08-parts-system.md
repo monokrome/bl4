@@ -428,6 +428,105 @@ The actual level thresholds (e.g., "Jakobs Ricochet unlocks at level 15") are no
 
 ---
 
+## Firmware
+
+Firmware is an equipment modifier that can be applied to class mods, enhancements, grenades/gadgets, and other non-weapon equipment. Each item can have at most one firmware. Firmware grants passive bonuses (e.g., Deadeye improves critical hit damage, Heating Up improves fire rate).
+
+### Firmware Parts
+
+Firmware parts exist in two separate category pools with different indices:
+
+| Category | Pool | Items | Part Count |
+|----------|------|-------|-----------|
+| 234 | `class_mod-234.tsv` | Class mods | 21 firmware parts (indices 74-103) |
+| 247 | `enhancement-247.tsv` | Enhancements, gadgets | 21 firmware parts (indices 1-20, 103, 248) |
+
+The same firmware (e.g., Deadeye) has different indices depending on whether it's on a class mod or other equipment:
+
+| Firmware | Category 234 (class mod) | Category 247 (equipment) |
+|----------|------------------------:|------------------------:|
+| Deadeye | 84 | 10 |
+| Rubberband Man | 83 | 9 |
+| Heating Up | 92 | 18 |
+| Atlas E.X. | 87 | 13 |
+
+### Serial Encoding
+
+Firmware is encoded differently depending on the item type. In both cases, the presence of firmware is signaled by a `String("ft")` token in the header section (replacing a VarInt that would otherwise be there).
+
+#### Class Mods (VarInt-first format)
+
+On class mods, firmware is encoded as a Part token appended after the skill parts:
+
+```text
+Without firmware:
+  [8] Var { val: 9 }          ← no firmware flag
+  ...
+  [N] Part { ... }            ← last skill part
+  [N+1] Separator             ← end
+
+With firmware:
+  [8] String("ft")            ← firmware flag replaces Var(9)
+  [9] SoftSeparator
+  [10] Var { val: 1 }
+  [11] Separator
+  ...
+  [N] Part { index: 234, values: [fw_index], encoding: Single }  ← firmware
+  [N+1] Separator             ← end
+```
+
+The firmware Part token uses:
+- `index: 234` — the firmware category ID (constant)
+- `values: [fw_index]` — the firmware part index within category 234
+- `encoding: Single` — single-value encoding
+
+#### Equipment (VarBit-first format: enhancements, gadgets)
+
+On equipment items, firmware is encoded as a VarInt appended to the trailing variable section:
+
+```text
+Without firmware:
+  [8] Var { val: 2 }          ← no firmware flag
+  ...
+  [N] Part { ..., encoding: List }  ← last part (List encoding)
+  [N+1] SoftSeparator
+  [N+2] Var { val: ... }      ← stat/seed values
+  [N+3] Var { val: ... }
+  [N+4] Separator             ← end
+
+With firmware:
+  [8] String("ft")            ← firmware flag replaces Var(2)
+  [9] SoftSeparator
+  [10] Var { val: 1 }
+  [11] Separator
+  ...
+  [N] Part { ..., encoding: List }  ← last part (List encoding)
+  [N+1] SoftSeparator
+  [N+2] Var { val: ... }      ← stat/seed values
+  [N+3] Var { val: ... }
+  [N+4] Var { val: fw_index } ← firmware index in category 247
+  [N+5] Separator             ← end
+```
+
+The firmware index here references category 247 (shared enhancement pool), not category 234.
+
+### Header Mutation
+
+Adding firmware modifies the serial header. The token at position 8 changes:
+
+| Item Type | Without Firmware | With Firmware |
+|-----------|-----------------|---------------|
+| Class mod (VarInt-first) | `Var { val: 9 }` | `String("ft")` |
+| Equipment (VarBit-first) | `Var { val: 2 }` | `String("ft")` |
+
+After the `String("ft")`, a new `SoftSeparator, Var { val: 1 }, Separator` sequence is inserted, shifting all subsequent token positions.
+
+### Class Mod Skill Interaction
+
+On class mods, the firmware Part token sits after all skill Part tokens. When editing skills, the firmware section must be preserved in its structural position. The `apply_edits` function in `skills.rs` handles this by identifying the contiguous range of passive skill Parts and splicing replacements in-place, leaving firmware and other non-skill tokens untouched.
+
+---
+
 ## Known Gaps
 
 The parts system is roughly 95% mapped, but several areas remain incomplete.
