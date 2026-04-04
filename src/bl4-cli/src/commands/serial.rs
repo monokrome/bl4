@@ -897,28 +897,12 @@ pub fn skills(serial: &str, list: bool, color_filter: Option<&str>, adds: &[Stri
         }
     }
 
-    // Apply edits
+    // Apply edits in-place (preserves firmware and other non-skill tokens)
     let (remove_indices, add_parts) =
         bl4::skills::compute_edits(&current, &parsed_adds, &parsed_removes, category)
             .map_err(|e| anyhow::anyhow!(e))?;
 
-    let mut new_tokens = item.tokens.clone();
-
-    // Remove old tier parts
-    let remove_set: std::collections::HashSet<i64> = remove_indices.into_iter().collect();
-    new_tokens.retain(|t| {
-        !matches!(t, bl4::serial::Token::Part { index, .. } if remove_set.contains(&(*index as i64)))
-    });
-
-    // Add new tier parts
-    for (idx, _name) in &add_parts {
-        new_tokens.push(bl4::serial::Token::Part {
-            index: *idx as u64,
-            values: vec![],
-            encoding: bl4::serial::PartEncoding::None,
-        });
-    }
-
+    let new_tokens = bl4::skills::apply_edits(&item.tokens, &remove_indices, &add_parts, category);
     let modified = item.with_tokens(new_tokens);
     let new_serial = modified.encode_from_tokens();
     println!("\n{}", new_serial);

@@ -5,7 +5,7 @@
 //! `passive_{color}_{position}_tier_{N}` part names.
 
 use crate::manifest;
-use crate::serial::Token;
+use crate::serial::{PartEncoding, Token};
 
 /// Class mod category IDs
 pub const CLASS_MOD_CATEGORIES: &[i64] = &[254, 255, 256, 259, 404];
@@ -332,6 +332,80 @@ fn collect_tier_removals(position: &str, category: i64, remove_indices: &mut Vec
             remove_indices.push(idx);
         }
     }
+}
+
+/// Apply skill edits to a token stream, preserving structural position.
+///
+/// Finds the contiguous range of passive skill Part tokens in the stream,
+/// removes the old ones, and inserts the new ones at the same position.
+/// This preserves firmware VarInts and other non-skill tokens that sit
+/// between or after skill parts.
+pub fn apply_edits(
+    tokens: &[Token],
+    remove_indices: &[i64],
+    add_parts: &[(i64, String)],
+    category: i64,
+) -> Vec<Token> {
+    let remove_set: std::collections::HashSet<i64> = remove_indices.iter().copied().collect();
+
+    // Find the range of skill Part tokens (passive_* parts)
+    let mut skill_start: Option<usize> = None;
+    let mut skill_end: usize = 0;
+
+    for (i, token) in tokens.iter().enumerate() {
+        if let Token::Part { index, .. } = token {
+            if let Some(name) = manifest::part_name(category, *index as i64) {
+                if manifest::parse_passive_part(name).is_some() {
+                    if skill_start.is_none() {
+                        skill_start = Some(i);
+                    }
+                    skill_end = i + 1;
+                }
+            }
+        }
+    }
+
+    let Some(start) = skill_start else {
+        // No existing skills — append new parts before the last separator
+        let mut result = tokens.to_vec();
+        let insert_pos = result.iter().rposition(|t| matches!(t, Token::Separator)).unwrap_or(result.len());
+        for (idx, _) in add_parts {
+            result.insert(insert_pos, Token::Part {
+                index: *idx as u64,
+                values: vec![],
+                encoding: PartEncoding::None,
+            });
+        }
+        return result;
+    };
+
+    // Build the new skill section: keep non-removed skills, add new ones
+    let mut new_skills: Vec<Token> = Vec::new();
+
+    // Keep existing skill parts that aren't being removed
+    for token in &tokens[start..skill_end] {
+        if let Token::Part { index, .. } = token {
+            if !remove_set.contains(&(*index as i64)) {
+                new_skills.push(token.clone());
+            }
+        }
+    }
+
+    // Add new skill parts
+    for (idx, _) in add_parts {
+        new_skills.push(Token::Part {
+            index: *idx as u64,
+            values: vec![],
+            encoding: PartEncoding::None,
+        });
+    }
+
+    // Splice: before_skills + new_skills + after_skills
+    let mut result = Vec::with_capacity(tokens.len());
+    result.extend_from_slice(&tokens[..start]);
+    result.extend(new_skills);
+    result.extend_from_slice(&tokens[skill_end..]);
+    result
 }
 
 /// Validate that a skill position can drop on the given category.
