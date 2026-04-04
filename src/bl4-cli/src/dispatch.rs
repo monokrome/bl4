@@ -104,6 +104,13 @@ pub fn dispatch_serial(command: SerialCommand) -> Result<()> {
         SerialCommand::BatchDecode { input, output } => {
             commands::serial::batch_decode(&input, &output)
         }
+
+        SerialCommand::Skills {
+            serial,
+            add,
+            remove,
+            force,
+        } => commands::serial::skills(&serial, &add, &remove, force),
     }
 }
 

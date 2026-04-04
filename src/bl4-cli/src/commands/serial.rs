@@ -778,3 +778,125 @@ pub fn batch_decode(input: &Path, output: &Path) -> Result<()> {
 
     Ok(())
 }
+
+/// View or modify class mod skills
+pub fn skills(serial: &str, adds: &[String], removes: &[String], force: bool) -> Result<()> {
+    let item = bl4::ItemSerial::decode(serial).context("Failed to decode serial")?;
+    let category = item
+        .parts_category()
+        .context("Cannot determine item category")?;
+
+    if !bl4::skills::is_class_mod(category) {
+        let name = bl4::manifest::category_name(category).unwrap_or("Unknown");
+        bail!("Not a class mod (category {} = {})", category, name);
+    }
+
+    let current = bl4::skills::decode_skills(&item.tokens, category);
+
+    // List mode: no modifications
+    if adds.is_empty() && removes.is_empty() {
+        let cat_name = bl4::manifest::category_name(category).unwrap_or("Unknown");
+        println!("Class Mod: {} (category {})", cat_name, category);
+        if current.is_empty() {
+            println!("  No passive skills found");
+        } else {
+            println!("Skills:");
+            for (i, skill) in current.iter().enumerate() {
+                let name = if skill.display_name.is_empty() {
+                    &skill.part_name
+                } else {
+                    &skill.display_name
+                };
+                println!("  {}. {} ({}) @ {}", i + 1, name, skill.position, skill.tier);
+            }
+        }
+        return Ok(());
+    }
+
+    // Parse add/remove specs
+    let parsed_adds: Vec<bl4::skills::SkillAdd> = adds
+        .iter()
+        .map(|s| bl4::skills::parse_add(s, category).map_err(|e| anyhow::anyhow!(e)))
+        .collect::<Result<Vec<_>>>()?;
+
+    let parsed_removes: Vec<bl4::skills::SkillRemove> = removes
+        .iter()
+        .map(|s| bl4::skills::parse_remove(s, category).map_err(|e| anyhow::anyhow!(e)))
+        .collect::<Result<Vec<_>>>()?;
+
+    // Validate drops unless --force
+    if !force {
+        for add in &parsed_adds {
+            bl4::skills::validate_skill_drop(&add.position, add.tier, category)
+                .map_err(|e| anyhow::anyhow!(e))?;
+        }
+    }
+
+    // Build and show diff
+    let diff = bl4::skills::build_diff(&current, &parsed_adds, &parsed_removes, category)
+        .map_err(|e| anyhow::anyhow!(e))?;
+
+    println!("Skills:");
+    for entry in &diff {
+        match (&entry.before, &entry.after) {
+            (Some(before), Some(after)) if entry.changed => {
+                let before_name = if before.display_name.is_empty() { &before.position } else { &before.display_name };
+                let after_name = if after.display_name.is_empty() { &after.position } else { &after.display_name };
+                println!("  {}. {} @ {}  ->  {} @ {}", entry.slot, before_name, before.tier, after_name, after.tier);
+            }
+            (Some(before), None) => {
+                let name = if before.display_name.is_empty() { &before.position } else { &before.display_name };
+                println!("  {}. {} @ {}  ->  (removed)", entry.slot, name, before.tier);
+            }
+            (None, Some(after)) => {
+                let name = if after.display_name.is_empty() { &after.position } else { &after.display_name };
+                println!("  {}. (empty)  ->  {} @ {}", entry.slot, name, after.tier);
+            }
+            (Some(skill), _) => {
+                let name = if skill.display_name.is_empty() { &skill.position } else { &skill.display_name };
+                println!("  {}. {} @ {}  (unchanged)", entry.slot, name, skill.tier);
+            }
+            _ => {}
+        }
+    }
+
+    // Confirm unless --force
+    if !force {
+        print!("\nApply changes? [y/N] ");
+        std::io::Write::flush(&mut std::io::stdout())?;
+        let mut input = String::new();
+        std::io::stdin().read_line(&mut input)?;
+        if !input.trim().eq_ignore_ascii_case("y") {
+            println!("Cancelled.");
+            return Ok(());
+        }
+    }
+
+    // Apply edits
+    let (remove_indices, add_parts) =
+        bl4::skills::compute_edits(&current, &parsed_adds, &parsed_removes, category)
+            .map_err(|e| anyhow::anyhow!(e))?;
+
+    let mut new_tokens = item.tokens.clone();
+
+    // Remove old tier parts
+    let remove_set: std::collections::HashSet<i64> = remove_indices.into_iter().collect();
+    new_tokens.retain(|t| {
+        !matches!(t, bl4::serial::Token::Part { index, .. } if remove_set.contains(&(*index as i64)))
+    });
+
+    // Add new tier parts
+    for (idx, _name) in &add_parts {
+        new_tokens.push(bl4::serial::Token::Part {
+            index: *idx as u64,
+            values: vec![],
+            encoding: bl4::serial::PartEncoding::None,
+        });
+    }
+
+    let modified = item.with_tokens(new_tokens);
+    let new_serial = modified.encode_from_tokens();
+    println!("\n{}", new_serial);
+
+    Ok(())
+}

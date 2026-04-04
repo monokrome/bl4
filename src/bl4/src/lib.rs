@@ -44,6 +44,7 @@ pub mod parts;
 pub mod reference;
 pub mod save;
 pub mod serial;
+pub mod skills;
 
 #[cfg(feature = "wasm")]
 pub mod wasm;

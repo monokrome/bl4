@@ -84,6 +84,24 @@ pub enum SerialCommand {
         verbose: bool,
     },
 
+    /// View or modify class mod skills
+    Skills {
+        /// Class mod serial to inspect/modify
+        serial: String,
+
+        /// Add a skill: 'Name@Tier' (repeatable)
+        #[arg(long, action = clap::ArgAction::Append)]
+        add: Vec<String>,
+
+        /// Remove a skill by name (repeatable)
+        #[arg(long, action = clap::ArgAction::Append)]
+        remove: Vec<String>,
+
+        /// Skip validation and confirmation
+        #[arg(long)]
+        force: bool,
+    },
+
     /// Batch decode serials from a file to binary output
     BatchDecode {
         /// Input file with one serial per line
