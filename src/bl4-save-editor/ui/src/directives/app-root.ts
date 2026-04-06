@@ -16,9 +16,10 @@ interface AppRootScope {
   editor: EditorState;
   steamId: { value: string };
   classDisplayName: (raw: string | null) => string;
+  closeDrawer: () => void;
 }
 
-function classDisplayName(raw: string | null) {
+function classDisplayName(raw: string | null): string {
   if (!raw) return 'Unknown';
   return CLASS_NAMES[raw] ?? raw.replace('Char_', '');
 }
@@ -46,17 +47,12 @@ export function AppRootDirective($element: Element, $scope: AppRootScope) {
     closeDrawer: () => { editor.drawerOpen = false; },
   });
 
-  if (!autoLoadStarted) {
-    autoLoadStarted = true;
-    queueMicrotask(() => detectAndLoad(steamId, editor));
-  }
+  detectAndLoad(steamId, editor);
 
   return () => effectScope.stop();
 }
 
 directive('app-root', AppRootDirective, { scope: true });
-
-let autoLoadStarted = false;
 
 const SAVE_BASES = [
   '.local/share/Steam/steamapps/compatdata/1285190/pfx/drive_c/users/steamuser/Documents/My Games/Borderlands 4/Saved/SaveGames',
@@ -86,7 +82,7 @@ async function detectAndLoad(steamId: { value: string }, editor: EditorState) {
         }
       }
     }
-  } catch (e) {
-    console.error('Auto-detect saves failed:', e);
+  } catch {
+    // Auto-detection is best-effort
   }
 }

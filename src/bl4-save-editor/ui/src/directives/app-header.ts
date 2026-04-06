@@ -14,12 +14,12 @@ function drawerIcon(editor: EditorState) {
   return editor.drawerOpen ? '>' : '<';
 }
 
-export function AppHeaderDirective($element: Element, $scope: AppHeaderScope, editor: EditorState) {
+export function AppHeaderDirective($scope: AppHeaderScope, editor: EditorState) {
   Object.assign($scope, {
     toggleDrawer: toggleDrawer.bind(null, editor),
     drawerIcon: drawerIcon.bind(null, editor),
   });
 }
-AppHeaderDirective.$inject = ['$element', '$scope'];
+AppHeaderDirective.$inject = ['$scope'];
 
 directive('app-header', AppHeaderDirective, { scope: true, using: [EditorContext] });

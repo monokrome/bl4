@@ -1,5 +1,5 @@
 import { directive } from 'gonia';
-import { EditorContext, type EditorState, type SaveInfo } from '../contexts.js';
+import { EditorContext, type EditorState } from '../contexts.js';
 
 interface EditorViewScope {
   sections: () => string[];
@@ -29,7 +29,7 @@ function isSectionActive(editor: EditorState, section: string) {
   return editor.activeSection === section;
 }
 
-export function EditorViewDirective($element: Element, $scope: EditorViewScope, editor: EditorState) {
+export function EditorViewDirective($scope: EditorViewScope, editor: EditorState) {
   function sections(): string[] {
     const save = editor.saves.find(s => s.name === editor.activeSave);
     return save?.isProfile ? PROFILE_SECTIONS : CHARACTER_SECTIONS;
@@ -42,6 +42,6 @@ export function EditorViewDirective($element: Element, $scope: EditorViewScope, 
     isSectionActive: isSectionActive.bind(null, editor),
   });
 }
-EditorViewDirective.$inject = ['$element', '$scope'];
+EditorViewDirective.$inject = ['$scope'];
 
 directive('editor-view', EditorViewDirective, { scope: true, using: [EditorContext] });

@@ -15,7 +15,7 @@ function resolveSteamId(path: string, inputValue: string): string | null {
   return extractSteamIdFromPath(path) ?? (inputValue || null);
 }
 
-export function FileOpenDirective($element: Element, $scope: FileOpenScope, steamId: { value: string }, editor: EditorState) {
+export function FileOpenDirective($scope: FileOpenScope, steamId: { value: string }, editor: EditorState) {
   Object.assign($scope, {
     showFileOpen: () => editor.saves.length === 0 && !editor.activeSave && !editor.loading,
 
@@ -47,6 +47,6 @@ export function FileOpenDirective($element: Element, $scope: FileOpenScope, stea
     },
   });
 }
-FileOpenDirective.$inject = ['$element', '$scope'];
+FileOpenDirective.$inject = ['$scope'];
 
 directive('file-open', FileOpenDirective, { scope: true, using: [SteamIdContext, EditorContext] });

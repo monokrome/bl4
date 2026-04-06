@@ -34,12 +34,8 @@
           <div g-for="save in editor.saves"
                g-on="click: select(save)"
                g-class="$styles.saveRow">
-            <div g-class="$styles.segName" g-text="nameText(save)"></div>
-            <div g-class="$styles.segAttr" g-text="attrText(save)"></div>
-            <div g-class="$styles.segLevel">
-              <span g-text="levelText(save)"></span>
-              <span g-class="$styles.segFileName" g-text="fileName(save)"></span>
-            </div>
+            <span g-class="$styles.saveName" g-text="displayName(save)"></span>
+            <span g-class="$styles.saveHint" g-text="displayHint(save)"></span>
           </div>
         </save-list>
 
