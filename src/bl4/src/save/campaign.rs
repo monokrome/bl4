@@ -34,9 +34,10 @@ pub struct CampaignEntry {
 }
 
 /// Description of changes that will be applied by `set_campaign_progress`.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct CampaignChanges {
     pub completed_sets: Vec<String>,
+    pub reset_sets: Vec<String>,
     pub active_set: String,
     pub active_mission: String,
 }
@@ -100,6 +101,8 @@ pub(crate) fn get_mission_status(
 /// Compute what changes are needed to set progress to a target mission set.
 ///
 /// Returns `None` if the target is not a valid main story mission set.
+/// Main-story mission sets that come *after* the target (not in the prereq
+/// chain) are added to `reset_sets` to support rewinding.
 pub fn plan_campaign_progress(target: &str) -> Option<CampaignChanges> {
     let resolved = missions::resolve_mission_set_name(target)?;
     let prereqs = missions::prerequisites_for(resolved);
@@ -111,11 +114,49 @@ pub fn plan_campaign_progress(target: &str) -> Option<CampaignChanges> {
     let (completed, active) = prereqs.split_at(prereqs.len() - 1);
     let active_set = &active[0];
 
+    // Build reset list: all main-story sets NOT in the prereq chain and NOT the target
+    let prereq_names: std::collections::HashSet<&str> =
+        prereqs.iter().map(|ms| ms.name.as_str()).collect();
+    let reset_sets: Vec<String> = missions::main_story_order()
+        .iter()
+        .filter(|ms| !prereq_names.contains(ms.name.as_str()))
+        .map(|ms| ms.name.clone())
+        .collect();
+
     Some(CampaignChanges {
         completed_sets: completed.iter().map(|ms| ms.name.clone()).collect(),
+        reset_sets,
         active_set: active_set.name.clone(),
         active_mission: missions::mission_name_for_set(&active_set.name),
     })
+}
+
+/// Plan completion of all main campaign and side missions.
+///
+/// Returns a `CampaignChanges` that marks every main, dlc, and side
+/// mission set as completed. No active set — all are marked complete.
+pub fn plan_complete_all() -> CampaignChanges {
+    let mut completed: Vec<String> = missions::all_mission_sets()
+        .values()
+        .filter(|ms| matches!(ms.category.as_str(), "main" | "dlc" | "side"))
+        .map(|ms| ms.name.clone())
+        .collect();
+    completed.sort();
+
+    // Use the last main-story set as the active set for structural validity
+    let last_main = missions::main_story_order()
+        .last()
+        .map(|ms| ms.name.clone())
+        .unwrap_or_default();
+
+    let active_mission = missions::mission_name_for_set(&last_main);
+
+    CampaignChanges {
+        completed_sets: completed.clone(),
+        reset_sets: Vec::new(),
+        active_set: last_main,
+        active_mission,
+    }
 }
 
 /// Known DLC mission set groups. Each DLC may have multiple mission sets
@@ -147,6 +188,7 @@ pub fn plan_dlc_completion(dlc_name: &str) -> Option<CampaignChanges> {
 
     Some(CampaignChanges {
         completed_sets: all_completed,
+        reset_sets: Vec::new(),
         active_set: last_set.clone(),
         active_mission: missions::mission_name_for_set(&last_set),
     })
@@ -198,8 +240,13 @@ pub fn apply_campaign_progress(
 ) -> Result<(), SaveError> {
     ensure_missions_structure(data);
 
-    // Check if the active set is in the completed list (DLC completion)
+    // Check if the active set is in the completed list (DLC completion / complete-all)
     let all_completed = changes.completed_sets.contains(&changes.active_set);
+
+    // Reset sets that should be rewound (remove from local_sets)
+    for set_name in &changes.reset_sets {
+        mark_set_reset(data, set_name);
+    }
 
     // Mark all completed sets
     for set_name in &changes.completed_sets {
@@ -217,6 +264,17 @@ pub fn apply_campaign_progress(
     }
 
     Ok(())
+}
+
+/// Remove a mission set from `local_sets` to reset its completion status.
+fn mark_set_reset(data: &mut serde_yaml::Value, set_name: &str) {
+    let set_key = serde_yaml::Value::String(set_name.to_string());
+    if let Some(local) = data["missions"]["local_sets"].as_mapping_mut() {
+        local.remove(&set_key);
+    }
+    if let Some(remote) = data["missions"]["remote_sets"].as_mapping_mut() {
+        remote.remove(&set_key);
+    }
 }
 
 // --- Internal helpers ---

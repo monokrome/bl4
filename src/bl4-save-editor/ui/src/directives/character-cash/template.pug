@@ -1,0 +1,6 @@
+labeled-field(label="Cash" hint="$")
+  input(type="number"
+        g-class="[$styles.input, cash.dirty ? $styles.dirty : '']"
+        g-model="cash.value"
+        g-on="input: cash.onChange($event.target.value)")
+  dirty-indicator(show="cash.dirty" focus-path="state.currencies.cash")

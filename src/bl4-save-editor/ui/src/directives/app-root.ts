@@ -30,11 +30,13 @@ export function AppRootDirective($element: Element, $scope: AppRootScope) {
   const steamId = reactive({ value: '' });
   const editor: EditorState = reactive({
     saves: [],
+    sessions: {},
     activeSave: null,
     activeSection: null,
     drawerOpen: false,
     loading: false,
     error: null,
+    skipSaveConfirm: readSkipSaveConfirm(),
   });
 
   registerContext($element, SteamIdContext, steamId);
@@ -53,6 +55,24 @@ export function AppRootDirective($element: Element, $scope: AppRootScope) {
 }
 
 directive('app-root', AppRootDirective, { scope: true });
+
+const SKIP_SAVE_CONFIRM_KEY = 'bl4se.skipSaveConfirm';
+
+function readSkipSaveConfirm(): boolean {
+  try {
+    return localStorage.getItem(SKIP_SAVE_CONFIRM_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+export function writeSkipSaveConfirm(value: boolean): void {
+  try {
+    localStorage.setItem(SKIP_SAVE_CONFIRM_KEY, value ? 'true' : 'false');
+  } catch {
+    // no-op
+  }
+}
 
 const SAVE_BASES = [
   '.local/share/Steam/steamapps/compatdata/1285190/pfx/drive_c/users/steamuser/Documents/My Games/Borderlands 4/Saved/SaveGames',

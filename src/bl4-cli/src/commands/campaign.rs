@@ -75,6 +75,19 @@ fn list(args: &SaveArgs, category: &str) -> Result<()> {
 }
 
 fn set(args: &SaveArgs, mission: &str, skip_confirm: bool) -> Result<()> {
+    // Special "all" shortcut — complete every main, dlc, and side mission set
+    if mission.eq_ignore_ascii_case("all") {
+        if !skip_confirm {
+            println!("This will complete all campaign & side missions in the game.");
+            if !confirm_with_prompt("Continue?")? {
+                println!("Aborted.");
+                return Ok(());
+            }
+        }
+        let changes = bl4::save::campaign::plan_complete_all();
+        return apply_changes(args, changes, true);
+    }
+
     // Try individual mission first
     if let Some(m) = bl4::missions::resolve_mission_name(mission) {
         println!("Will mark mission as completed: {}", m.name);
@@ -105,12 +118,20 @@ fn set(args: &SaveArgs, mission: &str, skip_confirm: bool) -> Result<()> {
         None => {
             bail!(
                 "Unknown mission: '{}'\n\nUse 'bl4 save <file> missions list all' to see available missions.\n\
-                Accepts: mission names, set names, or DLC names (cowbell, cello, etc.)",
+                Accepts: mission names, set names, DLC names (cowbell, cello, etc.), or 'all'",
                 mission
             );
         }
     };
 
+    apply_changes(args, changes, skip_confirm)
+}
+
+fn apply_changes(
+    args: &SaveArgs,
+    changes: bl4::save::campaign::CampaignChanges,
+    skip_confirm: bool,
+) -> Result<()> {
     let all_completed = changes.completed_sets.contains(&changes.active_set);
 
     if all_completed {
@@ -134,6 +155,17 @@ fn set(args: &SaveArgs, mission: &str, skip_confirm: bool) -> Result<()> {
         println!();
     }
 
+    if !changes.reset_sets.is_empty() {
+        println!(
+            "The following {} mission set(s) will be reset:",
+            changes.reset_sets.len()
+        );
+        for set_name in &changes.reset_sets {
+            println!("  [ ] {}", short_name(set_name));
+        }
+        println!();
+    }
+
     if !all_completed {
         println!(
             "Active mission: {} ({})",
@@ -143,7 +175,14 @@ fn set(args: &SaveArgs, mission: &str, skip_confirm: bool) -> Result<()> {
         println!();
     }
 
-    if !skip_confirm && !confirm()? {
+    // Extra warning when reset_sets will reverse progress
+    if !skip_confirm && !changes.reset_sets.is_empty() {
+        println!("This will reverse some progress in the current save.");
+        if !confirm_with_prompt("Continue?")? {
+            println!("Aborted.");
+            return Ok(());
+        }
+    } else if !skip_confirm && !confirm()? {
         println!("Aborted.");
         return Ok(());
     }
@@ -159,7 +198,11 @@ fn set(args: &SaveArgs, mission: &str, skip_confirm: bool) -> Result<()> {
 }
 
 fn confirm() -> Result<bool> {
-    print!("Apply these changes? [y/N] ");
+    confirm_with_prompt("Apply these changes?")
+}
+
+fn confirm_with_prompt(prompt: &str) -> Result<bool> {
+    print!("{} [N/y] ", prompt);
     io::stdout().flush()?;
     let stdin = io::stdin();
     let response = stdin.lock().lines().next();
@@ -173,6 +216,7 @@ fn plan_generic_set_completion(name: &str) -> Option<bl4::save::campaign::Campai
     let resolved = bl4::missions::resolve_mission_set_name(name)?;
     Some(bl4::save::campaign::CampaignChanges {
         completed_sets: vec![resolved.to_string()],
+        reset_sets: Vec::new(),
         active_set: resolved.to_string(),
         active_mission: bl4::missions::mission_name_for_set(resolved),
     })
