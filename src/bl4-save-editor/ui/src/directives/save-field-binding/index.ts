@@ -1,18 +1,17 @@
 import { directive } from 'gonia';
 import template from './template.pug';
 import { EditorContext, type EditorState, type SaveSession } from '../../contexts.js';
-import {
-  readEffectiveValue,
-  isPathDirty,
-  writeChange,
-  activeSession,
-} from '../../editor-store.js';
+import { readEffectiveValue, isPathDirty, writeChange, activeSession } from '../../editor-store.js';
 
 /// The reactive-ish binding object that templates consume.
 /// Backed by getters so each read walks the editor store and picks
 /// up whatever session is currently active.
+///
+/// `value` has both a getter (reads effective value) and a setter
+/// (writes through `onChange`) so Gonia's `g-model` two-way binding
+/// works directly against `binding.value`.
 export interface FieldBinding {
-  readonly value: string;
+  value: string;
   readonly dirty: boolean;
   readonly originalValue: string;
   onChange: (next: string) => void;
@@ -42,6 +41,11 @@ function createBinding(
       const session = resolveSession(editor, useProfile);
       if (!session) return '';
       return readEffectiveValue(session, path);
+    },
+    set value(next: string) {
+      const session = resolveSession(editor, useProfile);
+      if (!session) return;
+      writeChange(session, path, next);
     },
     get dirty(): boolean {
       const session = resolveSession(editor, useProfile);

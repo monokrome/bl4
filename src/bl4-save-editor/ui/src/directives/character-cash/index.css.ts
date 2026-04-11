@@ -24,3 +24,14 @@ export const dirty = style({
   borderLeftWidth: '3px',
   paddingLeft: '8px',
 });
+
+export const marker = style({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '14px',
+  height: '14px',
+  color: vars.color.accentBright,
+  fontSize: '10px',
+  flexShrink: 0,
+});

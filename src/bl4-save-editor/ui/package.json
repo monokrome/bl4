@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@types/pug": "^2.0.10",
+    "@vanilla-extract/vite-plugin": "^5.2.2",
     "@vitest/ui": "^4.1.4",
     "happy-dom": "^20.8.9",
     "pug": "^3.0.4",

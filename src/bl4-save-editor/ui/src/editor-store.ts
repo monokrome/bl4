@@ -38,7 +38,12 @@ export function isPathDirty(session: SaveSession, path: string): boolean {
 /// Write a change to a path. Updates both the Rust ChangeSet and the
 /// reactive JS mirror. If the new value equals the original, the change
 /// is cleared instead of recorded.
-export function writeChange(session: SaveSession, path: string, value: string): void {
+///
+/// The value is coerced to a string at the boundary because Gonia's
+/// `g-model` directive may pass numbers or booleans through when
+/// bound to typed inputs.
+export function writeChange(session: SaveSession, path: string, rawValue: string | number | boolean): void {
+  const value = String(rawValue);
   const original = readSaveValue(session, path);
 
   if (value === original) {
