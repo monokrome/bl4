@@ -572,7 +572,15 @@ static SKILL_TREES: Lazy<HashMap<(i64, String), SkillInfo>> = Lazy::new(|| {
                 .cloned()
                 .unwrap_or_default();
 
-            Some(((category, position), SkillInfo { display_name, tooltip_key, tree_color, tree_name }))
+            Some((
+                (category, position),
+                SkillInfo {
+                    display_name,
+                    tooltip_key,
+                    tree_color,
+                    tree_name,
+                },
+            ))
         })
         .collect()
 });
@@ -610,14 +618,16 @@ pub fn skill_display_name(category: i64, position: &str) -> Option<&'static Skil
 /// Reverse lookup: find position from display name, scoped to a category.
 pub fn skill_position_from_name(category: i64, name: &str) -> Option<&'static str> {
     let entries = SKILL_BY_DISPLAY_NAME.get(&name.to_lowercase())?;
-    entries.iter()
+    entries
+        .iter()
         .find(|(cat, _)| *cat == category)
         .map(|(_, pos)| pos.as_str())
 }
 
 /// List all skills for a category.
 pub fn skills_for_category(category: i64) -> Vec<(&'static str, &'static SkillInfo)> {
-    SKILL_TREES.iter()
+    SKILL_TREES
+        .iter()
         .filter(|((cat, _), _)| *cat == category)
         .map(|((_, pos), info)| (pos.as_str(), info))
         .collect()

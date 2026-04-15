@@ -779,9 +779,20 @@ pub fn batch_decode(input: &Path, output: &Path) -> Result<()> {
     Ok(())
 }
 
-/// View or modify class mod skills
-pub fn skills(serial: &str, list: bool, color_filter: Option<&str>, adds: &[String], removes: &[String], force: bool) -> Result<()> {
-    let item = bl4::ItemSerial::decode(serial).context("Failed to decode serial")?;
+/// Arguments for the `serial skills` subcommand, bundled to avoid a
+/// long positional parameter list at the CLI boundary.
+pub struct SkillsArgs<'a> {
+    pub serial: &'a str,
+    pub list: bool,
+    pub color_filter: Option<&'a str>,
+    pub adds: &'a [String],
+    pub removes: &'a [String],
+    pub force: bool,
+}
+
+/// View or modify class mod skills.
+pub fn skills(args: SkillsArgs<'_>) -> Result<()> {
+    let item = bl4::ItemSerial::decode(args.serial).context("Failed to decode serial")?;
     let category = item
         .parts_category()
         .context("Cannot determine item category")?;
@@ -791,54 +802,88 @@ pub fn skills(serial: &str, list: bool, color_filter: Option<&str>, adds: &[Stri
         bail!("Not a class mod (category {} = {})", category, name);
     }
 
-    // List available skills
-    if list {
-        let cat_name = bl4::manifest::category_name(category).unwrap_or("Unknown");
-        println!("Available skills for {} (category {}):\n", cat_name, category);
-
-        let mut skills = bl4::manifest::skills_for_category(category);
-        skills.sort_by(|a, b| a.1.tree_name.cmp(&b.1.tree_name).then(a.0.cmp(b.0)));
-
-        if let Some(color) = color_filter {
-            skills.retain(|(_, info)| info.tree_color == color);
-        }
-
-        let mut current_tree = "";
-        for (pos, info) in &skills {
-            if info.tree_name != current_tree {
-                current_tree = &info.tree_name;
-                let color = &info.tree_color;
-                println!("  {} ({}):", current_tree, color);
-            }
-            println!("    {} ({})", info.display_name, pos);
-        }
-
-        return Ok(());
+    if args.list {
+        return print_available_skills(category, args.color_filter);
     }
 
     let current = bl4::skills::decode_skills(&item.tokens, category);
 
-    // List mode: no modifications
-    if adds.is_empty() && removes.is_empty() {
-        let cat_name = bl4::manifest::category_name(category).unwrap_or("Unknown");
-        println!("Class Mod: {} (category {})", cat_name, category);
-        if current.is_empty() {
-            println!("  No passive skills found");
-        } else {
-            println!("Skills:");
-            for (i, skill) in current.iter().enumerate() {
-                let name = if skill.display_name.is_empty() {
-                    &skill.part_name
-                } else {
-                    &skill.display_name
-                };
-                println!("  {}. {} ({}) @ {}", i + 1, name, skill.position, skill.tier);
-            }
-        }
+    if args.adds.is_empty() && args.removes.is_empty() {
+        print_current_skills(category, &current);
         return Ok(());
     }
 
-    // Parse add/remove specs
+    apply_skill_edits(
+        item,
+        category,
+        &current,
+        args.adds,
+        args.removes,
+        args.force,
+    )
+}
+
+fn print_available_skills(category: i64, color_filter: Option<&str>) -> Result<()> {
+    let cat_name = bl4::manifest::category_name(category).unwrap_or("Unknown");
+    println!(
+        "Available skills for {} (category {}):\n",
+        cat_name, category
+    );
+
+    let mut skills = bl4::manifest::skills_for_category(category);
+    skills.sort_by(|a, b| a.1.tree_name.cmp(&b.1.tree_name).then(a.0.cmp(b.0)));
+
+    if let Some(color) = color_filter {
+        skills.retain(|(_, info)| info.tree_color == color);
+    }
+
+    let mut current_tree = "";
+    for (pos, info) in &skills {
+        if info.tree_name != current_tree {
+            current_tree = &info.tree_name;
+            println!("  {} ({}):", current_tree, info.tree_color);
+        }
+        println!("    {} ({})", info.display_name, pos);
+    }
+    Ok(())
+}
+
+fn print_current_skills(category: i64, current: &[bl4::skills::DecodedSkill]) {
+    let cat_name = bl4::manifest::category_name(category).unwrap_or("Unknown");
+    println!("Class Mod: {} (category {})", cat_name, category);
+    if current.is_empty() {
+        println!("  No passive skills found");
+        return;
+    }
+    println!("Skills:");
+    for (i, skill) in current.iter().enumerate() {
+        let name = if skill.display_name.is_empty() {
+            &skill.part_name
+        } else {
+            &skill.display_name
+        };
+        println!(
+            "  {}. {} ({}) @ {}",
+            i + 1,
+            name,
+            skill.position,
+            skill.tier
+        );
+    }
+}
+
+// 6 args is a natural fit here: the parent `skills` already unpacked
+// the public `SkillsArgs`, and splitting further would move state
+// around without shrinking the surface of this edit flow.
+#[allow(clippy::too_many_arguments)]
+fn apply_skill_edits(
+    item: bl4::ItemSerial,
+    category: i64,
+    current: &[bl4::skills::DecodedSkill],
+    adds: &[String],
+    removes: &[String],
+    force: bool,
+) -> Result<()> {
     let parsed_adds: Vec<bl4::skills::SkillAdd> = adds
         .iter()
         .map(|s| bl4::skills::parse_add(s, category).map_err(|e| anyhow::anyhow!(e)))
@@ -849,7 +894,6 @@ pub fn skills(serial: &str, list: bool, color_filter: Option<&str>, adds: &[Stri
         .map(|s| bl4::skills::parse_remove(s, category).map_err(|e| anyhow::anyhow!(e)))
         .collect::<Result<Vec<_>>>()?;
 
-    // Validate drops unless --force
     if !force {
         for add in &parsed_adds {
             bl4::skills::validate_skill_drop(&add.position, add.tier, category)
@@ -857,57 +901,88 @@ pub fn skills(serial: &str, list: bool, color_filter: Option<&str>, adds: &[Stri
         }
     }
 
-    // Build and show diff
-    let diff = bl4::skills::build_diff(&current, &parsed_adds, &parsed_removes, category)
+    let diff = bl4::skills::build_diff(current, &parsed_adds, &parsed_removes, category)
+        .map_err(|e| anyhow::anyhow!(e))?;
+    print_diff(&diff);
+
+    if !force && !confirm_apply()? {
+        println!("Cancelled.");
+        return Ok(());
+    }
+
+    let plan = bl4::skills::compute_edits(current, &parsed_adds, &parsed_removes, category)
         .map_err(|e| anyhow::anyhow!(e))?;
 
-    println!("Skills:");
-    for entry in &diff {
-        match (&entry.before, &entry.after) {
-            (Some(before), Some(after)) if entry.changed => {
-                let before_name = if before.display_name.is_empty() { &before.position } else { &before.display_name };
-                let after_name = if after.display_name.is_empty() { &after.position } else { &after.display_name };
-                println!("  {}. {} @ {}  ->  {} @ {}", entry.slot, before_name, before.tier, after_name, after.tier);
-            }
-            (Some(before), None) => {
-                let name = if before.display_name.is_empty() { &before.position } else { &before.display_name };
-                println!("  {}. {} @ {}  ->  (removed)", entry.slot, name, before.tier);
-            }
-            (None, Some(after)) => {
-                let name = if after.display_name.is_empty() { &after.position } else { &after.display_name };
-                println!("  {}. (empty)  ->  {} @ {}", entry.slot, name, after.tier);
-            }
-            (Some(skill), _) => {
-                let name = if skill.display_name.is_empty() { &skill.position } else { &skill.display_name };
-                println!("  {}. {} @ {}  (unchanged)", entry.slot, name, skill.tier);
-            }
-            _ => {}
-        }
-    }
-
-    // Confirm unless --force
-    if !force {
-        print!("\nApply changes? [y/N] ");
-        std::io::Write::flush(&mut std::io::stdout())?;
-        let mut input = String::new();
-        std::io::stdin().read_line(&mut input)?;
-        if !input.trim().eq_ignore_ascii_case("y") {
-            println!("Cancelled.");
-            return Ok(());
-        }
-    }
-
-    // Apply edits in-place (preserves firmware and other non-skill tokens)
-    let (remove_indices, add_parts) =
-        bl4::skills::compute_edits(&current, &parsed_adds, &parsed_removes, category)
-            .map_err(|e| anyhow::anyhow!(e))?;
-
-    let new_tokens = bl4::skills::apply_edits(&item.tokens, &remove_indices, &add_parts, category);
+    let new_tokens = bl4::skills::apply_edits(
+        &item.tokens,
+        &plan.remove_indices,
+        &plan.add_parts,
+        category,
+    );
     let modified = item.with_tokens(new_tokens);
     let new_serial = modified.encode_from_tokens();
     println!("\n{}", new_serial);
 
     Ok(())
+}
+
+fn print_diff(diff: &[bl4::skills::SkillDiffEntry]) {
+    println!("Skills:");
+    for entry in diff {
+        match (&entry.before, &entry.after) {
+            (Some(before), Some(after)) if entry.changed => {
+                println!(
+                    "  {}. {} @ {}  ->  {} @ {}",
+                    entry.slot,
+                    display_name_or_position(before),
+                    before.tier,
+                    display_name_or_position(after),
+                    after.tier
+                );
+            }
+            (Some(before), None) => {
+                println!(
+                    "  {}. {} @ {}  ->  (removed)",
+                    entry.slot,
+                    display_name_or_position(before),
+                    before.tier
+                );
+            }
+            (None, Some(after)) => {
+                println!(
+                    "  {}. (empty)  ->  {} @ {}",
+                    entry.slot,
+                    display_name_or_position(after),
+                    after.tier
+                );
+            }
+            (Some(skill), _) => {
+                println!(
+                    "  {}. {} @ {}  (unchanged)",
+                    entry.slot,
+                    display_name_or_position(skill),
+                    skill.tier
+                );
+            }
+            _ => {}
+        }
+    }
+}
+
+fn display_name_or_position(skill: &bl4::skills::DecodedSkill) -> &str {
+    if skill.display_name.is_empty() {
+        &skill.position
+    } else {
+        &skill.display_name
+    }
+}
+
+fn confirm_apply() -> Result<bool> {
+    print!("\nApply changes? [y/N] ");
+    std::io::Write::flush(&mut std::io::stdout())?;
+    let mut input = String::new();
+    std::io::stdin().read_line(&mut input)?;
+    Ok(input.trim().eq_ignore_ascii_case("y"))
 }
 
 /// View or modify equipment firmware
@@ -921,7 +996,10 @@ pub fn firmware(serial: &str, list: bool, set: Option<&str>, force: bool) -> Res
 
     // List available firmware
     if list {
-        println!("Available firmware for {} (category {}):\n", cat_name, category);
+        println!(
+            "Available firmware for {} (category {}):\n",
+            cat_name, category
+        );
         for (idx, name) in bl4::firmware::available_firmware(category) {
             let display = name.strip_prefix("part_firmware_").unwrap_or(&name);
             println!("  [{}] {}", idx, display);
@@ -936,8 +1014,15 @@ pub fn firmware(serial: &str, list: bool, set: Option<&str>, force: bool) -> Res
         match &current {
             Some(fw) => {
                 let display = fw.name.strip_prefix("part_firmware_").unwrap_or(&fw.name);
-                let origin = if fw.transferred { "transferred" } else { "original" };
-                println!("Firmware: {} ({}, index {} in category {})", display, origin, fw.index, fw.category);
+                let origin = if fw.transferred {
+                    "transferred"
+                } else {
+                    "original"
+                };
+                println!(
+                    "Firmware: {} ({}, index {} in category {})",
+                    display, origin, fw.index, fw.category
+                );
             }
             None => println!("Firmware: none"),
         }
@@ -946,8 +1031,8 @@ pub fn firmware(serial: &str, list: bool, set: Option<&str>, force: bool) -> Res
 
     // Set firmware
     if let Some(name) = set {
-        let (fw_cat, fw_idx) = bl4::firmware::resolve_firmware(name, category)
-            .map_err(|e| anyhow::anyhow!(e))?;
+        let (fw_cat, fw_idx) =
+            bl4::firmware::resolve_firmware(name, category).map_err(|e| anyhow::anyhow!(e))?;
 
         let new_name = bl4::manifest::part_name(fw_cat, fw_idx).unwrap_or("unknown");
         let new_display = new_name.strip_prefix("part_firmware_").unwrap_or(new_name);

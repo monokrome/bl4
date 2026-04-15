@@ -84,7 +84,9 @@ pub fn decode_skills(tokens: &[Token], category: i64) -> Vec<DecodedSkill> {
     let mut by_position: std::collections::HashMap<String, DecodedSkill> =
         std::collections::HashMap::new();
     for skill in skills {
-        let entry = by_position.entry(skill.position.clone()).or_insert_with(|| skill.clone());
+        let entry = by_position
+            .entry(skill.position.clone())
+            .or_insert_with(|| skill.clone());
         if skill.tier > entry.tier {
             *entry = skill;
         }
@@ -97,13 +99,15 @@ pub fn decode_skills(tokens: &[Token], category: i64) -> Vec<DecodedSkill> {
 
 /// Parse a --add argument: `"Name@Tier"` or `"position@Tier"`
 pub fn parse_add(spec: &str, category: i64) -> Result<SkillAdd, String> {
-    let (name, tier_str) = spec.rsplit_once('@')
+    let (name, tier_str) = spec
+        .rsplit_once('@')
         .ok_or_else(|| format!("missing @tier in '{}' (expected 'Name@N')", spec))?;
 
-    let tier: u8 = tier_str.parse()
+    let tier: u8 = tier_str
+        .parse()
         .map_err(|_| format!("invalid tier '{}' in '{}'", tier_str, spec))?;
 
-    if tier < 1 || tier > 5 {
+    if !(1..=5).contains(&tier) {
         return Err(format!("tier must be 1-5, got {}", tier));
     }
 
@@ -139,7 +143,8 @@ fn resolve_skill_name(name: &str, category: i64) -> Result<String, String> {
     // Try fuzzy: prefix match on display names
     let available = manifest::skills_for_category(category);
     let lower = name.to_lowercase();
-    let matches: Vec<_> = available.iter()
+    let matches: Vec<_> = available
+        .iter()
         .filter(|(_, info)| info.display_name.to_lowercase().starts_with(&lower))
         .collect();
 
@@ -148,23 +153,41 @@ fn resolve_skill_name(name: &str, category: i64) -> Result<String, String> {
     }
 
     if matches.len() > 1 {
-        let names: Vec<_> = matches.iter().map(|(_, info)| info.display_name.as_str()).collect();
-        return Err(format!("ambiguous skill name '{}', matches: {}", name, names.join(", ")));
+        let names: Vec<_> = matches
+            .iter()
+            .map(|(_, info)| info.display_name.as_str())
+            .collect();
+        return Err(format!(
+            "ambiguous skill name '{}', matches: {}",
+            name,
+            names.join(", ")
+        ));
     }
 
-    Err(format!("skill '{}' not found in category {}", name, category))
+    Err(format!(
+        "skill '{}' not found in category {}",
+        name, category
+    ))
+}
+
+/// A planned edit to a class mod's skill parts.
+///
+/// `remove_indices` are manifest part indices to strip from the token
+/// stream, and `add_parts` are `(part_index, part_name)` pairs to
+/// append for each tier being added. `apply_edits` consumes this plan
+/// to produce the new token list.
+pub struct SkillEditPlan {
+    pub remove_indices: Vec<i64>,
+    pub add_parts: Vec<(i64, String)>,
 }
 
 /// Compute the token edits for add/remove operations.
-///
-/// Returns (indices_to_remove, parts_to_add) where parts_to_add are
-/// (part_index, part_name) tuples.
 pub fn compute_edits(
     current: &[DecodedSkill],
     adds: &[SkillAdd],
     removes: &[SkillRemove],
     category: i64,
-) -> Result<(Vec<i64>, Vec<(i64, String)>), String> {
+) -> Result<SkillEditPlan, String> {
     let mut remove_indices: Vec<i64> = Vec::new();
     let mut add_parts: Vec<(i64, String)> = Vec::new();
 
@@ -193,11 +216,13 @@ pub fn compute_edits(
 
             // If no slot available, auto-remove the lowest-tier skill
             if net >= current_count && !current.is_empty() {
-                let replaced_set: Vec<bool> = current.iter()
+                let replaced_set: Vec<bool> = current
+                    .iter()
                     .map(|s| replaced_positions.contains(&s.position))
                     .collect();
 
-                if let Some(victim) = find_replacement_slot(current, &replaced_set, &add_positions) {
+                if let Some(victim) = find_replacement_slot(current, &replaced_set, &add_positions)
+                {
                     let victim_pos = current[victim].position.clone();
                     collect_tier_removals(&victim_pos, category, &mut remove_indices);
                     replaced_positions.push(victim_pos);
@@ -208,13 +233,17 @@ pub fn compute_edits(
         // Add tier parts for the new skill (tier_1 through tier_N)
         for t in 1..=add.tier {
             let part_name = format!("passive_{}_tier_{}", add.position, t);
-            let part_idx = manifest::part_index(category, &part_name)
-                .ok_or_else(|| format!("part '{}' not found in category {}", part_name, category))?;
+            let part_idx = manifest::part_index(category, &part_name).ok_or_else(|| {
+                format!("part '{}' not found in category {}", part_name, category)
+            })?;
             add_parts.push((part_idx, part_name));
         }
     }
 
-    Ok((remove_indices, add_parts))
+    Ok(SkillEditPlan {
+        remove_indices,
+        add_parts,
+    })
 }
 
 /// Build the before/after diff for display.
@@ -224,14 +253,44 @@ pub fn build_diff(
     removes: &[SkillRemove],
     category: i64,
 ) -> Result<Vec<SkillDiffEntry>, String> {
-    let mut diff = Vec::new();
-    let mut handled: Vec<bool> = vec![false; current.len()];
+    let mut state = DiffState::new(current.len(), removes);
 
-    // Mark removals
+    push_removal_entries(current, removes, &mut state);
+    push_add_entries(current, adds, category, &mut state);
+    push_unchanged_entries(current, &mut state);
+
+    state.diff.sort_by_key(|d| d.slot);
+    Ok(state.diff)
+}
+
+/// Shared mutable state for the three build_diff phases.
+///
+/// `handled[i]` tracks whether `current[i]` has already been accounted
+/// for by a removal or add; the unchanged phase emits entries only
+/// for slots still unhandled. `replaced_positions` grows as adds
+/// consume victim slots so later adds don't double-pick the same
+/// skill.
+struct DiffState {
+    diff: Vec<SkillDiffEntry>,
+    handled: Vec<bool>,
+    replaced_positions: Vec<String>,
+}
+
+impl DiffState {
+    fn new(current_len: usize, removes: &[SkillRemove]) -> Self {
+        Self {
+            diff: Vec::new(),
+            handled: vec![false; current_len],
+            replaced_positions: removes.iter().map(|r| r.position.clone()).collect(),
+        }
+    }
+}
+
+fn push_removal_entries(current: &[DecodedSkill], removes: &[SkillRemove], state: &mut DiffState) {
     for rm in removes {
         if let Some(idx) = current.iter().position(|s| s.position == rm.position) {
-            handled[idx] = true;
-            diff.push(SkillDiffEntry {
+            state.handled[idx] = true;
+            state.diff.push(SkillDiffEntry {
                 slot: idx + 1,
                 before: Some(current[idx].clone()),
                 after: None,
@@ -239,52 +298,55 @@ pub fn build_diff(
             });
         }
     }
+}
 
-    // Process adds
+fn push_add_entries(
+    current: &[DecodedSkill],
+    adds: &[SkillAdd],
+    category: i64,
+    state: &mut DiffState,
+) {
     let add_positions: Vec<&str> = adds.iter().map(|a| a.position.as_str()).collect();
-    let mut replaced_positions: Vec<String> = removes.iter().map(|r| r.position.clone()).collect();
 
     for add in adds {
-        let display_name = manifest::skill_display_name(category, &add.position)
-            .map(|info| info.display_name.clone())
-            .unwrap_or_default();
+        let new_skill = build_new_skill(add, category);
 
-        let new_skill = DecodedSkill {
-            position: add.position.clone(),
-            tier: add.tier,
-            display_name,
-            part_name: format!("passive_{}_tier_{}", add.position, add.tier),
-            part_index: 0,
-        };
-
-        // Check if replacing an existing skill at this position
         if let Some(idx) = current.iter().position(|s| s.position == add.position) {
-            handled[idx] = true;
-            diff.push(SkillDiffEntry {
+            // Retiering an existing skill at the same position.
+            state.handled[idx] = true;
+            state.diff.push(SkillDiffEntry {
                 slot: idx + 1,
                 before: Some(current[idx].clone()),
                 after: Some(new_skill),
                 changed: current[idx].tier != add.tier,
             });
-        } else {
-            // Find a slot to replace
-            let replaced_set: Vec<bool> = current.iter()
-                .map(|s| handled[current.iter().position(|c| c.position == s.position).unwrap()] || replaced_positions.contains(&s.position))
-                .collect();
+            continue;
+        }
 
-            let slot = find_replacement_slot(current, &replaced_set, &add_positions);
-            if let Some(victim) = slot {
-                handled[victim] = true;
-                replaced_positions.push(current[victim].position.clone());
-                diff.push(SkillDiffEntry {
+        let replaced_set: Vec<bool> = current
+            .iter()
+            .map(|s| {
+                state.handled[find_index(current, &s.position)]
+                    || state.replaced_positions.contains(&s.position)
+            })
+            .collect();
+
+        match find_replacement_slot(current, &replaced_set, &add_positions) {
+            Some(victim) => {
+                state.handled[victim] = true;
+                state
+                    .replaced_positions
+                    .push(current[victim].position.clone());
+                state.diff.push(SkillDiffEntry {
                     slot: victim + 1,
                     before: Some(current[victim].clone()),
                     after: Some(new_skill),
                     changed: true,
                 });
-            } else {
-                // Adding to a new slot (was under capacity)
-                diff.push(SkillDiffEntry {
+            }
+            None => {
+                // Under capacity — grow into a fresh slot.
+                state.diff.push(SkillDiffEntry {
                     slot: current.len() + 1,
                     before: None,
                     after: Some(new_skill),
@@ -293,11 +355,12 @@ pub fn build_diff(
             }
         }
     }
+}
 
-    // Add unchanged skills
+fn push_unchanged_entries(current: &[DecodedSkill], state: &mut DiffState) {
     for (i, skill) in current.iter().enumerate() {
-        if !handled[i] {
-            diff.push(SkillDiffEntry {
+        if !state.handled[i] {
+            state.diff.push(SkillDiffEntry {
                 slot: i + 1,
                 before: Some(skill.clone()),
                 after: Some(skill.clone()),
@@ -305,9 +368,27 @@ pub fn build_diff(
             });
         }
     }
+}
 
-    diff.sort_by_key(|d| d.slot);
-    Ok(diff)
+fn build_new_skill(add: &SkillAdd, category: i64) -> DecodedSkill {
+    let display_name = manifest::skill_display_name(category, &add.position)
+        .map(|info| info.display_name.clone())
+        .unwrap_or_default();
+
+    DecodedSkill {
+        position: add.position.clone(),
+        tier: add.tier,
+        display_name,
+        part_name: format!("passive_{}_tier_{}", add.position, add.tier),
+        part_index: 0,
+    }
+}
+
+fn find_index(current: &[DecodedSkill], position: &str) -> usize {
+    current
+        .iter()
+        .position(|c| c.position == position)
+        .expect("position came from current, must exist")
 }
 
 /// Find the slot with the lowest tier to replace, excluding protected positions.
@@ -316,7 +397,9 @@ fn find_replacement_slot(
     already_replaced: &[bool],
     protected_positions: &[&str],
 ) -> Option<usize> {
-    current.iter().enumerate()
+    current
+        .iter()
+        .enumerate()
         .filter(|(i, skill)| {
             !already_replaced[*i] && !protected_positions.contains(&skill.position.as_str())
         })
@@ -346,66 +429,86 @@ pub fn apply_edits(
     add_parts: &[(i64, String)],
     category: i64,
 ) -> Vec<Token> {
+    let skill_range = find_skill_range(tokens, category);
+
+    let Some((start, end)) = skill_range else {
+        return append_initial_skills(tokens, add_parts);
+    };
+
     let remove_set: std::collections::HashSet<i64> = remove_indices.iter().copied().collect();
+    let new_skills = rebuild_skill_section(&tokens[start..end], &remove_set, add_parts);
 
-    // Find the range of skill Part tokens (passive_* parts)
-    let mut skill_start: Option<usize> = None;
-    let mut skill_end: usize = 0;
+    let mut result = Vec::with_capacity(tokens.len());
+    result.extend_from_slice(&tokens[..start]);
+    result.extend(new_skills);
+    result.extend_from_slice(&tokens[end..]);
+    result
+}
 
+/// Locate the contiguous range of passive skill Part tokens in the stream.
+/// Returns `Some((start, end))` where `end` is exclusive, or `None` if
+/// the item has no skill parts yet (e.g. unallocated class mod).
+fn find_skill_range(tokens: &[Token], category: i64) -> Option<(usize, usize)> {
+    let mut start: Option<usize> = None;
+    let mut end = 0usize;
     for (i, token) in tokens.iter().enumerate() {
         if let Token::Part { index, .. } = token {
             if let Some(name) = manifest::part_name(category, *index as i64) {
                 if manifest::parse_passive_part(name).is_some() {
-                    if skill_start.is_none() {
-                        skill_start = Some(i);
+                    if start.is_none() {
+                        start = Some(i);
                     }
-                    skill_end = i + 1;
+                    end = i + 1;
                 }
             }
         }
     }
+    start.map(|s| (s, end))
+}
 
-    let Some(start) = skill_start else {
-        // No existing skills — append new parts before the last separator
-        let mut result = tokens.to_vec();
-        let insert_pos = result.iter().rposition(|t| matches!(t, Token::Separator)).unwrap_or(result.len());
-        for (idx, _) in add_parts {
-            result.insert(insert_pos, Token::Part {
-                index: *idx as u64,
-                values: vec![],
-                encoding: PartEncoding::None,
-            });
-        }
-        return result;
-    };
+/// Append newly-added skill parts to a token stream that had none.
+/// Insertion happens immediately before the final `Separator` so the
+/// trailing terminator survives the edit.
+fn append_initial_skills(tokens: &[Token], add_parts: &[(i64, String)]) -> Vec<Token> {
+    let mut result = tokens.to_vec();
+    let insert_pos = result
+        .iter()
+        .rposition(|t| matches!(t, Token::Separator))
+        .unwrap_or(result.len());
+    for (idx, _) in add_parts {
+        result.insert(insert_pos, new_skill_part(*idx));
+    }
+    result
+}
 
-    // Build the new skill section: keep non-removed skills, add new ones
+/// Given the existing skill-part slice, produce the replacement slice:
+/// existing parts minus any whose index is in `remove_set`, then the
+/// new `add_parts` appended at the end.
+fn rebuild_skill_section(
+    existing: &[Token],
+    remove_set: &std::collections::HashSet<i64>,
+    add_parts: &[(i64, String)],
+) -> Vec<Token> {
     let mut new_skills: Vec<Token> = Vec::new();
-
-    // Keep existing skill parts that aren't being removed
-    for token in &tokens[start..skill_end] {
+    for token in existing {
         if let Token::Part { index, .. } = token {
             if !remove_set.contains(&(*index as i64)) {
                 new_skills.push(token.clone());
             }
         }
     }
-
-    // Add new skill parts
     for (idx, _) in add_parts {
-        new_skills.push(Token::Part {
-            index: *idx as u64,
-            values: vec![],
-            encoding: PartEncoding::None,
-        });
+        new_skills.push(new_skill_part(*idx));
     }
+    new_skills
+}
 
-    // Splice: before_skills + new_skills + after_skills
-    let mut result = Vec::with_capacity(tokens.len());
-    result.extend_from_slice(&tokens[..start]);
-    result.extend(new_skills);
-    result.extend_from_slice(&tokens[skill_end..]);
-    result
+fn new_skill_part(part_index: i64) -> Token {
+    Token::Part {
+        index: part_index as u64,
+        values: vec![],
+        encoding: PartEncoding::None,
+    }
 }
 
 /// Validate that a skill position can drop on the given category.

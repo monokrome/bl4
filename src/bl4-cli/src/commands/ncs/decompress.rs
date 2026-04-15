@@ -48,6 +48,7 @@ fn select_backend(
 }
 
 #[cfg(target_os = "windows")]
+#[allow(clippy::too_many_arguments)]
 pub fn decompress_file(
     input: &Path,
     output: Option<&Path>,

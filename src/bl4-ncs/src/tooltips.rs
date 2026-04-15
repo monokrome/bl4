@@ -88,7 +88,10 @@ pub fn extract_from_directory(ncs_dir: &Path) -> Vec<TooltipEntry> {
         .filter_map(|e| e.ok())
     {
         let path = entry.path();
-        let fname = path.file_stem().and_then(|s| s.to_str()).unwrap_or_default();
+        let fname = path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or_default();
 
         if !fname.starts_with("uitooltipdata") {
             continue;
@@ -125,13 +128,12 @@ mod tests {
     #[test]
     fn test_extract_display_name() {
         assert_eq!(
-            extract_display_name("tooltips_passives, 158C06FC44CFD933E1E82C951367520F, Grave Sustenance"),
+            extract_display_name(
+                "tooltips_passives, 158C06FC44CFD933E1E82C951367520F, Grave Sustenance"
+            ),
             Some("Grave Sustenance".to_string())
         );
-        assert_eq!(
-            extract_display_name("tooltips_passives, ABC123, "),
-            None
-        );
+        assert_eq!(extract_display_name("tooltips_passives, ABC123, "), None);
     }
 
     #[test]
@@ -154,9 +156,15 @@ mod tests {
         let out_path = ncs_dir.parent().unwrap().join("tooltips.tsv");
         write_tsv(&entries, &out_path).unwrap();
 
-        let passive_count = entries.iter()
+        let passive_count = entries
+            .iter()
             .filter(|e| e.key.contains("passive") || e.key.contains("_P_") || e.key.contains("_p_"))
             .count();
-        eprintln!("Wrote {} tooltips ({} passive-related) to {}", entries.len(), passive_count, out_path.display());
+        eprintln!(
+            "Wrote {} tooltips ({} passive-related) to {}",
+            entries.len(),
+            passive_count,
+            out_path.display()
+        );
     }
 }

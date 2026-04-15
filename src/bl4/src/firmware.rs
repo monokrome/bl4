@@ -34,7 +34,9 @@ pub struct DetectedFirmware {
 
 /// Whether the token stream has the firmware flag
 fn has_firmware_flag(tokens: &[Token]) -> bool {
-    tokens.iter().any(|t| matches!(t, Token::String(s) if s == "ft"))
+    tokens
+        .iter()
+        .any(|t| matches!(t, Token::String(s) if s == "ft"))
 }
 
 /// Detect firmware on an item from its token stream.
@@ -111,12 +113,22 @@ fn detect_equipment(tokens: &[Token], item_category: i64) -> Option<DetectedFirm
 fn equipment_firmware_category(item_category: i64) -> i64 {
     let cat_name = manifest::category_name(item_category).unwrap_or("");
     let lower = cat_name.to_lowercase();
-    if lower.contains("repair kit") { 243 }
-    else if lower.contains("heavy weapon gadget") || lower.contains("turret gadget") { 244 }
-    else if lower.contains("grenade gadget") || lower.contains("terminal gadget") || lower.contains("weapon gadget") { 245 }
-    else if lower.contains("shield") { 246 }
-    else if lower.contains("enhancement") { 247 }
-    else { EQUIPMENT_FIRMWARE_CATEGORY }
+    if lower.contains("repair kit") {
+        243
+    } else if lower.contains("heavy weapon gadget") || lower.contains("turret gadget") {
+        244
+    } else if lower.contains("grenade gadget")
+        || lower.contains("terminal gadget")
+        || lower.contains("weapon gadget")
+    {
+        245
+    } else if lower.contains("shield") {
+        246
+    } else if lower.contains("enhancement") {
+        247
+    } else {
+        EQUIPMENT_FIRMWARE_CATEGORY
+    }
 }
 
 /// Resolve a firmware name to its index in the appropriate category.
@@ -147,7 +159,10 @@ pub fn resolve_firmware(name: &str, item_category: i64) -> Result<(i64, i64), St
         return Ok((fw_category, idx));
     }
 
-    Err(format!("firmware '{}' not found in category {}", name, fw_category))
+    Err(format!(
+        "firmware '{}' not found in category {}",
+        name, fw_category
+    ))
 }
 
 /// List all available firmware for an item category.
@@ -177,12 +192,10 @@ pub fn apply(tokens: &[Token], fw_index: i64, item_category: i64) -> Vec<Token> 
         } else {
             add_class_mod_firmware(tokens, fw_index)
         }
+    } else if detect_equipment(tokens, item_category).is_some() {
+        replace_equipment_firmware(tokens, fw_index, item_category)
     } else {
-        if detect_equipment(tokens, item_category).is_some() {
-            replace_equipment_firmware(tokens, fw_index, item_category)
-        } else {
-            add_equipment_firmware(tokens, fw_index, item_category)
-        }
+        add_equipment_firmware(tokens, fw_index, item_category)
     }
 }
 
@@ -230,13 +243,18 @@ fn replace_equipment_firmware(tokens: &[Token], fw_index: i64, item_category: i6
 /// Inserts a Part { index: 234, values: [fw_index] } before the final Separator.
 fn add_class_mod_firmware(tokens: &[Token], fw_index: i64) -> Vec<Token> {
     let mut result = tokens.to_vec();
-    let insert_pos = result.iter().rposition(|t| matches!(t, Token::Separator))
+    let insert_pos = result
+        .iter()
+        .rposition(|t| matches!(t, Token::Separator))
         .unwrap_or(result.len());
-    result.insert(insert_pos, Token::Part {
-        index: CLASS_MOD_FIRMWARE_CATEGORY,
-        values: vec![fw_index as u64],
-        encoding: PartEncoding::Single,
-    });
+    result.insert(
+        insert_pos,
+        Token::Part {
+            index: CLASS_MOD_FIRMWARE_CATEGORY,
+            values: vec![fw_index as u64],
+            encoding: PartEncoding::Single,
+        },
+    );
     result
 }
 
@@ -255,12 +273,16 @@ fn add_equipment_firmware(tokens: &[Token], fw_index: i64, item_category: i64) -
     // Check if a trailing VarInt section already exists
     let last_part_pos = result.iter().rposition(|t| matches!(t, Token::Part { .. }));
     let has_trailing = last_part_pos.and_then(|pp| {
-        result[pp..].iter().position(|t| matches!(t, Token::SoftSeparator)).map(|p| p + pp)
+        result[pp..]
+            .iter()
+            .position(|t| matches!(t, Token::SoftSeparator))
+            .map(|p| p + pp)
     });
 
     if let Some(soft_pos) = has_trailing {
         // Trailing section exists — append firmware VarInt before the first Separator after it
-        let insert_pos = result[soft_pos..].iter()
+        let insert_pos = result[soft_pos..]
+            .iter()
             .position(|t| matches!(t, Token::Separator))
             .map(|p| p + soft_pos)
             .unwrap_or(result.len());
@@ -268,9 +290,9 @@ fn add_equipment_firmware(tokens: &[Token], fw_index: i64, item_category: i64) -
     } else {
         // No trailing section — find the last cross-category Part from the firmware pool
         // and convert it from Single to List
-        let target_pos = result.iter().rposition(|t| {
-            matches!(t, Token::Part { index, .. } if *index == fw_pool)
-        });
+        let target_pos = result
+            .iter()
+            .rposition(|t| matches!(t, Token::Part { index, .. } if *index == fw_pool));
 
         if let Some(pos) = target_pos {
             if let Token::Part { index, values, .. } = &result[pos] {

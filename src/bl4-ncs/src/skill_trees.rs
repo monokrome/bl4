@@ -21,6 +21,39 @@ pub struct SkillTreeEntry {
     pub tooltip_key: String,
 }
 
+/// Where inside a skill tree a segment lives. The trunk segment runs
+/// rows 1-3; each branch (left/mid/right) runs rows 4-6 and is
+/// addressed by a label in the position string.
+enum SegmentLocation<'a> {
+    Trunk,
+    Branch(&'a str),
+}
+
+impl SegmentLocation<'_> {
+    fn row_offset(&self) -> usize {
+        match self {
+            SegmentLocation::Trunk => 1,
+            SegmentLocation::Branch(_) => 4,
+        }
+    }
+
+    fn branch_label(&self) -> Option<&str> {
+        match self {
+            SegmentLocation::Trunk => None,
+            SegmentLocation::Branch(b) => Some(b),
+        }
+    }
+}
+
+/// Parameters shared by every node in a single segment extraction:
+/// which tree the segment belongs to and which segment-within-tree.
+struct SegmentCtx<'a> {
+    category: u32,
+    tree_color: &'a str,
+    tree_name: &'a str,
+    location: SegmentLocation<'a>,
+}
+
 /// Class identifier → category ID mapping
 const CLASS_CATEGORIES: &[(&str, u32)] = &[
     ("dark_siren", 254),
@@ -32,7 +65,8 @@ const CLASS_CATEGORIES: &[(&str, u32)] = &[
 
 fn category_for_class(key: &str) -> Option<u32> {
     let lower = key.to_lowercase();
-    CLASS_CATEGORIES.iter()
+    CLASS_CATEGORIES
+        .iter()
         .find(|(name, _)| lower.contains(name))
         .map(|(_, cat)| *cat)
 }
@@ -103,23 +137,27 @@ fn extract_tree(tree: &Value, category: u32, entries: &mut Vec<SkillTreeEntry>) 
     let branch_labels = ["left", "mid", "right"];
 
     for (seg_idx, segment) in segments.iter().enumerate() {
-        let is_trunk = seg_idx == 0;
-        let branch = if is_trunk { None } else { branch_labels.get(seg_idx - 1).copied() };
+        let location = if seg_idx == 0 {
+            SegmentLocation::Trunk
+        } else {
+            match branch_labels.get(seg_idx - 1) {
+                Some(label) => SegmentLocation::Branch(label),
+                None => continue,
+            }
+        };
 
-        extract_segment(segment, category, &tree_color, &tree_name, is_trunk, branch, entries);
+        let ctx = SegmentCtx {
+            category,
+            tree_color: &tree_color,
+            tree_name: &tree_name,
+            location,
+        };
+        extract_segment(segment, &ctx, entries);
     }
 }
 
 /// Extract skills from a segment (trunk or branch).
-fn extract_segment(
-    segment: &Value,
-    category: u32,
-    tree_color: &str,
-    tree_name: &str,
-    is_trunk: bool,
-    branch: Option<&str>,
-    entries: &mut Vec<SkillTreeEntry>,
-) {
+fn extract_segment(segment: &Value, ctx: &SegmentCtx, entries: &mut Vec<SkillTreeEntry>) {
     let tiers = match segment {
         Value::Map(m) => match m.get("tiers") {
             Some(Value::Array(arr)) => arr,
@@ -127,6 +165,9 @@ fn extract_segment(
         },
         _ => return,
     };
+
+    let row_offset = ctx.location.row_offset();
+    let branch = ctx.location.branch_label();
 
     for (tier_idx, tier) in tiers.iter().enumerate() {
         let nodes = match tier {
@@ -144,7 +185,8 @@ fn extract_segment(
             };
 
             // Skip augment and empty nodes
-            if matches!(node_map.get("nodetype"), Some(Value::Leaf(s)) if s == "Augment" || s == "None") {
+            if matches!(node_map.get("nodetype"), Some(Value::Leaf(s)) if s == "Augment" || s == "None")
+            {
                 continue;
             }
 
@@ -153,19 +195,18 @@ fn extract_segment(
                 _ => continue,
             };
 
-            let row = if is_trunk { tier_idx + 1 } else { tier_idx + 4 };
+            let row = tier_idx + row_offset;
             let col = node_idx + 1;
 
-            let position = if let Some(b) = branch {
-                format!("{}_{}_{}_{}", tree_color, b, row, col)
-            } else {
-                format!("{}_{}_{}", tree_color, row, col)
+            let position = match branch {
+                Some(b) => format!("{}_{}_{}_{}", ctx.tree_color, b, row, col),
+                None => format!("{}_{}_{}", ctx.tree_color, row, col),
             };
 
             entries.push(SkillTreeEntry {
-                category,
-                tree_color: tree_color.to_string(),
-                tree_name: tree_name.to_string(),
+                category: ctx.category,
+                tree_color: ctx.tree_color.to_string(),
+                tree_name: ctx.tree_name.to_string(),
                 position,
                 tooltip_key,
             });
@@ -216,7 +257,10 @@ pub fn extract_from_directory(ncs_dir: &Path) -> Vec<SkillTreeEntry> {
         .filter_map(|e| e.ok())
     {
         let path = entry.path();
-        let fname = path.file_stem().and_then(|s| s.to_str()).unwrap_or_default();
+        let fname = path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or_default();
 
         if !fname.starts_with("skilltrees_data") {
             continue;
@@ -231,7 +275,11 @@ pub fn extract_from_directory(ncs_dir: &Path) -> Vec<SkillTreeEntry> {
     }
 
     let mut result: Vec<SkillTreeEntry> = all.into_values().collect();
-    result.sort_by(|a, b| a.category.cmp(&b.category).then(a.position.cmp(&b.position)));
+    result.sort_by(|a, b| {
+        a.category
+            .cmp(&b.category)
+            .then(a.position.cmp(&b.position))
+    });
     result
 }
 
@@ -241,7 +289,11 @@ pub fn write_tsv(entries: &[SkillTreeEntry], path: &Path) -> std::io::Result<()>
     let mut f = std::fs::File::create(path)?;
     writeln!(f, "category\tposition\ttooltip_key\ttree_color\ttree_name")?;
     for entry in entries {
-        writeln!(f, "{}\t{}\t{}\t{}\t{}", entry.category, entry.position, entry.tooltip_key, entry.tree_color, entry.tree_name)?;
+        writeln!(
+            f,
+            "{}\t{}\t{}\t{}\t{}",
+            entry.category, entry.position, entry.tooltip_key, entry.tree_color, entry.tree_name
+        )?;
     }
     Ok(())
 }
@@ -295,9 +347,16 @@ mod tests {
         let mut by_cat: HashMap<u32, usize> = HashMap::new();
         for entry in &entries {
             *by_cat.entry(entry.category).or_default() += 1;
-            eprintln!("  {} {} → {} ({})", entry.category, entry.position, entry.tooltip_key, entry.tree_name);
+            eprintln!(
+                "  {} {} → {} ({})",
+                entry.category, entry.position, entry.tooltip_key, entry.tree_name
+            );
         }
-        eprintln!("\nWrote {} entries to {}", entries.len(), out_path.display());
+        eprintln!(
+            "\nWrote {} entries to {}",
+            entries.len(),
+            out_path.display()
+        );
         eprintln!("Per-class counts: {:?}", by_cat);
     }
 }

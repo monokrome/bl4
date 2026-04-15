@@ -150,7 +150,10 @@ impl NativeBackend {
             }
 
             Ok(Self {
-                decompress_fn: std::mem::transmute(proc),
+                decompress_fn: std::mem::transmute::<
+                    winapi::shared::minwindef::FARPROC,
+                    OodleLzDecompress,
+                >(proc),
             })
         }
     }

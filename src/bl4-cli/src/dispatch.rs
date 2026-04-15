@@ -122,8 +122,23 @@ pub fn dispatch_serial(command: SerialCommand) -> Result<()> {
             remove,
             force,
         } => {
-            let color_filter = if red { Some("red") } else if green { Some("green") } else if blue { Some("blue") } else { None };
-            commands::serial::skills(&serial, list, color_filter, &add, &remove, force)
+            let color_filter = if red {
+                Some("red")
+            } else if green {
+                Some("green")
+            } else if blue {
+                Some("blue")
+            } else {
+                None
+            };
+            commands::serial::skills(commands::serial::SkillsArgs {
+                serial: &serial,
+                list,
+                color_filter,
+                adds: &add,
+                removes: &remove,
+                force,
+            })
         }
     }
 }
