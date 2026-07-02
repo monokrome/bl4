@@ -3,7 +3,7 @@
 //! Parses the structured data tables that contain game balance values,
 //! enemy stats, anointment parameters, elemental damage scales, and more.
 
-mod extract;
+pub(crate) mod extract;
 mod types;
 
 pub use extract::{

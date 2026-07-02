@@ -31,6 +31,7 @@ mod extract;
 mod field;
 mod hash;
 mod header;
+pub mod inv_stat;
 pub mod inventory;
 pub mod item_names;
 mod manifest;
@@ -68,6 +69,7 @@ pub use drops::{
 pub use extract::{extract_from_pak, ExtractionResult, NcsFile};
 pub use field::{known as fields, Field, Type as FieldType};
 pub use hash::fnv1a_hash;
+pub use inv_stat::{extract_from_directory as extract_weapon_base_stats, WeaponStatRow};
 pub use inventory::{
     extract_raw_strings, extract_string_numeric_pairs, get_parts, get_parts_by_slot, is_valid_part,
     parse_inventory, raw_strings_to_tsv, string_numeric_pairs_to_tsv, Inventory, ItemCategory,

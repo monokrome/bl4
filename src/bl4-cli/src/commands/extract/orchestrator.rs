@@ -436,6 +436,33 @@ pub fn handle_manifest(
                 eprintln!("  Warning: Failed to extract mission structures: {}", e);
             }
         }
+
+        // Extract weapon base stats from inv_stat*.bin files
+        println!("\n=== Weapon Base Stats ===\n");
+        println!("Extracting weapon base stat mappings from inv_stat files...");
+        let stat_rows = bl4_ncs::extract_weapon_base_stats(&ncs_dir);
+        if stat_rows.is_empty() {
+            eprintln!("  Warning: No weapon base stats found in inv_stat files");
+        } else {
+            let stats_path = output.join("weapon_base_stats.tsv");
+            match bl4_ncs::inv_stat::write_tsv(&stat_rows, &stats_path) {
+                Ok(()) => {
+                    println!(
+                        "  {} weapon stat mappings across {} weapon classes → {}",
+                        stat_rows.len(),
+                        stat_rows
+                            .iter()
+                            .map(|r| r.weapon_class.as_str())
+                            .collect::<std::collections::HashSet<_>>()
+                            .len(),
+                        stats_path.display()
+                    );
+                }
+                Err(e) => {
+                    eprintln!("  Warning: Failed to write weapon base stats: {}", e);
+                }
+            }
+        }
     }
 
     Ok(())

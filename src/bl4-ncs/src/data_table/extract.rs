@@ -11,7 +11,7 @@ use std::path::PathBuf;
 /// Fields like `cost_normal` or `type` are returned unchanged.
 ///
 /// The GUID pattern is: `{name}_{digits}_{32 hex chars}`.
-fn strip_guid_suffix(field: &str) -> &str {
+pub(crate) fn strip_guid_suffix(field: &str) -> &str {
     // Find the last underscore-separated segment
     // GUID suffix: _NN_<32 hex chars> at the end
     let bytes = field.as_bytes();
