@@ -3,6 +3,7 @@
 use super::types::{DataTable, DataTableManifest, DataTableRow};
 use crate::document::Value;
 use std::collections::HashMap;
+use std::path::PathBuf;
 
 /// Strip GUID suffix from a field name.
 ///
@@ -126,37 +127,87 @@ pub fn extract_data_tables(data: &[u8]) -> Option<DataTableManifest> {
     Some(DataTableManifest { tables })
 }
 
+/// Extract the numeric suffix from a `gbx_ue_data_table` filename.
+///
+/// Returns `None` for the base file (no suffix), `Some(n)` for numbered patch files.
+/// Handles `gbx_ue_data_table.bin`, `gbx_ue_data_table0.bin`,
+/// `gbx_ue_data_table_N.bin`, and `Nexus-Data-gbx_ue_data_table0.bin`.
+fn parse_data_table_suffix(name: &str) -> Option<u32> {
+    let stem = name.strip_suffix(".bin")?;
+
+    // "gbx_ue_data_table" alone is the base file — no suffix
+    if stem == "gbx_ue_data_table" {
+        return None;
+    }
+
+    // Find the last occurrence of "gbx_ue_data_table" in the stem
+    let pos = stem.rfind("gbx_ue_data_table")?;
+    let suffix = &stem[pos + "gbx_ue_data_table".len()..];
+
+    // Skip leading underscore if present (e.g., "_1" -> "1")
+    let num_str = suffix.strip_prefix('_').unwrap_or(suffix);
+
+    // Empty suffix means base file (e.g. exact "gbx_ue_data_table" handled above)
+    if num_str.is_empty() {
+        return None;
+    }
+
+    num_str.parse::<u32>().ok()
+}
+
 /// Extract data tables from an NCS directory.
 ///
-/// Scans for `gbx_ue_data_table.bin` (or `gbx_ue_data_table0.bin`) and parses it.
+/// Scans for all `gbx_ue_data_table*.bin` files (base + numbered patches),
+/// parses each in suffix order, and merges tables. Later patch files
+/// override earlier files' tables with the same key.
 pub fn extract_data_tables_from_dir<P: AsRef<std::path::Path>>(
     ncs_dir: P,
 ) -> Result<DataTableManifest, std::io::Error> {
     let dir = ncs_dir.as_ref();
 
-    let candidates = [
-        "gbx_ue_data_table.bin",
-        "gbx_ue_data_table0.bin",
-        "Nexus-Data-gbx_ue_data_table0.bin",
-    ];
+    let mut file_entries: Vec<(u32, PathBuf)> = Vec::new();
 
-    for name in &candidates {
-        let path = dir.join(name);
-        if path.exists() {
-            let data = std::fs::read(&path)?;
-            return extract_data_tables(&data).ok_or_else(|| {
-                std::io::Error::new(
-                    std::io::ErrorKind::InvalidData,
-                    format!("Failed to parse data tables from {}", path.display()),
-                )
-            });
+    // Scan for all gbx_ue_data_table files
+    if let Ok(entries) = std::fs::read_dir(dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+            if name.starts_with("gbx_ue_data_table") && name.ends_with(".bin") {
+                let num = parse_data_table_suffix(name).unwrap_or(0);
+                file_entries.push((num, path));
+            }
         }
     }
 
-    Err(std::io::Error::new(
-        std::io::ErrorKind::NotFound,
-        "No gbx_ue_data_table file found in NCS directory",
-    ))
+    // Also check the Nexus-Data variant (won't match the glob above)
+    let nexus_path = dir.join("Nexus-Data-gbx_ue_data_table0.bin");
+    if nexus_path.exists() && !file_entries.iter().any(|(_, p)| p == &nexus_path) {
+        file_entries.push((0, nexus_path));
+    }
+
+    if file_entries.is_empty() {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "No gbx_ue_data_table file found in NCS directory",
+        ));
+    }
+
+    // Sort by suffix number so base files parse first, patches in order
+    file_entries.sort_by_key(|(num, _)| *num);
+
+    let mut manifest = DataTableManifest {
+        tables: HashMap::new(),
+    };
+
+    for (_, path) in &file_entries {
+        let data = std::fs::read(path)?;
+        if let Some(file_tables) = extract_data_tables(&data) {
+            // Merge: later files override earlier files' tables with the same key
+            manifest.tables.extend(file_tables.tables);
+        }
+    }
+
+    Ok(manifest)
 }
 
 /// Convert a single DataTable to TSV.
@@ -480,5 +531,34 @@ mod tests {
 
         let type_field = "Table_BossReplay_Costs, C5A8B1CA40465DAD67976C8962D07283, DrillSite";
         assert_eq!(parse_boss_replay_type(type_field), Some("DrillSite"));
+    }
+
+    #[test]
+    fn test_parse_data_table_suffix_base() {
+        assert_eq!(parse_data_table_suffix("gbx_ue_data_table.bin"), None);
+        assert_eq!(parse_data_table_suffix("gbx_ue_data_table0.bin"), Some(0));
+        assert_eq!(
+            parse_data_table_suffix("Nexus-Data-gbx_ue_data_table0.bin"),
+            Some(0)
+        );
+    }
+
+    #[test]
+    fn test_parse_data_table_suffix_numbered() {
+        assert_eq!(parse_data_table_suffix("gbx_ue_data_table_1.bin"), Some(1));
+        assert_eq!(
+            parse_data_table_suffix("gbx_ue_data_table_10.bin"),
+            Some(10)
+        );
+        assert_eq!(
+            parse_data_table_suffix("gbx_ue_data_table_30.bin"),
+            Some(30)
+        );
+    }
+
+    #[test]
+    fn test_parse_data_table_suffix_unrelated() {
+        assert_eq!(parse_data_table_suffix("not_a_data_table.bin"), None);
+        assert_eq!(parse_data_table_suffix(""), None);
     }
 }
