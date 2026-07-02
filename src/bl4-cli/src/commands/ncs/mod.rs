@@ -14,7 +14,9 @@ use anyhow::Result;
 
 use crate::cli::NcsCommand;
 
-// Re-export types for external use
+// Re-export types and functions for external use
+#[allow(unused_imports)]
+pub use extract::extract_by_type;
 #[allow(unused_imports)]
 pub use types::{FileInfo, PartIndex, ScanResult, SearchMatch};
 

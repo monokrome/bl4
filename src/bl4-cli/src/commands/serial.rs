@@ -63,12 +63,7 @@ fn resolve_parts(item: &bl4::ItemSerial) -> Vec<ResolvedPart> {
 }
 
 /// Handle `serial decode` command
-#[allow(
-    clippy::too_many_lines,
-    clippy::cognitive_complexity,
-    clippy::too_many_arguments,
-    clippy::fn_params_excessive_bools
-)]
+#[allow(clippy::too_many_arguments, clippy::fn_params_excessive_bools)]
 pub fn decode(
     serial: &str,
     verbose: bool,
@@ -163,131 +158,112 @@ pub fn decode(
         );
     }
 
-    let parts = item.parts_with_names();
+    let resolved =
+        bl4::resolve::full_resolve(serial).context("Failed to resolve serial metadata")?;
 
-    // Derive legendary status from rarity comp parts, not the (unimplemented)
-    // rarity field. An item with both comp_04_epic and comp_05_legendary_* is
-    // epic, not legendary.
-    let core_parts = item.resolved_parts();
-    let is_legendary = {
-        let mut has_leg = false;
-        let mut has_base = false;
-        for p in &core_parts {
-            if p.slot != "rarity" {
-                continue;
-            }
-            let name = match p.name {
-                Some(n) => n.split('.').next_back().unwrap_or(n),
-                None => continue,
-            };
-            if name.starts_with("comp_05_legendary") {
-                has_leg = true;
-            } else if name.starts_with("comp_0") {
-                has_base = true;
-            }
+    print_item_header(&resolved);
+    print_item_fields(&resolved);
+
+    // Parts display
+    if !resolved.parts.is_empty() {
+        if short {
+            print_parts_short(&resolved.serial);
+        } else {
+            print_parts_grouped(&resolved.serial, verbose);
         }
-        has_leg && !has_base
-    };
-    let legendary_name =
-        bl4::resolve::resolve_item_name(&parts, item.parts_category(), is_legendary);
-    let base_name = if let Some((mfr, weapon_type)) = item.weapon_info() {
-        format!("{} {}", mfr, weapon_type)
-    } else if let Some(group_id) = item.part_group_id() {
-        let category_name = bl4::category_name(group_id).unwrap_or("Unknown");
-        format!("{} ({})", category_name, group_id)
-    } else {
-        item.item_type_description().to_string()
-    };
-
-    let validation = item.validate();
-    let legality_icon = match validation.legality {
-        bl4::serial::Legality::Legal => "✓",
-        bl4::serial::Legality::Illegal => "✗",
-        bl4::serial::Legality::Unknown => "?",
-    };
-
-    if let Some(ref leg) = legendary_name {
-        println!("{} ({}) {}", base_name, leg, legality_icon);
-    } else {
-        println!("{} {}", base_name, legality_icon);
     }
 
-    // Show elements if detected
-    if let Some(elements) = item.element_names() {
-        println!("Element: {}", elements);
+    if verbose {
+        print_verbose(&resolved.serial);
+        println!("\n{}", resolved.serial.detailed_dump());
     }
 
-    // Show rarity if detected
-    if let Some(rarity_name) = item.rarity_name() {
-        println!("Rarity: {}", rarity_name);
+    if debug {
+        println!("\nDebug parsing:");
+        bl4::serial::parse_tokens_debug(&resolved.serial.raw_bytes);
     }
 
-    // Show level
-    if let Some(level) = item.level {
-        if let Some(raw) = item.raw_level {
-            if raw > level {
-                println!(
-                    "Level: {} (WARNING: decoded as {}, capped - decoding may be wrong)",
-                    level, raw
-                );
-            } else {
-                println!("Level: {}", level);
-            }
+    if analyze {
+        analyze_first_token(&resolved.serial)?;
+    }
+
+    if rarity {
+        print_rarity_estimate(&resolved);
+    }
+
+    let _ = parts_db;
+
+    Ok(())
+}
+
+/// Print item header: name, type, legendary name, validation icon.
+fn print_item_header(resolved: &bl4::resolve::DecodedItem) {
+    let base = match (
+        resolved.manufacturer.as_deref(),
+        resolved.weapon_type.as_deref(),
+    ) {
+        (Some(mfr), Some(wtype)) => format!("{} {}", mfr, wtype),
+        _ => resolved
+            .category_name
+            .clone()
+            .unwrap_or_else(|| "Unknown".to_string()),
+    };
+
+    let icon = match resolved.validation.as_ref().map(|v| v.legality) {
+        Some(bl4::serial::Legality::Legal) => "✓",
+        Some(bl4::serial::Legality::Illegal) => "✗",
+        _ => "?",
+    };
+
+    match &resolved.name {
+        Some(name) => println!("{} ({}) {}", base, name, icon),
+        None => println!("{} {}", base, icon),
+    }
+}
+
+/// Print item fields: elements, rarity, level, manufacturer.
+fn print_item_fields(resolved: &bl4::resolve::DecodedItem) {
+    if !resolved.elements.is_empty() {
+        let names: Vec<&str> = resolved.elements.iter().map(|e| e.name()).collect();
+        println!("Element: {}", names.join(", "));
+    }
+
+    if let Some(rarity) = resolved.rarity {
+        println!("Rarity: {}", rarity.name());
+    }
+
+    if let Some(level) = resolved.level {
+        let raw = resolved.serial.raw_level;
+        if raw.is_some_and(|r| r > level) {
+            println!(
+                "Level: {} (WARNING: decoded as {}, capped - decoding may be wrong)",
+                level,
+                raw.unwrap()
+            );
         } else {
             println!("Level: {}", level);
         }
     }
 
-    // Show raw manufacturer ID if we couldn't resolve it
-    if item.weapon_info().is_none() {
-        if let Some(mfr) = item.manufacturer_name() {
+    if resolved.manufacturer.is_none() {
+        if let Some(mfr) = resolved.serial.manufacturer_name() {
             println!("Manufacturer: {}", mfr);
-        } else if let Some(mfr_id) = item.manufacturer {
+        } else if let Some(mfr_id) = resolved.serial.manufacturer {
             println!("Manufacturer ID: {} (unknown)", mfr_id);
         }
     }
+}
 
-    // Verbose: serial internals
-    if verbose {
-        println!("\nSerial: {}", item.original);
-        println!("Format: {} ({})", item.format, item.item_type_description());
-        if let Some(seed) = item.seed {
-            println!("Seed: {}", seed);
-        }
-        println!("Decoded bytes: {}", item.raw_bytes.len());
-        println!("Hex: {}", item.hex_dump());
-        println!("Tokens: {}", item.format_tokens());
+/// Print verbose serial internals.
+fn print_verbose(item: &bl4::ItemSerial) {
+    println!("\nSerial: {}", item.original);
+    println!("Format: {} ({})", item.format, item.item_type_description());
+    if let Some(seed) = item.seed {
+        println!("Seed: {}", seed);
     }
-
-    // Parts display
-    if !parts.is_empty() {
-        if short {
-            print_parts_short(&item);
-        } else {
-            print_parts_grouped(&item, verbose);
-        }
-    }
-
-    let _ = parts_db;
-
-    if verbose {
-        println!("\n{}", item.detailed_dump());
-    }
-
-    if debug {
-        println!("\nDebug parsing:");
-        bl4::serial::parse_tokens_debug(&item.raw_bytes);
-    }
-
-    if analyze {
-        analyze_first_token(&item)?;
-    }
-
-    if rarity {
-        print_rarity_estimate(&item);
-    }
-
-    Ok(())
+    println!("Decoded bytes: {}", item.raw_bytes.len());
+    println!("Hex: {}", item.hex_dump());
+    println!("Tokens: {}", item.format_tokens());
 }
 
 /// Print parts in short (compact) format: comma-separated on one line.
@@ -444,8 +420,8 @@ fn analyze_first_token(item: &bl4::ItemSerial) -> Result<()> {
     Ok(())
 }
 
-fn print_rarity_estimate(item: &bl4::ItemSerial) {
-    match item.rarity_estimate() {
+fn print_rarity_estimate(resolved: &bl4::resolve::DecodedItem) {
+    match resolved.rarity_estimate() {
         Some(est) => {
             println!("\nRarity estimate:");
             println!(

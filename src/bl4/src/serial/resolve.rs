@@ -4,6 +4,7 @@
 //! a `DecodedItem` with more fields populated. Stages compose left-to-right and
 //! each reads only fields populated by earlier stages.
 
+use super::rarity::{compute_rarity_estimate, RarityEstimate};
 use super::validate::ValidationResult;
 use super::{Element, ItemSerial, Rarity, ResolvedPart, ResolvedString, SerialError};
 use crate::manifest;
@@ -25,6 +26,17 @@ pub struct DecodedItem {
     pub name: Option<String>,
     pub validation: Option<ValidationResult>,
     pub confidence: Option<f64>,
+}
+
+impl DecodedItem {
+    /// Estimate how rare this item is based on its resolved rarity and drop pool data.
+    ///
+    /// Unlike `ItemSerial::rarity_estimate()`, this uses the comp-part-based
+    /// rarity (resolved during `full_resolve`), which is significantly more
+    /// accurate than the header-derived rarity.
+    pub fn rarity_estimate(&self) -> Option<RarityEstimate> {
+        compute_rarity_estimate(self.rarity?, &self.serial)
+    }
 }
 
 /// Decode a serial string into a minimal DecodedItem.

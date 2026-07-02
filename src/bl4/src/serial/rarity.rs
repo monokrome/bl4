@@ -103,65 +103,78 @@ fn extract_codes(serial: &ItemSerial) -> Option<(String, String)> {
     Some((mfr_code.to_string(), type_code))
 }
 
+/// Core rarity estimation logic shared by `ItemSerial` and `DecodedItem`.
+///
+/// Takes an already-determined `Rarity` (use comp-part-based resolution for
+/// accuracy) and an `ItemSerial` for code/manufacturer/type extraction.
+pub(crate) fn compute_rarity_estimate(
+    rarity: Rarity,
+    serial: &ItemSerial,
+) -> Option<RarityEstimate> {
+    let tier_num = rarity_tier_number(&rarity);
+    let tier_probability = rarity_probability(tier_num)?;
+
+    let codes = extract_codes(serial);
+    let pool = codes
+        .as_ref()
+        .and_then(|(mfr, gtype)| manifest::drop_pool(mfr, gtype));
+
+    let category = codes.as_ref().and_then(|(mfr, gtype)| {
+        let mfr_name = crate::reference::manufacturer_name_by_code(mfr)?;
+        let type_name = crate::reference::weapon_type_by_code(gtype)
+            .map(|w| w.name)
+            .or_else(|| {
+                crate::reference::GEAR_TYPES
+                    .iter()
+                    .find(|g| g.code.eq_ignore_ascii_case(gtype))
+                    .map(|g| g.name)
+            })?;
+        Some(format!("{} {}", mfr_name, type_name))
+    });
+
+    let (pool_size, world_pool_size, per_item, boss_sources) = match (&rarity, pool) {
+        (Rarity::Legendary, Some(p)) if p.legendary_count > 0 => {
+            let world_total = manifest::world_pool_legendary_count(&p.world_pool_name);
+            let per = tier_probability / world_total as f64;
+            (
+                Some(p.legendary_count),
+                Some(world_total),
+                Some(per),
+                Some(p.boss_source_count),
+            )
+        }
+        _ => (None, None, None, pool.map(|p| p.boss_source_count)),
+    };
+
+    let effective_probability = per_item.unwrap_or(tier_probability);
+    let one_in = if effective_probability > 0.0 {
+        (1.0 / effective_probability).round() as u64
+    } else {
+        0
+    };
+
+    Some(RarityEstimate {
+        rarity,
+        tier_probability,
+        pool_size,
+        world_pool_size,
+        per_item_probability: per_item,
+        one_in,
+        category,
+        boss_sources,
+    })
+}
+
 impl ItemSerial {
     /// Estimate how rare this item is based on its rarity tier and drop pool data.
     ///
     /// Returns tier probability, pool-adjusted probability for legendaries,
     /// and known boss source counts from the manifest.
+    #[deprecated(
+        note = "use bl4::resolve::DecodedItem::rarity_estimate() instead — the header-derived rarity field is unreliable"
+    )]
     pub fn rarity_estimate(&self) -> Option<RarityEstimate> {
-        let rarity = self.rarity?;
-        let tier_num = rarity_tier_number(&rarity);
-        let tier_probability = rarity_probability(tier_num)?;
-
-        let codes = extract_codes(self);
-        let pool = codes
-            .as_ref()
-            .and_then(|(mfr, gtype)| manifest::drop_pool(mfr, gtype));
-
-        let category = codes.as_ref().and_then(|(mfr, gtype)| {
-            let mfr_name = crate::reference::manufacturer_name_by_code(mfr)?;
-            let type_name = crate::reference::weapon_type_by_code(gtype)
-                .map(|w| w.name)
-                .or_else(|| {
-                    crate::reference::GEAR_TYPES
-                        .iter()
-                        .find(|g| g.code.eq_ignore_ascii_case(gtype))
-                        .map(|g| g.name)
-                })?;
-            Some(format!("{} {}", mfr_name, type_name))
-        });
-
-        let (pool_size, world_pool_size, per_item, boss_sources) = match (&rarity, pool) {
-            (Rarity::Legendary, Some(p)) if p.legendary_count > 0 => {
-                let world_total = manifest::world_pool_legendary_count(&p.world_pool_name);
-                let per = tier_probability / world_total as f64;
-                (
-                    Some(p.legendary_count),
-                    Some(world_total),
-                    Some(per),
-                    Some(p.boss_source_count),
-                )
-            }
-            _ => (None, None, None, pool.map(|p| p.boss_source_count)),
-        };
-
-        let effective_probability = per_item.unwrap_or(tier_probability);
-        let one_in = if effective_probability > 0.0 {
-            (1.0 / effective_probability).round() as u64
-        } else {
-            0
-        };
-
-        Some(RarityEstimate {
-            rarity,
-            tier_probability,
-            pool_size,
-            world_pool_size,
-            per_item_probability: per_item,
-            one_in,
-            category,
-            boss_sources,
-        })
+        compute_rarity_estimate(self.rarity?, self)
     }
 }
 
@@ -205,6 +218,7 @@ mod tests {
         assert_eq!(est.odds_display(), "~1 in 353,490");
     }
 
+    #[allow(deprecated)]
     #[test]
     fn test_rarity_estimate_without_serial() {
         // A minimal serial without enough data returns None
@@ -224,6 +238,7 @@ mod tests {
         assert!(serial.rarity_estimate().is_none());
     }
 
+    #[allow(deprecated)]
     #[test]
     fn test_rarity_estimate_common() {
         let serial = ItemSerial {

@@ -2,6 +2,8 @@
 //!
 //! Orchestrates full manifest generation from memory dump and pak files.
 
+use crate::commands::extract::handle_part_pools;
+use crate::commands::ncs::extract_by_type as extract_ncs_by_type;
 use crate::manifest;
 use anyhow::{bail, Context, Result};
 use std::fs;
@@ -318,7 +320,8 @@ pub fn handle_manifest(
         // Generate drops manifest (uses data tables for boss names)
         println!("\n=== Drops Manifest ===\n");
         println!("Generating drops manifest from NCS data...");
-        match bl4_ncs::generate_drops_manifest(&ncs_dir, data_tables.as_ref()) {
+        let drops_result = bl4_ncs::generate_drops_manifest(&ncs_dir, data_tables.as_ref());
+        match &drops_result {
             Ok(drops_manifest) => {
                 let drops_path = output.join("drops.json");
                 let drops_json = serde_json::to_string_pretty(&drops_manifest)?;
@@ -334,9 +337,103 @@ pub fn handle_manifest(
                         .len(),
                     drops_path.display()
                 );
+
+                // Also generate drop_pools.tsv from the manifest
+                println!("\n=== Drop Pools ===\n");
+                println!("Generating drop pools summary...");
+                let drop_pools_tsv = bl4_ncs::generate_drop_pools_tsv(drops_manifest);
+                let drop_pools_path = output.join("drop_pools.tsv");
+                fs::write(&drop_pools_path, &drop_pools_tsv)?;
+                println!(
+                    "  Wrote drop pools summary to {}",
+                    drop_pools_path.display()
+                );
             }
             Err(e) => {
                 eprintln!("  Warning: Failed to generate drops manifest: {}", e);
+            }
+        }
+
+        // Extract skill trees from NCS skilltrees_data files
+        println!("\n=== Skill Trees ===\n");
+        println!("Extracting skill trees from NCS data...");
+        let skill_tree_entries = bl4_ncs::extract_skill_trees(&ncs_dir);
+        if skill_tree_entries.is_empty() {
+            eprintln!("  Warning: No skill tree entries found in NCS data");
+        } else {
+            let st_path = output.join("skill_trees.tsv");
+            match bl4_ncs::skill_trees::write_tsv(&skill_tree_entries, &st_path) {
+                Ok(()) => {
+                    println!(
+                        "  {} entries across {} categories → {}",
+                        skill_tree_entries.len(),
+                        skill_tree_entries
+                            .iter()
+                            .map(|e| e.category)
+                            .collect::<std::collections::HashSet<_>>()
+                            .len(),
+                        st_path.display()
+                    );
+                }
+                Err(e) => {
+                    eprintln!("  Warning: Failed to write skill trees: {}", e);
+                }
+            }
+        }
+
+        // Extract tooltips from NCS uitooltipdata files
+        println!("\n=== Tooltips ===\n");
+        println!("Extracting tooltip display names from NCS data...");
+        let tooltip_entries = bl4_ncs::extract_tooltips(&ncs_dir);
+        if tooltip_entries.is_empty() {
+            eprintln!("  Warning: No tooltips found in NCS data");
+        } else {
+            let tt_path = output.join("tooltips.tsv");
+            match bl4_ncs::tooltips::write_tsv(&tooltip_entries, &tt_path) {
+                Ok(()) => {
+                    println!(
+                        "  {} tooltips → {}",
+                        tooltip_entries.len(),
+                        tt_path.display()
+                    );
+                }
+                Err(e) => {
+                    eprintln!("  Warning: Failed to write tooltips: {}", e);
+                }
+            }
+        }
+
+        // Extract parts database and category names from NCS inv*.bin files
+        println!("\n=== Parts Database ===\n");
+        println!("Extracting categorized parts from NCS data...");
+        match extract_ncs_by_type(&ncs_dir, "manifest", Some(output), false) {
+            Ok(()) => {}
+            Err(e) => {
+                eprintln!("  Warning: Failed to extract parts manifest: {}", e);
+            }
+        }
+
+        // Generate part_pools.tsv from the parts database
+        let parts_dir = output.join("parts");
+        if parts_dir.exists() {
+            println!("\n=== Part Pools ===\n");
+            println!("Generating part pools from parts database...");
+            let part_pools_path = output.join("part_pools.tsv");
+            match handle_part_pools(&parts_dir, &part_pools_path) {
+                Ok(()) => {}
+                Err(e) => {
+                    eprintln!("  Warning: Failed to generate part pools: {}", e);
+                }
+            }
+        }
+
+        // Extract mission structures (mission sets + missions) from NCS
+        println!("\n=== Mission Structures ===\n");
+        println!("Extracting mission data from NCS...");
+        match extract_ncs_by_type(&ncs_dir, "missions", Some(output), false) {
+            Ok(()) => {}
+            Err(e) => {
+                eprintln!("  Warning: Failed to extract mission structures: {}", e);
             }
         }
     }
