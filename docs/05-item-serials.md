@@ -35,7 +35,7 @@ flowchart LR
     D -->|Parse bitstream| E["Category: 269\nLevel: 33\nParts: [...]"]
 ```
 
-The prefix `@U` marks this as a BL4 serial. After stripping the two-character prefix, everything else is Base85-encoded binary data. The character at position 3 (the first Base85 character) varies based on the magnitude of the first encoded value—it is NOT a type discriminator, despite appearing to correlate with item types at first glance.
+All BL4 serials start with `@Ug`. The `@U` portion is the prefix; after stripping it, the remaining string is Base85-encoded binary data. The third character (`g`) is always present because the magic header constrains the first decoded byte — it is NOT a type discriminator, despite initially appearing to correlate with item types.
 
 ---
 
@@ -262,7 +262,7 @@ Parts: ... Corrosive, Kinetic, Radiation ...  → Three elements
 Let's walk through `@Ugr$ZCm/&tH!t{KgK/Shxu>k`:
 
 **Step 1: Structure**
-- Prefix: `@U` (stripped)
+- Prefix: `@Ug` (`@U` stripped, `g` is constant first Base85 character)
 - Base85 data: `gr$ZCm/&tH!...`
 
 **Step 2: Base85 decode**

@@ -367,7 +367,7 @@ fn analyze_first_token(item: &bl4::ItemSerial) -> Result<()> {
             println!("Part Group ID decoding:");
             match first_token {
                 Token::Var {
-                    val: v,
+                    val: _v,
                     encoding: bl4::serial::VarEncoding::Bit,
                 } => {
                     if let Some(cat) = item.part_group_id() {

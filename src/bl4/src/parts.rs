@@ -24,7 +24,7 @@ static WEAPON_INFO: phf::Map<u64, (&'static str, &'static str)> = phf_map! {
     7u64 => ("Ripper", "Shotgun"),     // [V] BOR_SG - verified via NCS
 
     // Pistols
-    4u64 => ("Jakobs", "Pistol"),      // [V] JAK_PS - Seventh Sense screenshot
+    4u64 => ("Jakobs", "Pistol"),      // [V] JAK_PS - Seventh Sense screenshot (TODO: verify — decoder says Order)
     2u64 => ("Daedalus", "Pistol"),    // [I] DAD_PS - category 2
     6u64 => ("Torgue", "Pistol"),      // [I] TOR_PS - category 5
     5u64 => ("Tediore", "Pistol"),     // [I] TED_PS - category 4
