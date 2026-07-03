@@ -179,7 +179,7 @@ pub fn find_bl4_process() -> Result<u32> {
         }
     }
 
-    candidates.sort_by(|a, b| b.1.cmp(&a.1));
+    candidates.sort_by_key(|b| std::cmp::Reverse(b.1));
     candidates.dedup_by(|a, b| a.0 == b.0);
 
     if let Some((pid, memory)) = candidates.first() {

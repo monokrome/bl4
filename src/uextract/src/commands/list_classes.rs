@@ -126,7 +126,7 @@ pub fn list_classes(
     // Print results sorted by count
     let map = class_map.lock().unwrap();
     let mut entries: Vec<_> = map.iter().collect();
-    entries.sort_by(|a, b| b.1 .1.cmp(&a.1 .1));
+    entries.sort_by_key(|b| std::cmp::Reverse(b.1 .1));
 
     eprintln!("\n{} unique class types found:", entries.len());
     println!("{:<20} {:<60} Count", "Hash", "Class Name");

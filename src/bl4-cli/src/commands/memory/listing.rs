@@ -190,7 +190,7 @@ pub fn handle_list_objects(
 
         // Sort classes by count and show top 20
         let mut sorted_classes: Vec<_> = class_counts.into_iter().collect();
-        sorted_classes.sort_by(|a, b| b.1.cmp(&a.1));
+        sorted_classes.sort_by_key(|b| std::cmp::Reverse(b.1));
 
         println!("\nTop 20 classes by instance count:");
         for (class_name, count) in sorted_classes.iter().take(20) {

@@ -89,7 +89,7 @@ fn load_parts_from_dir(dir: &Path) -> Result<BTreeMap<i64, Vec<String>>> {
         let entry = entry?;
         let path = entry.path();
 
-        if !path.extension().is_some_and(|e| e == "tsv") {
+        if path.extension().is_none_or(|e| e != "tsv") {
             continue;
         }
 

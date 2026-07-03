@@ -91,7 +91,7 @@ pub fn scan_directory(
 
         println!("\n=== Types ({}) ===", result.types.len());
         let mut types: Vec<_> = result.types.iter().collect();
-        types.sort_by(|a, b| b.1.len().cmp(&a.1.len()));
+        types.sort_by_key(|b| std::cmp::Reverse(b.1.len()));
         for (type_name, files) in types.iter().take(30) {
             println!("  {:40} {}", type_name, files.len());
         }

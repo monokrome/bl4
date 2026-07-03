@@ -34,7 +34,7 @@ pub fn extract_gear_types(extract_dir: &Path) -> HashMap<String, GearType> {
             let rel_path = entry
                 .path()
                 .strip_prefix(extract_dir)
-                .map(|p| forward_slash(p))
+                .map(forward_slash)
                 .unwrap_or_default();
 
             let mut balance_data = Vec::new();
@@ -62,10 +62,7 @@ pub fn extract_gear_types(extract_dir: &Path) -> HashMap<String, GearType> {
                         .file_name()
                         .map(|s| s.to_string_lossy().to_string())
                         .unwrap_or_default(),
-                    path: asset_path
-                        .strip_prefix(extract_dir)
-                        .map(|p| forward_slash(p))
-                        .ok(),
+                    path: asset_path.strip_prefix(extract_dir).map(forward_slash).ok(),
                     stats: None,
                     properties: None,
                     raw_strings: None,
@@ -97,7 +94,7 @@ pub fn extract_gear_types(extract_dir: &Path) -> HashMap<String, GearType> {
                                 path: mfr_entry
                                     .path()
                                     .strip_prefix(extract_dir)
-                                    .map(|p| forward_slash(p))
+                                    .map(forward_slash)
                                     .unwrap_or_default(),
                             });
                         }
@@ -171,10 +168,7 @@ pub fn extract_rarity_data(extract_dir: &Path) -> HashMap<String, AssetInfo> {
                         .file_name()
                         .map(|s| s.to_string_lossy().to_string())
                         .unwrap_or_default(),
-                    path: asset_path
-                        .strip_prefix(extract_dir)
-                        .map(|p| forward_slash(p))
-                        .ok(),
+                    path: asset_path.strip_prefix(extract_dir).map(forward_slash).ok(),
                     stats: None,
                     properties: None,
                     raw_strings,
@@ -233,10 +227,7 @@ pub fn extract_elemental_data(extract_dir: &Path) -> HashMap<String, AssetInfo> 
                     .file_name()
                     .map(|s| s.to_string_lossy().to_string())
                     .unwrap_or_default(),
-                path: asset_path
-                    .strip_prefix(extract_dir)
-                    .map(|p| forward_slash(p))
-                    .ok(),
+                path: asset_path.strip_prefix(extract_dir).map(forward_slash).ok(),
                 stats: None,
                 properties: None,
                 raw_strings,

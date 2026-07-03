@@ -40,10 +40,7 @@ pub fn extract_naming_data(extract_dir: &Path) -> Result<HashMap<String, AssetIn
                 .file_name()
                 .map(|s| s.to_string_lossy().to_string())
                 .unwrap_or_default(),
-            path: asset_path
-                .strip_prefix(extract_dir)
-                .map(|p| forward_slash(p))
-                .ok(),
+            path: asset_path.strip_prefix(extract_dir).map(forward_slash).ok(),
             stats: None,
             properties: None,
             raw_strings: None,

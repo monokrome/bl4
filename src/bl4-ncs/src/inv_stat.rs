@@ -49,13 +49,11 @@ fn extract_entry_stats(weapon_class: &str, value: &Value) -> Vec<WeaponStatRow> 
         _ => return Vec::new(),
     };
 
-    // Determine parent: use `parent` field if present, otherwise own key
     let parent = match map.get("parent") {
         Some(Value::Leaf(s)) => extract_parent_name(s).to_string(),
         _ => weapon_class.to_string(),
     };
 
-    // Get the attributes array
     let attributes = match map.get("attributes") {
         Some(Value::Map(attr_map)) => match attr_map.get("attribute") {
             Some(Value::Array(arr)) => arr,
@@ -72,60 +70,67 @@ fn extract_entry_stats(weapon_class: &str, value: &Value) -> Vec<WeaponStatRow> 
             _ => continue,
         };
 
-        // Each attribute is a map with a single key = stat name
         for (stat_name, stat_value) in attr_map {
-            let stat_map = match stat_value {
-                Value::Map(m) => m,
-                _ => continue,
-            };
-
-            // Navigate to datatablevalue.
-            // Base entries use stattoattributemodifierscalar; patch entries
-            // (manufacturer variants) use basemultiplier.
-            let scalar = stat_map
-                .get("stattoattributemodifierscalar")
-                .or_else(|| stat_map.get("basemultiplier"));
-            let scalar_map = match scalar {
-                Some(Value::Map(m)) => m,
-                _ => continue,
-            };
-            let dtv = match scalar_map.get("datatablevalue") {
-                Some(Value::Map(m)) => m,
-                _ => continue,
-            };
-
-            let data_table = match dtv.get("datatable") {
-                Some(Value::Leaf(s)) => extract_table_name(s).to_string(),
-                _ => continue,
-            };
-            let row = match dtv.get("rowname") {
-                Some(Value::Leaf(s)) => s.clone(),
-                _ => continue,
-            };
-            let column = match dtv.get("columnname") {
-                Some(Value::Leaf(s)) => {
-                    let cleaned = strip_guid_suffix(s);
-                    if cleaned.is_empty() {
-                        "Default".to_string()
-                    } else {
-                        cleaned.to_string()
-                    }
-                }
-                _ => "Default".to_string(),
-            };
-
-            rows.push(WeaponStatRow {
-                weapon_class: weapon_class.to_string(),
-                parent: parent.clone(),
-                stat: stat_name.clone(),
-                data_table,
-                row,
-                column,
-            });
+            if let Some(row) = extract_stat(weapon_class, &parent, stat_name, stat_value) {
+                rows.push(row);
+            }
         }
     }
 
     rows
+}
+
+fn extract_stat(
+    weapon_class: &str,
+    parent: &str,
+    stat_name: &str,
+    stat_value: &Value,
+) -> Option<WeaponStatRow> {
+    let stat_map = match stat_value {
+        Value::Map(m) => m,
+        _ => return None,
+    };
+
+    let scalar = stat_map
+        .get("stattoattributemodifierscalar")
+        .or_else(|| stat_map.get("basemultiplier"));
+    let scalar_map = match scalar {
+        Some(Value::Map(m)) => m,
+        _ => return None,
+    };
+    let dtv = match scalar_map.get("datatablevalue") {
+        Some(Value::Map(m)) => m,
+        _ => return None,
+    };
+
+    let data_table = match dtv.get("datatable") {
+        Some(Value::Leaf(s)) => extract_table_name(s).to_string(),
+        _ => return None,
+    };
+    let row = match dtv.get("rowname") {
+        Some(Value::Leaf(s)) => s.clone(),
+        _ => return None,
+    };
+    let column = match dtv.get("columnname") {
+        Some(Value::Leaf(s)) => {
+            let cleaned = strip_guid_suffix(s);
+            if cleaned.is_empty() {
+                "Default".to_string()
+            } else {
+                cleaned.to_string()
+            }
+        }
+        _ => "Default".to_string(),
+    };
+
+    Some(WeaponStatRow {
+        weapon_class: weapon_class.to_string(),
+        parent: parent.to_string(),
+        stat: stat_name.to_string(),
+        data_table,
+        row,
+        column,
+    })
 }
 
 /// Extract weapon base stats from a single NCS binary (inv_stat*.bin).

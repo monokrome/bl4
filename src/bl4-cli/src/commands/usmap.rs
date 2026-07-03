@@ -216,36 +216,7 @@ fn read_property_type<R: std::io::Read>(r: &mut R, names: &[String]) -> Result<S
     })
 }
 
-/// Handle the Usmap Search command
-///
-/// Searches for enums and structs matching a pattern.
-pub fn handle_search(path: &Path, pattern: &str, verbose: bool) -> Result<()> {
-    let file =
-        fs::File::open(path).with_context(|| format!("Failed to open {}", path.display()))?;
-    let mut reader = BufReader::new(file);
-
-    // Read header
-    let magic = reader.read_u16::<LE>()?;
-    if magic != 0x30C4 {
-        bail!("Invalid usmap magic: expected 0x30C4, got {:#x}", magic);
-    }
-
-    let version = reader.read_u8()?;
-    let _has_version_info = if version >= 1 {
-        reader.read_u8()? != 0
-    } else {
-        false
-    };
-
-    let compression = reader.read_u32::<LE>()?;
-    let _compressed_size = reader.read_u32::<LE>()?;
-    let _decompressed_size = reader.read_u32::<LE>()?;
-
-    if compression != 0 {
-        bail!("Compressed usmap files not yet supported for search");
-    }
-
-    // Read names table
+fn read_usmap_names<R: Read>(reader: &mut R) -> Result<Vec<String>> {
     let name_count = reader.read_u32::<LE>()?;
     let mut names: Vec<String> = Vec::with_capacity(name_count as usize);
     for _ in 0..name_count {
@@ -254,33 +225,44 @@ pub fn handle_search(path: &Path, pattern: &str, verbose: bool) -> Result<()> {
         reader.read_exact(&mut buf)?;
         names.push(String::from_utf8_lossy(&buf).into_owned());
     }
+    Ok(names)
+}
 
-    // Read enums
+fn search_usmap_enums<R: Read + Seek>(
+    reader: &mut R,
+    names: &[String],
+    pattern_lower: &str,
+) -> Result<Vec<(String, Vec<String>)>> {
     let enum_count = reader.read_u32::<LE>()?;
-    let pattern_lower = pattern.to_lowercase();
-    let mut found_enums = Vec::new();
+    let mut found = Vec::new();
 
     for _ in 0..enum_count {
         let name_idx = reader.read_u32::<LE>()? as usize;
         let entry_count = reader.read_u16::<LE>()? as usize;
 
         let name = names.get(name_idx).cloned().unwrap_or_default();
-        if name.to_lowercase().contains(&pattern_lower) {
+        if name.to_lowercase().contains(pattern_lower) {
             let mut entries = Vec::new();
             for _ in 0..entry_count {
                 let entry_idx = reader.read_u32::<LE>()? as usize;
                 entries.push(names.get(entry_idx).cloned().unwrap_or_default());
             }
-            found_enums.push((name, entries));
+            found.push((name, entries));
         } else {
-            // Skip entries
             reader.seek(SeekFrom::Current((entry_count * 4) as i64))?;
         }
     }
 
-    // Read structs
+    Ok(found)
+}
+
+fn search_usmap_structs<R: Read + Seek>(
+    reader: &mut R,
+    names: &[String],
+    pattern_lower: &str,
+) -> Result<Vec<StructInfo>> {
     let struct_count = reader.read_u32::<LE>()?;
-    let mut found_structs = Vec::new();
+    let mut found = Vec::new();
 
     for _ in 0..struct_count {
         let name_idx = reader.read_u32::<LE>()? as usize;
@@ -295,31 +277,37 @@ pub fn handle_search(path: &Path, pattern: &str, verbose: bool) -> Result<()> {
             names.get(super_idx).cloned()
         };
 
-        // Read properties
         let mut properties = Vec::new();
         for _ in 0..serializable_count {
             let _index = reader.read_u16::<LE>()?;
             let array_dim = reader.read_u8()?;
             let prop_name_idx = reader.read_u32::<LE>()? as usize;
             let prop_name = names.get(prop_name_idx).cloned().unwrap_or_default();
-            let prop_type = read_property_type(&mut reader, &names)?;
-
+            let prop_type = read_property_type(reader, names)?;
             properties.push((prop_name, prop_type, array_dim));
         }
 
-        if name.to_lowercase().contains(&pattern_lower) {
-            found_structs.push((name, super_name, properties));
+        if name.to_lowercase().contains(pattern_lower) {
+            found.push((name, super_name, properties));
         }
     }
 
-    // Print results
+    Ok(found)
+}
+
+fn print_search_results(
+    pattern: &str,
+    found_enums: &[(String, Vec<String>)],
+    found_structs: &[StructInfo],
+    verbose: bool,
+) {
     if !found_enums.is_empty() {
         println!(
             "=== Enums matching '{}' ({}) ===",
             pattern,
             found_enums.len()
         );
-        for (name, entries) in &found_enums {
+        for (name, entries) in found_enums {
             println!("\n{} ({} values)", name, entries.len());
             if verbose {
                 for (i, entry) in entries.iter().enumerate() {
@@ -335,7 +323,7 @@ pub fn handle_search(path: &Path, pattern: &str, verbose: bool) -> Result<()> {
             pattern,
             found_structs.len()
         );
-        for (name, super_name, properties) in &found_structs {
+        for (name, super_name, properties) in found_structs {
             println!(
                 "\n{}{} ({} properties)",
                 name,
@@ -361,6 +349,45 @@ pub fn handle_search(path: &Path, pattern: &str, verbose: bool) -> Result<()> {
     if found_enums.is_empty() && found_structs.is_empty() {
         println!("No enums or structs found matching '{}'", pattern);
     }
+}
+
+type StructInfo = (String, Option<String>, Vec<(String, String, u8)>);
+
+/// Handle the Usmap Search command
+///
+/// Searches for enums and structs matching a pattern.
+pub fn handle_search(path: &Path, pattern: &str, verbose: bool) -> Result<()> {
+    let file =
+        fs::File::open(path).with_context(|| format!("Failed to open {}", path.display()))?;
+    let mut reader = BufReader::new(file);
+
+    let magic = reader.read_u16::<LE>()?;
+    if magic != 0x30C4 {
+        bail!("Invalid usmap magic: expected 0x30C4, got {:#x}", magic);
+    }
+
+    let version = reader.read_u8()?;
+    let _has_version_info = if version >= 1 {
+        reader.read_u8()? != 0
+    } else {
+        false
+    };
+
+    let compression = reader.read_u32::<LE>()?;
+    let _compressed_size = reader.read_u32::<LE>()?;
+    let _decompressed_size = reader.read_u32::<LE>()?;
+
+    if compression != 0 {
+        bail!("Compressed usmap files not yet supported for search");
+    }
+
+    let names = read_usmap_names(&mut reader)?;
+    let pattern_lower = pattern.to_lowercase();
+
+    let found_enums = search_usmap_enums(&mut reader, &names, &pattern_lower)?;
+    let found_structs = search_usmap_structs(&mut reader, &names, &pattern_lower)?;
+
+    print_search_results(pattern, &found_enums, &found_structs, verbose);
 
     Ok(())
 }
