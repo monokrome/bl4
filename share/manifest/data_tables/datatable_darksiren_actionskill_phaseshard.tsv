@@ -17,8 +17,8 @@ PhaseShard_Specter_BaseWeapon_ReloadTime		2.000000
 PhaseShard_Reaper_BaseAttack_DamageMultiplier		0.143000
 PhaseShard_Reaper_Health_Multiplier		3.250000
 PhaseShard_Reaper_Overshield_Multiplier		1.750000
-PhaseShard_Reaper_Base_Height		200.000000
-PhaseShard_Reaper_Base_Angle		75.000000
+PhaseShard_Reaper_Base_Height		300.000000
+PhaseShard_Reaper_Base_Angle		100.000000
 PhaseShard_Reaper_Base_Radius		700.000000
 PhaseShard_GrimReaper_Melee_DamageScalar		0.500000
 PhaseShard_GrimReaper_Health_Multiplier		8.000000
@@ -58,6 +58,6 @@ PhaseShard_PhaseWave_Debuff_Duration		10.000000
 PhaseShard_PhaseWave_Radius	This is the MaxRadius the wave will reach	1500.000000
 PhaseShard_PhaseWave_Damage_Duration	This is how long it takes for the Wave to hit its Max Radius.	1.000000
 PhaseShard_PhaseWave_Cooldown		20.000000
-PhaseShard_Illusionist_Cooldown		70.000000
+PhaseShard_Illusionist_Cooldown		30.000000
 PhaseShard_Illusionist_Badass_DamageScalar		0.500000
 PhaseShard_Illusionist_Badass_HealthScalar		0.250000

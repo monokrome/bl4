@@ -2,8 +2,8 @@ row_name	description	description 2	description 3	modifier 1	modifier 2	modifier 
 Stasis_Skill	Cooldown	Duration	Failed to Find Return	35.000000	10.000000	0.950000	
 Stasis_Refund	Cooldown Refund	Retrigger Cooldown		0.750000	1.500000		
 Stais_Move	Move Cooldown	Movement Penality	Height	1.000000		350.000000	
-Stasis_ImmuneDamage	Damage Scalar			0.923000			
-Stasis_Damage	Scalar	Radius		0.657000	384.000000		
+Stasis_ImmuneDamage	Damage Scalar			1.200000			
+Stasis_Damage	Scalar	Radius		0.753000	384.000000		
 Stasis_Trick	Start Play Rate	Pull Play Rate	Fail Play Rate	1.250000	1.500000	1.250000	
 Aug_BulletMagnet	Chance	Damage Scalar		1.000000	0.750000		Bullet Magnet
 Aug_ControlledChaos	Radius	Min Damage Scalar	Damage Reduction	512.000000	0.100000		Controlled Chaos
@@ -13,6 +13,9 @@ Aug_PeerReview_Healing	Damage Scalar	Duration Rate	Cooldown Rate	0.400000	-0.500
 Aug_MorePower	Damage Scalar	Radius	Duration Restored	0.500000	768.000000	0.010000	More Power
 Aug_MorePower_Bonus	Bonus Damage			0.250000			
 Aug_InPerpetuity	Duration Rate			0.200000			In Perpetuity
+Aug_Inertia	Damage Scalar	Radius	Splits	0.150000	384.000000	3.000000	New Inertia
+Aug_Inertia_Stats	Elemental Damage	Elemental Chance	Max Stacks	0.350000	0.400000	10.000000	
+Aug_Inertia_Slam	Slam Damage			1.000000			
 Cap_NthDimension	Min Radius	Max Radius	Duration	128.000000	1536.000000	1.000000	Nth Dimension
 Cap_NthDimension_Damage	Scalar	Radius		0.299000	1024.000000		
 Cap_NthDimension_Skill	Cooldown	Max Duration		40.000000	10.000000		

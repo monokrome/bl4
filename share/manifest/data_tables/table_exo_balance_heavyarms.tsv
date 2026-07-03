@@ -4,10 +4,10 @@ Overdrive	Ground Speed	Damage	Duration	0.250000	0.100000	12.000000	Overdrive
 ----------------ActionSkill----------------	--------------------	--------------------	--------------------				--------------------
 HeavyArms_Skill	Cooldown	Duration	Mark Increased Damage	45.000000	25.000000	0.060000	Heavy Arms
 HeavyArms_Mark	Damage Reduction	Explode Scalar	Max Marks	-0.500000	0.200000	4.000000	
-HeavyArms_Melee	Damage Scalar	Forward Distance	Heavy Damage Scalar	0.285000	896.000000	0.050000	
+HeavyArms_Melee	Damage Scalar	Forward Distance	Heavy Damage Scalar	0.321000	896.000000	0.050000	
 HeavyArms_Melee2	Max Melee Angle			30.000000			
 HeavyArms_MeleeClose	MaxRange	MaxAngle		250.000000	60.000000		
-HeavyArms_Lunge	Cooldown	Damage	Max Lunges	3.000000	0.650000	4.000000	
+HeavyArms_Lunge	Cooldown	Damage	Max Lunges	3.000000	0.685000	4.000000	
 HeavyArms_Lunge2	Radius			450.000000			
 HeavyArms_BladeFury	Damage Scalar			0.750000			
 ----------------CAPSTONES----------------	--------------------	--------------------	--------------------				--------------------

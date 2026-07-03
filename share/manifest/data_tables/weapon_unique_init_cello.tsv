@@ -1,0 +1,7 @@
+row_name	custom_1_desc	custom_2_desc	custom_3_desc	value_1	value_2	value_3
+MAL_SR_Conflux	StatusDamageScale			1.000000		
+TED_AR_LaserDisc	FlyingMulti			2.000000		
+BOR_SR_Tankbuster	MobHealingMulti	BonusDamageMulti	GPSDistance	0.750000	0.750000	1500.000000
+DAD_AR_Mercredi	TargetLockStackDmg			0.500000		
+JAK_PS_Shalashaska	MaxStack	ManuRicoCount		5.000000	1.000000	
+BOR_SG_HairTrigger	MaxInitialExplosionDurationScale	LingeringDmgScale	ShotCost	2.000000	0.200000	2.000000

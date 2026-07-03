@@ -1,0 +1,10 @@
+row_name	description	description 2	description 3	modifier 1	modifier 2	modifier 3	skill name
+SleightOfHand	Duration	Cooldown	Charges	14.000000	28.000000	4.000000	
+SleightOfHand_Cooldown	Conversion Rate	Refill Time		0.750000	1.000000		
+SleightOfHand_DurationBonus	Duration/Charge			2.000000			
+Aug1	CDR per Hit	Max Stacks		0.110000	25.000000		Augment 1 - CDR Return
+Aug3	Additional Charge			2.000000			
+Aug4	Damage Absorb per Stack	Damage per Stack		0.300000	0.050000		Augment 4 - Absorb Damage
+Aug5	Additional Charges			2.000000			
+Aug6	Windfall Bonus			1.000000			Augment 6 - Windfall Increase
+Aug7	Windfall Chance Increase			0.100000			Augment 7 - Increase Windfall Chnce

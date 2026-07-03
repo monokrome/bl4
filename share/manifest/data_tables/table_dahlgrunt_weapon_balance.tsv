@@ -1,0 +1,3 @@
+row_name	ai_accuracy	ai_accuracy_min	burstcount_value	bursttime_value	firerate_value	firerateaccelduration	maxdesiredrange	mindesiredrange	projectilespeed
+LaserGun	2.000000	1.000000	6.000000	2.000000	4.000000	1.000000			12000.000000
+Sprayer		1.000000	10.000000	5.000000			1200.000000	400.000000	1.000000

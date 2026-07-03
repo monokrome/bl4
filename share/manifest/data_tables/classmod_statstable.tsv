@@ -46,8 +46,8 @@ Special_OrdnanceCooldown	0.041000
 Special_Lifesteal	0.016500
 Special_IncendiaryDamage	0.075000
 Special_CryoDamage	0.075000
-Siren_Attunement_Duration	0.075000
-Siren_CommandSkill_Cooldown	0.075000
+Siren_Attunement_Duration	0.100000
+Siren_CommandSkill_Cooldown	0.100000
 Siren_PhaseClone_HealthLoss	-0.082500
 Siren_MinionDamage	0.075000
 Paladin_Forgedrone_Duration	0.075000
@@ -56,3 +56,5 @@ Paladin_ForgeskillDamage	0.100000
 Gravitar_HazardDamage	0.100000
 Gravitar_StasisDamage	0.100000
 Preferred_ClassMod_Weight	9.000000
+Exo_SlideDamage	0.150000
+Paladin_RicochetDamage	0.300000

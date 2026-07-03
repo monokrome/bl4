@@ -1,0 +1,7 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+LeaderBasic		2.000000	2.000000	2.000000
+LeaderElite		3.000000	3.000000	3.000000
+LeaderBadass		6.000000	6.000000	6.000000
+LeaderLoot		10.000000	5.000000	5.000000
+LeaderCorrupt		10.000000	3.000000	1.500000
+LeaderGlitched	1.500000	14.000000	14.000000	14.000000

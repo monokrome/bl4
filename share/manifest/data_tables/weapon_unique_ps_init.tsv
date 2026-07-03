@@ -1,0 +1,12 @@
+row_name	custom_1_desc	custom_2_desc	custom_3_desc	custom_4_desc	value_1	value_2	value_3	value_4
+ORD_Bully	mag size	drone cooldown	drone dmg scalar		0.300000	7.000000	3.000000	
+TOR_Roach	child proj damage				0.600000			
+DAD_Zipgun	crit damage mod	back damage mod			0.750000	0.750000		
+JAK_KingsGambit	Ricochet Count	Ricochet Dmg Scale			4.000000	1.000000		
+JAK_SeventhSense	ChildDmgScale				1.250000			
+ORD_Disorder	ReloadDmgScale				2.000000			
+TOR_QueensRest	Chance	ProcDmgScale			0.500000	1.000000		
+DAD_Rangefinder	BurstAddPerStack	DmgAddPerStack	DmgRadiusAddPerStack	StatusChanceAddPerStack	-1.000000	2.000000	2.000000	2.000000
+TED_Sideshow	Damage Scalar	Max stacks	Damage Stacking Scalar		0.070000	5.000000	0.200000	
+JAK_Quickdraw	Duration	DamageScale			5.000000	1.000000		
+JAK_PhantomFlame	ReloadTimeScaleA				0.500000			

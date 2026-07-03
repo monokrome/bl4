@@ -1,0 +1,4 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+ThreshOWar_Main	1.500000	50.000000	25.000000	25.000000
+ThreshOWar_Turret	0.500000	10.000000	10.000000	10.000000
+ThreshOWar_Rocket		15.000000	10.000000	10.000000

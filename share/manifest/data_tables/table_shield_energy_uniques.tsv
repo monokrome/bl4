@@ -1,0 +1,11 @@
+row_name	capacity_scale	custom_1	custom_2	custom_3	delay_scale	regen_scale	value_1	value_2	value_3
+DAD_SuperSoldier	1.300000	fire rate	ammo regen rate	movement speed	0.800000	0.800000	0.250000	1.000000	0.250000
+ORD_ProteanCell	1.600000	damage scale			1.200000	0.800000	0.400000		
+BOR_Watts4Dinner	1.100000	damage scale	booster chance		2.500000	0.900000	0.250000	0.080000	
+ORD_Cindershelly	1.000000	MaxStacks	DmgReductionPerStack	NovaDmgScale	1.000000	1.000000	25.000000	-0.020000	1.000000
+ORD_Cindershelly_2		NovaDmgScalePerStack					0.250000		
+MAL_Supernova	1.300000	NovaDmgScale			1.000000	1.000000	4.000000		
+MAL_Momento	1.300000	ElemDmgReductionScale	AdaptiveDmgReduction	AdaptiveDuration	1.000000	1.000000	-0.250000	-0.500000	5.000000
+BOR_Lightning	1.500000	damage scale			1.000000	0.750000	0.500000		
+DAD_Angel	0.650000	SecondWindCD			0.200000	1.200000	300.000000		
+BOR_Firewall	1.100000	Damage scale			2.000000	1.000000	2.750000		

@@ -1,0 +1,5 @@
+row_name	description	description 2	description 3	modifier 1	modifier 2	modifier 3
+Damage	Scalar			0.600000		
+RadiateDamage	Radius	Velocity		256.000000	2400.000000	
+Hazard	Radius	Damage		256.000000	0.100000	
+Spawning	Chance	Cooldown	Delay	0.250000	3.000000	0.200000

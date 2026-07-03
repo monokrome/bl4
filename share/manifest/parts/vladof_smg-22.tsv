@@ -91,7 +91,14 @@ index	name
 90	part_mag_torgue_normal_mercury
 91	part_barrel_mercury
 92	comp_05_legendary_mercury
+93	part_barrel_brickhouse
+94	comp_05_legendary_brickhouse
 95	comp_01_common
 96	comp_02_uncommon
 97	comp_03_rare
 98	comp_04_epic
+99	part_mag_torgue_sticky_locust
+100	part_mag_torgue_normal_locust
+101	comp_06_pearl_locust
+102	part_underbarrel_uni_locust_rocket
+103	part_barrel_locust

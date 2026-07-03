@@ -3,9 +3,9 @@ Duplicate_SanguineBrood_HealthRestoration	On Kill	0.040000
 Duplicate_SpectralWeapons_GunDamage		0.030000
 Duplicate_SpectralWeapons_Companion_GunDamage		0.030000
 Duplicate_DemonicInscriptions_MaximumHealth		0.060000
-Duplicate_DemonicInscriptions_MeleeDamage		0.060000
+Duplicate_DemonicInscriptions_MeleeDamage		0.070000
 Duplicate_DemonicInscriptions_Companion_MaximumHealth		0.060000
-Duplicate_DemonicInscriptions_Companion_MeleeDamage		0.060000
+Duplicate_DemonicInscriptions_Companion_MeleeDamage		0.070000
 Duplicate_StirringSpirits_Buff_ActionSkillCooldown		0.005000
 Duplicate_StirringSpirits_Buff_GadgetCooldown		0.005000
 Duplicate_RunicMedicine_BonusDamage		0.080000
@@ -37,7 +37,7 @@ Duplicate_Reverberations_ProcChance		0.500000
 Duplicate_Reverberations_DamageMultiplier		0.300000
 Duplicate_Deathstraction_Cooldown		120.000000
 Duplicate_Deathstraction_CooldownReductionPerPoint	Per point above 1	20.000000
-Duplicate_PhaseDagger_DamageMultiplier		0.170000
+Duplicate_PhaseDagger_DamageMultiplier		0.200000
 Duplicate_PhaseDagger_DamageMultiplier_Volley		0.100000
 Duplicate_PhaseDagger_Vollet_Count		5.000000
 Duplicate_PhaseDagger_Cooldown		18.000000

@@ -29,6 +29,7 @@ category_id	name
 10025	Pearl Elementm
 10026	Pearl Stat
 10027	Secondary Augment
+10028	Scope Acc
 101	Invdef Pickup Grapplebox Intro
 102	Invdef Broombaplaceable
 103	Invdef Genivivcore
@@ -425,9 +426,15 @@ category_id	name
 471	Weapon Dahlmech Energygun
 472	Weapon Dahlgrunt Crashflamer
 48	Inv Contractitem Bloodpack
+487	Invdef Io Pickup Paperscrap
+488	Invdef Io Pickup Bottle
+489	Invdef Io Pickup Digizanehead
 49	Inv Contractitem Poster
+490	Projectile Count Booster
+491	Weapon Uberhead
 5	Tediore Pistol
 50	Inv Contractitem Base
+507	Pickup Cos Shieldbooster
 51	Invdef Booster
 52	Invdef Drillkey
 53	Invdef Pitchfork

@@ -1,0 +1,5 @@
+row_name	value
+PLD_Raid1_ActionSkillDurationOnCrit	0.015000
+PLD_Raid1_Stack_GunDamage	0.014000
+PLD_Raid1_Stack_MeleeDamage	0.020000
+PLD_Raid1_Stack_MaxStacks	50.000000

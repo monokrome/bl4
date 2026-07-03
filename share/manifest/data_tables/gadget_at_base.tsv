@@ -1,0 +1,4 @@
+row_name	cooldown_scale	damage_scale	duration_scale	health_scale
+Ground	1.000000	1.000000	1.000000	1.000000
+MagLock	1.000000	1.000000	1.000000	1.200000
+Floating	1.200000	0.800000	0.800000	1.000000

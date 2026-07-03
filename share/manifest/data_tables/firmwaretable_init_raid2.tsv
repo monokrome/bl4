@@ -1,0 +1,8 @@
+row_name	comment	comment_2	value	value_2
+ActiveFire_1	weapon damage		0.100000	
+ActiveFire_2	charge time scale		-0.200000	
+ActiveFire_3	damage scale	timer window		0.500000
+Skillcraft_1	Skill Damage Scale		0.100000	
+Skillcraft_2	Companion Damage Scale		0.250000	
+Skillcraft_3	Damage Scale	Duration	0.040000	10.000000
+Skillcraft_3_2	Max Stacks		25.000000	

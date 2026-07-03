@@ -1,2 +1,3 @@
-row_name	primary	quaternary	secondary	shiny	trueboss	truebossshiny
-Launch_Dedicated_Drops	0.060000	0.010000	0.045000	0.001000	0.250000	0.005000
+row_name	primary	quaternary	secondary	shiny	tertiary	trueboss	truebossshiny
+Launch_Dedicated_Drops	0.090000	0.030000	0.060000	0.003000		0.300000	0.015000
+UVH_Scalar	0.020000	0.005000	0.015000	0.001000	0.002500	0.020000	0.001500

@@ -1,0 +1,7 @@
+row_name	accdelay_value	accimpulse_value	accregen_value	accuracy_value	critdamage_add	damage_scale	damageradius_value	firerate_value	impact_force_value	part_value	projectilespershot_value	recoil_scale	spread_value	statuschance_scale	statusdamage_scale	sway_scale
+TED_SG_Sharkbait	0.750000	1.000000		5.000000				1.250000	3750.000000	1	5.000000	0.200000	7.000000			
+ORD_SR_Ishmael	0.400000	2.000000	-12.000000	5.000000		6.000000	25.000000	2.000000	12500.000000	1		2.000000	2.000000			
+JAK_PS_Shoals	0.450000	1.000000	-10.000000	6.000000		2.000000		7.500000	12500.000000	2	3.000000		5.000000			
+MAL_SR_Manifest	0.800000	0.650000	-6.000000	5.000000		3.000000	20.000000	6.600000		1		0.750000	4.000000	0.500000	1.250000	0.500000
+JAK_AR_Fishward		1.000000	-6.000000	5.500000	-0.750000	3.500000		3.200000	16000.000000	2		0.600000	3.000000	1.750000		
+DAD_SG_CannonBrawl		0.600000		4.250000		0.775000		3.500000	7500.000000	2	4.000000		6.500000			

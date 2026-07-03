@@ -1,0 +1,6 @@
+row_name	modb	modc	modd	singleornomod
+no_mod				NexusSerialized, 57DC8A8044D09B838D550B807BA521B2, C-Beam
+barrel_mod_a	NexusSerialized, 178A46F4450D6C7FFC0094AB0E62B162, Prisma-Cutter	NexusSerialized, A90C802743F8C3DCCF99038EBF5AD521, Prisma-Spool	NexusSerialized, 16C2F8D145C6A986AD76139AB9291342, Prisma-Blaster	NexusSerialized, E8B0277C401D2BEB979854970A9C370E, Prisma-Las
+barrel_mod_b		NexusSerialized, 1E62AE6144301DCDCE46F19D0DD3B038, Neutrino Stream	NexusSerialized, 1B0AB7324557D2F7B981DD9A9F62B39F, Muon Blaster	NexusSerialized, D4E7F64B4C3124B707361E9F728C79C1, Muon Lance
+barrel_mod_c			NexusSerialized, 7233858C4C74195E9DD37F8D8EC493B3, Particle Spool	NexusSerialized, F29CE5F3453A4D5641377DBD8F412423, Cesium Spool
+barrel_mod_d				NexusSerialized, A680E02144B5746A7F16E285B41EFC33, Particle Blaster

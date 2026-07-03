@@ -1,0 +1,5 @@
+row_name	description	description 2	modifier 1	modifier 2
+Jinx_Apply	Radius Player	Radius Totem	512.000000	512.000000
+Jinx_SE	Duration	Max Stacks	12.000000	1.000000
+Jinx	Damage Taken	Damage Dealt	0.200000	0.300000
+Jinx_NegScale	Damage Taken	Damage Dealt		-2.333000

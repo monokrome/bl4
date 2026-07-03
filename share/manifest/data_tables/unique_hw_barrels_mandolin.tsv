@@ -1,0 +1,3 @@
+row_name	accdelay_value	accimpulse_value	accuracy_value	cooldown	cryoimpact_scale	damage_scale	damageradius_value	firerate_value	magazinesize_value	spread_value	statuschance_scale	statusdamage_scale
+BOR_JetSet			3.000000			0.250000	175.000000	1.500000	5.000000	5.000000	0.800000	1.200000
+MAL_Barrel	0.800000	0.500000	2.000000	45.000000	1.300000	1.250000	200.000000	1.600000		4.000000	1.600000	0.650000

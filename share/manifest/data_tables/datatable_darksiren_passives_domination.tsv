@@ -26,7 +26,7 @@ Domination_Linked_Duration		12.000000
 Domination_PreservingEssence_Crit_ProcChance		0.050000
 Domination_PreservingEssence_DurationRestoration_Seconds		4.000000
 Domination_PreservingEssence_DurationRestoration_Cooldown		2.000000
-Domination_Overpowered_ActionSkillDamageDealt_Scalar		0.070000
+Domination_Overpowered_ActionSkillDamageDealt_Scalar		0.100000
 Domination_Overprotective_Overshield_Percentage		0.040000
 Domination_Overseer_HealthRegeneration		0.010000
 Domination_BanefulWeaponry_FireRate		0.015000
@@ -52,9 +52,9 @@ Domination_HardenedSpirit_DamageReduction	Not Used ATM. Negative Scale Math. Wil
 Domination_HardenedSpirit_OvershieldCapacity		0.120000
 Domination_HardenedSpirit_OvershieldDuration		0.120000
 Domination_HardenedSpirit_DamagDealt		0.060000
-Domination_Summoner_Minion_MaximumHealth		0.080000
-Domination_Summoner_GunDamage		0.050000
-Domination_Summoner_GunDamage_Duration		8.000000
+Domination_Summoner_Minion_MaximumHealth		0.100000
+Domination_Summoner_GunDamage		0.070000
+Domination_Summoner_GunDamage_Duration		12.000000
 Domination_ShockingAttunement_MovementSpeed		0.040000
 Domination_ShockingAttunement_GunDamageDealt		0.060000
 Domination_ShockingAttunement_BaseSpeed		564.000000
@@ -64,7 +64,7 @@ Domination_CryonicInfluence_CryoDamage		0.080000
 Domination_CryonicInfluence_CryoDamage_StatusEffect		0.060000
 Domination_Overblown_OrdnanceDamage		0.060000
 Domination_KeenFiends_CriticalHitChance		0.040000
-Domination_ElementalEssence_ElementalDamage		0.040000
+Domination_ElementalEssence_ElementalDamage		0.060000
 Domination_TheReaping_CriticalHitDamage_LowHealth		0.080000
 Domination_GraveShock_BonusDamage		0.080000
 Domination_GraveShock_Stack_Max		3.000000
@@ -88,6 +88,6 @@ Domination_GravyDrain_Stack_Duration		16.000000
 Domination_Tameshigiri_Stacks_Max		50.000000
 Domination_Tameshigiri_Duration		5.000000
 Domination_Tameshigiri_GunDamage		0.001600
-Domination_Tameshigiri_MeleeDamage		0.001600
-Domination_ClawAndBang_MeleeDamage		0.060000
+Domination_Tameshigiri_MeleeDamage		0.002000
+Domination_ClawAndBang_MeleeDamage		0.080000
 Domination_ClawAndBang_OrdnanceDamage		0.060000

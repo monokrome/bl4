@@ -14,8 +14,11 @@ index	name
 9	part_body_timekeeper
 9	part_body_armor_compleat
 11	part_body_energy_firewall
-11	part_body_armor_undershield
 11	body_flare
+11	part_body_armor_undershield
+11	part_body_energy_collector
 12	part_body_hopscotch
 12	part_body_honeybadger
+13	part_body_energy_overswarm
+13	part_body_pocketbuddies
 19	part_jak_bismuth

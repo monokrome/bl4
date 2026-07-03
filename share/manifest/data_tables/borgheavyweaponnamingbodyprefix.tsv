@@ -1,0 +1,8 @@
+row_name	modb	modc	modd	singleornomod
+body_mod_a	NexusSerialized, D30F7CEF45DFD3E089D87AA93B22CA3C, Promised	NexusSerialized, 64FC01DB424052D08CA869B6ADD425DA, Sacrificial	NexusSerialized, E558B8BD4A484931607A2FA3478D1C0E, Tainted	NexusSerialized, 37B05F8A403249CFD013A88D3DF6507C, Chosen
+body_mod_b		NexusSerialized, 91AD80D2472F2E01F3D212A2F086BE26, Offered	NexusSerialized, 6B06AA43449CC217FFB565B67D5E39E7, Cursed	NexusSerialized, 571782E64B22C0871D7961BC932FDA43, Bestowed
+body_mod_c			NexusSerialized, F818F6114939DF418334F3AE7890BAF5, Summoned	NexusSerialized, C3A1F5304FDEDAB437B5EF91A48D074A, Ritualized
+body_mod_d				NexusSerialized, 3891DBDB49DFD9C6D95649BFB3AA5007, Strange
+body_mod_a.body_mod_b		NexusSerialized, A2D8E94141F68B7948E52F9C4042FE28, Consecrated	NexusSerialized, 1832F6F441BDE7E3429598BC433DA9ED, Hallowed	
+body_mod_a.body_mod_c			NexusSerialized, 308315384EA1E7698CA78BB4872D29CF, Eldritch	
+body_mod_b.body_mod_c			NexusSerialized, CA6CC7264FDF465E056DFE8D6709CB7B, Tenebrous	

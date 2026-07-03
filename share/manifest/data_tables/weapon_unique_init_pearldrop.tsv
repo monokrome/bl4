@@ -1,0 +1,9 @@
+row_name	custom_1_desc	custom_2_desc	custom_3_desc	custom_4_desc	custom_5_desc	value_1	value_2	value_3	value_4	value_5
+JAK_SG_Constable	ChildSpawnChance	ChildSpawnDamage				0.250000	3.000000			
+TOR_PS_Herald	ChildDamage					1.000000				
+VLA_SM_Locust	ammo refill pct	overshield health pct	damage amp	amp duration		0.500000	0.500000	0.300000	12.000000	
+DAD_SM_Screwed	singularity proj dmg radius	singularity dmg scale	singularity radius	dmg scalar	fire rate scalar	250.000000	1.000000	650.000000	1.000000	0.600000
+ORD_SR_Temper	Base Explosion Radius	Explosion Radius Scalar	Explosion Damage Scalar	Charge DMG Scalar		125.000000	0.750000	1.250000	0.200000	
+JAK_AR_Gomie	Max Status Effect	GPS Distance	WeapDamageIncrease			10.000000	4000.000000	0.050000		
+MAL_SM_JulietsSparkle	Proc Chance	Starfall Damage Multiplier	Proc Chance Description			33.000000	1.250000	0.330000		
+BOR_SR_Abyss	Charge Weapon DMG Scalar Per Stack	Charged Time before Explosion	DMG Scalar Loop Delay			0.300000	0.500000	0.280000		

@@ -59,15 +59,15 @@ Death_PhasePocket_MaxAmmo		0.100000
 Death_PhasePocket_GadgetCooldownReduction		0.080000
 Death_PhasePocket_WeaponSwitchSpeed	30% at rank 3	-0.142857
 Death_GraveSacrifice_DamageDealt		0.015000
-Death_GraveSacrifice_DamageTaken		0.030000
+Death_GraveSacrifice_DamageTaken		0.020000
 Death_GraveSacrifice_Stack_Max		10.000000
 Death_GraveSacrifice_Stack_Duration		40.000000
-Death_RadioactiveResonance_Hazard_DamageMultiplier		0.010000
+Death_RadioactiveResonance_Hazard_DamageMultiplier		0.020000
 Death_RadioactiveResonance_Hazard_Radius		512.000000
 Death_RadioactiveResonance_Hazard_Duration		8.000000
 Death_RadioactiveResonance_Hazard_ProcChance		0.050000
 Death_RadioactiveResonance_Hazard_Cooldown		8.000000
-Death_RadiatingAttunement_RadiusDamage		0.060000
+Death_RadiatingAttunement_RadiusDamage		0.070000
 Death_RadiatingAttunement_MaximumShieldCapacity		0.080000
 Death_RadiatingInfluence_RadiationDamage		0.080000
 Death_RadiatingInfluence_RadiationDamage_StatusEffect		0.060000
@@ -77,7 +77,7 @@ Death_SpiritCooling_OrdnanceCooldownRate		0.060000
 Death_SpiritCooling_ActionSkillCooldownRate		0.060000
 Death_PhaseHarvest_KillSkillEffectiveness		0.060000
 Death_VorpalMind_CriticalHitChance_Skill		0.030000
-Death_Enlightenment_ActionSkillDamage	This is Skill Damage now, but im not renaming	0.080000
+Death_Enlightenment_ActionSkillDamage	This is Skill Damage now, but im not renaming	0.090000
 Death_KineticInfluence_KineticDamage		0.070000
 Death_KineticInfluence_KineticDamage_StatusEffect		0.040000
 Death_GraveVitality_HealthRegeneration		0.001000

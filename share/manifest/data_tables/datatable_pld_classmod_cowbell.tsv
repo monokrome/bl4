@@ -1,0 +1,11 @@
+row_name	value
+PLD_Cowbell_Stack_Max	50.000000
+PLD_Cowbell_Stack_Duration	20.000000
+PLD_Cowbell_ShockDamage_PerStack	0.020000
+PLD_Cowbell_ShieldPercentage_BoltDamage	0.250000
+PLD_Cowbell_Storm_Duration	10.000000
+PLD_Cowbell_Storm_MaxTargets	3.000000
+PLD_Cowbell_Bolt_Inverval_Short	1.000000
+PLD_Cowbell_Bolt_Inverval_Medium	1.250000
+PLD_Cowbell_Bolt_Inverval_Long	1.500000
+PLD_Cowbell_Storm_Radius	7000.000000

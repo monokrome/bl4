@@ -1,0 +1,8 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+Mission02		25.000000	25.000000	12.000000
+Mission02_Replay		35.000000	35.000000	12.000000
+Mission02_Replay_True	2.000000	70.000000	70.000000	24.000000
+Bunker_DroneCaptain		30.000000	30.000000	
+Bunker_DroneCaptainHolo		15.000000	15.000000	
+Bunker_DroneCaptain_True	2.000000	60.000000	60.000000	
+Bunker_DroneCaptainHolo_True	2.000000	30.000000	30.000000	

@@ -1,0 +1,4 @@
+row_name	accdelay_value	accimpulse_value	accuracy_value	ammo_value	ammodelay_value	ammoregen_value	damage_value	damageradius_value	firerate_value	heatimpulse_value	impactforce_value	modereturn_scale	modeswitch_scale	recoil_scale	spread_value	sway_scale
+VLA_AR_Lasercutter			1.000000						1.000000			1.200000	1.200000		1.000000	
+ORD_SR_Ishmael			3.000000	6.000000	24.000000	6.000000	12.000000	50.000000	2.000000	0.200000	30000.000000	1.125000	1.125000		3.000000	
+VLA_SM_Locust	0.750000	0.500000	6.000000	5.000000	15.000000	100.000000	25.000000	300.000000	3.500000	0.050000		0.500000	0.850000	1.200000	5.000000	1.250000

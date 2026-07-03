@@ -1,0 +1,2 @@
+row_name	ai_accuracy	ai_accuracy_max	ai_accuracy_min	burstcount_value	burstdelay_value	bursttime_value	firerate_value	mindesiredrange	preferredrange	radius_value	spread_value
+Rocket	3.000000	1.200000	1.000000	4.000000	4.000000	2.500000	1.000000	1000.000000	3000.000000	150.000000	2.000000

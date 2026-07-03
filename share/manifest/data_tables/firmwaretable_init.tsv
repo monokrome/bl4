@@ -1,0 +1,64 @@
+row_name	comment	comment_2	value	value_2
+RiskyBoots_1	damage reduction		-0.300000	
+RiskyBoots_2	move speed		0.350000	
+RiskyBoots_3	damage scale	lifesteal		0.050000
+GodKiller_1	Elite Damage Scale		0.100000	
+GodKiller_2	Elite Damage Taken Scale		-0.100000	
+GodKiller_3	Damage Scale	Duration	0.200000	60.000000
+ReelBigFist_1	Melee Damage Scale		0.250000	
+ReelBigFist_2	Melee Damage Scale		0.250000	
+ReelBigFist_3	Explosion Damage Scale	Radius	2.000000	800.000000
+Lifeblood_1	RepKit Power		0.100000	
+Lifeblood_2	Life Steal		0.050000	
+Lifeblood_3	% heal on kill		0.100000	
+Airstrike_1	Splash Radius		0.200000	
+Airstrike_2	Splash Damage		0.100000	
+Airstrike_3	Missile Damage Scale	Cooldown	1.350000	5.000000
+HighCaliber_1	ProjSpeed Scale		0.250000	
+HighCaliber_2	Damage Scale		0.100000	
+HighCaliber_3	Bullets Pierce			
+GadgetAhoy_1	Gadget Cooldown Scale		-0.150000	
+GadgetAhoy_2	Gadget Damage Scale		0.200000	
+GadgetAhoy_3	Damage Dealt Scale	Duration	0.200000	15.000000
+Baker_1	Shield Capacity Scale		0.100000	
+Baker_2	RepKit CD		-0.150000	
+Baker_3	Health Scale		0.250000	
+OscarMike_1	Reload Time Scale		-0.100000	
+OscarMike_2	Max Damage Scale as mag empties		0.200000	
+OscarMike_3	Fire Rate Scale	Duration	0.300000	4.000000
+Rubberband_1	Damage Taken Scale		-0.100000	
+Rubberband_2	Life Steal Scale		0.100000	
+Rubberband_3	Max Bonus Scale			
+Deadeye_1	Accuracy Scale		-0.300000	
+Deadeye_2	Crit Damage Scale	Stacks for Deadeye3	0.250000	5.000000
+Deadeye_3	Crit Damage Scale per stack	Duration	0.150000	10.000000
+ActionFist_1	Melee Damage Scale		0.250000	
+ActionFist_2	ActionSkillDamage		0.300000	
+ActionFist_3	ActionSkillDamage post Melee	Duration	0.300000	8.000000
+Goojfc_1	ActionSkill CD Rate		0.100000	
+Goojfc_2	ActionSkill Damage		0.150000	
+Goojfc_3	ActionSkill CD Rate		0.200000	
+AtlasEX_1	Underbarrel switch speed		-0.330000	
+AtlasEX_2	Target-Locked Weapon Damage Scale		0.250000	
+AtlasEX_3	TagRadius		500.000000	
+AtlasInfinum_1	Target-Locked Fire Rate Scale		0.120000	
+AtlasInfinum_2	Weapon Damage		0.150000	
+AtlasInfinum_3				
+Trickshot_1	Reload Time Scale		-0.050000	
+Trickshot_2	Crit Hit Damage Scale		0.100000	
+Trickshot_3	% Chance on crit	bullets to refill	0.500000	1.000000
+Jacked_1	ADS duration		-0.350000	
+Jacked_2	Hyperion Shield Cap		0.500000	
+Jacked_3	Added Reflection Chance		0.400000	
+GetThrowin_1	Thrown Damage Scale		0.350000	
+GetThrowin_2	Splash Radius Scale		0.200000	
+GetThrowin_3	Chance	Damage Scale	0.500000	1.000000
+HeatingUp_1	Reload Time Scale		-0.200000	
+HeatingUp_2	Overheat Shots to Break Scale		0.500000	
+HeatingUp_3	Weapon Damage Scale while Overheating		0.250000	
+BulletsToSpare_1	Fire Rate Scale		0.050000	
+BulletsToSpare_2	Magazine Size Scale	Heat Scale	0.200000	-0.200000
+BulletsToSpare_3	Mag Size to Fire Rate Scale		0.500000	
+Daeddy_O_1	Mode Switch Duration Scale		-0.250000	
+Daeddy_O_2	Mag Size Scale	Heat Scale	0.200000	-0.200000
+Daeddy_O_3	Damage/FireRate Scale	Duration	0.350000	5.000000

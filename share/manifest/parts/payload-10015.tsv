@@ -15,7 +15,9 @@ index	name
 12	part_recursive
 14	part_payload_unique_transmission
 14	part_bismuth_shock
+14	part_ordinance
 15	part_bismuth_radiation
 16	part_bismuth_fire
+16	part_payload_unique_pellet
 17	part_bismuth_cryo
 18	part_bismuth_corrosive

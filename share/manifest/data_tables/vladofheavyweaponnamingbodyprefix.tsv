@@ -1,0 +1,8 @@
+row_name	modb	modc	modd	singleornomod
+body_mod_a	NexusSerialized, 8776261C4E7BFAD0A141F68C7222140C, Raucous	NexusSerialized, 9BDEFC6349501300051C0BA02AE9F68B, Conniving	NexusSerialized, BC12E6EE4B11CC68B2C414B63AD355E2, Gifted	NexusSerialized, 7156F11F479DF8B04ED91EA0D1916E71, Mad
+body_mod_b		NexusSerialized, 8F0B3D314AEE5EBA92D6F486CDE1E2DC, Particular	NexusSerialized, 42139A904352F997B937BDA687266240, Blighted	NexusSerialized, E1087D414820B91D1E3709BB7B472F6A, Wide
+body_mod_c			NexusSerialized, 819ED6364F49A62E1CC2AE8B1AB52D0F, Rooted	NexusSerialized, 73B179334354DCBF0272AC866A9291FE, Thorough
+body_mod_d				NexusSerialized, 7B6CC39243654AA3996D6E90519FFE8F, Tinged
+body_mod_a.body_mod_b		NexusSerialized, 6A73E6BB4447486BB46FF393BE37DE11, Turbulent	NexusSerialized, FC727D0844928F4B4B4B968AC5DA9DA3, Rampant	
+body_mod_a.body_mod_c			NexusSerialized, 92AD9E004DB01F1915BE15AB890968C9, Genius	
+body_mod_b.body_mod_c			NexusSerialized, 82FC21DB40B40F43FB406C85FBEDF58C, Endemic	

@@ -1,0 +1,2 @@
+row_name	accuracy_value	cooldown	cryoimpact_scale	damage_scale	damageradius_value	firerate_value	magazinesize_value	spread_value	statuschance_scale	statusdamage_scale
+BOR_Rogue	1.000000	30.000000	0.800000	0.250000	100.000000	3.000000	10.000000	2.000000	0.800000	1.200000

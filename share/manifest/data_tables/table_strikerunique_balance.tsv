@@ -1,0 +1,9 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+PlotMount3_CorruptDuo	0.660000	12.000000	8.000000	2.500000
+PlotMount3_CorruptDuoTRUE	1.330000	20.000000	10.000000	5.000000
+Bunker_Boss_Splitter	0.660000	35.000000	40.000000	10.000000
+Bunker_Boss_SplitterTRUE		70.000000	80.000000	20.000000
+Bunker_Boss_SplitterClone	0.330000	4.000000	4.000000	4.000000
+Bunker_Boss_SplitterCloneTRUE	0.500000	8.000000	8.000000	8.000000
+StrikerGhostUnstable	0.330000			
+Orson	0.660000	12.000000	6.000000	5.000000

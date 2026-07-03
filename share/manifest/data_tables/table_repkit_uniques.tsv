@@ -1,0 +1,9 @@
+row_name	aug_stat_01	aug_stat_01_desc	aug_stat_02	aug_stat_02_desc	aug_stat_03	aug_stat_03_desc	cooldown_scale	duration_scale	healing_scale
+Unique_AdrenalinePump							0.250000	0.250000	0.250000
+Unique_Pacemaker	0.010000	Health percent per beat							
+Unique_Augmenter	-0.500000	Cooldown modifier					-1.000000	1.000000	0.400000
+Unique_BloodAnalyzer							0.500000	-0.200000	0.200000
+Unique_ShinyWarPaint	0.300000	fire rate	0.300000	movement speed	2.000000	cooldown reduction on kill	2.000000	1.500000	1.000000
+Unique_KillSpring	1.000000	Overkill damage heal percent					0.500000		0.500000
+Unique_Defibrillator	0.500000	Proc chance	0.200000	Health threshhold for proc			0.350000		0.350000
+Unique_TripleBypass	0.300000	Proc chance							

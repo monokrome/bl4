@@ -1,0 +1,11 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+PlotMount3_CorruptDuo	2.000000	12.000000	7.000000	2.500000
+PlotMount3_CorruptDuoTRUE	2.000000	20.000000	10.000000	5.000000
+PlotCity2_Ascension	2.000000	8.000000	8.000000	8.000000
+BunkerBoss_RedGuard	2.000000	35.000000	40.000000	12.000000
+BunkerBoss_RedGuardTRUE	4.000000	70.000000	80.000000	20.000000
+BunkerBoss_RedGuardShield		5.000000	5.000000	5.000000
+SideShatter_ElectiMole	2.000000	35.000000	40.000000	15.000000
+SideShatter_ElectiMoleTRUE	2.000000	70.000000	80.000000	20.000000
+BunkerBoss_Ancient	2.000000	35.000000	40.000000	15.000000
+BunkerBoss_AncientTRUE	2.000000	70.000000	80.000000	20.000000

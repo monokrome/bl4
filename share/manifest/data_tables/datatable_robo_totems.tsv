@@ -1,0 +1,24 @@
+row_name	base attack cooldown	lifespan	modifier 1	modifier 1 description	modifier 2	modifier 2 descrition	modifier 3	modifier 3 description	roll	special attack cooldown	totem name	type
+Base	1.750000	12.000000	0.300000	Damage Scalar	800.000000	Attack Range	0.100000	Health Restore Scalar	-1		display_data'Name_Robo_Totem_Base'	NewEnumerator2
+Base_Badass	1.750000	14.000000	0.350000	Damage Scalar	800.000000	Attack Range	0.150000	Health Restore Scalar	-1		display_data'Name_Robo_Totem_Base_Badass'	NewEnumerator2
+Base_Mini	1.750000	10.000000	0.200000	Damage Scalar	600.000000	Attack RAnge	0.075000	Health Restore Scalar	-1		display_data'Name_Robo_Totem_Base_Mini'	NewEnumerator2
+Base_Ranges			1200.000000	Attack Range	2.000000	Special Attack Warmup	3072.000000	Stationary Range			display_data'Name_Robo_Totem_Base'	
+Base_Fast			0.500000	Fast Special Warmup								
+Totem_COM		14.000000							2		display_data'Name_Robo_Totem_Base'	NewEnumerator2
+Totem_Arcane		16.000000	0.400000	Action Skill Damage	0.500000	Ordnance CDR	0.200000	Move Speed	3		display_data'Name_Robo_Totem_Arcane'	NewEnumerator1
+Totem_Mortar	4.000000	16.000000	0.600000	Mortar Damage Scalar	512.000000	Radius	3.000000	Mortars	4		display_data'Name_Robo_Totem_Mortar'	NewEnumerator3
+Totem_Mortar_Badass	4.000000	18.000000	1.100000	Mortar Damage Scalar	640.000000	Mortar Radius	5.000000	Mortars	4		display_data'Name_Robo_Totem_Mortar_Badass'	NewEnumerator3
+Totem_LightningRod	2.500000	16.000000	0.250000	Damage Scalar	2048.000000	Radius	0.250000	Kill Speed Bonus	5		display_data'Name_Robo_Totem_LightningRod'	NewEnumerator3
+Totem_Flame	4.000000	16.000000	0.400000	Damage Scalar	768.000000	Radius	400.000000	Attack Range	6		display_data'Name_Robo_Totem_Flame'	NewEnumerator2
+Totem_Flame_Badass	4.000000	18.000000	0.450000	Damage Scalar	768.000000	Radius			6		display_data'Name_Robo_Totem_Flame_Badass'	NewEnumerator2
+Totem_Flame_Mini	4.000000	12.000000	0.350000	Damage Scalar	512.000000	Radius			6		display_data'Name_Robo_Totem_Flame_Mini'	NewEnumerator2
+Totem_Protector		16.000000	1.000000	Overshield	0.400000	Max Fire Rate	0.600000	Max Reload Speed	7		display_data'Name_Robo_Totem_Protector'	NewEnumerator1
+Totem_Frozen		14.000000	0.150000	Cryo Damage Scalar	0.450000	Bonus Damage	1536.000000	Radius	8	1.000000	display_data'Name_Robo_Totem_Frozen'	NewEnumerator2
+Totem_Frozen_Badass		16.000000	0.200000	Damage Scalar	0.600000	Bonus Damage	2048.000000	Radius	8	1.000000	display_data'Name_Robo_Totem_Frozen_Badass'	NewEnumerator2
+Totem_Frozen_Mini		12.000000	0.100000	Damage Scalar	0.100000	Bonus Damage	1300.000000	Radius	8	1.000000	display_data'Name_Robo_Totem_Frozen_Mini'	NewEnumerator2
+Totem_Frozen_Range			600.000000	Attack Range								
+Totem_Tough		16.000000	0.070000	Melee Damage per Kill	0.200000	Duration Restore	0.100000	Cooldown	9		display_data'Name_Robo_Totem_Tough'	NewEnumerator1
+Totem_Angry	1.000000	16.000000	0.100000	Kill Bonus	0.030000	Gun Scalar			10		display_data'Name_Robo_Totem_Angry'	NewEnumerator1
+Totem_Angry_Badass	0.750000	18.000000	0.100000	Kill Bonus	0.040000	Gun Scalar			10		display_data'Name_Robo_Totem_Angry_Badass'	
+Totem_Effigy	3.000000	16.000000	8.000000	Bullets per Wave	36.000000	Bullet Hell Bullets	0.200000	Damage Scalar	11	2.000000	display_data'Name_Robo_Totem_Effigy'	NewEnumerator3
+Totem_Chaos	3.000000	16.000000	0.200000	Special Warmup					12	1.000000	display_data'Name_Robo_Totem_Chaos'	NewEnumerator3

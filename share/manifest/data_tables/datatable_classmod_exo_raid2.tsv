@@ -1,0 +1,4 @@
+row_name	comment	value
+Exo_Raid2_ActionSkillGunDmg	Base Bonus Gun Damage (Increased with Tokens)	0.040000
+Exo_Raid2_ActionSkill_Duration_Restore	Action Skill Duration Restore on Gun Kill during APOPHIS Lance	0.015000
+Exo_Raid2_Stack_MaxStack		50.000000

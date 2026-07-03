@@ -1,0 +1,16 @@
+row_name	none
+HW_Barrel_Acc	1.050000
+HW_Body_Acc	1.050000
+Grenade_Stat	1.050000
+Grenade_Payload	1.100000
+Grenade_Payload_Aug	1.150000
+Grenade_Element	1.200000
+Shield_Primary_Aug	1.200000
+Shield_Secondary_Aug	1.200000
+Shield_Element	1.200000
+RepKit_Aug	1.200000
+Enhancement_Stat	1.000000
+Enhancement_Core	1.000000
+ClassMod_PassivePoints	1.000000
+ClassMod_Stat	1.000000
+ClassMod_SpecialPassive	1.000000

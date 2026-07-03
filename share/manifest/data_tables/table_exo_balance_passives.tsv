@@ -11,7 +11,7 @@ ExoPassive_09	Duration			2.000000			Metal Management
 ExoPassive_10	CDR	Duration		0.070000	10.000000		Abajo
 ExoPassive_11	Critical Hit Chance	Duration		0.030000	8.000000		Brain Dump
 ExoPassive_12	EE Chance	Shock Chance		0.060000	0.070000		Conductivo
-ExoPassive_13	Bonus Damage	Crit Damage	Duration	0.070000	0.070000	6.000000	El Catrin
+ExoPassive_13	Bonus Damage	Crit Damage	Duration	0.080000	0.080000	6.000000	El Catrin
 ExoPassive_14	Duration			2.000000			Awe
 ExoPassive_15	Duration			0.500000			Fiesta
 ExoPassive_16	Drones	Drone Health	Spawn Cooldown	3.000000	0.150000	1.000000	Drone Defense
@@ -26,7 +26,7 @@ ExoPassive_21	Overdrive Bonus	Max Stacks		0.005000	20.000000		Jacque
 ExoPassive_22	Accuracy			0.120000			La Garza
 ExoPassive_23	CDR	Max Stacks		0.005000	20.000000		Mate
 ExoPassive_24	Fire Rate	Reload Speed		0.030000	0.050000		Deadline
-ExoPassive_25	Chance			0.050000			Per My Last
+ExoPassive_25	Chance			0.060000			Per My Last
 ExoPassive_26	Gun Damage			0.050000			Sitiar
 ExoPassive_27	Fire Rate			0.040000			Deft Hands
 ExoPassive_28	Shield Rate	Recharge Delay		0.080000	-0.080000		Shield Barriest
@@ -55,31 +55,31 @@ ExoPassive_49	Overdrive Duration			0.070000			Everdrive
 ExoPassive_50	Move Speed	Health Regen		0.060000	0.005000		Devil May Care
 ExoPassive_50_Inactive	Damage Increase	CDR		0.040000	0.040000		Devil May Care
 ExoPassive_51	Increased Damage	Decreased Accuracy		0.010000	0.010000		Temerario
-ExoPassive_52	Overdrive Bonus	Duration		1.000000	8.000000		Soltado
-ExoPassive_53	Melee Damage	Gun Damage		0.070000	0.030000		Handshake Deal
+ExoPassive_52	Overdrive Bonus	Duration	Overdrive Rank Bonus	1.000000	8.000000	0.500000	Soltado
+ExoPassive_53	Melee Damage	Gun Damage		0.090000	0.030000		Handshake Deal
 ExoPassive_54	Bonus Damage	Max Stacks		0.010000	10.000000		Midnight Oil
 ExoPassive_55	Ground Speed			0.050000			Expedite
 ExoPassive_56	Crit Chance	Max Stacks		0.040000	5.000000		Dial In
 ExoPassive_57	Health	Shields		0.070000	0.140000		El Corazon
 ExoPassive_58	Gun Damage	Max Stacks		0.020000	20.000000		Diamond Hands
 ExoPassive_59	Health Steal			0.060000			Saldar
-ExoPassive_60	Duration			1.000000			In the Zone
-ExoPassive_61	Gun Damage	Skill Damage		0.060000	0.060000		To the Last
+ExoPassive_60	Duration	Max Stacks		1.000000	3.000000		In the Zone
+ExoPassive_61	Gun Damage	Skill Damage		0.060000	0.080000		To the Last
 ExoPassive_62	Shield Restore	Cooldown	Kill Bonus	0.100000	20.000000	0.200000	Hard Sell
 ExoPassive_63	Tick Period	Projectiles per Tick	Cooldown	6.000000	1.000000	4.000000	Blowout
 ExoPassive_63_Projectile	Damage Scalar	Radius	Max Projectiles	0.050000	256.000000	6.000000	Blowout
-ExoPassive_64	Area Damage	Crit Chance		0.070000	0.020000		El Paraguas
+ExoPassive_64	Area Damage	Crit Chance		0.090000	0.020000		El Paraguas
 ExoPassive_65	RAdius	Shield Drain		1024.000000	0.100000		Protector Pulse
 ExoPassive_66	Bonus Damage			0.080000			Shock Market
-ExoPassive_67	Radius	Duration	Damage Multiplier	512.000000	8.000000	0.042000	Liquidation
+ExoPassive_67	Radius	Duration	Damage Multiplier	512.000000	8.000000	0.063000	Liquidation
 ExoPassive_68	Ordnance Cooldown Rate			0.060000			Artilleria
-ExoPassive_69	Bonus Damage			0.060000			Collaborative Ignition
-ExoPassive_70	Free Grenade Chance	Cooldown	Cooldown/Rank	0.100000	14.000000	-2.000000	Booming Business
-ExoPassive_71	Gun Damage	Melee Damage	Duration	0.020000	0.030000	12.000000	Sinergia
+ExoPassive_69	Bonus Damage			0.080000			Collaborative Ignition
+ExoPassive_70	Free Grenade Chance	Cooldown	Cooldown/Rank	0.080000	12.000000	-1.000000	Booming Business
+ExoPassive_71	Gun Damage	Melee Damage	Duration	0.020000	0.040000	14.000000	Sinergia
 ExoPassive_72	Health Cost			0.200000			Hemolitions
 ExoPassive_73	Bonus Damage			0.100000			El Diabilito
 ExoPassive_74	Shock Damage	Max Stacks		0.010000	10.000000		El Borrocho
-ExoPassive_75	Skill Duration			0.060000			Empuje
+ExoPassive_75	Skill Duration			0.070000			Empuje
 ExoPassive_76	Health Regen			0.004000			Sustainable Energy
 ExoPassive_77	Overdrive Duration Rate	Max Stacks		0.040000	5.000000		Motivar
 ExoPassive_78	Skill Damage	Max Stacks		0.010000	20.000000		Cruel Accrual

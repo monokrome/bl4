@@ -1,0 +1,27 @@
+row_name	comment	value
+Phaseshroud_Phase_Value_Max		1.000000
+Phaseshroud_Phase_Value_DrainPercentage	Per second	0.050000
+Phaseshroud_Phase_Consumption_PauseDuration	Phase consumption is paused for this duration whenever you gain Phase	8.000000
+Phaseshroud_Phase_Ascended_Value_DrainPercentage		0.100000
+Phaseshroud_Phase_Ascended_BonusMultiplier		2.000000
+Phaseshroud_Buff_Percent_SkillDamage		0.300000
+Phaseshroud_Phase_Kill_Percentage	Grant this percent of your Phase Meter whenever you kill an enemy	0.100000
+Phaseshroud_ShadowClone_Reaper_Health_Multiplier		10.000000
+Phaseshroud_ShadowClone_Specter_Health_Multiplier		2.000000
+Phaseshroud_ShadowClone_GrimReaper_Health_Multiplier		15.000000
+Phaseshroud_ShadowClone_Reaper_Damage_Multiplier_Base		0.150000
+Phaseshroud_ShadowClone_Specter_Damage_Multiplier_Base		0.027000
+Phaseshroud_ShadowClone_SelfDamage_Percentage	Per Interval (below)	0.020000
+Phaseshroud_ShadowClone_SelfDamage_Percentage_IncreasePerSecond		0.015000
+Phaseshroud_ShadowClone_SelfDamage_Interval		0.500000
+Phaseshroud_ShadowClone_SelfDamage_Delay		5.000000
+Phaseshroud_ShadowClone_Attack_Range_Base_Range		5000.000000
+Phaseshroud_ShadowClone_Reaper_Base_Height		200.000000
+Phaseshroud_ShadowClone_Reaper_Base_Angle		75.000000
+Phaseshroud_ShadowClone_Reaper_Base_Radius		600.000000
+Phaseshroud_ShadowClone_AmmoPerClip		20.000000
+Phaseshroud_ShadowClone_ReloadTime		2.000000
+Phaseshroud_ShadowClone_FireRate		
+Phaseshroud_ShadowClone_MaxLimit		3.000000
+Phaseshroud_ShadowClone_Augment_DemonicCleave_DamageMultiplier_PerHit		0.200000
+Phaseshroud_Pets_DamageTaken_Misc_Multiplier	Various things that pets shouldnt take as much damage from due to inability to dodge or react	0.100000

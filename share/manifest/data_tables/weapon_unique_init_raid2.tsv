@@ -1,0 +1,5 @@
+row_name	custom_1_desc	custom_2_desc	custom_3_desc	custom_4_desc	custom_5_desc	value_1	value_2	value_3	value_4	value_5
+TED_SG_Sharkbait	ExplosionScale	MaxStacks	ThrowStacks			25.000000	20.000000	5.000000		
+ORD_SR_Ishmael	StatusDuration	BleedScalar				10.000000	0.050000			
+BOR_SM_Jailbroken	MaxStacks	Positive Buff Perc	Negative Buff Perc	BonusProjDMGScalar	Burst Chance Per Stack	12.000000	0.080000	0.080000	1.200000	0.030000
+TED_PS_Shammy	Explosion Radius Scalar	Bonus Explosion DMG Scalar	Status Duration	Token Cap		1.600000	0.300000	8.000000	5.000000	

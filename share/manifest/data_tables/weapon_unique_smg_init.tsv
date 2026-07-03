@@ -1,0 +1,7 @@
+row_name	custom_1_desc	custom_2_desc	custom_3_desc	value_1	value_2	value_3
+DAD_Conglomerate	TED throw damage scale			3.000000		
+MAL_OhmIGot	damage scale			1.500000		
+VLA_Onslaught	amp shot chance	mag size	amp dmg mod	0.300000	1.000000	0.300000
+DAD_Bloodstarved	MagSizeScale	ExplosinonDmgScale	ExplosionChance	1.500000	5.000000	0.200000
+BOR_Prince	SelfDmgShieldScale	Max Stacks	OvershieldScale	0.015000	30.000000	0.500000
+MAL_PlasmaCoil	ReloadTimeScale			0.650000		

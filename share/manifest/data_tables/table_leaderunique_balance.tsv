@@ -1,0 +1,15 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+PlotPrison_Boss_FirstLeader		6.000000	6.000000	6.000000
+PlotGrass1_Boss_KOTOLieutenant		20.000000	30.000000	5.000000
+PlotGrass1_Boss_KOTOLieutenantTRUE	1.500000	40.000000	60.000000	10.000000
+PlotShat2a_Boss_Possessed		15.000000	15.000000	5.000000
+PlotShat2a_Boss_PossessedTRUE	1.500000	25.000000	25.000000	10.000000
+PlotCity2_Ascension		10.000000	10.000000	10.000000
+SideCity_Irradiator		10.000000	10.000000	10.000000
+Bunker_Boss_Cloning		100.000000	6.000000	
+Bunker_Boss_CloningTRUE		200.000000	15.000000	
+Bunker_Boss_CloningClone		4.000000	4.000000	4.000000
+Bunker_Boss_CloningCloneTRUE		8.000000	8.000000	8.000000
+Bunker_Boss_Hologram		20.000000	55.000000	5.000000
+Bunker_Boss_HologramTRUE	1.500000	40.000000	70.000000	10.000000
+SideShatterlands_Electi		15.000000	15.000000	15.000000

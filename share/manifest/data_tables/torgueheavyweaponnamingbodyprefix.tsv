@@ -1,0 +1,8 @@
+row_name	modb	modc	modd	singleornomod
+body_mod_a	NexusSerialized, 78CBA26844E1ECA000158589C52C2A4A, Hosed	NexusSerialized, 3D1671ED43684D2F29865EBAAD43396F, Premature	NexusSerialized, E5E0769D488B0AFB216C9D87B9896760, Swollen	NexusSerialized, B84D9CD143DA7C998E57B4922BFE65F7, Blasting
+body_mod_b		NexusSerialized, 135C75BC4CF40C495C2920A04E406055, Hydrated	NexusSerialized, EEA2B7D94C2C4E3ABC0FD588AB8A9742, Riddled	NexusSerialized, B732F26B47C2D0BDB91DB9A433255643, Covering
+body_mod_c			NexusSerialized, 78A906BC4575F089A1EDF181429E7DFE, Loose	NexusSerialized, 3E520EEA49656EC72A1524B422B7F7CC, Eager
+body_mod_d				NexusSerialized, DB648A36462C7A1DAEBF36804A39142C, Itchy
+body_mod_a.body_mod_b		NexusSerialized, 378ED68D4F9C487B40792AA5F4C49CEF, Junk-Drunk	NexusSerialized, E0C95D3A46AE5ADAF17056A5C2EA758F, Sticky	
+body_mod_a.body_mod_c			NexusSerialized, D7CDC2BB44135497774BD69B1249404F, Tingling	
+body_mod_b.body_mod_c			NexusSerialized, F1FBD18A433B90C0F78443AF3B3958A9, Promiscuous	

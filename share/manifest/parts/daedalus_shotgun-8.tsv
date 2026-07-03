@@ -57,6 +57,8 @@ index	name
 56	part_underbarrel_01_misslaser
 57	part_barrel_misslaser
 58	comp_05_legendary_misslaser
+59	comp_zanemurder_weapon
+60	part_barrel_cannonbrawl
 61	part_barrel_01_a
 62	part_barrel_01_b
 63	part_barrel_01_c
@@ -77,6 +79,8 @@ index	name
 78	part_body_mag_smg
 79	part_body_mag_ar
 80	part_body_mag_sr
+81	part_underbarrel_01_cannonbrawl
+82	comp_05_legendary_cannonbrawl
 95	comp_01_common
 96	comp_02_uncommon
 97	comp_03_rare

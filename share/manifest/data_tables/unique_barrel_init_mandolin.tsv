@@ -1,0 +1,8 @@
+row_name	accdelay_value	accimpulse_value	accregen_value	accuracy_value	damage_scale	damageradius_value	firerate_value	impact_force_value	part_value	projectilespershot_value	recoil_scale	spread_value	statusdamage_scale	sway_scale
+DAD_AR_HardDark		0.000000		4.300000	3.000000	30.000000	4.750000	16000.000000	1			4.000000		1.400000
+DAD_SM_Raiden				4.500000	2.500000		10.000000	12500.000000	1			3.750000		
+TOR_SG_Cormano	0.900000	1.200000		6.000000	1.750000	135.000000	1.600000	10000.000000	1	9.000000	0.850000	6.000000		
+MAL_SG_DiscyBusiness	1.250000	0.800000	-4.000000	3.500000	9.200000	150.000000	0.800000	30000.000000	1			4.000000	1.500000	
+VLA_SM_Brickhouse				4.750000	2.750000		6.000000	12500.000000	2		0.900000	3.800000		1.200000
+VLA_SR_LightGun	0.350000	1.000000		5.000000	3.250000		4.000000		1			1.750000		
+ORD_PS_Rhythm		0.650000	-6.000000	2.000000	2.500000		8.000000	12500.000000	1		1.200000	2.100000		

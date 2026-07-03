@@ -1,0 +1,97 @@
+row_name	description	description 2	description 3	modifier 1	modifier 2	modifier 3	skill name
+Passive01	Reload Speed	Windfall Chance		-0.060000	0.003000		Fast Hands
+Passive02	Shield Capacity	Shield Delay	Shield Rate	0.080000	-0.110000	0.100000	Insurance
+Passive02_NegScale		Shield Delay			-1.618182		
+Passive03	Ordnance Damage	Windfall Bonus		0.050000	1.000000		Splash the Pot
+Passive04	Elemental Effect Chance	Cooldown		0.060000	0.250000		Alchemy
+Passive05	CDR	Gun Damage	Skill Damage	0.120000	0.030000	0.040000	Ante Up
+Passive06	Crit Chance			0.020000			Sounds of Rain (Lucky Strike)
+Passive07	Elemental Damage			0.070000			Trick-Taker (Full Spread)
+Passive11	Chance			0.030000			Double-Down (Double or Nothing)
+Passive12	Cooldown	Drain%		32.000000	0.250000		Wretched Shadows
+Passive13	Gun Damage			0.060000			High Roller (Ace in the Hole)
+Passive14	Health Restore			0.070000			Take the Pot
+Passive15	Skill Damage	Fire Rate	Reload Speed	0.050000	0.030000	-0.040000	Stack the Deck (Full House)
+Passive15_Skill	Duration		Reload Speed (Neg)	12.000000		-0.080000	
+Passive16	Reload Speed	Reload Speed (Neg)	Min Clip Size	-0.120000	-2.444440	40.000000	Legerdemain (Wild Card)
+Passive16_MinBonus	Min Bonus			-0.010000			
+Passive17	Bonus Damage	Duration		0.070000	12.000000		Vigorish
+Passive18	Cooldown			0.070000			Dealer's Bluff
+Passive19	Gun Damage			0.007000			Ace in the Hole
+Passive20	CDR			0.010000			Around the Corner
+Passive21	Minimum Stacks			1.000000			C4SH Game
+Passive23	Max Fortune	Chance		2.000000	-0.020000		No Limit
+Passive24	Additional Stacks	Chance		1.000000	0.200000		Go For Broke
+Passive25	Ordnance Damage			0.090000		1.000000	Kill Button
+Passive26	Fortune Bonus			0.080000			Payout
+Passive27	Grenade Damage	Grenade Radius	Search Radius	0.350000	384.000000	2048.000000	Boom or Bust
+Passive28	Crit Damage	Crit Chance		0.080000	0.030000		Tender Hearts
+Passive29	Duration			1.000000			Card Sharp
+Passive30	Max Stacks	Crit Bonus		20.000000	0.250000		Hot Streak
+Passive31	Fire Rate			0.040000			Gunslinger
+Passive32	Action Skill Damage			0.040000			Huckleberry
+Passive33	Health Regen			0.010000			The Determinator
+Passive34	Duration Restore			0.030000			Hard Boiled
+Passive34_DReturns	Diminish Rate	Max Stacks		0.900000	100.000000		
+Passive35	Bonus Fire Damage			0.020000			Hot Hand
+Passive36	Gun Damage			0.050000			Shootist
+Passive37	Critical Hit Chance			0.020000			Stand and Bleed
+Passive38	Reload Speed	Fire Rate		-0.020000	0.010000		A Blur of Fingers and Brass
+Passive38_Stacks	Duration	Max Stacks		12.000000	5.000000		
+Passive39	Chance	Internal Cooldown		0.030000	1.500000		Trick Shot
+Passive41	Stack Chance			0.060000			Lucky - REMOVED
+Passive42	Fire Rate	Reload Speed	Conversation	0.070000	-0.050000	0.100000	Brimstone
+Passive43	Move Speed			0.070000			Fast C4SH
+Passive44	Bonus Fire Damage			0.060000			Firestorm
+Passive45	Damage Scalar	Scalar per Stack	Cooldown	0.080000	0.050000	4.000000	Burn Down the House
+Passive45_Search	Search Radius	Max Targets		2560.000000	6.000000		
+Passive46	Cooldown	Nova Chance		6.000000	0.100000		High Noon
+Passive46_Damage	Scalar	Radius		0.110000	768.000000		
+Passive47	EE Chance	EE Damage	E Damage	0.070000	0.050000	0.040000	Bloodstained Moon
+Passive47_Stacks	Duration	Max Stacks	Cooldown	12.000000	25.000000	1.000000	
+Passive47_Mortars	Damage Scalar	Radius	Mortars	0.800000	512.000000	4.000000	
+Passive48	Kinetic Damage			0.090000			Lawless
+Passive49	Bonus Damage			0.060000			Truck Full of Nitro
+Passive50	Chance	Ammo Restored	Duration Restored	0.080000	0.100000	0.050000	War Wagon
+Passive50_DReturns	Diminish Rate	Max Stacks		0.950000	100.000000		
+Passive51	Bonus Damage			0.090000			Pale Rider
+Passive52	Damage Converted	Damage Increase		0.090000	0.150000		Nothing Beats Lead
+Passive53	Duration			1.000000			Mr Pocket
+Passive53_DReturns	Diminish Rate	Max Stacks		0.900000	100.000000		
+Passive54	Damage	Duration	Max Stacks	0.010000	10.000000	10.000000	Unshaken
+Passive55	Damage Reduction	Duration	Damage	0.040000	6.000000	0.200000	From Glaom Till Glow
+Passive55_Update	Drain Amount	Overshield		0.500000	0.080000		
+Passive56	Max Stacks	Duration	Tick Rate	10.000000	10.000000	0.500000	Dusty Trail
+Passive56_Scalars	Gun Damage	Reload Speed	Fire Rate	0.010000	-0.020000	0.020000	
+Passive57	Max Stacks	Duration Rate	Cooldown	10.000000	0.100000	4.000000	Bleed the Bad
+Passive58	CDR			0.040000			Luck Be a Robot
+Passive59	Max Health	Health Return		0.040000	0.020000		Sweet Roll
+Passive60	Gun Damage	Gun Damage/Companion		0.030000	0.040000		Charm Bracelet
+Passive61	Windfall Chance	EE Chance	EE Damage	0.004000	0.040000	0.040000	O Fortuna
+Passive62	Bonus Damage			0.030000			Red Moon Rising
+Passive63	CDR	Duration		0.060000	0.050000		Ready to Roll
+Passive64	Windfall Duration			0.080000			Riding High
+Passive65	Duration	Companion Health		0.040000	0.040000		Bonemeal Ticket
+Passive65_DReturns	Diminish Rate	Max Stacks		0.950000	100.000000		
+Passive66	Respawn Chance			0.030000			Restless Remains
+Passive67	Damage Taken	Damage Dealt		0.080000	0.090000		Luckless
+Passive68	Gun Crit Chance	Skill Crit Chance	Internal Cooldown	0.020000	0.040000	0.250000	Can't Stop Winning
+Passive69	Life Steal			0.090000			Turn of Fate
+Passive70	Fire Rate	Reload Speed	Move Speed	0.040000	-0.040000	0.030000	High Stakes
+Passive71	Gun Damage	Skill Damage		0.100000	0.130000		Fortune's Favor
+Passive72	Gun Damage	Max Stacks		0.750000	999.000000		Let it Ride
+Passive73	Bonus Damage			0.060000			The Wilds
+Passive74	Gun Damage	Companion Damage		0.050000	0.080000		Potent Posse
+Passive75	Move Speed	Skill Damage		0.010000	0.040000		Before She Knows You're Dead
+Passive76	Damage Scalar	Radius		0.180000	512.000000		Sorcerer
+Passive77	Melee Damage	Jinx Chance		0.500000	0.250000		Tooth and Nail
+Passive78	Health Scalar	Cooldown	Orbs	0.110000	4.000000	3.000000	Serendipity
+Passive79	Health Loss	Dmg/Stack		0.100000	0.030000		Sidekick's Revenge
+Passive79_Stacks	Max Stacks	Duration		25.000000	8.000000		
+Passive80	Gun Damage	Action Skill Damage		0.100000	0.150000		Dead Friend Redemption
+Passive80_Tokens	Max	Duration		5.000000	8.000000		
+Passive81	Lifesteal			0.120000			Accursed Bones
+Passive82	Crit Damage	Bonus Crit Damage		0.040000	0.060000		Tormented
+Passive83	CDR			0.070000			Graveyard Shift
+Passive84	Ricochet Scalar		Cooldown	0.250000		12.000000	Snake Eyes
+Passive85	Crit Chance	Duration		1.000000	8.000000		Call

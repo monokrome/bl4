@@ -1,5 +1,333 @@
 [
   {
+    "name": "StatusEffect_Sharkbait",
+    "path": "../../../OakGame/Content/DLC/Tuba/Gear/Weapons/Uniques/StatusEffect_Sharkbait.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [],
+    "notify_events": [],
+    "guids": [],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_Grav_CM_Tuba",
+    "path": "../../../OakGame/Content/DLC/Tuba/Gear/ClassMods/Gravitar/Data/StatusEffect_Grav_CM_Tuba.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "10f91d7f-cc0e-41ac-89cb-4ba5ef38fcfa",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "10f91d7f-cc0e-41ac-89cb-4ba5ef38fcfa"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_CannonBrawl",
+    "path": "../../../OakGame/Content/DLC/Tuba/Gear/Weapons/Uniques/StatusEffect_CannonBrawl.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "93daeffd-65da-47a8-a8eb-a433453a2e14",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "93daeffd-65da-47a8-a8eb-a433453a2e14"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_Bruiser_3",
+    "path": "../../../OakGame/Content/DLC/Tuba/Gear/Firmware/StatusEffect_Bruiser_3.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "95ec8a0e-d6ac-4f8a-a1ee-b67a5bffa5a8",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "95ec8a0e-d6ac-4f8a-a1ee-b67a5bffa5a8"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_Rhythm",
+    "path": "../../../OakGame/Content/DLC/Mandolin/Gear/Weapons/Uniques/StatusEffect_Rhythm.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "6cceca8c-1f7a-4213-931e-2d485fc10395",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "6cceca8c-1f7a-4213-931e-2d485fc10395"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_OverSwarm",
+    "path": "../../../OakGame/Content/DLC/Mandolin/Gear/Shield/StatusEffect_OverSwarm.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [],
+    "notify_events": [],
+    "guids": [],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_Raiden",
+    "path": "../../../OakGame/Content/DLC/Mandolin/Gear/Weapons/Uniques/StatusEffect_Raiden.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "94eef618-d704-4a6f-a815-c4c953014620",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "94eef618-d704-4a6f-a815-c4c953014620"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_StrikerBadass_BaseSpeedIncrease",
+    "path": "../../../OakGame/Content/AI/ArmyOrder/_Shared/_Design/Status/StatusEffect_StrikerBadass_BaseSpeedIncrease.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "c28542b7-a219-4367-bac7-f4bdbc78458d",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "c28542b7-a219-4367-bac7-f4bdbc78458d"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_Trait_Silly_Slow",
+    "path": "../../../OakGame/Content/AI/_Shared/Traits/StatusEffect_Trait_Silly_Slow.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "2cf9ab75-5c2a-425b-b885-4d88c5a361aa",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "2cf9ab75-5c2a-425b-b885-4d88c5a361aa"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_Gomie",
+    "path": "../../../OakGame/Content/DLC/Raid2/Gear/Weapons/PearlDrop/StatusEffect_Gomie.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "94eef618-d704-4a6f-a815-c4c953014620",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "94eef618-d704-4a6f-a815-c4c953014620"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_Abyss",
+    "path": "../../../OakGame/Content/DLC/Raid2/Gear/Weapons/PearlDrop/StatusEffect_Abyss.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "6cceca8c-1f7a-4213-931e-2d485fc10395",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "6cceca8c-1f7a-4213-931e-2d485fc10395"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_Sideshow",
+    "path": "../../../OakGame/Content/Gear/Weapons/Pistols/TED/Unique/StatusEffect_Sideshow.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "94eef618-d704-4a6f-a815-c4c953014620",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "94eef618-d704-4a6f-a815-c4c953014620"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_Temper",
+    "path": "../../../OakGame/Content/DLC/Raid2/Gear/Weapons/PearlDrop/StatusEffect_Temper.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "6cceca8c-1f7a-4213-931e-2d485fc10395",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "6cceca8c-1f7a-4213-931e-2d485fc10395"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_VLA_SM_Locust",
+    "path": "../../../OakGame/Content/DLC/Raid2/Gear/Weapons/PearlDrop/StatusEffect_VLA_SM_Locust.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [],
+    "notify_events": [],
+    "guids": [],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_Shammy",
+    "path": "../../../OakGame/Content/DLC/Raid2/Gear/Weapons/StatusEffect_Shammy.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [],
+    "notify_events": [],
+    "guids": [],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_ActiveFire_3",
+    "path": "../../../OakGame/Content/DLC/Raid2/Gear/Firmware/StatusEffect_ActiveFire_3.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "95ec8a0e-d6ac-4f8a-a1ee-b67a5bffa5a8",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "95ec8a0e-d6ac-4f8a-a1ee-b67a5bffa5a8"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_Jailbroken",
+    "path": "../../../OakGame/Content/DLC/Raid2/Gear/Weapons/StatusEffect_Jailbroken.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": null
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "94eef618-d704-4a6f-a815-c4c953014620",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "94eef618-d704-4a6f-a815-c4c953014620"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_BulletHose",
+    "path": "../../../OakGame/Content/Gear/Enhancements/StatusEffect_BulletHose.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "1af4006c-4e23-45da-9a58-61399f56ffaa",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "1af4006c-4e23-45da-9a58-61399f56ffaa"
+    ],
+    "tags": []
+  },
+  {
     "name": "StatusEffect_Cryo_Pickle",
     "path": "../../../OakGame/Content/DLC/Cowbell/Missions/Main/Mission_1/ASSETS/StatusEffect_Cryo_Pickle.uasset",
     "driver": {
@@ -724,26 +1052,6 @@
     "tags": []
   },
   {
-    "name": "StatusEffect_Trait_Silly_Slow",
-    "path": "../../../OakGame/Content/AI/_Shared/Traits/StatusEffect_Trait_Silly_Slow.uasset",
-    "driver": {
-      "class_name": "GbxStatusEffectDriver_InstanceStack",
-      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
-    },
-    "aspects": [
-      {
-        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
-        "guid": "2cf9ab75-5c2a-425b-b885-4d88c5a361aa",
-        "row_name": "Default"
-      }
-    ],
-    "notify_events": [],
-    "guids": [
-      "2cf9ab75-5c2a-425b-b885-4d88c5a361aa"
-    ],
-    "tags": []
-  },
-  {
     "name": "StatusEffect_IO_Meat",
     "path": "../../../OakGame/Content/InteractiveObjects/Usables/MeatShower/StatusEffect/StatusEffect_IO_Meat.uasset",
     "driver": {
@@ -869,26 +1177,6 @@
     "aspects": [],
     "notify_events": [],
     "guids": [],
-    "tags": []
-  },
-  {
-    "name": "StatusEffect_StrikerBadass_BaseSpeedIncrease",
-    "path": "../../../OakGame/Content/AI/ArmyOrder/_Shared/_Design/Status/StatusEffect_StrikerBadass_BaseSpeedIncrease.uasset",
-    "driver": {
-      "class_name": "GbxStatusEffectDriver_InstanceStack",
-      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
-    },
-    "aspects": [
-      {
-        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
-        "guid": "c28542b7-a219-4367-bac7-f4bdbc78458d",
-        "row_name": "Default"
-      }
-    ],
-    "notify_events": [],
-    "guids": [
-      "c28542b7-a219-4367-bac7-f4bdbc78458d"
-    ],
     "tags": []
   },
   {

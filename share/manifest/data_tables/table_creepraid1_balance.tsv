@@ -1,0 +1,12 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+Basic	0.400000			
+Spitter	0.500000			
+BasicCorrupt		3.000000	3.000000	0.250000
+Thorn		6.000000	2.000000	
+Badass	2.000000	14.000000	5.000000	5.000000
+ThornShield	2.000000	12.000000	3.000000	3.000000
+Raid1Boss		315.000000	12.000000	
+Raid1Boss_TRUE	2.000000	450.000000	12.000000	
+FlowerBomb		0.250000		
+FogDamage	500.000000	0.000000	0.000000	0.000000
+BossCrystal		15.000000	4.000000	4.000000

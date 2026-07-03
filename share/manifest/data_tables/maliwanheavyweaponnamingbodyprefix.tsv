@@ -1,0 +1,8 @@
+row_name	modb	modc	modd	singleornomod
+body_mod_a	NexusSerialized, 3DED00E14427C65CB547E8AE988233F5, Supercritical	NexusSerialized, 990376094CBA609D87221698D4472C6F, String-Net	NexusSerialized, F348833F45D2EE8358D0D08B66AA9BB8, Chromodynamic	NexusSerialized, 3613C3654D1F3EF31371A8A8BD1FA7B4, High-Capacity
+body_mod_b		NexusSerialized, D238BFDF486D637507A5C9A241456EF6, Fermionic	NexusSerialized, 88E12F0245720790D4F261A604FABD17, Tachyonic	NexusSerialized, C6099B6A418071D689F6E08EB5E612DA, High-Energy
+body_mod_c			NexusSerialized, 23031D5C46A6AD00DEEC00B2BDC13ECC, Superconducted	NexusSerialized, 74F01E6C45257E7970D15E8C4528802B, Shunted
+body_mod_d				NexusSerialized, C11A046D49E656F0C42D03945488B61A, Abnormal
+body_mod_a.body_mod_b		NexusSerialized, B96548DD415281DF9176D3A2068630B0, Exotic	NexusSerialized, D8EE319B4402203930468CB29444E360, Unobtainable	
+body_mod_a.body_mod_c			NexusSerialized, 64C0EEBD4EEE6DEF07E3BA89048AC49D, Impossible	
+body_mod_b.body_mod_c			NexusSerialized, 1DB78D584BB4FF860F066BBCEF1ACB65, Inconceivable	

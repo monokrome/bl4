@@ -1,0 +1,5 @@
+row_name	comment	comment_2	value	value_2
+Bruiser_1	Damage Taken Reduction		0.100000	
+Bruiser_2	Lifesteal Scale		0.025000	
+Bruiser_3	Damage Scale	Duration	0.100000	30.000000
+Bruiser_3_2	MaxStacks		5.000000	

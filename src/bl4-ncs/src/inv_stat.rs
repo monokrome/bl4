@@ -79,12 +79,17 @@ fn extract_entry_stats(weapon_class: &str, value: &Value) -> Vec<WeaponStatRow> 
                 _ => continue,
             };
 
-            // Navigate to datatablevalue
-            let scalar = match stat_map.get("stattoattributemodifierscalar") {
+            // Navigate to datatablevalue.
+            // Base entries use stattoattributemodifierscalar; patch entries
+            // (manufacturer variants) use basemultiplier.
+            let scalar = stat_map
+                .get("stattoattributemodifierscalar")
+                .or_else(|| stat_map.get("basemultiplier"));
+            let scalar_map = match scalar {
                 Some(Value::Map(m)) => m,
                 _ => continue,
             };
-            let dtv = match scalar.get("datatablevalue") {
+            let dtv = match scalar_map.get("datatablevalue") {
                 Some(Value::Map(m)) => m,
                 _ => continue,
             };

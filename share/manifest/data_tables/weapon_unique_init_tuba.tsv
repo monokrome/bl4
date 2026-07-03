@@ -1,0 +1,7 @@
+row_name	custom_1_desc	custom_2_desc	custom_3_desc	value_1	value_2	value_3
+TED_SG_Sharkbait	ExplosionScale	MaxStacks	ThrowStacks	25.000000	20.000000	5.000000
+ORD_SR_Ishmael	StatusDuration	BleedScalar		5.000000	0.100000	
+JAK_AR_Fishward	StackDmgScale			0.200000		
+JAK_PS_Shoals	RicoExplodeScale			0.750000		
+BOR_HW_Draupner	Explosion DMG Scalar	Return Projectile DMG Scalar		1.000000	0.750000	
+DAD_SG_CannonBrawl	Base UB Projectile Count	Bonus UB Projectile Max		1.000000	4.000000	

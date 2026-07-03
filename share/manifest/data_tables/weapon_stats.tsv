@@ -4,7 +4,7 @@ Damage			0.075000			1.200000		1.200000
 Fire_Rate	1.150000		0.050000						1.250000
 Burst_Fire_Delay	1.150000		0.050000						1.200000
 Charge_Time	1.250000		0.100000		1.400000				
-Melee_Damage			0.200000						
+Melee_Damage			0.500000						
 ---PRECISION---			0.000000						
 Max_Accuracy		1.150000	0.075000	1.300000	1.200000	1.200000			
 Accuracy_Impulse			0.015000			1.100000			

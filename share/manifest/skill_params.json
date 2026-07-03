@@ -1,5 +1,23 @@
 [
   {
+    "name": "SkillParam_Robo_Raid2_CardSwitch",
+    "path": "../../../OakGame/Content/DLC/Raid2/Gear/ClassMods/RoboDealer/SkillParam_Robo_Raid2_CardSwitch.uasset",
+    "variant": 18,
+    "guid": "be3ee9bd-617d-4be8-9812-5b947d9565d0"
+  },
+  {
+    "name": "SkillParam_Robo_Raid2_CardInt",
+    "path": "../../../OakGame/Content/DLC/Raid2/Gear/ClassMods/RoboDealer/SkillParam_Robo_Raid2_CardInt.uasset",
+    "variant": 2,
+    "guid": "099e1141-0465-47df-9aba-f1d3145cccc5"
+  },
+  {
+    "name": "SkillParam_PLD_CM_Raid2",
+    "path": "../../../OakGame/Content/PlayerCharacters/Paladin/Passives/Vengeance/SkillTree/Data/SkillParam_PLD_CM_Raid2.uasset",
+    "variant": 1,
+    "guid": "1d26d316-77d0-4936-a819-b918edefcd3d"
+  },
+  {
     "name": "SkillParam_Robo_CM_Raid1",
     "path": "../../../OakGame/Content/DLC/Cowbell/PlayerCharacters/RoboDealer/ClassMods/Data/SkillParam_Robo_CM_Raid1.uasset",
     "variant": 1,

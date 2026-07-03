@@ -1,0 +1,24 @@
+row_name	aug_stat_01	aug_stat_01_desc	aug_stat_02	aug_stat_02_desc	aug_stat_03	aug_stat_03_desc	cooldown_scale	duration_scale	fx_parameter_value	healing_scale
+d_Elemental_Resist	-1.000000	damage scalar	-1.000000	status chance scalar					4	
+d_elemental_immunity					3.000000	duration			5	
+d_AoE_Heal	0.500000	AoE Heal Pct of total repkit  health							6	0.200000
+d_HealthBurst	0.500000	health burst Pct of instant health							7	
+d_increased_healing	0.450000	Heal%					0.150000		8	
+d_shield_recharge									9	
+d_Lifesteal	0.300000	Lifesteal Damage Type Percentage							10	
+d_turtle	-1.000000	DmgReduction							11	-0.200000
+d_overshield	1.000000								12	
+u_RepKit_CDReduction							-0.500000		13	
+u_MoveSpeed	0.400000	Move Speed Scale					0.100000		14	-0.100000
+u_ASkill_Cooldown	1.000000	Action Skill Cooldown Rate Scalar							15	
+u_GadgetCDReduction	1.000000	Gadget Cooldown Reduction					0.300000		16	0.100000
+u_AllDmg	0.300000	Damage Dealt Scalar	0.150000	Damage Taken Scalar					17	-2.000000
+u_RepKit_Duration								0.300000	18	0.200000
+o_MeleeDamage	0.500000	Melee Damage Scale					0.100000		19	
+o_Nova	30.000000	Nova Base Damage	600.000000	Nova Damage Radius			0.200000			-0.200000
+o_FireRate	0.150000	Fire Rate Scale					0.100000		21	-0.100000
+o_ReloadSpeed	-0.250000	Reload Speed Scale					0.100000		22	-0.100000
+o_Amp_NextShot	2.000000	Amp Damage Modifier								
+o_Splat			500.000000	Splat Radius	1.000000	Splat Puddle Dmg Multiplier				
+o_ElementalDmg	0.250000	elemental dmg scalar							25	
+o_SplashDmg	0.250000	splash dmg scalar							26	

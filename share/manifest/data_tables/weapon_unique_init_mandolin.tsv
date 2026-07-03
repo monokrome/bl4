@@ -1,0 +1,7 @@
+row_name	custom_1_desc	custom_2_desc	custom_3_desc	custom_4_desc	value_1	value_2	value_3
+DAD_AR_HardDark	AngleOffset				10.000000		
+VLA_SR_LightGun	CrouchTimer	Damage Reduction	Crouch Damage Scale		0.750000	-1.000000	-1.000000
+DAD_SM_Raiden	Bonus Scale	Bonus Duration	Projectiles Cap		1.000000	14.000000	10.000000
+ORD_PS_Rhythm	DamageScaleAdd	StackTarget			2.000000	3.000000	
+BOR_RepKit_Hugger	DamageRadius	Reflect Chance	Damage Scale	Reflect Damage Scale	300.000000	1.000000	0.300000
+MAL_HW_Barrel	Barrel Lifetime	On Hit Explosion Radius	On Hit Explosion DMG Scalar		8.000000	600.000000	3.000000

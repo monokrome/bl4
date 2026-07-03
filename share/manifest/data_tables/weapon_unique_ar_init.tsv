@@ -1,0 +1,11 @@
+row_name	custom_1_desc	custom_2_desc	custom_3_desc	custom_4_desc	custom_5_desc	value_1	value_2	value_3	value_4	value_5
+TOR_Bugbear	Max Damage Scale	Max Damage Radius Scale	Finale Damage Scale	Finale Damage Radius Scale		2.000000	2.000000	3.000000	6.000000	
+ORD_Goalkeeper	Weapon Shield Capacity Scale	Weapon Shield Delay Scale	Weapon Charge Scale	Amp Damage Scale	Amp Duration	1.000000	0.900000	-2.000000	0.500000	15.000000
+ORD_Goalkeeper_2	AmmoScaleAdd					0.500000				
+VLA_WomboCombo	rocket dmg scalar					8.000000				
+JAK_BonnieClyde	Damage buff					1.500000				
+TED_Chuck	TED throw dmg scale	Reload time scale	ammo override	firerate scale		4.000000	-2.000000	10.000000	2.000000	
+VLA_Lucian	Extra Ricochets	Ammo Regen on Crit	Post Added Mag Size			1.000000	2.000000	10.000000		
+JAK_Rowan	CritChance	AmmoRegenOnCrit	MagSzieScale			0.200000	2.000000	2.500000		
+ORD_GMR	ZoomDamageScaleAdd	ZoomShotCostScaleAdd	ZoomFireRateScaleAdd	MagSizePostAdd		1.000000	1.000000	-1.000000	3.000000	
+DAD_FirstImpression	Chance to Crit over 50% health					0.500000				

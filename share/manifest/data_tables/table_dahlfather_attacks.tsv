@@ -1,0 +1,13 @@
+row_name	angle	comment	custom_01	custom_02	custom_03	duration	radius
+DownwardBarrage_Explosion		Radius = Explosion Radius					300.000000
+ChargeAttack		Radius = Impact Damage Radius					800.000000
+NightmareNova		Radius = Max Nightmare Nova Radius // Duration = Nova lifetime				8.000000	8000.000000
+NightmareVoid		Custom01 = Explosion Diameter // Custom02 = VFX Expansion Time // Custom03 = VFX Hold Time	7000.000000	3.500000	1.500000		
+UpwardBarrage		Radius = DamageRadius // C01 = Delay Before Damage	2.500000				350.000000
+CorruptedSlam		C01 = Damage Length // C02 = VFX Length Adjustment	3500.000000	100.000000			
+CorruptedSwipe	100.000000						1800.000000
+NightmareVomit		C01 = ExplosionDelay // C02 = ExplosionDiameter	1.500000	900.000000			
+CorruptedSpike_Impact		C01 = ImpactDamageRadius	400.000000				
+DownBarrage_Impact		C01 = ImpactDamageRadius	700.000000				
+TeleportLand_Impact		C01 = ImpactDamageRadius	700.000000				
+Teleport		C01 = Teleport Speed // C02 = Initial Vertical Offset From Root // C03 = Final Height From Root	5500.000000	185.000000	1500.000000		

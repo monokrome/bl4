@@ -31,7 +31,13 @@ mission_dlc1_spookystory_prettiersmile	Spooky Story - Prettier Smile
 mission_dlc1_spookystory_voodoo	Spooky Story - Voodoo Death
 mission_dlc_banjo	The War On Mercenary Day
 mission_dlc_cello	The Cursed Mine
+mission_dlc_mandolin	A Zane to Kill For
 mission_dlc_raid1	The Wrath of Bloomreaper
+mission_dlc_raid2	Brothers in Harm
+mission_dlc_tuba	Takedown Child of Terramorphous
+mission_dlc_tuba_base	The Shape of Slaughter: Takedown at Hadron Abyss
+mission_dlc_tuba_hardcore	The Shape of Slaughter: Hardcore Takedown at Hadron Abyss
+mission_dlc_tuba_timerbase	The Shape of Slaughter: Mayhem Takedown at Hadron Abyss
 mission_dynamicevents_fight_ordernpc_mulstamp	Reinforcements
 mission_event_aircargo	Event_AirCargo
 mission_event_dogfight	DebugOnly:DogFight Event
@@ -65,6 +71,7 @@ mission_main_shatteredlands1	Wrath of the Ripper Queen
 mission_main_shatteredlands1b	Siege and Destroy
 mission_main_shatteredlands2	Unpaid Tab
 mission_main_shatteredlands3	Her Flaming Vision
+mission_mandolin_circleofslaughter	Silent Crisis: Time Scope 5
 mission_micro_andwelcometothejam	And Welcome to the Jam
 mission_micro_backmccrackypt1	Crack This Guy's Back
 mission_micro_backmccrackypt2	Crack This Guy's Back - Setting the Mood
@@ -141,6 +148,7 @@ mission_pearlgen_mou	Ordonite Up!
 mission_pearlgen_sha	Ordonite Up!
 mission_repeatable_raid1	Bloomreaper: Time Attack
 mission_repeatable_raid1_uvhm	Bloomreaper: Ultimate Vault Hunter
+mission_repeatable_raid2_uvhm	Subjugator and Thol: Ultimate Vault Hunter
 mission_side_agreatdisturbance	Fault Hunting
 mission_side_belowthesurface	Below the Surface
 mission_side_castingcall	The Power Ballad of Rodd Vomit

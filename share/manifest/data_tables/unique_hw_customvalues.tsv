@@ -1,0 +1,5 @@
+row_name	custom_1_desc	custom_2_desc	value_1	value_2
+BOR_DiscJockey	max bounces	dmg scale per bounce	5.000000	0.200000
+MAL_BottledLightning	num beams	beam dmg tick scale	4.000000	0.350000
+MAL_GammaVoid	singularity duration	rad damage scale	6.000000	0.500000
+BOR_Streamer	BeamDmgScale	BeamDmgInterval	0.200000	0.250000

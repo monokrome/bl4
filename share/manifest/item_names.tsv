@@ -1,4 +1,5 @@
 np_absolution	Absolution
+np_abyss	Abyss
 np_aggrovator	Chaumurky
 np_anarchy	Anarchy
 np_anchor	Anchor
@@ -10,6 +11,7 @@ np_atlinggun	Atling Gun
 np_axe	Buzz Axe
 np_ballista	Borstel Ballista
 np_barb	Barb'ara
+np_barrel	Cooper Duper
 np_barrelaged	Oak-Aged Cask
 np_beegun	Birt's Bees
 np_bismuth	Bismuth-Tipped Dagger
@@ -20,6 +22,7 @@ np_bonnieclyde	Bonnie and Clyde
 np_boomslang	Boomslang
 np_bottledlightning	Bottled Lightning
 np_breadth	Hardpoint
+np_brickhouse	Brickhouse
 np_bubbles	Bubbles
 np_bugbear	Bugbear
 np_bully	Bully
@@ -44,6 +47,7 @@ np_cm_ds_leg_05	Illusionist
 np_cm_ds_leg_06	Teen Witch
 np_cm_ds_leg_dlc1	Configuration
 np_cm_ds_leg_raid1	Misericorde
+np_cm_ds_leg_raid2	Grim Sister
 np_cm_exo_01	Agente
 np_cm_exo_02	Genio
 np_cm_exo_03	Soldado
@@ -62,6 +66,7 @@ np_cm_exo_leg_05	Esgrimidor
 np_cm_exo_leg_06	Grenazerker
 np_cm_exo_leg_cowbell	Reaparici
 np_cm_exo_leg_raid1	Overdriver
+np_cm_exo_leg_raid2	Bombastic
 np_cm_grav_01	Breaker
 np_cm_grav_02	Chemist
 np_cm_grav_03	Assistant
@@ -80,6 +85,7 @@ np_cm_grav_leg_05	Skeptic
 np_cm_grav_leg_06	Scientist
 np_cm_grav_leg_cowbell	Phlebotomist
 np_cm_grav_leg_raid1	Trooper
+np_cm_grav_leg_raid2	Plasmaphile
 np_cm_pal_01	Guardian
 np_cm_pal_02	Brawler
 np_cm_pal_03	Grenadier
@@ -98,6 +104,7 @@ np_cm_pal_leg_05	Viking
 np_cm_pal_leg_06	Forge Master
 np_cm_pld_leg_cowbell	Tempest
 np_cm_pld_leg_raid1	Lamplighter
+np_cm_pld_leg_raid2	Artificer
 np_cm_robo_01	Pistoleer
 np_cm_robo_02	Bane
 np_cm_robo_03	Gambler
@@ -116,19 +123,25 @@ np_cm_robo_leg_05	Whale
 np_cm_robo_leg_06	Windrider
 np_cm_robo_leg_dlc1	Gamer
 np_cm_robo_leg_raid1	Hooligan
+np_cm_robo_leg_raid2	Prestidigitator
 np_coldshoulder	Cold Shoulder
+np_collector	Collector
 np_commbd	Forsaken Chaos
 np_compleat	Compleation
 np_complex_root	Complex Root
 np_conflux	Conflux
+np_constable	Constable
 np_convergence	Convergence
+np_cormano	Cormano
 np_crazedearl	Crazed Earl
 np_crowdsourced	Midnight Defiance
 np_crowsourced	Crow-Sourced
 np_dahlfather	Heimdahl
+np_darkhard	Hard Dark
 np_demo	Hair Trigger
 np_discjockey	Disc Jockey
 np_disco_disc	Destructo Disco
+np_discybusiness	Discy Business
 np_dividedfocus	Divided Focus
 np_doeshot	Doeshot
 np_dualdamage	Aegon's Dream
@@ -145,6 +158,7 @@ np_firewerks	Firewerks
 np_firework	Matador's Match
 np_firstimpression	First Impression
 np_fisheye	Fisheye
+np_flak	Flak Cannon
 np_flare	Countermeasure
 np_flashcyclone	Flash Cyclone
 np_fleabag	Fleabag
@@ -154,6 +168,7 @@ np_gammavoid	Gamma Void
 np_gmr	G.M.R.
 np_goalkeeper	Goalkeeper
 np_goldengod	Golden God
+np_gomie	Gomie
 np_goremaster	Goremaster
 np_gren_aug_artillery	Fusillade
 np_gren_aug_artillery_duration	Suppressing
@@ -220,13 +235,16 @@ np_heavyweight	Heavyweight
 np_hellfire	Hellfire
 np_hellwalker	Hellwalker
 np_hemorrhage	Hemorrhage
+np_herald	Herald
 np_hoarder	Hoarder
 np_honeybadger	Honey Badger
 np_hopscotch	Hopscotch
 np_ichor	Ichor
 np_inscriber	Inscriber
+np_jailbroken	Jail-Broken Gatling
 np_javelin	Sprezzatura
 np_jetset	Jetsetter
+np_juliet	Juliet's Sparkle
 np_kaleidosplode	Kaleidosplode
 np_kaoson	Kaoson
 np_katagawa	Katagawa's Revenge
@@ -235,8 +253,11 @@ np_kingsgambit	King's Gambit
 np_lasercutter	Laser-Cutter
 np_laserdisc	Laser Disker
 np_leadballoon	Lead Balloon
+np_lightgun	Light Gun
 np_lightning	Sparky Shield
 np_linebacker	Linebacker
+np_lockjaw	Lockjaw
+np_locust	Parasite
 np_lucian	Lucian's Flank
 np_lumberjack	Bloody Lumberjack
 np_luty	Luty Madlad
@@ -252,6 +273,8 @@ np_om	Oscar Mike
 np_on_the_go	On The Go
 np_onionlayeredguard	Onion
 np_onslaught	Onslaught
+np_overswarm	Over Swarm
+np_pellet	Artillery Sphere
 np_phantom_flame	Phantom Flame
 np_plasmacoil	Plasma Coil
 np_potatothrower	Potato Thrower IV
@@ -260,6 +283,7 @@ np_prince	Prince Harming
 np_proteancell	Protean Cell
 np_queensrest	Queen's Rest
 np_quickdraw	San Saba Songbird
+np_raiden	Raiden
 np_rainbowvomit	Rainbow Vomit
 np_rainmaker	Rainmaker
 np_rangefinder	Rangefinder
@@ -328,6 +352,7 @@ np_repkit_uni_ted_killspring	Kill Spring
 np_repkit_uni_tor_shinywarpaint	Shiny War Paint
 np_repkit_uni_vla_adrenalinepump	Adrenaline Pump
 np_repkit_uni_vla_pacemaker	Pacemaker
+np_rhythm	Rhythm
 np_roach	Roach
 np_rocketreload	Lucky Clover
 np_roil	Roil
@@ -337,9 +362,11 @@ np_rowdy	Rowdy Rider
 np_rubber	Jelly
 np_rubysgrasp	Ruby's Grasp
 np_scootshoot	Scoot'n'Shoot
+np_screwed	Screwstonian
 np_seamstress	Rooker
 np_seventh_sense	Seventh Sense
 np_shalashaska	Shalashaska
+np_shammy	Shammy Kablammy
 np_shieldboi	Principal
 np_shokunai	Sho Kunai
 np_sideshow	Sideshow
@@ -363,6 +390,7 @@ np_swarm	Swarm
 np_sweet_embrace	Sweet Embrace
 np_symmetry	Symmetry
 np_tankbuster	Tankbuster
+np_temper	Solar Temper
 np_term_name_bor	BOR Term
 np_term_name_dad	DAD Term
 np_term_name_jak	JAK Term

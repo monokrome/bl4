@@ -133,8 +133,11 @@ pub fn handle_manifest(
     oodle_exec: Option<&str>,
     oodle_fifo: bool,
 ) -> Result<()> {
+    // Normalize path separators for consistent display on Windows
+    let output = output.components().collect::<PathBuf>();
+
     // Ensure output directory exists
-    fs::create_dir_all(output).context("Failed to create output directory")?;
+    fs::create_dir_all(&output).context("Failed to create output directory")?;
 
     // Determine usmap path - either provided or generated from dump
     let usmap_provided = usmap.is_some();
@@ -218,7 +221,7 @@ pub fn handle_manifest(
             paks,
             &usmap_path,
             &scriptobjects_path,
-            output,
+            &output,
             aes_key,
         ) {
             Ok(summary) => {
@@ -243,7 +246,7 @@ pub fn handle_manifest(
     // Generate manifest from extracted files
     println!("=== Manifest Generation ===\n");
     println!("Generating manifest files...");
-    manifest::extract_manifest(&extract_dir, output)?;
+    manifest::extract_manifest(&extract_dir, &output)?;
     println!("\nManifest files written to {}", output.display());
 
     // Generate data tables and drops manifest from NCS data if available
@@ -406,7 +409,7 @@ pub fn handle_manifest(
         // Extract parts database and category names from NCS inv*.bin files
         println!("\n=== Parts Database ===\n");
         println!("Extracting categorized parts from NCS data...");
-        match extract_ncs_by_type(&ncs_dir, "manifest", Some(output), false) {
+        match extract_ncs_by_type(&ncs_dir, "manifest", Some(&output), false) {
             Ok(()) => {}
             Err(e) => {
                 eprintln!("  Warning: Failed to extract parts manifest: {}", e);
@@ -430,7 +433,7 @@ pub fn handle_manifest(
         // Extract mission structures (mission sets + missions) from NCS
         println!("\n=== Mission Structures ===\n");
         println!("Extracting mission data from NCS...");
-        match extract_ncs_by_type(&ncs_dir, "missions", Some(output), false) {
+        match extract_ncs_by_type(&ncs_dir, "missions", Some(&output), false) {
             Ok(()) => {}
             Err(e) => {
                 eprintln!("  Warning: Failed to extract mission structures: {}", e);

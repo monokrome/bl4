@@ -9,9 +9,14 @@ index	name
 81	part_mag_torgue_sticky_soulsurvivor
 81	part_mag_torgue_normal_fearstalker
 82	part_mag_torgue_normal_soulsurvivor
+83	part_mag_torgue_sticky_sharkbait
 84	part_mag_torgue_normal_inscriber
+84	part_mag_torgue_normal_sharkbait
 86	part_mag_torgue_normal_beegun
+86	part_mag_05_borg_acc_manifest
 88	part_mag_torgue_sticky_tkswave
 89	part_mag_torgue_normal_tkswave
 89	part_mag_torgue_sticky_mercury
 90	part_mag_torgue_normal_mercury
+99	part_mag_torgue_sticky_locust
+100	part_mag_torgue_normal_locust

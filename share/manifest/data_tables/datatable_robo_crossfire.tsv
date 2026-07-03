@@ -1,0 +1,39 @@
+row_name	description	description 2	description 3	modifier 1	modifier 2	modifier 3	skill name
+CrossFire	Duration	Cooldown	Cooldown Restore	16.000000	38.000000	0.500000	
+CrossFire_Movement	Move Speed	Ricochet Chance	Melee Damage	0.200000	0.750000	0.350000	
+CrossFire_Camera	Blend in time	Blend out time		0.300000	0.600000		
+Crossfire_SpecialAction	Cooldown			2.500000			
+Crossfire_Anim	Shots per Stance			3.000000			
+Gun_Default	Focus Duration		Innacuracy	0.100000		40.000000	
+Gun_Default_2		Windfall CRit Chance	Zoom Acc Modifier		0.250000	0.500000	
+Gun_Targeting	Max Angle	Max Priority Angle	Distance	35.000000	20.000000	5000.000000	
+Gun_Base	Ammo	Fire Rate	Shot Cost	45.000000	0.350000	1.000000	
+Gun_Base_Damage	Scalar	Radius		0.135000	8.000000		
+Gun_Shotgun	Innaccuracy	Fire Rate	Windfall Bonus	90.000000	0.450000	2.000000	
+Gun_Shotgun_Damage	Scalar	Radius	Pellets	0.157500	8.000000	4.000000	
+Gun_Rocket	Fire Rate		Innacuracy	0.750000		30.000000	
+Gun_Rocket_Damage	Scalar	Radius		0.322500	256.000000		
+MeleeKnockback	Cooldown	Angle	Distance	3.000000	10.000000	800.000000	
+SpinAttack	Cooldown	Damage Scalar	Fire Rate Scalar	2.000000	1.000000	0.500000	
+BurstFire	Cooldown	Duration Cost	Fire Rate	2.000000	0.200000	0.400000	Burst Fire Mode
+Augment_2	Move Speed	Fire Rate	Duration	0.200000	0.200000	6.000000	Augment 2
+Augment_2_Shadowstep	Speed	Cooldown		5000.000000	3.000000		
+Augment_2_Riochet	Scalar	Chance	Cooldown	0.500000	0.500000	0.200000	
+Augment_3	Fire Rate	Bone Shard Chance	Override Duration	0.120000	0.050000	8.000000	Augment 3
+Augment_3_Cooldown	Cooldown	Max Stacks		1.000000	4.000000		
+Augment_3_Override	Fire Rate	Health	Shard Chance	0.100000	0.150000	0.050000	
+Augment_4	Duration Return	Ordnance Damage	Cooldown	4.000000	0.200000	1.000000	Augment 4
+Augment_4_Override	Duration	Damage Scalar	Cost	8.000000	0.150000	6.000000	
+Augment_4_Grenade	Damage Scalar	Radius	Grenade N	0.400000	512.000000	7.000000	
+Augment_4_Cooldown	Cooldown	Duration Cost		3.000000	0.150000		
+Augment_4_DReturns	Diminish Rate	Max		0.950000	100.000000		
+Augment_5	Totem Chance	Cooldown	Max Totems	0.250000	4.000000	2.000000	Augment 5
+Augment_6	Duration	Danage Reduction	Move Speed	8.000000	-0.500000	0.200000	Augment 6
+Augment_6_Lightning	Arc Chance	Windfall Arc Chance	Damage Scalar	0.150000	0.250000	0.200000	
+Augment_6_Timing	Lightning Lifetime	Cooldown		0.750000	1.000000		
+Augment_7	Action Skill Damage	Max Rockets	Max Rockets Windfall	0.500000	12.000000	24.000000	Augment 7
+Augment_7_Rockets	Rocket Damage	Rocket Radius	Max/Enemy	0.400000	128.000000	3.000000	
+Augment_7_Timing	Paint Interval	Fire Interval	Cooldown	0.250000	0.100000	6.000000	
+Augment_8	Stack Cost	Duration	Cooldown	1.000000	2.000000	3.000000	Augment 8
+Augment_8_Override	Fire Rate	Bonus Fire Damage		0.140000	0.200000		
+Augment_8_Stacks	Max Stacks	Duration		10.000000	16.000000		

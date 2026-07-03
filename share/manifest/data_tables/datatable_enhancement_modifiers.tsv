@@ -1,0 +1,57 @@
+row_name	comment	duration	modifier
+Core_BoxMagazine	Modifier is fire rate and duration is percent max loaded ammo	0.200000	0.200000
+Core_Recycler	Percent ammo refund	0.000000	0.500000
+Core_BouncePass		0.000000	1.000000
+Core_TrackerAntenna	Fire rate increase while ATL tracking active	0.000000	0.400000
+Core_HighRoller	dmg per stack and max stacks	25.000000	0.020000
+Core_ColdOpen	Damage and heat percent	0.500000	0.200000
+Core_Boompuppy	Modifier is proc chance and duration is weapon damage multiplier of barrage	3.000000	0.500000
+Core_StimConverter	Modifier is % of health pool healed on weapon shield hit.	0.000000	0.100000
+Core_Stockpiler	Max damage bonus based on % spare ammo	0.000000	0.250000
+Core_FreeCharger	Proc chance for next shot to have 0 charge and ammo cost	0.000000	0.300000
+Core_Mixologist	Percent damage bonus from inactive mode's element	0.000000	0.100000
+Core_Leaper	Chance for bullet to ricochet	0.000000	0.400000
+Core_Explosiception		0.000000	0.500000
+Core_BulletFabricator	Modifier is chance to proc	0.000000	0.400000
+Core_DuctTape		0.000000	1.000000
+Core_PrimedPotency	Status effect chance of first bullet after reload	0.000000	1.000000
+Core_BulletHose	Chance that next bullet has no ammo cost	0.000000	0.300000
+Core_TraumaBond	Damage mod while ATL tracking active	0.000000	0.300000
+Core_FreeLoader	Proc chance	0.000000	0.300000
+Core_ShockGuard	Cooldown time between shock novas and duration is damage modifier	120.000000	8.000000
+Core_MuzzleBrake	Modifier is accuracy and duration is fire rate	0.500000	-0.500000
+Core_Underdog	Underbarrel damage	0.000000	0.500000
+Core_SureShot	Cooldown before next tracker dart	0.000000	25.000000
+Core_HardCharger	Modifier is damage and duration is charge time	0.300000	0.250000
+Core_ShortCircuit	Proc chance and fire rate	1.000000	0.300000
+Core_Ventilator	Proc chance	0.000000	0.250000
+Core_Smelter	Fire rate and heat level	0.500000	0.350000
+Core_Accelerator	Fire rate per bullet and max stacks	50.000000	0.010000
+Core_BackupPlan	Ammo amount and tick interval	1.000000	1.000000
+Core_Bulwark	weapon shield capacity	0.000000	1.000000
+Core_Stabilizer	Hyperion weapon accuracy	0.000000	-0.400000
+Core_Piercer	Auto Crit Chance	0.200000	0.200000
+Core_Sequencer	stacking dmg bonus from consecutive crits; max stacks	8.000000	0.050000
+Core_Synthesizer	status effect damage mod	0.000000	0.250000
+Core_Transfuser	num status effect targets	0.000000	3.000000
+Core_PowerShot	damage increase after charge	0.000000	0.300000
+Core_HeadRinger	damage and damage radius	1.000000	0.250000
+Core_AirBurst		0.000000	
+Core_BottomFeeder	Modifier is scale multiply value and duration is uistat value	0.400000	0.600000
+Core_Protractor	Chance to not consume ammo while target locked	0.000000	0.500000
+Core_AmmoGenerator	ammo regen	0.000000	0.500000
+Core_Banger	ted thrown damage scale	0.000000	0.500000
+Core_ExtendaFriend	Ted thrown lifetime	0.000000	0.500000
+Core_DigiDivider	Extra thrown projectile chance	0.000000	0.500000
+Stat_StatusEffect_Damage		0.000000	0.050000
+Stat_StatusEffect_Chance		0.000000	0.050000
+Stat_Weapon_Damage		0.000000	0.050000
+Stat_Weapon_FireRate	Duration used for burst fire delay, charge time, spinup time	-0.050000	0.050000
+Stat_Weapon_SplashDamage		0.000000	0.050000
+Stat_Weapon_Accuracy	Duration used for accuracy impulse	-0.020000	-0.100000
+Stat_Weapon_CriticalDamage		0.000000	0.100000
+Stat_Weapon_SplashRadius		0.000000	0.100000
+Stat_Weapon_ADS_Proficiency		0.000000	-0.100000
+Stat_Weapon_ReloadSpeed		0.000000	-0.050000
+Stat_Weapon_MagSize	Duration is heat per shot	-0.100000	0.100000
+Stat_Weapon_EquipSpeed	Duration is mode switch time scale	0.200000	-0.200000

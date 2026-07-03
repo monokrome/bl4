@@ -60,6 +60,7 @@ index	name
 57	part_body_mag_sr
 58	part_body_mag_sg
 59	comp_05_legendary_conglomerate
+59	part_barrel_01_raiden
 60	part_barrel_01_luty
 61	comp_05_legendary
 62	part_body
@@ -70,6 +71,9 @@ index	name
 67	part_mag_borg_barrel_01
 68	comp_05_legendary_loarmaster
 69	part_barrel_01_loarmaster
+70	comp_05_legendary_raiden
+71	part_barrel_02_screwed
+72	comp_06_pearl_screwed
 79	part_underbarrel_01_stungrenade
 80	part_barrel_01_a
 81	part_barrel_01_b

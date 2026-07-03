@@ -1,0 +1,9 @@
+row_name	armordamagereduction	armorsegmentregenduration	armorsegments	capacity_scale	custom_1	custom_2	custom_3	value_1	value_2	value_3
+JAK_OnionLayeredGuard		10.000000	4.000000		immune duration			2.000000		
+VLA_Hoarder		8.000000	5.000000	1.350000	mag refresh chance			0.500000		
+TOR_Firewerks		14.000000	3.000000		RocketDmgScale			1.000000		
+TED_Timekeeper	0.000000		0.000000	0.000000	HealthScaleAdd	HealthRegen	DmgTakenScaleAdd	1.000000	0.050000	-0.500000
+VLA_HeavyWeight		10.000000	4.000000		BoxerMeleeAmp	EmptyMeleeAmp		1.000000	0.500000	
+JAK_BarrelAged		3.250000	0.250000							
+TOR_Compleat		8.000000	5.000000	1.250000						
+TED_ShieldBoi		18.000000	2.000000							

@@ -1,0 +1,8 @@
+row_name	accdelay_value	accimpulse_value	accregen_value	accuracy_value	critdamage_add	damage_scale	damageradius_value	firerate_value	impact_force_value	part_value	projectilespershot_value	recoil_scale	spread_value	statuschance_scale	statusdamage_scale
+ORD_SR_Seamstress				4.000000		5.000000		2.000000					3.000000		
+DAD_SG_Misslaser		0.500000		6.000000		3.000000		3.000000					6.000000		
+TED_PS_Inscriber				3.750000		6.300000		2.500000					3.500000		
+BOR_SMG_Roil	0.250000		-6.000000	4.500000		2.100000	25.000000	6.750000	12500.000000	1			4.000000	2.000000	1.500000
+JAK_AR_Rowdy		1.000000	-6.000000	5.500000	-0.750000	4.500000		3.200000	16000.000000	2		0.600000	3.000000	1.750000	
+TOR_PS_Breadth	0.600000	1.000000		5.000000		2.500000	135.000000	1.500000	12500.000000	2	5.000000		5.000000		
+BOR_SR_Tankbuster		0.600000		4.000000		3.000000		1.250000		1			1.500000		

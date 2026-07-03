@@ -1,0 +1,7 @@
+row_name	custom_1_desc	custom_2_desc	custom_3_desc	custom_4_desc	custom_5_desc	value_1	value_2	value_3	value_5
+JAK_Slugger	mag size	reload speed	kill stack damage	kill stack reload speed	kill stack duration	1.000000	-1.000000	0.300000	10.000000
+TOR_Linebacker	dmg bounce scale	dmg radius bounce scale				0.250000	0.350000		
+TED_Anarchy	Max Stacks	Dmg Scale per stack	Accuracy Scale per stack			20.000000	0.150000	0.150000	
+JAK_Hellwalker	ReloadTimeScale					0.600000			
+BOR_GoreMaster	LowHP Threshold	Dmg Scalar				0.400000	0.660000		
+DAD_Bod	GunDamageScaleOffset					-2.000000			

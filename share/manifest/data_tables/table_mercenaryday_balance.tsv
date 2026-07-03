@@ -1,0 +1,11 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+BountyPack1_Boss_MercenaryDay		40.000000	25.000000	20.000000
+BountyPack1_Boss_MercenaryDayTRUE		80.000000	50.000000	40.000000
+Proj_Boulder		0.250000	0.250000	0.250000
+BountyPack1_Boss_Leader_MercenaryDay		45.000000	30.000000	25.000000
+BountyPack1_Boss_Leader_MercenaryDayTRUE		90.000000	60.000000	50.000000
+Proj_Gift		0.500000	0.500000	0.500000
+ToyBrute_Add	0.750000	2.000000	2.000000	2.000000
+ProjGiftMine		0.150000	0.150000	0.150000
+BruteBoss_ShieldBarrier		7.000000	7.000000	7.000000
+DefectSynth		2.500000	2.500000	2.500000

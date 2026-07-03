@@ -1,0 +1,14 @@
+row_name	description	description 2	description 3	modifier 1	modifier 2	modifier 3	skill name
+Cleromancy	Duration	Cooldown	Charges	24.000000	36.000000	3.000000	
+Cleromancy_Spawning	Spawn Delay	Height Offset	Stationary Height Offset	0.350000	150.000000		
+Cleromancy_Max	Max Totems			6.000000			
+Cleromancy_SpawnExplosion	Damage Scalar	Radius		0.350000	384.000000		Explosion on Spawn
+Cleromancy_DroneHover_Player	Min Distance	Max Distance	Max Angle	200.000000	250.000000	35.000000	
+Cleromancy_Augment1	Drone Health			0.200000			
+Cleromancy_Augment2	Additional Charges			1.000000			
+Cleromancy_Augment3	Windfall Duration			0.200000			
+Cleromancy_Augment4	Min Stacks Scalar			2.000000			
+Cleromancy_Augment5	Cooldown			60.000000			
+Cleromancy_Augment6	Fire Rate	Reload Speed		0.150000	-0.200000		
+Cleromancy_Augment7	Duration			6.000000			
+Cleromancy_Augment8							

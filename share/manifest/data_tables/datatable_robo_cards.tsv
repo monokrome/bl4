@@ -1,0 +1,21 @@
+row_name	augment	card type	damage scalar	modifier 1	modifier 1 description	modifier 2	modifier 2 description	modifier 3	modifier 3 description	name	proxy radius	radius	speed
+MagicMissile	skill_state'S_General_Slotted'	NewEnumerator0	0.180000	3.000000	Splits	3.000000	Windfall Additional Splits			Magic Missile	16.000000	192.000000	2400.000000
+Fireball	skill_state'S_General_Slotted'	NewEnumerator1	1.080000	0.600000	Mortar Damage Scalar	12.000000	Mortar Lifetime	1.500000	Mortar Tick Time	Fireball	192.000000	256.000000	10000.000000
+Bolt	skill_state'State_Robo_SleightOfHand_Augment_1'	NewEnumerator2	0.720000	4.000000	Windfall Chains	1.000000	Chain Cooldown	2176.000000	Chain Radius	Bolt	16.000000	32.000000	16000.000000
+Bolt_Beam			0.420000	0.250000	Interval	1.500000	Lifetime						
+AcidSpray	skill_state'State_Robo_SleightOfHand_Augment_2'	NewEnumerator3	0.840000	3.000000	Cards	7.500000	Angle Step			Acid Spray	128.000000	192.000000	12000.000000
+AcidSpray_Windfall			1.020000	4.000000	Cards	5.000000	Angle Step				128.000000	320.000000	
+AcidSpray_Nova			0.840000										192.000000
+BlackHole	skill_state'State_Robo_SleightOfHand_Augment_3'	NewEnumerator4	0.240000	512.000000	Pull Radius	10.000000	Duration			Black Hole	224.000000	256.000000	3000.000000
+Blackhold_Singularity				192.000000	Inner Radius	1024.000000	Outer Radius	2.000000	Duration				
+VampiricTouch	skill_state'State_Robo_SleightOfHand_Augment_4'	NewEnumerator5	1.200000	0.500000	Lifesteal					Vampiric Touch	128.000000	192.000000	12000.000000
+VampiricTouch_Crit			2.400000	0.750000	Crit Chance	0.500000	Crit Damage						
+ColorSpray	skill_state'State_Robo_SleightOfHand_Augment_5'	NewEnumerator6	0.960000	0.250000	EEffect Scalar	8.000000	EEffect Duration	1.000000	Windfall Additional E	Color Spray	16.000000	192.000000	12000.000000
+ColorSpray_BonusDamage			0.420000	16.000000	Duration	1.000000	Max Stacks						
+FreezingShards	skill_state'State_Robo_SleightOfHand_Augment_6'	NewEnumerator7	0.900000	3.000000	Shards	0.300000	Freeze Chance	2176.000000	Distance	Freezing Shards	32.000000	192.000000	12000.000000
+FreezingShards_Child			0.480000	8.000000	Freeze Duration	0.100000	Freeze Scalar				64.000000	96.000000	1500.000000
+BoneShards	skill_state'State_Robo_SleightOfHand_Augment_7'	NewEnumerator8	0.900000	0.350000	Splinter Scalar					Bone Shards	64.000000	192.000000	12000.000000
+BallOfFandL	skill_state'State_Robo_SleightOfHand_Augment_8'	NewEnumerator9	0.420000	8.000000	Duration					Ball of Fire and Lightning	64.000000	512.000000	1600.000000
+BallOfFandL_SpawnCard												128.000000	2800.000000
+BallOfFandL_Hazard				4.000000	Duration	0.200000	Damage Interval					384.000000	
+WretchedShadows		NewEnumerator10	0.600000	12.000000	Lifespan	1.500000	Tick Time	-0.400000	Time Dilation	Wretched Shadows	64.000000	2048.000000	9000.000000

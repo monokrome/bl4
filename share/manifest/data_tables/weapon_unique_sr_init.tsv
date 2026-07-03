@@ -1,0 +1,5 @@
+row_name	custom_1_desc	custom_2_desc	custom_3_desc	value_1	value_2	value_3
+JAK_Boomslang	max ricochets			3.000000		
+MAL_Katagawa	Fire radius	Fire damage scale	Shock beam Damage scale	300.000000	0.500000	0.130000
+JAK_Ballista	heat impusle scale	Child dmg scale		2.000000	0.350000	
+VLA_CrowdSourced	Add'l Dmg Scalar	Query Max Actors	Query Max Distance	0.500000	10.000000	5000.000000

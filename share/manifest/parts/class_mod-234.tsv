@@ -102,4 +102,6 @@ index	name
 101	statspecial_incendiary_damage
 102	stat_criticalhitchance_melee
 103	part_firmware_skillcraft
+104	part_firmware_active_fire
 105	statspecial_movementspeed
+106	part_firmware_bruiser

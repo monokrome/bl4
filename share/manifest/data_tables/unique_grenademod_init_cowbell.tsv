@@ -1,0 +1,4 @@
+row_name	cooldown_scale	customdesc1	customdesc2	customvalue1	customvalue2	damage_payload_scale	damage_scale
+VLA_Barb		ChargesPostAdd	SecondPayloadScale	-1.000000	1.000000	0.500000	1.300000
+JAK_Bismuth	1.700000	Status Duration	Status Modifier	10.000000	0.150000		0.450000
+VLA_Barb2		ManagedActorLimit		36.000000			

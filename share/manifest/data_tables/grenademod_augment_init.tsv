@@ -44,3 +44,4 @@ DamageAmp		Duration	DmgAmpScale	10.000000	0.150000
 DamageAmp_BouncingBlade						0.750000		
 DamageAmp_Suppressor			EnemyDmgScale		-0.250000			
 DamageAmp_Penetrator	1.500000	Duration	DmgAmpScale_Penetrator	5.000000	0.150000			
+DamageAmp_Penetrator_0	1.500000	Chance		0.300000				

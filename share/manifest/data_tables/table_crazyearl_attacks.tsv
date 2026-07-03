@@ -1,0 +1,16 @@
+row_name	comment	custom_01	custom_02	custom_03	custom_04	custom_05	custom_06	custom_07	custom_10	halfheight	radius
+Divebomb	C01 = MaxRange // C02 = MinRange // C03 = Prefered Range From Player // C10 = Impact Radius	6000.000000	1500.000000	600.000000					1000.000000		
+Large_BloodExplosion	Radius = Damage Radius // C01 = Damage Delay (unburrowAOE should use this same value)	2.250000									1200.000000
+Small_BloodExplosion	Radius = Damage Radius // C01 = Damage Delay	2.250000									400.000000
+UnburrowAOE	Radius = Damage Radius										800.000000
+RainCloud_Giant	HalfHeight = Cloud/Damage Height // Radius = Cloud VFX Radius (damage should most likely use this as well) // C01 = Spawn Time	4.250000								2000.000000	4800.000000
+RainCloud_Small	HalfHeight = Cloud/Damage Height // Radius = Cloud VFX Radius (damage should most likely use this as well) // C01 = Spawn Time	2.000000								1400.000000	400.000000
+BloodyBlackhole	C01 = Projectile Damage Radius // C02 = Explosion Delay // C03 = Singularity Start Radius // C04 = Damage Halfway Mark Radius // C05 = Singularity End Radius // C06 = Explosion Radius // C07 = Wind VFX Center Radius	125.000000	5.000000	1000.000000	1200.000000	1400.000000	1400.000000	175.000000			
+FireFloor	C01 = VFX Fire Linger Duration // C02 = VFX Radius	3.500000	4800.000000								
+BloodWaves	C01 = Spawn Height Offset from Ground	50.000000									
+FireSpiral	C01 = Damage Duration	0.800000									
+BloodFlower	Custom01 = Damage Diameter // Custom02 = Warning Duration	2600.000000	5.100000								
+Burrow_Underground	C01 = BurrowUnderground Impact Radius	700.000000									
+BloodWave_Impact	HalfHeight = Height // C01 = Width // C02 = Depth	980.000000	700.000000							560.000000	
+FireTailSlap_Impact	HalfHeight = Height // C01 = Width // C02 = Depth	700.000000	1200.000000							560.000000	
+Headbang_AOE	C01 = Ring AOE	1000.000000									

@@ -1,0 +1,7 @@
+row_name	custom_1_desc	custom_2_desc	custom_3_desc	value_1	value_2	value_3
+MAL_SG_Reminisce	TargetDistance			3000.000000		
+JAK_SR_Fearstalker	MaxStacks	CritStackAdd	NonCritStackAdd	5.000000	1.000000	2.000000
+ORD_PS_Sunspot	MaxDamageMod			2.000000		
+TOR_SG_Unstable_Kor	StickyScale	StickyBaseMulti	StickyMultiAdd	5.000000	3.000000	0.350000
+MAL_SM_FlashCyclone	BaseProcChance	ChildProjDMGScalar	MaxChildProjectiles	0.050000	2.000000	3.000000
+TOR_PS_ScootShoot	DistanceCheck			50.000000		

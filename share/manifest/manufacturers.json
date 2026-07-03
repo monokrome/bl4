@@ -1,28 +1,28 @@
 {
-  "MAL": {
-    "code": "MAL",
-    "name": "Maliwan",
-    "path": "OakGame/Content/Gear/Weapons/_Shared/Materials/MAL"
+  "DAD": {
+    "code": "DAD",
+    "name": "Daedalus",
+    "path": "OakGame/Content/Gear/Weapons/_Shared/Materials/DAD"
   },
   "BOR": {
     "code": "BOR",
     "name": "Ripper",
     "path": "OakGame/Content/Gear/Weapons/_Manufacturer/BOR"
   },
-  "ORD": {
-    "code": "ORD",
-    "name": "Order",
-    "path": "OakGame/Content/Gear/Weapons/_Shared/Materials/ORD"
+  "JAK": {
+    "code": "JAK",
+    "name": "Jakobs",
+    "path": "OakGame/Content/Gear/Weapons/_Manufacturer/JAK"
   },
   "TOR": {
     "code": "TOR",
     "name": "Torgue",
     "path": "OakGame/Content/Gear/Weapons/_Manufacturer/TOR"
   },
-  "DAD": {
-    "code": "DAD",
-    "name": "Daedalus",
-    "path": "OakGame/Content/Gear/Weapons/_Shared/Materials/DAD"
+  "ORD": {
+    "code": "ORD",
+    "name": "Order",
+    "path": "OakGame/Content/Gear/Weapons/_Shared/Materials/ORD"
   },
   "TED": {
     "code": "TED",
@@ -35,9 +35,9 @@
     "name": "Vladof",
     "path": "OakGame/Content/Gear/Weapons/_Shared/Materials/VLA"
   },
-  "JAK": {
-    "code": "JAK",
-    "name": "Jakobs",
-    "path": "OakGame/Content/Gear/Weapons/_Manufacturer/JAK"
+  "MAL": {
+    "code": "MAL",
+    "name": "Maliwan",
+    "path": "OakGame/Content/Gear/Weapons/_Shared/Materials/MAL"
   }
 }

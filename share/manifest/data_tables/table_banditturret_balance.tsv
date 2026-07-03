@@ -1,0 +1,9 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+RocketTurret	0.500000	2.000000	2.000000	2.000000
+ChaingunTurret	0.750000	2.000000	2.000000	2.000000
+FlamethrowerTurret	0.600000	2.000000	2.000000	2.000000
+ShieldProjector				
+BubbleShield		3.000000		
+Augmentor		3.000000	3.000000	3.000000
+SingularityTrap		1.500000	1.500000	1.500000
+MissionTurret	0.600000	3.000000	3.000000	3.000000

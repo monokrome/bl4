@@ -247,3 +247,5 @@ index	name
 246	part_stat2_wt_sr_statuseffectchance
 247	part_stat2_wt_sr_statuseffectdamage
 248	part_firmware_skillcraft
+249	part_firmware_active_fire
+250	part_firmware_bruiser

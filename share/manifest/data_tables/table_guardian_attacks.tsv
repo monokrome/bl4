@@ -1,0 +1,47 @@
+row_name	angle	comment	cooldown	custom_01	custom_02	custom_03	custom_04	custom_05	custom_06	custom_07	custom_08	custom_09	custom_10	custom_11	custom_12	custom_13	custom_14	custom_15	custom_16	custom_17	custom_18	dmgmultiplier	duration	halfheight	radius
+TKGuard_TakeOff	0.000000	C01 = Warmup	20.000000	30.000000																		0.000000		0.000000	0.000000
+TKGuard_Landing	0.000000	C01 = Warmup	10.000000	10.000000																		0.000000		0.000000	0.000000
+TkGuard_VeilSweep	0.000000	C01 = Warmup	60.000000	30.000000																		0.000000		0.000000	0.000000
+TKGuard_VeilBreath		C01 = Warmup, C02 = MaxEnemyToSpawn	60.000000	50.000000	3.000000																		45.000000		
+TkGuard_Pods	0.000000	C01 = Warmup	60.000000	60.000000																		0.000000		0.000000	0.000000
+TKGuard_SpikeHover		Dur=Time before stop; C1=time before drop;  C2=DropImpulse C3= warmuptime	45.000000	1.250000	-7500.000000	48.000000																0.700000	10.000000		
+TKGuard_SpikeImpact		Dur = Lifetime( 0 =infinite)																				1.200000			600.000000
+TKGuard_WingFlap	0.000000	C01 = Warmup	7.000000	5.000000																		0.000000		0.000000	0.000000
+TKGuard_Shriek	0.000000		20.000000	5.000000																		0.000000		0.000000	0.000000
+TKGuard_FrostImage			20.000000	5.000000																					
+TkGuard_MegaTetra		C01=Warmup C2,3,4 = rot speed c5=ticket	18.000000	10.000000	31.000000	30.000000	30.000000	3.000000																	
+TkGuard_MegaFalling		C01=Warmup C2= Delay Before Blast c3= ticket	30.000000	20.000000	2.500000	5.000000																			
+TkGuard_MegaBeam		C01=Warmup c2=ticket	7.000000	5.000000	2.000000																				
+GrassGuard_TailSwipe	75.000000		15.000000																				5.000000	100.000000	3500.000000
+GrassGuard_CorrosionSpread	0.000000	C02 = Velocity			100.000000																	0.000000		0.000000	0.000000
+GrassGuard_PodsSpawner	0.000000	C02 = MinRangeToSpawnFromOrigin, C03 = MaxRangeToSpawnFromOrigin, C04 = MinDistanceBetweenGrowingPods, C05 = MinDelayBetweenSpawns, C06 = MaxDelayBetweenSpawns, C07 = NumberToSpawn 			700.000000	2000.000000	1000.000000	1.500000	2.500000	3.000000												0.000000		0.000000	0.000000
+GrassGuard_Pod		C01= Warmup, C02 = MinSleepingTime, C03 = MaxSleepingTime, C04 = SporesGrowthTime (same as the timeline), C05 = FullyGrownTime	45.000000	25.000000	4.000000	8.000000	6.000000																		
+GrassGuard_Spore	360.000000	C02 = SporeSpawnVelocity, C03 = MinSporeSpawnDelay, C04 = MaxSporeSpawnDelay, C05 = HomingVelocity, C06 = DelayBeforeHoming			1500.000000		0.250000	6000.000000	0.500000													0.150000			100.000000
+GrassGuard_VeilBloom		C01 = Warmup, C02 = MaxEnemyToSpawn, C03 = VeilActivationDelay, C04 = VeilNumberToSpawn, C05 = MinDelayBetweenVeilSpawns, C06 = MaxDelayBetweenVeilSpawns, C07 = MaxVeilsAliveToSpawnVeils	10.000000	75.000000	1.000000	1.000000	5.000000	0.250000	0.250000	5.000000												0.000000	30.000000		
+GrassGuard_TailGrab		c1= cooldown pod tuto	3.000000	3.000000																		0.500000	5.000000	3000.000000	300.000000
+GrassGuard_BallLeap			5.000000																				4.000000		550.000000
+GrassGuard_Perch		C1Warmup	38.000000	30.000000																			3.000000		
+MountGuard_ColdMist_Boss	0.000000	C01 = ExpansionTime		4.000000																		0.200000		0.000000	0.000000
+MountGuard_ColdMist_World	0.000000																					0.050000		0.000000	0.000000
+MountGuard_GlideVents	0.000000	C01 = SpawningDuration, C02 = SpawningAirBaseEmissionForce, C03 = ActivatingDuration, C04 = ActivatingAirBaseEmissionForce, C05 = ActivatingAirTopEmissionForce, C06 = DissipatingDuration, C07 = ActivationExplosionDuration, C08 = MinDissipatingDelay100, C09 = MaxDissipatingDelay100, C10 = MinDissipatingDelay66, C11 = MaxDissipatingDelay66, C12 = MinDissipatingDelay33, C13 = MaxDissipatingDelay33		0.500000	0.700000	0.500000	7.000000	7.000000	0.500000	0.500000	15.000000	20.000000	12.000000	17.000000	9.000000	14.000000						3.000000		0.000000	0.000000
+MountGuard_Statue		 C01 = DestroyStatueDelay, C02 = CrackDuration, C03 = DestroyNSDelay  		1.000000	4.000000	5.000000																			
+MountGuard_TakeOff	0.000000	C01 = Warmup		2.000000																		0.000000		0.000000	0.000000
+MountGuard_Attacks	0.000000	C01 = CooldownBetweenIceAttacks, C02 = CooldownBetweenFireAttacks		3.000000	5.000000																	0.000000		0.000000	0.000000
+MountGuard_ElementSwitch	0.000000	C01 = MinSwitchToFireCooldown100, C02 = MaxSwitchToFireCooldown100, C03 = MinSwitchToFireCooldown66, C04 = MaxSwitchToFireCooldown66, C05 = MinSwitchToFireCooldown33, C06 = MaxSwitchToFireCooldown33, C07 = ElementSwitchDuration, C08 = ElementSwitchAnticipationFinalScale, C09 = ElementSwitchNovaInitialScaleXY, C10 = ElementSwitchNovaInitialScaleZ, C11 = ElementSwitchNovaExpansionDuration, C12 = ElementSwitchEmissiveDuration		55.000000	65.000000	50.000000	60.000000	45.000000	55.000000	3.000000	12.000000	6.000000	1.800000	1.500000	0.200000							2.000000	1.360000	0.000000	0.000000
+MountGuard_VeilBreath	0.000000	C01 = , C02 = SpawnPatternsAvailable, C03 = MaxSpawnPatternsActive, C04 = TotalSpawnPatterns, C05 = MinVeilDuration, C06 = MaxVeilDuration, C07 = MinBatsToSpawn100, C08 = MaxBatsToSpawn100, C09 = MinBatsToSpawn50, C10 = MaxBatsToSpawn50, C11 = 	20.000000		4.000000	2.000000	4.000000	60.000000	80.000000	1.000000	2.000000	2.000000	3.000000									0.000000	1.000000	0.000000	0.000000
+MountGuard_IceShards	16.000000	Radius = MinVerticalSpawnRotation, Angle = MaxVerticalSpawnRotation, C01 = HomingDelay, C02 = MaxHorizontalSpawnDistanceFromSpineCenter, C03 = MaxTimeTargetLocationPrediction, C04 = MaxXYLocationAdditionalPrediction, C05 = MaxZLocationAdditionalPrediction, C06 = DelayBeforeAccelerating, C07 = HomingAcceleration, C08 = DelayBeforeDestroying, C09 = NumberToSpawnPerTarget100, C10 = NumberToSpawnPerTarget75, C11 = NumberToSpawnPerTarget50, C12 = NumberToSpawnPerTarget25, C13 = MaxVerticalSpawnDistanceFromSpineCenter, C14 = MinSpawnHeightFromSpineCenter, C15 = MaxSpawnHeightFromSpineCenter, C16 = MinHorizontalSpawnRotation, C17 = MaxHorizontalSpawnRotation, C18 = InitialSpeed	15.000000	1.200000	20.000000	1.500000	100.000000	30.000000	1.400000	4000.000000	4.000000	5.000000	6.000000	7.000000	8.000000	250.000000	30.000000	100.000000	3.000000	32.000000	2300.000000	1.500000	0.600000	0.000000	12.000000
+MountGuard_Cyclone_Cryo	0.000000	C01 = FormationDuration, C02 = , C03 = , C04 =, C05 = AnticipationDuration, C06 = XYAnticipationScale, C07 = ZAnticipationScale, C08 = , C09 = DissipationDuration	15.000000	2.000000				3.880000	20.000000	15.000000		0.500000										1.500000		0.000000	0.000000
+MountGuard_IceWave	0.000000	C01 = SpawnHeightFromArenaCenterZ, C02 = WaveFullRotationTime, C03 = WaveFullRotationAngle, C04 = NSDyingTime, C05 = NSDyingInitialSpawnRate, C06 = AnticipationDuration, C07 = ExplosionDuration	15.000000	1175.000000	3.500000	156.000000	2.000000	700.000000	4.360000	0.500000												2.500000	1.000000	0.000000	0.000000
+MountGuard_Eruption	0.300000	DmgMultiplier = EruptionProjDMG, Angle = EruptionCenterDMGTick, C01 = ExpandingDuration, C02 = EruptionCylinderScaleXY, C03 = EruptionCylinderFinalScaleZ, C04 = EruptionProjectilesNumberToSpawn, C05 = ProjectileTrajectoryOptionsAnglePercent, C06 = DissipatingDuration, C07 = , C08 = , C09 = 	20.000000	0.300000	45.000000	12.000000	10.000000	0.700000	3.000000													2.000000	1.000000	0.000000	0.000000
+MountGuard_Tornadoes	46.000000	Radius = FullRotationTime100, Angle = FullRotationTime66, HalfHeight = FullRotationTime33, Duration = ExplosionDuration, C01 = NumberToSpawn100, C02 = NumberToSpawn66, C03 = , C04 = SpawnDistanceFromCenter, C05 = SpawnHeightFromCenter, C06 = SpawnAngleFromTargetPrediction, C07 = SpawningDuration, C08 = MinActiveDuration100, C09 = MaxActiveDuration100, C10 = MinActiveDuration66, C11 = MaxActiveDuration66, C12 = MinActiveDuration33, C13 = MaxActiveDuration33, C14 = DissipatingTime, C15 = AccelerationDuration	30.000000	2.000000	3.000000		3150.000000	1200.000000	40.000000	4.000000	22.000000	26.000000	24.000000	28.000000	26.000000	30.000000	4.000000	4.000000				0.700000	1.000000	42.000000	50.000000
+MountGuard_Cyclone_Fire	0.000000	C01 = FormationDuration, C02 = XYFormationScale, C03 = ZFormationScale, C04 = FormationDamagePerTickMultiplier, C05 = AnticipationDuration, C06 = XYAnticipationScale, C07 = ZAnticipationScale, C08 = , C09 = DissipationDuration	15.000000	1.940000	40.000000	40.000000	0.200000	4.200000	30.000000	15.000000		0.500000										1.500000	1.000000	0.000000	0.000000
+ShatterGuard_Parried																						3.000000			
+ShatterGuard_SpikeHover		HH= HoverOffset Dur=Time before stop; C1=time before drop;  C2= DropImpulse C3= warmuptime	45.000000	1.250000	-7500.000000	10.000000																0.700000	20.000000	625.000000	
+ShatterGuard_SpikeImpact	0.000000	Dur = Lifetime( 0 =infinite) C1=max spikes number		7.000000																		1.200000		0.000000	600.000000
+ShatterGuard_EarthSpear	0.000000	C01= Warmup, C02 = Health	7.000000	5.000000	40.000000																				
+ShatterGuard_ShockPoke		C01= Warmup	10.000000	5.000000																					
+ShatterGuard_EarthBlock		C01= Warmup	25.000000	10.000000																					
+ShatterGuard_EarthShield		C01= Warmup	25.000000	10.000000																					
+ShatterGuard_ShockSpecial		C01= Warmup	25.000000	10.000000																					
+ShatterGuard_VeilLine		C01= Warmup	30.000000	10.000000																					
+ShatterGuard_GravityOverload		C01= Warmup	45.000000	30.000000																					

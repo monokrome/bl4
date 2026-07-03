@@ -1,0 +1,14 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+Basic		6.000000	6.000000	6.000000
+Mini	0.800000	2.000000	2.000000	2.000000
+Shield		9.000000	9.000000	9.000000
+Missile		6.500000	6.500000	6.500000
+Cannon		8.000000	8.000000	8.000000
+Badass		9.000000	8.000000	8.000000
+Corrupt	1.500000	12.000000	2.000000	2.000000
+Loot		15.000000	15.000000	15.000000
+MiniBossAdd				
+LootMini		4.000000	4.000000	4.000000
+ShieldBarrier		4.250000	4.250000	4.250000
+ProjMissile		0.010000	0.010000	0.010000
+ProjCorruptSpire				

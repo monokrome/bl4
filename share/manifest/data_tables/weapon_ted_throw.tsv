@@ -1,0 +1,28 @@
+row_name	comboexplosiondamage_scale	homing thruster count	homing_thruster_isfan	homing_thruster_scalar	javelin thruster count	javelin_thruster_scalar	mirvexplosiondamage_scale	replicatorexplosiondamage_scale
+Default	0.750000						0.400000	0.600000
+BOR_SG		4	true	2.100000				
+BOR_SM		4	true					
+BOR_SR								
+DAD_AR								
+DAD_PS			true	1.200000				
+DAD_SG			true		4			
+DAD_SM		4	true	0.700000	4			
+JAK_AR		1			5			
+JAK_PS		1	true			0.500000		
+JAK_SG					1			
+JAK_SR		1	true	2.100000				
+MAL_SG		4						
+MAL_SM					4			
+MAL_SR			true	1.120000	6	0.650000		
+ORD_AR		6			4			
+ORD_PS					1			
+ORD_SR		4			4			
+TED_AR		4						
+TED_PS								
+TED_SG		4			1			
+TOR_AR		4						
+TOR_PS								
+TOR_SG		1			4			
+VLA_AR		1			1			
+VLA_SM		1						
+VLA_SR		5			4			

@@ -1,0 +1,4 @@
+row_name	accuracy_value	ammo_value	ammodelay_value	ammoregen_value	damage_value	damageradius_value	firerate_value	heatimpulse_value	impactforce_value	modereturn_scale	modeswitch_scale	projectilespershot_value	spread_value
+ORD_SR_Seamstress	2.000000		12.000000	3.000000	70.000000	75.000000	1.000000	0.200000	30000.000000	1.125000	1.125000	2.000000	3.000000
+DAD_SG_Misslaser	3.500000	24.000000	8.000000	24.000000	45.000000	50.000000	8.000000	0.060000	30000.000000				8.000000
+BOR_SMG_Roil										0.600000	0.600000		

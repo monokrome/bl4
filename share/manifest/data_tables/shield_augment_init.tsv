@@ -1,0 +1,46 @@
+row_name	armordamagereduction	armorpassthroughpercent	capacity	delay	rechargerate
+-----Universal-----					
+Spike		0.050000	0.200000	0.100000	-0.200000
+Reflect		0.100000	0.150000	0.100000	0.150000
+Turtle	0.200000	-0.055000		0.050000	0.075000
+Absorb		0.100000	-0.050000	-0.075000	-0.050000
+Adaptive		0.050000	-0.055000	-0.055000	0.050000
+HealthBooster		0.100000	-0.088000	-0.125000	0.075000
+PowerBooster		0.050000	0.050000		0.050000
+OvershieldBooster		0.075000	0.075000	0.075000	
+MagRefresh	0.050000	0.050000	-0.100000	-0.050000	0.100000
+Sturdy		0.075000	0.075000	-0.055000	
+Evasive		0.050000	0.050000		0.075000
+Resistant		-0.075000	0.075000	0.050000	
+Projected					
+Healthy		0.100000		0.050000	0.050000
+Capacity		0.050000		0.075000	0.125000
+Utility+		-0.055000	0.075000	0.150000	0.075000
+PinPoint		-0.055000	0.075000	0.150000	0.075000
+-----Energy-----					
+Nova			-0.125000	-0.055000	0.075000
+Siphon			0.100000	0.050000	0.075000
+Emerging					
+Berserker			0.075000	0.200000	0.050000
+Fleeting			0.050000	0.200000	0.050000
+TriggerHappy			0.050000	0.200000	0.075000
+Amp			0.050000	-0.125000	
+Vagabond			-0.055000		0.100000
+Brimming			-0.055000		0.100000
+ShieldBooster			0.100000	0.050000	-0.055000
+RechargeRate			0.100000	0.050000	
+RechargeDelay			-0.055000		0.100000
+-----Armor-----					
+MiniNova	0.050000		-0.125000		
+MicroMissleSwarm			0.050000		
+Spunky		0.050000	0.075000		
+Knockback			0.050000		
+Bladed		-0.055000	-0.055000		
+Flanking	-0.050000	0.050000	0.075000		
+Scavenger		0.075000			
+Reinforced		0.075000			
+PositiveReinforcement		0.050000	0.075000		
+ArmorStrength		0.050000	0.075000		
+ArmorSegment			0.100000		
+Boxer		0.075000	0.100000		
+HeavyPlating		0.075000	0.100000		

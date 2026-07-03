@@ -1,0 +1,5 @@
+row_name	description	description 2	description 3	modifier 1	modifier 2	modifier 3
+Windafall_Advantage	Chance / Stack	Max Stacks		0.030000	10.000000	
+Windfall_Active	Duration	Gun Damage	Skill Damage	12.000000	0.150000	0.150000
+AdditionalAugment	Level Required			15.000000		
+MoveSpeed	Base Walk Speed	Base Sprint Speed			720.000000	

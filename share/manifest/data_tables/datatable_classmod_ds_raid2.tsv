@@ -1,0 +1,6 @@
+row_name	comment	value
+DS_Raid2_DMGMultiplier_Add	Added over time the longer the Action Skill lasts	0.015000
+DS_Raid2_DMGMultiplier_Timer	Apply additional multiplier every Xs	0.500000
+DS_Raid2_DMGMultiplier_Bonus	Bonus damage to give to Eldritch Blast & Phase Explosion	2.000000
+DS_Raid2_TokenStack_MaxStack	We don't care about Max Stacks here, but in case someone stays in Incarnate for an hour ...	100.000000
+DS_Raid2_TokenConsume_Timer	Grace Period after AS ends, to make sure Phase Explosion ap plies damage properly	1.000000

@@ -1,0 +1,12 @@
+row_name	description	description 2	description 3	modifier 1	modifier 2	modifier 3	skill name
+L01	Charges Returned	Base Charges		2.000000	2.000000		Rounder
+L02	Max Stacks	Duration		36.000000	12.000000		Ludopath
+L02_Stats	Fire Rate		Move Speed	0.030000		0.050000	
+L03	Damage Scalar	Radius		0.950000	1536.000000		Hotshot
+L04	Max Stacks	Duration	Ordnance CDR	10.000000	12.000000	0.200000	Cooler
+L05	Duration Restore	Fire Rate	Reload Speed	0.100000	0.200000	-0.250000	Whale
+L05_Duration	Duration	Max Stacks		8.000000	1.000000		
+L06	Health Restore	Overshield Restore		0.050000	0.080000		Windrider
+DLC1	Card Chance	Dice Chance	Internal Cooldown	0.050000	0.070000	1.000000	Gamer
+DLC1_Bleed			Duration			8.000000	
+Rad01	Max Stacks	Bonus Damage/Stack		25.000000	0.400000		Hooligan

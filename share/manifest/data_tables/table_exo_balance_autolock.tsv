@@ -22,7 +22,7 @@ Conduit	Crit Chance	Duration	Duration Return	0.200000	8.000000	0.100000	Instinto
 Conduit_DurationRate	Duration Penalty	Crit Damage	Duration Rate Mod	0.200000	0.200000	0.030000	
 Conduit_Stacks	Max Stacks			10.000000			
 PortableSupplyDepot	Gadget Damage			0.250000			Insta-Fort Battle System
-Overeload	Ammo Regen	Duration	Duration Cost	0.050000	8.000000	0.350000	Bullet Buddy Deluxe
+Overeload	Ammo Regen	Duration	Duration Cost	0.050000	4.000000	0.500000	Bullet Buddy Deluxe
 Overeload_BonusDamage	Bonus Damage	Explosive Damage	Radius	0.250000	0.100000	160.000000	
 HandMeDown	Bonus Damage Per Stack	Duration	Cost	0.150000	8.000000	0.100000	Hand-Me-Down
 PhosphorousShell	Radius	Cooldown	Reduction	768.000000	30.000000	0.200000	Hell in a Shell

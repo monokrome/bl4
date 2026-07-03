@@ -1,0 +1,9 @@
+row_name	description	description 2	description 3	modifier 1	modifier 2	modifier 3
+BoneShards	Damage Scalar			0.070000		
+ProjectileCount	Base Projectiles	Windfall	Half Delay	8.000000	4.000000	0.050000
+StatusEffect	Damage Scalar	Duration	Max Count	0.300000	12.000000	1.000000
+BoneShardPortal	Lifetime	Max Shards	Portals	2.000000	3.000000	3.000000
+BoneShardPortal_Spawns	MinRadius	MaxRadius	Height Scalar	3.000000	4.000000	1.750000
+BoneShard2	Damage Saclar			0.090000		
+BoneShard2_Explode	Damage Scalar	Radius		0.600000	224.000000	
+Splinter	Damage Radius	Proxy Radius		64.000000	32.000000	
