@@ -845,8 +845,8 @@ Note: Firmware parts exist under `grenade_gadget.part_firmware_*`, `heavy_weapon
 
 The complete parts database is available at:
 
-- **`share/manifest/parts_dump.json`** - Raw part names grouped by prefix
-- **`share/manifest/parts_database.json`** - Full database with category/index mappings
+- **`share/manifest/parts/*.tsv`** - Per-category part files with index/name pairs
+- **`share/manifest/category_names.tsv`** - Human-readable category names
 
 Use `bl4 memory dump-parts` and `bl4 memory build-parts-db` to regenerate from a fresh memory dump.
 
@@ -858,4 +858,4 @@ For complete category mappings, composition system details, and licensed parts d
 
 *Extracted from BL4 memory dumps and NCS data using bl4 analysis tools.*
 
-*Last updated: February 2026 — NCS extraction expanded to 5,360 parts across 120 categories. See `share/manifest/parts_database.json` for the current authoritative source.*
+*See `share/manifest/parts/*.tsv` for the current authoritative source.*

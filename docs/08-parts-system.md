@@ -14,17 +14,17 @@ Two sources provide part data, and they don't agree.
 
 | Source | File | Parts | What It Provides |
 |--------|------|------:|------------------|
-| NCS extraction | `share/manifest/item_parts.json` | 1,614 | Complete item-to-parts mapping (authoritative) |
-| Memory extraction | `share/manifest/parts_database.json` | 5,368 | Parts with serial indices, category IDs |
+| NCS extraction | `share/manifest/parts/*.tsv` | — | Complete item-to-parts mapping with serial indices |
+| Memory extraction | — | ~1,041 | Validation data (superseded by NCS) |
 
 NCS extraction is the authoritative source for which parts exist and which items they belong to. It's static — extracted from the game's pak files, deterministic, reproducible:
 
 ```bash
-# Extract all item parts from NCS
-bl4 ncs extract /path/to/ncsdata/pakchunk4-*/Nexus-Data-inv4.bin -t item-parts --json -o item_parts.json
+# Extract all item parts from NCS to per-category TSV files
+bl4 ncs extract ./ncs_output/ -t manifest -o share/manifest/
 ```
 
-Memory extraction captures runtime data from the game process. It provides serial indices (the numeric IDs needed to encode parts into serial strings) and category assignments, but it's incomplete — parts that aren't loaded in the current game session don't appear. A dump taken in the main menu will miss parts that only load when specific items are in your inventory.
+Memory extraction captures runtime data from the game process. It provides serial indices (the numeric IDs needed to encode parts into serial strings) and category assignments, but it's incomplete — parts that aren't loaded in the current game session don't appear. A dump taken in the main menu will miss parts that only load when specific items are in your inventory. Parts data for this is in `share/manifest/parts/*.tsv`.
 
 The two sources are complementary. NCS tells you *what* parts exist. Memory tells you *how* they're indexed.
 
@@ -128,29 +128,7 @@ Shields use a different slot structure:
 
 ### Part Counts by Item Type
 
-The full breakdown across all 31 item types totals 1,614 parts:
-
-| Item Type | Parts | | Item Type | Parts |
-|-----------|------:|-|-----------|------:|
-| Armor_Shield | 70 | | ORD_AR | 54 |
-| BOR_HW | 15 | | ORD_PS | 59 |
-| BOR_SG | 55 | | ORD_SR | 54 |
-| BOR_SM | 57 | | TED_AR | 57 |
-| BOR_SR | 55 | | TED_PS | 60 |
-| DAD_AR | 56 | | TED_SG | 58 |
-| DAD_PS | 56 | | TOR_AR | 55 |
-| DAD_SG | 56 | | TOR_HW | 15 |
-| DAD_SM | 55 | | TOR_PS | 56 |
-| JAK_AR | 56 | | TOR_SG | 53 |
-| JAK_PS | 53 | | VLA_AR | 68 |
-| JAK_SG | 53 | | VLA_HW | 20 |
-| JAK_SR | 55 | | VLA_SM | 65 |
-| MAL_HW | 15 | | VLA_SR | 63 |
-| MAL_SG | 56 | | | |
-| MAL_SM | 58 | | **Total** | **1,614** |
-| MAL_SR | 56 | | | |
-
-*Table 8.3: Part counts by item type.*
+See `share/manifest/parts/*.tsv` for the full breakdown of parts by item type.
 
 Heavy weapons (BOR_HW, MAL_HW, TOR_HW) have notably fewer parts at 15 each, except Vladof heavy weapons at 20. Most standard weapons cluster around 53-60 parts.
 
@@ -329,7 +307,7 @@ BOR_SG_Grip_01\0 42\0 part_grip_02\0 ...
 BOR_SG_Grip_02\0 43\0 part_grip_03\0 ...
 ```
 
-That's 36 BOR parts with extractable indices — roughly 2.2% of the total 1,614 parts. For the other 98%, indices are assigned at runtime when the game engine registers parts with `GbxSerialNumberProvider`. This means the only complete source for serial indices is a memory dump from a running game process.
+That's 36 BOR parts with extractable indices — a small fraction of the total. For the other 98%, indices are assigned at runtime when the game engine registers parts with `GbxSerialNumberProvider`. This means the only complete source for serial indices is a memory dump from a running game process.
 
 ::: {.callout-warning}
 Serial index assignments may change between game versions. A parts database extracted from one patch may produce incorrect decodes on another. Always verify against the current game version.
@@ -341,16 +319,16 @@ Serial index assignments may change between game versions. A parts database extr
 
 With the parts data extracted, you can validate whether a given part belongs to a given item type.
 
-### Using item_parts.json
+### Using the parts TSV files
 
 ```python
-import json
+import csv
 
-with open('share/manifest/item_parts.json') as f:
-    items = json.load(f)
-
-# Build lookup: item_id -> set of valid parts
-valid_parts = {item['item_id']: set(item['parts']) for item in items}
+with open('share/manifest/category_names.tsv') as f:
+    reader = csv.DictReader(f, delimiter='\t')
+    for row in reader:
+        # Each row: category_id, name
+        pass
 
 # Check if a part is valid for an item
 def is_valid_part(item_id: str, part_name: str) -> bool:

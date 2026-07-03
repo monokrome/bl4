@@ -138,7 +138,7 @@ Tokens: 180928 | 50 | {0:1} 21 {4} , 2 , , 105 102 41
 ```
 
 ::: {.callout-note title="Part Name Resolution"}
-Part names are resolved from `share/manifest/parts_database.json`. Currently ~40% of parts have known mappings from memory extraction. Unknown parts display as `[category:index]` placeholders (e.g., `[22:5]`). See [Chapter 7](#sec-data-extraction) for details on part data coverage.
+Part names are resolved from `share/manifest/parts/*.tsv`. Currently all extracted parts have known mappings from NCS data. Unknown parts display as `[category:index]` placeholders (e.g., `[22:5]`). See [Chapter 7](#sec-data-extraction) for details on part data coverage.
 :::
 
 Options:
@@ -489,8 +489,8 @@ bl4 ncs search ./ncs_output/ "barrel" --all -n 50
 The `extract` command pulls structured data from NCS files. The `-t` flag selects the extraction type:
 
 ```bash
-# Extract categorized parts manifest (produces parts_database.json + category_names.json)
-bl4 ncs extract ./ncs_output/ -t manifest -o share/manifest/parts_database.json
+# Extract categorized parts manifest (produces parts/*.tsv + category_names.tsv)
+bl4 ncs extract ./ncs_output/ -t manifest -o share/manifest/
 
 # Extract part serial indices from inv.bin
 bl4 ncs extract ./ncs_output/ -t parts
@@ -673,7 +673,7 @@ bl4 memory --dump bl4_new.* dump-usmap
 bl4 memory --dump bl4_new.* extract-parts -o share/manifest/
 
 # Rebuild parts manifest from NCS
-bl4 ncs extract ./ncs_output/ -t manifest -o share/manifest/parts_database.json
+bl4 ncs extract ./ncs_output/ -t manifest -o share/manifest/
 
 # Regenerate drops manifest
 bl4 drops generate ./ncs_output/ -o share/manifest/drops.json --manifest-dir share/manifest

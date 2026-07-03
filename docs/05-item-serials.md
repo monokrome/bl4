@@ -177,12 +177,12 @@ For VarBit-first serials, the VarBit value IS the NCS category ID directly. No d
 
 The Part Group ID (also called Category ID) determines which part pool to use for decoding. Each ID corresponds to a manufacturer/weapon-type combination.
 
-For weapons, the first VarInt (serial ID) maps directly to the NCS category. The bl4 tools handle this via `serial_id_to_parts_category()`, but for most weapons the serial ID matches the NCS category.
+For weapons, the first VarInt (serial ID) is either the NCS category directly or maps to it via `serial_id_to_parts_category()`. The tables below use NCS category IDs, which is what the parts database uses for lookups.
 
 **Pistols (2-6):**
 
-| ID | Manufacturer | Code |
-|----|--------------|------|
+| NCS Cat. | Manufacturer | Code |
+|----------|--------------|------|
 | 2 | Daedalus | DAD_PS |
 | 3 | Jakobs | JAK_PS |
 | 4 | Order | ORD_PS |
@@ -191,8 +191,8 @@ For weapons, the first VarInt (serial ID) maps directly to the NCS category. The
 
 **Shotguns (7-12):**
 
-| ID | Manufacturer | Code |
-|----|--------------|------|
+| NCS Cat. | Manufacturer | Code |
+|----------|--------------|------|
 | 7 | Ripper | BOR_SG |
 | 8 | Daedalus | DAD_SG |
 | 9 | Jakobs | JAK_SG |
@@ -202,8 +202,8 @@ For weapons, the first VarInt (serial ID) maps directly to the NCS category. The
 
 **Assault Rifles (13-18, 27):**
 
-| ID | Manufacturer | Code |
-|----|--------------|------|
+| NCS Cat. | Manufacturer | Code |
+|----------|--------------|------|
 | 13 | Daedalus | DAD_AR |
 | 14 | Tediore | TED_AR |
 | 15 | Order | ORD_AR |
@@ -213,8 +213,8 @@ For weapons, the first VarInt (serial ID) maps directly to the NCS category. The
 
 **Snipers (16, 23-26):**
 
-| ID | Manufacturer | Code |
-|----|--------------|------|
+| NCS Cat. | Manufacturer | Code |
+|----------|--------------|------|
 | 16 | Vladof | VLA_SR |
 | 23 | Ripper | BOR_SR |
 | 24 | Jakobs | JAK_SR |
@@ -223,8 +223,8 @@ For weapons, the first VarInt (serial ID) maps directly to the NCS category. The
 
 **SMGs (19-22):**
 
-| ID | Manufacturer | Code |
-|----|--------------|------|
+| NCS Cat. | Manufacturer | Code |
+|----------|--------------|------|
 | 19 | Ripper | BOR_SM |
 | 20 | Daedalus | DAD_SM |
 | 21 | Maliwan | MAL_SM |

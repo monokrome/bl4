@@ -371,20 +371,8 @@ fn analyze_first_token(item: &bl4::ItemSerial) -> Result<()> {
                     encoding: bl4::serial::VarEncoding::Bit,
                 } => {
                     if let Some(cat) = item.part_group_id() {
-                        let divisor = if *v >= 131_072 { 8192 } else { 384 };
-                        let offset = value % divisor;
-                        println!(
-                            "  Formula: category = varbit / {} ({})",
-                            divisor,
-                            if divisor == 8192 {
-                                "weapons"
-                            } else {
-                                "equipment"
-                            }
-                        );
-                        println!("  Category: {} (offset {})", cat, offset);
                         let name = bl4::category_name(cat).unwrap_or("Unknown");
-                        println!("  Identified: {}", name);
+                        println!("  Category: {} ({})", cat, name);
                     }
                 }
                 Token::Var {

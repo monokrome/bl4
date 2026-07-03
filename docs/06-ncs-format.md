@@ -418,8 +418,8 @@ NCS consistently has more parts (56 for `DAD_PS`) than memory extraction (34), b
 ### Extracting Parts
 
 ```bash
-# Extract all item parts (weapons + shields) to JSON
-bl4 ncs extract inv4.bin -t item-parts --json -o item_parts.json
+# Extract all item parts (weapons + shields) to per-category TSV files
+bl4 ncs extract ./ncs_output/ -t manifest -o share/manifest/
 
 # View weapon parts for a specific pakchunk
 bl4 ncs extract /path/to/ncsdata/pakchunk4-Windows_0_P -t item-parts

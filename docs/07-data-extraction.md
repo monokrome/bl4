@@ -46,7 +46,7 @@ flowchart TB
     MEM --> DB
 ```
 
-PAK files provide balance data, naming strategies, and body definitions---the structural skeleton of the item system. NCS files contain the bulk of part data: 5,360 parts across 120 categories, complete with serial indices. Memory dumps fill in the gaps: runtime UObject data, schema information, and validation of static extractions.
+PAK files provide balance data, naming strategies, and body definitions---the structural skeleton of the item system. NCS files contain the bulk of part data across all categories, complete with serial indices. Memory dumps fill in the gaps: runtime UObject data, schema information, and validation of static extractions.
 
 The rest of this chapter walks through each source in detail.
 
@@ -305,8 +305,8 @@ NCS extraction changed the picture entirely. Parsing the `inv*.bin` files yields
 
 | Metric | Memory Extraction | NCS Extraction |
 |--------|-------------------|----------------|
-| Total parts | ~1,041 | 5,360 |
-| Categories covered | 47 | 120 |
+| Total parts | ~1,041 | Complete |
+| Categories covered | 47 | Complete |
 | Source | Runtime UObjects | Static game data |
 | Requires game running | Yes | No |
 
@@ -318,7 +318,7 @@ NCS extraction from `inv*.bin` files provides the complete dataset without requi
 
 **What we have from NCS:**
 
-- Complete part lists per category (5,360 parts across 120 categories)
+- Complete part lists per category
 - Serial indices for all extracted parts
 - Category names derived from NCS keys
 
@@ -334,7 +334,7 @@ The part mapping workflow uses multiple data sources:
 
 **1. NCS Extraction (Primary)**
 
-`share/manifest/parts_database.json` contains 5,360 parts across 120 categories. Source: NCS `inv*.bin` file extraction.
+`share/manifest/parts/` contains per-category TSV files with complete part data. Source: NCS `inv*.bin` file extraction.
 
 ```bash
 # Extract complete parts database from NCS files
@@ -352,7 +352,7 @@ bl4 memory --dump game.dmp extract-parts -o parts_with_categories.json
 
 **3. Part Names (Complete)**
 
-`share/manifest/category_names.json` contains 120 category names. Source: NCS extraction alongside the parts database.
+`share/manifest/category_names.tsv` contains all category names. Source: NCS extraction alongside the parts database.
 
 ### What NCS/UASSET Data Provides
 
@@ -435,7 +435,7 @@ For edge cases or when memory extraction isn't possible, empirical validation re
 3. Record which weapon/part combinations the tokens represent
 4. Validate by injecting serials into saves and checking in-game
 
-The `parts_database.json` file combines NCS-extracted mappings with empirically-verified data for comprehensive coverage.
+The `parts/*.tsv` files combine NCS-extracted mappings with empirically-verified data for comprehensive coverage.
 
 ---
 
@@ -507,42 +507,28 @@ The project includes a pre-generated usmap at `share/manifest/mappings.usmap`.
 
 ---
 
-## Extracting Parts from Memory
+## Extracting Parts via NCS Manifest
 
-Since parts only exist at runtime, memory extraction is the path forward for validation and schema work.
+The NCS manifest pipeline is the authoritative source for parts data. It extracts directly from the game's pak files, is deterministic and reproducible, and covers all parts regardless of what's loaded in memory.
+
+```bash
+bl4 ncs extract ./ncs_output/ -t manifest -o share/manifest/
+```
+
+This produces `parts/*.tsv` (per-category part files) and `category_names.tsv`.
+
+### Memory Extraction (Deprecated)
+
+For validation purposes you can also extract parts from memory dumps. This approach is incomplete — only loaded parts appear.
 
 ### Step 1: Create Memory Dump
 
 Follow Chapter 3's instructions to capture game memory while playing.
 
-### Step 2: Extract Part Names
+### Step 2: Build Parts Database (NCS)
 
 ```bash
-bl4 memory --dump share/dumps/game.dmp dump-parts \
-    -o share/manifest/parts_dump.json
-```
-
-This scans for strings matching `XXX_YY.part_*` patterns:
-
-```json
-{
-  "DAD_AR": [
-    "DAD_AR.part_barrel_01",
-    "DAD_AR.part_barrel_01_a",
-    "DAD_AR.part_body"
-  ],
-  "VLA_SM": [
-    "VLA_SM.part_barrel_01"
-  ]
-}
-```
-
-### Step 3: Build Parts Database
-
-```bash
-bl4 memory --dump share/dumps/game.dmp build-parts-db \
-    -i share/manifest/parts_dump.json \
-    -o share/manifest/parts_database.json
+bl4 ncs extract ./ncs_output/ -t manifest -o share/manifest/
 ```
 
 The result maps parts to categories and indices:
@@ -684,12 +670,12 @@ retoc unpack "$GAME_DIR/OakGame/Content/Paks/pakchunk0-Windows_0_P.utoc" "$OUTPU
 | Naming strategies | Pak files / NCS | Yes | Complete |
 | Loot pools | Pak files / NCS | Yes | Complete |
 | Body definitions | Pak files | Yes | Complete |
-| Part names | NCS (`inv.bin`) | Yes | Complete (5,360 parts) |
-| Part serial indices | NCS + Memory | Yes | Complete (5,360 across 120 categories) |
-| Category mappings | Code analysis | Yes | Complete (120 categories) |
+| Part names | NCS (`inv*.bin`) | Yes | Complete |
+| Part serial indices | NCS | Yes | Complete |
+| Category mappings | NCS / Code analysis | Yes | Complete (161 categories) |
 
 ::: {.callout-important title="Current State"}
-**Part names and indices** are available from NCS data (complete list: 5,360 parts across 120 categories).
+**Part names and indices** are available from NCS data (see `share/manifest/parts/*.tsv` for the complete list).
 
 **Memory dumps** remain valuable for validation, schema extraction (usmap), and capturing data not present in NCS files. Serial decoding works for all extracted parts. Unknown indices display as `[category:index]` placeholders until validated.
 :::
