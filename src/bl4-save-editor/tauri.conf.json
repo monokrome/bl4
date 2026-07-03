@@ -1,6 +1,6 @@
 {
   "productName": "BL4 Save Editor",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "identifier": "com.monokrome.bl4se",
   "build": {
     "devUrl": "http://localhost:5173",

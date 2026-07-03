@@ -429,7 +429,7 @@ dependencies = [
 
 [[package]]
 name = "bl4"
-version = "0.8.4"
+version = "0.8.5"
 dependencies = [
  "adler",
  "aes",
@@ -451,7 +451,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-cli"
-version = "0.8.4"
+version = "0.8.5"
 dependencies = [
  "anyhow",
  "bl4",
@@ -482,7 +482,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-community"
-version = "0.8.4"
+version = "0.8.5"
 dependencies = [
  "anyhow",
  "axum",
@@ -505,7 +505,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-idb"
-version = "0.8.4"
+version = "0.8.5"
 dependencies = [
  "anyhow",
  "chrono",
@@ -525,7 +525,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-ncs"
-version = "0.8.4"
+version = "0.8.5"
 dependencies = [
  "anyhow",
  "byteorder",
@@ -543,7 +543,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-preload"
-version = "0.8.4"
+version = "0.8.5"
 dependencies = [
  "backtrace",
  "ctor 0.2.9",
@@ -553,7 +553,7 @@ dependencies = [
 
 [[package]]
 name = "bl4-save-editor"
-version = "0.8.4"
+version = "0.8.5"
 dependencies = [
  "bl4",
  "serde",
@@ -6961,7 +6961,7 @@ checksum = "562d481066bde0658276a35467c4af00bdc6ee726305698a55b86e61d7ad82bb"
 
 [[package]]
 name = "uextract"
-version = "0.8.4"
+version = "0.8.5"
 dependencies = [
  "anyhow",
  "byteorder",
