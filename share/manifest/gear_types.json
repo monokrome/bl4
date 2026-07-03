@@ -1,16 +1,4 @@
 {
-  "ArmorShard": {
-    "name": "ArmorShard",
-    "path": "OakGame/Content/Gear/ArmorShard",
-    "balance_data": [],
-    "manufacturers": []
-  },
-  "Gadgets": {
-    "name": "Gadgets",
-    "path": "OakGame/Content/Gear/Gadgets",
-    "balance_data": [],
-    "manufacturers": []
-  },
   "GrenadeGadgets": {
     "name": "GrenadeGadgets",
     "path": "OakGame/Content/Gear/GrenadeGadgets",
@@ -58,9 +46,9 @@
       }
     ]
   },
-  "ClassMods": {
-    "name": "ClassMods",
-    "path": "OakGame/Content/Gear/ClassMods",
+  "GPS": {
+    "name": "GPS",
+    "path": "OakGame/Content/Gear/GPS",
     "balance_data": [],
     "manufacturers": []
   },
@@ -117,6 +105,18 @@
       }
     ]
   },
+  "Vehicles": {
+    "name": "Vehicles",
+    "path": "OakGame/Content/Gear/Vehicles",
+    "balance_data": [],
+    "manufacturers": []
+  },
+  "Gadgets": {
+    "name": "Gadgets",
+    "path": "OakGame/Content/Gear/Gadgets",
+    "balance_data": [],
+    "manufacturers": []
+  },
   "ShieldBooster": {
     "name": "ShieldBooster",
     "path": "OakGame/Content/Gear/ShieldBooster",
@@ -129,9 +129,15 @@
     "balance_data": [],
     "manufacturers": []
   },
-  "Vehicles": {
-    "name": "Vehicles",
-    "path": "OakGame/Content/Gear/Vehicles",
+  "ArmorShard": {
+    "name": "ArmorShard",
+    "path": "OakGame/Content/Gear/ArmorShard",
+    "balance_data": [],
+    "manufacturers": []
+  },
+  "ClassMods": {
+    "name": "ClassMods",
+    "path": "OakGame/Content/Gear/ClassMods",
     "balance_data": [],
     "manufacturers": []
   },
@@ -146,11 +152,5 @@
         "path": "OakGame/Content/Gear/Enhancements/Manufacturer/ORD"
       }
     ]
-  },
-  "GPS": {
-    "name": "GPS",
-    "path": "OakGame/Content/Gear/GPS",
-    "balance_data": [],
-    "manufacturers": []
   }
 }
