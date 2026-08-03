@@ -27,6 +27,7 @@ np_bubbles	Bubbles
 np_bugbear	Bugbear
 np_bully	Bully
 np_buoy	Buoy
+np_burrow	PRISM
 np_chuck	Chuck
 np_cindershelly	Cindershelly
 np_cm_ds_01	Psion
@@ -145,8 +146,10 @@ np_discybusiness	Discy Business
 np_dividedfocus	Divided Focus
 np_doeshot	Doeshot
 np_dualdamage	Aegon's Dream
+np_earlyexcess	Overconsumption
 np_eigenburst	Eigenburst
 np_elpisstar	Elpis Star
+np_extinction	Eradication
 np_falke	Falke
 np_faultydetonator	Faulty Detonator
 np_fearstalker	Fearstalker
@@ -239,6 +242,7 @@ np_herald	Herald
 np_hoarder	Hoarder
 np_honeybadger	Honey Badger
 np_hopscotch	Hopscotch
+np_hydrowerks	Hydrowerks
 np_ichor	Ichor
 np_inscriber	Inscriber
 np_jailbroken	Jail-Broken Gatling
@@ -246,6 +250,7 @@ np_javelin	Sprezzatura
 np_jetset	Jetsetter
 np_juliet	Juliet's Sparkle
 np_kaleidosplode	Kaleidosplode
+np_kaos	Kaos
 np_kaoson	Kaoson
 np_katagawa	Katagawa's Revenge
 np_kickballer	Kickballer
@@ -258,6 +263,7 @@ np_lightning	Sparky Shield
 np_linebacker	Linebacker
 np_lockjaw	Lockjaw
 np_locust	Parasite
+np_loiter	Loiter Sploiter
 np_lucian	Lucian's Flank
 np_lumberjack	Bloody Lumberjack
 np_luty	Luty Madlad
@@ -274,11 +280,14 @@ np_on_the_go	On The Go
 np_onionlayeredguard	Onion
 np_onslaught	Onslaught
 np_overswarm	Over Swarm
+np_pchonk	Pachonk
 np_pellet	Artillery Sphere
 np_phantom_flame	Phantom Flame
 np_plasmacoil	Plasma Coil
+np_plumbbob	Plumb Bob
 np_potatothrower	Potato Thrower IV
 np_predatordrone	UAV
+np_pressurecooker	Pressure Kettle
 np_prince	Prince Harming
 np_proteancell	Protean Cell
 np_queensrest	Queen's Rest
@@ -342,6 +351,7 @@ np_repkit_payload_large	Large
 np_repkit_payload_medium	Standard
 np_repkit_payload_small	Mini
 np_repkit_uni_bor_augmenter	Augmenter AF1000
+np_repkit_uni_bor_hugger	Hugger
 np_repkit_uni_dad_healthraiser	Healthraiser
 np_repkit_uni_jak_defibrillator	Defibrillator
 np_repkit_uni_mal_bloodanalyzer	Blood Analyzer
@@ -351,6 +361,7 @@ np_repkit_uni_ord_triplebypass	Triple Bypass
 np_repkit_uni_ted_killspring	Kill Spring
 np_repkit_uni_tor_shinywarpaint	Shiny War Paint
 np_repkit_uni_vla_adrenalinepump	Adrenaline Pump
+np_repkit_uni_vla_bloodiron	Oxidation
 np_repkit_uni_vla_pacemaker	Pacemaker
 np_rhythm	Rhythm
 np_roach	Roach
@@ -371,6 +382,7 @@ np_shieldboi	Principal
 np_shokunai	Sho Kunai
 np_sideshow	Sideshow
 np_sidewinder	Sidewinder
+np_silversliver	Silver Sliver
 np_skully	Skully
 np_slippy	Slippy
 np_slugger	Hot Slugger
@@ -379,6 +391,7 @@ np_soulsurvivor	Soul Survivor
 np_spinning_blade	Spinning Blade
 np_splatoon	Inkling
 np_star_helix	Star Helix
+np_stealth	Stealth & Seek
 np_stopgap	Stop Gap
 np_stray	Stray
 np_streamer	Streamer
@@ -447,6 +460,7 @@ np_term_sec_heal_power	HealPower2
 np_term_sec_heal_radius	HealRadius2
 np_term_sec_heal_shield_recharge	ShieldRecharge2
 np_term_sec_heal_thorns	Thorns2
+np_testament	Divided Glow
 np_timekeeper	Timekeeper's New Shield
 np_tkswave	T.K's Wave
 np_transmission	Transmitter
@@ -503,6 +517,7 @@ np_undershield	Undershield
 np_unstable_kor	Unstable Kor
 np_urchin	Urchin
 np_vamoose	Vamoose
+np_verce	Verce
 np_waterfall	Waterfall
 np_watts4dinner	Watts 4 Dinner
 np_weap_bor_sg_b01	Weldwyrm

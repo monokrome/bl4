@@ -1,0 +1,5 @@
+row_name	custom_1_desc	custom_2_desc	custom_3_desc	custom_4_desc	custom_5_desc	value_1	value_2	value_3	value_4	value_5
+ORD_AR_PChonk						0.250000	3.000000	5.000000		
+Kaos	OnKill Explosion Dmg Scalar	CauseDamageRadius				5.000000	512.000000			
+Verce	Chance to Proc	FireRate Scalar	Chance to Proc PRES	FireRate Scalar PRES	Shield Heal Scalar	10.000000	2.500000	0.100000	2.500000	0.050000
+SandHawk										

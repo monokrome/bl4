@@ -1,0 +1,13 @@
+row_name	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+Basic1	8.000000	4.000000	2.000000
+Melee1	8.000000	4.000000	2.000000
+MeleeAlwaysFrenzied	10.000000	4.000000	4.000000
+Corrupt	8.000000	2.000000	2.000000
+Loot	8.000000	4.000000	2.000000
+ShieldFloating	2.000000		
+ShieldBubble_Stage1	2.500000		
+ShieldBubble_Stage2	3.000000		
+ShieldBubble_Stage3	3.500000		
+ShieldBubble_Stage4	4.000000		
+ShieldBubble_Loot	2.500000		
+ShieldFloatingLoot			

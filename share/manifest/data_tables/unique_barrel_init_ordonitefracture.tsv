@@ -1,0 +1,4 @@
+row_name	accdelay_value	accimpulse_value	accuracy_value	damage_scale	firerate_value	part_value	projectilespershot_value	recoil_scale	spread_value	sway_scale
+ORD_AR_PChonk			3.000000	2.850000	5.250000	1		0.600000	2.000000	0.800000
+DAD_AR_Kaos	0.330000	0.050000	1.500000	2.370000	7.350000			0.400000	1.000000	
+JAK_SG_Verce			5.750000	4.250000	1.100000		3.000000	0.650000	4.000000	

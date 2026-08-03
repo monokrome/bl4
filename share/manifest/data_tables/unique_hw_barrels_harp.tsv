@@ -1,0 +1,2 @@
+row_name	accdelay_value	accimpulse_value	accregen_value	accuracy_value	cooldown	cryoimpact_scale	damage_scale	damageradius_value	firerate_value	magazinesize_value	spread_value	statuschance_scale	statusdamage_scale
+TOR_Loiter	0.650000	1.000000	-4.000000	3.000000	30.000000	0.750000	5.000000	200.000000	0.600000	4.000000	2.000000	0.750000	1.250000

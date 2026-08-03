@@ -29,6 +29,7 @@ index	name
 39	part_barrel_01_dividedfocus
 41	part_barrel_01_ted_sg_heavyturret
 42	part_barrel_dahlfather
+44	part_barrel_loiter
 52	part_barrel_01_bod
 52	part_barrel_02_queensrest
 54	part_barrel_heartgun
@@ -48,6 +49,7 @@ index	name
 58	part_barrel_01_falke
 59	part_barrel_01_ohmigot
 59	part_barrel_01_raiden
+59	part_unique_barrel_02_plumbbob
 60	part_barrel_01_reminisce
 60	part_barrel_01_jailbroken
 60	part_barrel_02_abyss
@@ -91,6 +93,7 @@ index	name
 79	part_barrel_02_soulsurvivor
 80	part_barrel_02_songbird
 80	part_barrel_01_gomie
+80	part_barrel_02_pchonk
 81	part_barrel_02_rocketreload
 81	part_barrel_02_conflux
 81	part_barrel_01_eigenburst
@@ -103,13 +106,17 @@ index	name
 82	part_barrel_sunspot
 82	part_barrel_02_fishward
 82	part_barrel_01_discybusiness
+82	part_barrel_02_burrow
+82	part_barrel_02_testament
 83	part_barrel_02_temper
+83	part_barrel_01_silversliver
 84	part_barrel_01_firstimpression
 84	part_barrel_02_roulette
 84	part_barrel_02_flashcyclone
 84	part_barrel_lockjaw
 84	part_barrel_shoals
 84	part_barrel_02_cormano
+84	part_barrel_02_stealth
 85	part_barrel_02_inscriber
 85	part_barrel_01_manifest
 86	part_barrel_rainbowvomit
@@ -119,6 +126,7 @@ index	name
 87	part_barrel_beegun
 87	part_barrel_01_hemorrhage
 88	part_barrel_01_shammy
+88	part_barrel_02_kaos
 89	part_barrel_02_juliet
 89	part_barrel_01_sharkbait
 90	part_barrel_tkswave
@@ -126,8 +134,11 @@ index	name
 91	part_barrel_mercury
 93	part_barrel_brickhouse
 94	part_barrel_wf
+94	part_barrel_02_earlyexcess
 99	part_barrel_doeshot
 99	part_barrel_01_bubbles
 102	part_barrel_01_lasercutter
 102	part_barrel_01_constable
 103	part_barrel_locust
+103	part_barrel_verce
+104	part_barrel_01_extinction

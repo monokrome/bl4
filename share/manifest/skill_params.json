@@ -1,5 +1,11 @@
 [
   {
+    "name": "Param_HA3_ChargeBurst_DamageToShare",
+    "path": "../../../OakGame/Content/PlayerCharacters/ExoSoldier/ActionSkillsSM/HeavyArms3/Data/Param_HA3_ChargeBurst_DamageToShare.uasset",
+    "variant": 3,
+    "guid": "74bd1159-b793-4f2f-9a8d-c9a2edf4400b"
+  },
+  {
     "name": "SkillParam_Robo_Raid2_CardSwitch",
     "path": "../../../OakGame/Content/DLC/Raid2/Gear/ClassMods/RoboDealer/SkillParam_Robo_Raid2_CardSwitch.uasset",
     "variant": 18,

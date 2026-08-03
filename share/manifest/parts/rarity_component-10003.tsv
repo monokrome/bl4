@@ -53,6 +53,7 @@ index	name
 9	comp_05_legendary_paleblood
 9	comp_05_legendary_hugger
 9	comp_05_legendary_vitae
+9	comp_05_legendary_bloodiron
 10	comp_05_legendary_aggrovator
 11	comp_05_legendary_recursive
 11	comp_05_legendary_hopscotch
@@ -66,6 +67,8 @@ index	name
 12	comp_05_elpisstar
 12	comp_05_legendary_barb
 12	comp_05_legendary_collector
+12	comp_05_legendary_pressurecooker
+12	comp_05_legendary_hydrowerks
 13	comp_05_legendary_ordinance
 14	comp_05_legendary_overswarm
 14	comp_05_legendary_pocketbuddies
@@ -88,6 +91,7 @@ index	name
 38	comp_05_legendary_draupner
 39	comp_02_uncommon_unique_heavyturret
 43	comp_05_legendary_dahlfather
+45	comp_05_legendary_loiter
 50	base_comp_01_common
 53	comp_05_legendary_bod
 53	comp_05_legendary_rocketreload
@@ -118,6 +122,7 @@ index	name
 63	comp_05_legendary_plasmacoil
 63	comp_05_legendary_lucian
 65	comp_05_legendary_wombocombo
+65	comp_05_legendary_plumbbob
 66	comp_05_legendary_finnty
 67	comp_05_legendary_kaoson
 67	comp_05_legendary_stopgap
@@ -149,6 +154,7 @@ index	name
 79	comp_05_legendary_seamstress
 79	comp_05_legendary_laserdisc
 79	comp_05_legendary_arctic
+79	comp_05_legendary_pchonk
 80	comp_05_legendary_slugger
 80	comp_05_legendary_asher
 80	comp_05_legendary_heavyturret
@@ -157,6 +163,7 @@ index	name
 81	comp_05_legendary_songbird
 81	comp_05_legendary_gomie
 81	comp_05_legendary_discybusiness
+81	comp_05_legendary_testament
 82	comp_05_legendary_conflux
 82	comp_05_legendary_eigenburst
 82	comp_05_legendary_cannonbrawl
@@ -169,7 +176,10 @@ index	name
 83	comp_05_legendary_sunspot
 83	comp_05_legendary_fishward
 83	comp_05_legendary_cormano
+83	comp_05_legendary_burrow
+83	comp_05_legendary_stealth
 84	comp_05_legendary_temper
+84	comp_05_legendary_silversliver
 85	comp_05_legendary_rainbowvomit
 85	comp_05_legendary_firstimpression
 85	comp_05_legendary_roulette
@@ -189,14 +199,18 @@ index	name
 90	comp_06_pearl_sharkbait
 91	comp_05_legendary_tkswave
 91	comp_05_legendary_lightgun
+91	comp_05_legendary_kaos
 92	comp_05_legendary_mercury
 93	comp_05_legendary_wf
 94	comp_05_legendary_brickhouse
+99	comp_05_legendary_earlyexcess
 100	comp_05_legendary_doeshot
 100	comp_05_legendary_bubbles
 101	comp_06_pearl_constable
 101	comp_06_pearl_locust
 103	comp_05_legendary_lasercutter
+104	comp_05_legendary_verce
+105	comp_05_legendary_extinction
 537	comp_05_legendary_raid1
 538	comp_05_legendary_raid1
 539	comp_05_legendary_raid1

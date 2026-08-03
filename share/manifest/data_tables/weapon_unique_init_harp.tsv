@@ -1,0 +1,6 @@
+row_name	custom_1_desc	custom_2_desc	custom_3_desc	custom_4_desc	custom_5_desc	value_1	value_2	value_3	value_4	value_5
+JAK_SR_Burrow	Ricochet Cap	Ricochet DMG Scalar				5.000000	0.500000			
+DAD_PS_SilverSliver	BonusDamage	Duration	MaxStacks			0.010000	15.000000	50.000000		
+ORD_AR_Testament	Reflect Chance	Shield Capacity Scalar	Radiation DMG Scalar	Radiation Status DMG Scalar	Radiation Effect Duration	0.990000	0.750000	0.500000	0.750000	6.000000
+TOR_HW_Loiter	MIRV DMG Scalar	2nd MIRV DMG Scalar				0.500000	0.500000			
+VLA_AR_Extinction	Bonus Proj Scalar					1.500000				

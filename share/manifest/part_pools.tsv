@@ -9,6 +9,7 @@ category	part_name
 1	part_cryo
 1	part_fire
 1	part_radiation
+1	part_radiation_testament
 1	part_secondary_elem_corrosive_cryo
 1	part_secondary_elem_corrosive_cryo_mal
 1	part_secondary_elem_corrosive_fire
@@ -66,6 +67,7 @@ category	part_name
 2	comp_04_epic
 2	comp_05_legendary
 2	comp_05_legendary_rangefinder
+2	comp_05_legendary_silversliver
 2	comp_05_legendary_soulsurvivor
 2	comp_05_legendary_zipgun
 2	comp_first_gun
@@ -74,6 +76,7 @@ category	part_name
 2	part_barrel_01_b
 2	part_barrel_01_c
 2	part_barrel_01_d
+2	part_barrel_01_silversliver
 2	part_barrel_01_zipgun
 2	part_barrel_02
 2	part_barrel_02_a
@@ -332,6 +335,7 @@ category	part_name
 5	comp_04_epic
 5	comp_05_legendary
 5	comp_05_legendary_atlien
+5	comp_05_legendary_earlyexcess
 5	comp_05_legendary_inscriber
 5	comp_05_legendary_rubysgrasp
 5	comp_05_legendary_shammy
@@ -349,6 +353,7 @@ category	part_name
 5	part_barrel_02_b
 5	part_barrel_02_c
 5	part_barrel_02_d
+5	part_barrel_02_earlyexcess
 5	part_barrel_02_inscriber
 5	part_barrel_02_rubysgrasp
 5	part_barrel_licensed_hyp
@@ -372,6 +377,7 @@ category	part_name
 5	part_grip_03
 5	part_grip_04_hyp
 5	part_grip_05a_ted_legs
+5	part_grip_05a_ted_legs_earlyexcess
 5	part_grip_05a_ted_legs_mirv
 5	part_grip_05b_ted_homing
 5	part_grip_05b_ted_homing_atlien
@@ -413,6 +419,7 @@ category	part_name
 5	part_shield_ricochet
 5	part_underbarrel_01_drone
 5	part_underbarrel_02_rockets
+5	part_underbarrel_02_rockets_earlyexcess
 5	part_underbarrel_03_shotgun
 5	part_underbarrel_04_atlas
 5	part_underbarrel_04_atlas_ball
@@ -518,6 +525,7 @@ category	part_name
 7	comp_05_legendary_demo
 7	comp_05_legendary_goldengod
 7	comp_05_legendary_goremaster
+7	comp_05_legendary_plumbbob
 7	part_barrel_01
 7	part_barrel_01_a
 7	part_barrel_01_b
@@ -595,6 +603,7 @@ category	part_name
 7	part_underbarrel_06_malswitch
 7	part_unique_barrel_02_convergence
 7	part_unique_barrel_02_demo
+7	part_unique_barrel_02_plumbbob
 8	comp_01_common
 8	comp_02_uncommon
 8	comp_03_rare
@@ -691,6 +700,7 @@ category	part_name
 9	comp_05_legendary_rainbowvomit
 9	comp_05_legendary_slugger
 9	comp_05_legendary_tkswave
+9	comp_05_legendary_verce
 9	comp_06_pearl_constable
 9	part_barrel_01
 9	part_barrel_01_a
@@ -713,6 +723,7 @@ category	part_name
 9	part_barrel_licensed_ted_shooting
 9	part_barrel_rainbowvomit
 9	part_barrel_tkswave
+9	part_barrel_verce
 9	part_body
 9	part_body_a
 9	part_body_b
@@ -1060,6 +1071,7 @@ category	part_name
 13	comp_05_legendary
 13	comp_05_legendary_firstimpression
 13	comp_05_legendary_harddark
+13	comp_05_legendary_kaos
 13	comp_05_legendary_lumberjack
 13	comp_05_legendary_mercredi
 13	comp_05_legendary_om
@@ -1079,6 +1091,7 @@ category	part_name
 13	part_barrel_02_c
 13	part_barrel_02_d
 13	part_barrel_02_harddark
+13	part_barrel_02_kaos
 13	part_barrel_02_lumberjack
 13	part_barrel_02_star_helix
 13	part_barrel_licensed_hyp
@@ -1246,6 +1259,8 @@ category	part_name
 15	comp_05_legendary_crowsourced
 15	comp_05_legendary_gmr
 15	comp_05_legendary_goalkeeper
+15	comp_05_legendary_pchonk
+15	comp_05_legendary_testament
 15	part_barrel_01
 15	part_barrel_01_a
 15	part_barrel_01_b
@@ -1259,6 +1274,8 @@ category	part_name
 15	part_barrel_02_d
 15	part_barrel_02_gmr
 15	part_barrel_02_goalkeeper
+15	part_barrel_02_pchonk
+15	part_barrel_02_testament
 15	part_barrel_licensed_hyp
 15	part_barrel_licensed_jak
 15	part_barrel_licensed_ted
@@ -1510,6 +1527,7 @@ category	part_name
 18	comp_05_legendary
 18	comp_05_legendary_bubbles
 18	comp_05_legendary_dualdamage
+18	comp_05_legendary_extinction
 18	comp_05_legendary_lasercutter
 18	comp_05_legendary_lucian
 18	comp_05_legendary_wf
@@ -1521,6 +1539,7 @@ category	part_name
 18	part_barrel_01_c
 18	part_barrel_01_d
 18	part_barrel_01_dualdamage
+18	part_barrel_01_extinction
 18	part_barrel_01_lasercutter
 18	part_barrel_01_lucian
 18	part_barrel_01_wombocombo
@@ -2073,6 +2092,7 @@ category	part_name
 24	comp_05_legendary
 24	comp_05_legendary_ballista
 24	comp_05_legendary_boomslang
+24	comp_05_legendary_burrow
 24	comp_05_legendary_fearstalker
 24	comp_05_legendary_truck
 24	part_barrel_01
@@ -2084,6 +2104,7 @@ category	part_name
 24	part_barrel_02_a
 24	part_barrel_02_b
 24	part_barrel_02_boomslang
+24	part_barrel_02_burrow
 24	part_barrel_02_c
 24	part_barrel_02_d
 24	part_barrel_02_fearstalker
@@ -2160,6 +2181,7 @@ category	part_name
 25	comp_05_legendary_conflux
 25	comp_05_legendary_katagawa
 25	comp_05_legendary_manifest
+25	comp_05_legendary_stealth
 25	part_barrel_01
 25	part_barrel_01_a
 25	part_barrel_01_asher
@@ -2175,6 +2197,7 @@ category	part_name
 25	part_barrel_02_conflux
 25	part_barrel_02_d
 25	part_barrel_02_katagawa
+25	part_barrel_02_stealth
 25	part_barrel_licensed_hyp
 25	part_barrel_licensed_jak
 25	part_barrel_licensed_ted
@@ -5399,7 +5422,9 @@ category	part_name
 269	comp_03_rare
 269	comp_04_epic
 269	comp_05_legendary_adrenalinepump
+269	comp_05_legendary_bloodiron
 269	part_augment_unique_adrenalinepump
+269	part_augment_unique_bloodiron
 269	part_vla
 270	comp_01_common
 270	comp_02_uncommon
@@ -5408,9 +5433,11 @@ category	part_name
 270	comp_05_legendary
 270	comp_05_legendary_axe
 270	comp_05_legendary_fuse
+270	comp_05_legendary_pressurecooker
 270	part_dad
 270	part_payload_axe
 270	part_payload_fuse
+270	part_payload_pressurecooker
 271	comp_01_common
 271	comp_02_uncommon
 271	comp_03_rare
@@ -5440,6 +5467,7 @@ category	part_name
 273	comp_05_legendary
 273	comp_05_legendary_dahlfather
 273	comp_05_legendary_javelin
+273	comp_05_legendary_loiter
 273	comp_05_legendary_ravenfire
 273	comp_05_legendary_sidewinder
 273	part_barrel_01
@@ -5467,6 +5495,7 @@ category	part_name
 273	part_barrel_02_d
 273	part_barrel_dahlfather
 273	part_barrel_javelin
+273	part_barrel_loiter
 273	part_body
 273	part_body_a
 273	part_body_b
@@ -6005,9 +6034,11 @@ category	part_name
 321	comp_05_legendary
 321	comp_05_legendary_compleat
 321	comp_05_legendary_firewerks
+321	comp_05_legendary_hydrowerks
 321	part_body_armor
 321	part_body_armor_compleat
 321	part_unique_firewerks
+321	part_unique_hydrowerks
 322	comp_01_common
 322	comp_02_uncommon
 322	comp_03_rare
@@ -6877,6 +6908,7 @@ category	part_name
 10003	comp_05_legendary_beegun
 10003	comp_05_legendary_bismuth
 10003	comp_05_legendary_blockbuster
+10003	comp_05_legendary_bloodiron
 10003	comp_05_legendary_bod
 10003	comp_05_legendary_bonnieclyde
 10003	comp_05_legendary_boomslang
@@ -6886,6 +6918,7 @@ category	part_name
 10003	comp_05_legendary_bubbles
 10003	comp_05_legendary_bugbear
 10003	comp_05_legendary_bully
+10003	comp_05_legendary_burrow
 10003	comp_05_legendary_cannonbrawl
 10003	comp_05_legendary_chuck
 10003	comp_05_legendary_coldshoulder
@@ -6910,7 +6943,9 @@ category	part_name
 10003	comp_05_legendary_doeshot
 10003	comp_05_legendary_draupner
 10003	comp_05_legendary_dualdamage
+10003	comp_05_legendary_earlyexcess
 10003	comp_05_legendary_eigenburst
+10003	comp_05_legendary_extinction
 10003	comp_05_legendary_falke
 10003	comp_05_legendary_faultydetonator
 10003	comp_05_legendary_fearstalker
@@ -6947,12 +6982,14 @@ category	part_name
 10003	comp_05_legendary_honeybadger
 10003	comp_05_legendary_hopscotch
 10003	comp_05_legendary_hugger
+10003	comp_05_legendary_hydrowerks
 10003	comp_05_legendary_ichor
 10003	comp_05_legendary_inscriber
 10003	comp_05_legendary_ishmael
 10003	comp_05_legendary_jailbroken
 10003	comp_05_legendary_javelin
 10003	comp_05_legendary_jetset
+10003	comp_05_legendary_kaos
 10003	comp_05_legendary_kaoson
 10003	comp_05_legendary_kingsgambit
 10003	comp_05_legendary_lasercutter
@@ -6963,6 +7000,7 @@ category	part_name
 10003	comp_05_legendary_linebacker
 10003	comp_05_legendary_loarmaster
 10003	comp_05_legendary_lockjaw
+10003	comp_05_legendary_loiter
 10003	comp_05_legendary_lucian
 10003	comp_05_legendary_lumberjack
 10003	comp_05_legendary_manifest
@@ -6977,12 +7015,15 @@ category	part_name
 10003	comp_05_legendary_ordinance
 10003	comp_05_legendary_overswarm
 10003	comp_05_legendary_paleblood
+10003	comp_05_legendary_pchonk
 10003	comp_05_legendary_pellet
 10003	comp_05_legendary_phantom_flame
 10003	comp_05_legendary_plasmacoil
+10003	comp_05_legendary_plumbbob
 10003	comp_05_legendary_pocketbuddies
 10003	comp_05_legendary_potatothrower
 10003	comp_05_legendary_predatordrone
+10003	comp_05_legendary_pressurecooker
 10003	comp_05_legendary_prince
 10003	comp_05_legendary_proteancell
 10003	comp_05_legendary_queensrest
@@ -7016,12 +7057,14 @@ category	part_name
 10003	comp_05_legendary_shieldboi
 10003	comp_05_legendary_shoals
 10003	comp_05_legendary_shokunai
+10003	comp_05_legendary_silversliver
 10003	comp_05_legendary_skully
 10003	comp_05_legendary_slippy
 10003	comp_05_legendary_slugger
 10003	comp_05_legendary_songbird
 10003	comp_05_legendary_soulsurvivor
 10003	comp_05_legendary_splatoon
+10003	comp_05_legendary_stealth
 10003	comp_05_legendary_stopgap
 10003	comp_05_legendary_stray
 10003	comp_05_legendary_streamer
@@ -7032,6 +7075,7 @@ category	part_name
 10003	comp_05_legendary_symmetry
 10003	comp_05_legendary_tankbuster
 10003	comp_05_legendary_temper
+10003	comp_05_legendary_testament
 10003	comp_05_legendary_timekeeper
 10003	comp_05_legendary_tkswave
 10003	comp_05_legendary_transmission
@@ -7044,6 +7088,7 @@ category	part_name
 10003	comp_05_legendary_unstable_kor
 10003	comp_05_legendary_urchin
 10003	comp_05_legendary_vamoose
+10003	comp_05_legendary_verce
 10003	comp_05_legendary_vitae
 10003	comp_05_legendary_waterfall
 10003	comp_05_legendary_watts4dinner
@@ -7078,6 +7123,7 @@ category	part_name
 10004	part_barrel_01_dividedfocus
 10004	part_barrel_01_dualdamage
 10004	part_barrel_01_eigenburst
+10004	part_barrel_01_extinction
 10004	part_barrel_01_falke
 10004	part_barrel_01_firstimpression
 10004	part_barrel_01_fisheye
@@ -7107,6 +7153,7 @@ category	part_name
 10004	part_barrel_01_seamstress
 10004	part_barrel_01_shammy
 10004	part_barrel_01_sharkbait
+10004	part_barrel_01_silversliver
 10004	part_barrel_01_slugger
 10004	part_barrel_01_stopgap
 10004	part_barrel_01_stray
@@ -7125,6 +7172,7 @@ category	part_name
 10004	part_barrel_02_breadth
 10004	part_barrel_02_bugbear
 10004	part_barrel_02_bully
+10004	part_barrel_02_burrow
 10004	part_barrel_02_chuck
 10004	part_barrel_02_conflux
 10004	part_barrel_02_conglomerate
@@ -7132,6 +7180,7 @@ category	part_name
 10004	part_barrel_02_crowsourced
 10004	part_barrel_02_discjockey
 10004	part_barrel_02_draupner
+10004	part_barrel_02_earlyexcess
 10004	part_barrel_02_fearstalker
 10004	part_barrel_02_finnty
 10004	part_barrel_02_firework
@@ -7149,10 +7198,12 @@ category	part_name
 10004	part_barrel_02_ishmael
 10004	part_barrel_02_jetset
 10004	part_barrel_02_juliet
+10004	part_barrel_02_kaos
 10004	part_barrel_02_kingsgambit
 10004	part_barrel_02_leadballoon
 10004	part_barrel_02_lumberjack
 10004	part_barrel_02_mantra
+10004	part_barrel_02_pchonk
 10004	part_barrel_02_plasmacoil
 10004	part_barrel_02_prince
 10004	part_barrel_02_queensrest
@@ -7168,9 +7219,11 @@ category	part_name
 10004	part_barrel_02_songbird
 10004	part_barrel_02_soulsurvivor
 10004	part_barrel_02_splatoon
+10004	part_barrel_02_stealth
 10004	part_barrel_02_sweet_embrace
 10004	part_barrel_02_symmetry
 10004	part_barrel_02_temper
+10004	part_barrel_02_testament
 10004	part_barrel_02_vamoose
 10004	part_barrel_ballista
 10004	part_barrel_beegun
@@ -7186,6 +7239,7 @@ category	part_name
 10004	part_barrel_javelin
 10004	part_barrel_lockjaw
 10004	part_barrel_locust
+10004	part_barrel_loiter
 10004	part_barrel_mercury
 10004	part_barrel_misslaser
 10004	part_barrel_potatothrower
@@ -7197,8 +7251,10 @@ category	part_name
 10004	part_barrel_sunspot
 10004	part_barrel_tkswave
 10004	part_barrel_truck
+10004	part_barrel_verce
 10004	part_barrel_wf
 10004	part_unique_barrel_02_demo
+10004	part_unique_barrel_02_plumbbob
 10005	part_barrel_01_a
 10005	part_barrel_01_b
 10005	part_barrel_01_c
@@ -7247,6 +7303,7 @@ category	part_name
 10007	part_underbarrel_01_misslaser
 10007	part_underbarrel_02_crank_fishward
 10007	part_underbarrel_02_rockets
+10007	part_underbarrel_02_rockets_earlyexcess
 10007	part_underbarrel_02_tether_snare_ishmael
 10007	part_underbarrel_03_seamstress
 10007	part_underbarrel_03_shotgun
@@ -7263,6 +7320,7 @@ category	part_name
 10008	part_grip_04_hyp
 10008	part_grip_04_hyp_finnty
 10008	part_grip_05a_ted_legs
+10008	part_grip_05a_ted_legs_earlyexcess
 10008	part_grip_05a_ted_legs_mirv
 10008	part_grip_05a_ted_legs_mirv_sharkbait
 10008	part_grip_05a_ted_legs_sharkbait
@@ -7352,6 +7410,7 @@ category	part_name
 10015	part_ordinance
 10015	part_payload_axe
 10015	part_payload_fuse
+10015	part_payload_pressurecooker
 10015	part_payload_unique_pellet
 10015	part_payload_unique_rubber
 10015	part_payload_unique_transmission
@@ -7393,6 +7452,7 @@ category	part_name
 10016	leg_body_tuba
 10016	leg_body_tuba
 10016	leg_body_tuba
+10017	part_augment_unique_bloodiron
 10017	part_augment_unique_defibrillator
 10017	part_augment_unique_healthraiser
 10017	part_augment_unique_hugger
@@ -7409,8 +7469,10 @@ category	part_name
 10018	part_body_ele_rainbowvomit_cryo_fire_shock
 10018	part_body_ele_rainbowvomit_cryo_rad_shock
 10018	part_body_ele_rainbowvomit_fire_rad_shock
+10018	part_radiation_testament
 10019	part_unique_elpisstar
 10019	part_unique_firewerks
+10019	part_unique_hydrowerks
 10019	part_unique_momento
 10020	part_scope_02_lens_02_gmr
 10021	part_01_mirv_05_swarm

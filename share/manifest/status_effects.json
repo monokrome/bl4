@@ -1,5 +1,195 @@
 [
   {
+    "name": "StatusEffect_Psycho_SaltRage",
+    "path": "../../../OakGame/Content/DLC/Harp/AI/ArmyBandit/Psycho/_Shared/Design/Skills/StatusEffect_Psycho_SaltRage.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "d543e111-3a83-41c2-8095-4a1a1c668646",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "d543e111-3a83-41c2-8095-4a1a1c668646"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_Harp_PhalanxSmall_SpeedRegulate",
+    "path": "../../../OakGame/Content/DLC/Harp/AI/ArmyBandit/Phalanx/_Shared/Design/Skills/StatusEffect_Harp_PhalanxSmall_SpeedRegulate.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "d543e111-3a83-41c2-8095-4a1a1c668646",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "d543e111-3a83-41c2-8095-4a1a1c668646"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_SilverSliver",
+    "path": "../../../OakGame/Content/DLC/Harp/Gear/Weapons/StatusEffect_SilverSliver.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "78aafdbe-96d6-4e59-badf-03acce62eef0",
+        "row_name": "Default"
+      },
+      {
+        "class_name": "GbxStatusEffectAspectData_DamageOverTime",
+        "guid": "09fe9347-f674-44a0-9ab1-acf53b3f4b48",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "78aafdbe-96d6-4e59-badf-03acce62eef0",
+      "09fe9347-f674-44a0-9ab1-acf53b3f4b48"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_Verce",
+    "path": "../../../OakGame/Content/DLC/Harp/Gear/Weapons/OrdoniteFractures/StatusEffect_Verce.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "94eef618-d704-4a6f-a815-c4c953014620",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "94eef618-d704-4a6f-a815-c4c953014620"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_Burrow_Richochet",
+    "path": "../../../OakGame/Content/DLC/Harp/Gear/Weapons/Uniques/StatusEffect_Burrow_Richochet.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [],
+    "notify_events": [],
+    "guids": [],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_PChonk",
+    "path": "../../../OakGame/Content/DLC/Harp/Gear/Weapons/OrdoniteFractures/StatusEffect_PChonk.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "94eef618-d704-4a6f-a815-c4c953014620",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "94eef618-d704-4a6f-a815-c4c953014620"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_CobWebSlow",
+    "path": "../../../OakGame/Content/AI/Bosses/ShatterBoss/_Design/StatusEffect/StatusEffect_CobWebSlow.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_Slow",
+        "guid": "321ee27c-e2d0-402d-935e-e7e8e7115df0",
+        "row_name": "GbxStatusEffectAspectData_DamageOverTime"
+      },
+      {
+        "class_name": "GbxStatusEffectAspectData_DamageOverTime",
+        "guid": "232ae99b-626c-4421-b6ee-542640bb70f8",
+        "row_name": "Default"
+      },
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "33baeeab-caed-464b-9909-02bd70fca2a6",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "321ee27c-e2d0-402d-935e-e7e8e7115df0",
+      "232ae99b-626c-4421-b6ee-542640bb70f8",
+      "33baeeab-caed-464b-9909-02bd70fca2a6"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_Testament_Radiation",
+    "path": "../../../OakGame/Content/DLC/Harp/Gear/Weapons/Uniques/StatusEffect_Testament_Radiation.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
+        "guid": "94eef618-d704-4a6f-a815-c4c953014620",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "94eef618-d704-4a6f-a815-c4c953014620"
+    ],
+    "tags": []
+  },
+  {
+    "name": "StatusEffect_Exo_HA3_ChargeBurst",
+    "path": "../../../OakGame/Content/PlayerCharacters/ExoSoldier/ActionSkillsSM/HeavyArms3/Data/StatusEffect_Exo_HA3_ChargeBurst.uasset",
+    "driver": {
+      "class_name": "GbxStatusEffectDriver_InstanceStack",
+      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
+    },
+    "aspects": [
+      {
+        "class_name": "GbxStatusEffectAspectData_DamageOverTime",
+        "guid": "63f28562-f0ed-465f-b422-52edb296d526",
+        "row_name": "Default"
+      }
+    ],
+    "notify_events": [],
+    "guids": [
+      "63f28562-f0ed-465f-b422-52edb296d526"
+    ],
+    "tags": []
+  },
+  {
     "name": "StatusEffect_Sharkbait",
     "path": "../../../OakGame/Content/DLC/Tuba/Gear/Weapons/Uniques/StatusEffect_Sharkbait.uasset",
     "driver": {
@@ -1084,38 +1274,6 @@
     "tags": []
   },
   {
-    "name": "StatusEffect_CobWebSlow",
-    "path": "../../../OakGame/Content/AI/Bosses/ShatterBoss/_Design/StatusEffect/StatusEffect_CobWebSlow.uasset",
-    "driver": {
-      "class_name": "GbxStatusEffectDriver_InstanceStack",
-      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
-    },
-    "aspects": [
-      {
-        "class_name": "GbxStatusEffectAspectData_Slow",
-        "guid": "321ee27c-e2d0-402d-935e-e7e8e7115df0",
-        "row_name": "GbxStatusEffectAspectData_DamageOverTime"
-      },
-      {
-        "class_name": "GbxStatusEffectAspectData_DamageOverTime",
-        "guid": "232ae99b-626c-4421-b6ee-542640bb70f8",
-        "row_name": "Default"
-      },
-      {
-        "class_name": "GbxStatusEffectAspectData_AttributeEffect",
-        "guid": "33baeeab-caed-464b-9909-02bd70fca2a6",
-        "row_name": "Default"
-      }
-    ],
-    "notify_events": [],
-    "guids": [
-      "321ee27c-e2d0-402d-935e-e7e8e7115df0",
-      "232ae99b-626c-4421-b6ee-542640bb70f8",
-      "33baeeab-caed-464b-9909-02bd70fca2a6"
-    ],
-    "tags": []
-  },
-  {
     "name": "SE_Player_StatCalculations",
     "path": "../../../OakGame/Content/PlayerCharacters/Temporary/_Shared/StatusEffects/SE_Player_StatCalculations.uasset",
     "driver": {
@@ -1499,26 +1657,6 @@
     "aspects": [],
     "notify_events": [],
     "guids": [],
-    "tags": []
-  },
-  {
-    "name": "StatusEffect_Exo_HA3_ChargeBurst",
-    "path": "../../../OakGame/Content/PlayerCharacters/ExoSoldier/ActionSkillsSM/HeavyArms3/Data/StatusEffect_Exo_HA3_ChargeBurst.uasset",
-    "driver": {
-      "class_name": "GbxStatusEffectDriver_InstanceStack",
-      "strategy": "GbxStatusEffectDriverInstanceStackStrategy_Capped"
-    },
-    "aspects": [
-      {
-        "class_name": "GbxStatusEffectAspectData_DamageOverTime",
-        "guid": "63f28562-f0ed-465f-b422-52edb296d526",
-        "row_name": "Default"
-      }
-    ],
-    "notify_events": [],
-    "guids": [
-      "63f28562-f0ed-465f-b422-52edb296d526"
-    ],
     "tags": []
   },
   {

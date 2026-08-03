@@ -4,4 +4,4 @@ UnCommon	6.000000	1.200000	0.180000	attribute'Att_LocalRarityModifier_02_Uncommo
 Rare	0.140000	1.400000	0.500000	attribute'Att_LocalRarityModifier_03_Rare'	1.400000
 Epic	0.045000	1.600000	0.550000	attribute'Att_LocalRarityModifier_04_VeryRare'	1.600000
 Legendary	0.000300	1.650000	0.800000	attribute'Att_LocalRarityModifier_05_Legendary'	1.650000
-Pearl	0.000200	1.650000	0.800000	attribute'Att_LocalRarityModifier_06_Pearlescent'	1.650000
+Pearl	0.000150	1.650000	0.800000	attribute'Att_LocalRarityModifier_06_Pearlescent'	1.650000

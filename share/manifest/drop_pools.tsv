@@ -2,10 +2,10 @@ manufacturer_code	gear_type_code	legendary_count	boss_source_count	world_pool_na
 BOR	HW	4	4	Heavy Weapons
 BOR	REPAIR_KIT	2	3	Repair Kits
 BOR	RK	1	0	RK
-BOR	SG	5	9	Shotguns
+BOR	SG	6	11	Shotguns
 BOR	SHIELD	2	2	Shields
 BOR	SM	4	7	SMGs
-BOR	SR	2	2	Sniper Rifles
+BOR	SR	3	3	Sniper Rifles
 BORG	GRENADE_GADGET	3	4	Grenades
 CLASSMOD	DARK_SIREN	6	6	DARK_SIREN
 CLASSMOD	EXO_SOLDIER	6	6	EXO_SOLDIER
@@ -13,7 +13,7 @@ CLASSMOD	GRAVITAR	6	6	GRAVITAR
 CLASSMOD	PALADIN	6	6	PALADIN
 DAD	AR	4	5	Assault Rifles
 DAD	GRENADE_GADGET	2	2	Grenades
-DAD	PS	3	3	Pistols
+DAD	PS	4	5	Pistols
 DAD	REPAIR_KIT	2	3	Repair Kits
 DAD	SG	3	4	Shotguns
 DAD	SHIELD	3	3	Shields
@@ -24,36 +24,36 @@ JAK	PS	6	7	Pistols
 JAK	REPAIR_KIT	1	1	Repair Kits
 JAK	SG	5	6	Shotguns
 JAK	SHIELD	2	2	Shields
-JAK	SR	4	4	Sniper Rifles
+JAK	SR	5	6	Sniper Rifles
 MAL	GRENADE_GADGET	2	2	Grenades
 MAL	HW	4	5	Heavy Weapons
 MAL	REPAIR_KIT	2	2	Repair Kits
 MAL	SG	5	8	Shotguns
 MAL	SM	4	6	SMGs
 MAL	SR	5	6	Sniper Rifles
-ORD	AR	3	4	Assault Rifles
+ORD	AR	4	5	Assault Rifles
 ORD	GRENADE_GADGET	2	2	Grenades
 ORD	PS	5	6	Pistols
 ORD	REPAIR_KIT	2	4	Repair Kits
 ORD	SHIELD	3	4	Shields
-ORD	SR	3	3	Sniper Rifles
+ORD	SR	4	4	Sniper Rifles
 TED	AR	3	7	Assault Rifles
 TED	GRENADE_GADGET	3	5	Grenades
-TED	PS	5	7	Pistols
+TED	PS	6	9	Pistols
 TED	REPAIR_KIT	1	1	Repair Kits
 TED	SG	3	3	Shotguns
 TED	SHIELD	4	7	Shields
 TOR	AR	4	8	Assault Rifles
 TOR	GRENADE_GADGET	2	2	Grenades
-TOR	HW	2	3	Heavy Weapons
+TOR	HW	3	5	Heavy Weapons
 TOR	PS	4	8	Pistols
 TOR	REPAIR_KIT	1	2	Repair Kits
 TOR	SG	3	3	Shotguns
-TOR	SHIELD	2	2	Shields
+TOR	SHIELD	3	4	Shields
 VLA	AR	6	9	Assault Rifles
 VLA	GRENADE_GADGET	3	4	Grenades
 VLA	HW	3	4	Heavy Weapons
-VLA	REPAIR_KIT	1	1	Repair Kits
+VLA	REPAIR_KIT	2	3	Repair Kits
 VLA	SHIELD	3	4	Shields
 VLA	SM	5	7	SMGs
 VLA	SR	3	5	Sniper Rifles
