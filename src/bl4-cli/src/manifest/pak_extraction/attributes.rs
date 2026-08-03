@@ -256,7 +256,7 @@ pub fn extract_stats_from_pak(pak_manifest_path: &Path) -> Result<Vec<ExtractedS
         })
         .collect();
 
-    result.sort_by(|a, b| b.occurrences.cmp(&a.occurrences));
+    result.sort_by_key(|b| std::cmp::Reverse(b.occurrences));
 
     Ok(result)
 }

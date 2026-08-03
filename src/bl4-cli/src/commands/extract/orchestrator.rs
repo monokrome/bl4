@@ -152,7 +152,29 @@ fn run_uextract(
     aes_key: Option<&str>,
 ) -> Result<()> {
     println!("=== Pak Extraction ===\n");
-    println!("Extracting pak files with uextract...");
+
+    let pak_count = if paks.is_file() {
+        1
+    } else {
+        fs::read_dir(paks)
+            .ok()
+            .map(|dir| {
+                dir.filter_map(Result::ok)
+                    .filter(|e| e.path().extension().map(|e| e == "pak").unwrap_or(false))
+                    .count()
+            })
+            .unwrap_or(0)
+    };
+
+    // uextract is a separate binary that reports work only through its own
+    // inherited stdout/stderr. It prints "Found N PAK files..." and then runs
+    // silently for a while, which looks like a hang. State the phase explicitly.
+    println!(
+        "Running uextract against {} PAK file(s) (this can take several minutes; no per-file progress is reported)...",
+        pak_count
+    );
+    println!("  uextract output follows:");
+    let start = std::time::Instant::now();
     let mut cmd = ProcessCommand::new("uextract");
     cmd.arg(paks)
         .arg("-o")
@@ -170,7 +192,10 @@ fn run_uextract(
     if !status.success() {
         bail!("uextract failed with status: {}", status);
     }
-    println!();
+    println!(
+        "  uextract done in {:.1}s\n",
+        start.elapsed().as_secs_f64()
+    );
     Ok(())
 }
 
