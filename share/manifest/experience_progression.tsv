@@ -1,0 +1,401 @@
+progression	level	xp	maxlevel	multiplier	offset	power	basemultiplier	basevalue	source_file
+oak2_characterxp_progression	1	60	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	2	417	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	3	1300	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	4	2910	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	5	5435	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	6	9056	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	7	13945	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	8	20267	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	9	28185	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	10	37857	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	11	49436	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	12	63075	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	13	78921	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	14	97120	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	15	117816	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	16	141152	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	17	167266	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	18	196297	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	19	228381	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	20	263654	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	21	302249	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	22	344298	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	23	389932	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	24	439281	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	25	492473	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	26	549637	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	27	610899	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	28	676384	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	29	746217	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	30	820523	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	31	899423	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	32	983039	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	33	1071495	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	34	1164909	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	35	1263402	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	36	1367093	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	37	1476101	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	38	1590542	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	39	1710535	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	40	1836196	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	41	1967641	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	42	2104986	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	43	2248344	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	44	2397831	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	45	2553561	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	46	2715646	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	47	2884199	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	48	3059332	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	49	3241158	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	50	3429787	50	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	51	3625331	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	52	3827900	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	53	4037603	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	54	4254551	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	55	4478852	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	56	4710616	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	57	4949950	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	58	5196963	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	59	5451761	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	60	5714454	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	61	5985146	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	62	6263945	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	63	6550957	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	64	6846288	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	65	7150042	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	66	7462326	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	67	7783244	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	68	8112901	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	69	8451400	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	70	8798846	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	71	9155343	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	72	9520992	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	73	9895899	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	74	10280164	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	75	10673891	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	76	11077182	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	77	11490138	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	78	11912862	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	79	12345455	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	80	12788017	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	81	13240649	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	82	13703453	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	83	14176528	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	84	14659975	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	85	15153893	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	86	15658383	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	87	16173542	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	88	16699471	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	89	17236269	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	90	17784033	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	91	18342864	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	92	18912858	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	93	19494114	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	94	20086729	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	95	20690802	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	96	21306430	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	97	21933710	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	98	22572739	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	99	23223613	100	60	7.33	2.8			xp_progression.bin
+oak2_characterxp_progression	100	23886430	100	60	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	1	80	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	2	557	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	3	1733	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	4	3880	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	5	7247	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	6	12075	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	7	18593	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	8	27023	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	9	37581	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	10	50476	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	11	65915	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	12	84100	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	13	105228	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	14	129493	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	15	157088	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	16	188202	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	17	223021	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	18	261729	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	19	304508	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	20	351539	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	21	402999	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	22	459064	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	23	519909	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	24	585708	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	25	656631	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	26	732850	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	27	814532	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	28	901846	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	29	994957	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	30	1094030	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	31	1199230	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	32	1310719	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	33	1428660	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	34	1553212	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	35	1684536	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	36	1822791	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	37	1968134	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	38	2120723	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	39	2280714	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	40	2448262	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	41	2623522	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	42	2806648	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	43	2997793	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	44	3197109	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	45	3404748	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	46	3620861	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	47	3845598	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	48	4079110	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	49	4321544	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	50	4573050	50	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	51	4833775	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	52	5103867	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	53	5383471	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	54	5672735	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	55	5971803	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	56	6280821	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	57	6599933	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	58	6929284	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	59	7269015	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	60	7619272	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	61	7980195	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	62	8351927	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	63	8734610	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	64	9128384	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	65	9533390	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	66	9949769	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	67	10377659	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	68	10817202	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	69	11268534	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	70	11731795	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	71	12207124	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	72	12694657	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	73	13194532	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	74	13706886	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	75	14231855	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	76	14769576	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	77	15320185	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	78	15883816	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	79	16460606	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	80	17050689	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	81	17654199	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	82	18271271	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	83	18902038	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	84	19546634	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	85	20205191	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	86	20877844	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	87	21564723	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	88	22265962	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	89	22981692	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	90	23712045	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	91	24457152	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	92	25217144	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	93	25992152	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	94	26782306	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	95	27587737	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	96	28408574	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	97	29244947	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	98	30096985	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	99	30964818	100	80	7.33	2.8			xp_progression.bin
+oak2_specializationxp_progression	100	31848573	100	80	7.33	2.8			xp_progression.bin
+oak2_vaultcardxp_progression	1	11	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	2	43	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	3	101	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	4	190	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	5	310	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	6	463	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	7	652	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	8	878	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	9	1141	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	10	1443	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	11	1785	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	12	2169	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	13	2594	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	14	3062	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	15	3573	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	16	4129	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	17	4729	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	18	5375	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	19	6068	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	20	6808	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	21	7595	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	22	8430	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	23	9314	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	24	10248	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	25	11231	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	26	12264	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	27	13349	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	28	14484	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	29	15671	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	30	16911	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	31	18203	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	32	19548	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	33	20947	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	34	22400	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	35	23907	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	36	25469	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	37	27086	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	38	28758	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	39	30486	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	40	32271	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	41	34112	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	42	36010	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	43	37965	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	44	39978	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	45	42049	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	46	44178	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	47	46366	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	48	48612	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	49	50918	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	50	53283	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	51	55709	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	52	58194	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	53	60740	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	54	63346	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	55	66014	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	56	68742	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	57	71533	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	58	74385	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	59	77299	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	60	80275	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	61	83315	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	62	86417	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	63	89582	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	64	92810	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	65	96103	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	66	99459	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	67	102879	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	68	106364	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	69	109913	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	70	113527	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	71	117206	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	72	120950	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	73	124760	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	74	128636	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	75	132578	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	76	136586	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	77	140660	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	78	144801	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	79	149009	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	80	153284	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	81	157627	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	82	162036	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	83	166514	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	84	171059	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	85	175673	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	86	180355	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	87	185105	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	88	189924	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	89	194812	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	90	199769	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	91	204795	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	92	209891	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	93	215057	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	94	220292	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	95	225598	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	96	230974	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	97	236420	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	98	241937	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	99	247524	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	100	253183	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	101	258912	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	102	264713	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	103	270586	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	104	276530	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	105	282546	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	106	288634	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	107	294795	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	108	301027	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	109	307332	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	110	313710	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	111	320161	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	112	326685	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	113	333282	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	114	339952	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	115	346696	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	116	353514	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	117	360405	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	118	367370	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	119	374410	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	120	381524	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	121	388712	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	122	395975	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	123	403313	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	124	410725	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	125	418213	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	126	425776	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	127	433415	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	128	441128	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	129	448918	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	130	456783	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	131	464725	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	132	472742	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	133	480836	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	134	489006	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	135	497253	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	136	505576	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	137	513977	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	138	522454	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	139	531008	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	140	539640	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	141	548349	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	142	557135	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	143	565999	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	144	574941	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	145	583961	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	146	593059	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	147	602236	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	148	611490	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	149	620823	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	150	630235	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	151	639725	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	152	649295	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	153	658943	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	154	668670	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	155	678477	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	156	688363	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	157	698329	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	158	708374	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	159	718499	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	160	728704	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	161	738989	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	162	749354	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	163	759799	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	164	770325	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	165	780931	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	166	791618	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	167	802386	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	168	813234	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	169	824164	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	170	835174	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	171	846266	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	172	857440	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	173	868694	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	174	880031	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	175	891449	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	176	902949	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	177	914531	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	178	926194	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	179	937941	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	180	949769	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	181	961680	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	182	973673	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	183	985749	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	184	997908	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	185	1010150	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	186	1022474	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	187	1034882	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	188	1047373	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	189	1059947	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	190	1072605	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	191	1085346	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	192	1098171	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	193	1111079	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	194	1124072	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	195	1137148	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	196	1150309	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	197	1163553	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	198	1176882	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	199	1190296	9999	8	0	2.25	2	1	xp_progression_1.bin
+oak2_vaultcardxp_progression	200	1203793	9999	8	0	2.25	2	1	xp_progression_1.bin

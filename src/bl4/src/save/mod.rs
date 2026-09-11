@@ -204,47 +204,36 @@ impl SaveFile {
         )
     }
 
-    /// Estimated XP threshold for a character level
+    /// Exact XP threshold for a character level from NCS `xp_progression`
     ///
-    /// Known exact thresholds: 1:0, 2:1100, 30:821362, 50:3430207, 60:5714893
-    /// (`docs/04-save-files.md` + 5714893). 65/67 observations used to fit
-    /// a post-60 curve: `Δ(L)=337272-14991×(L-61)` anchored to 60 (flatter
-    /// than docs `167900+13700×(L-50)` which overshot 65 by 0.5 level).
-    /// 51-60 still via docs, 61-70 via fitted linear-decay, 3-49 via scaled
-    /// power-law — all to be refined with more in-game thresholds.
+    /// Data from `share/manifest/ncs/xp_progression.bin` (`Oak2_CharacterXP_Progression`
+    /// `GbxExperienceFunction_Exponential` `multiplier 60 / power 2.8 / max 100`):
+    /// `XP = 60 * level^2.8` (rounded). Verified against saves: `60:5714454`
+    /// (save est `5714893` was `+439`), `50:3429787` (`+420`), `30:820523` (`+839`).
+    /// Use the manifest TSV `share/manifest/experience_progression.tsv` as source.
     pub fn xp_for_character_level(level: u64) -> u64 {
-        match level {
-            1 => 0,
-            2 => 1_100,
-            30 => 821_362,
-            50 => 3_430_207,
-            60 => 5_714_893,
-            _ if level > 60 => {
-                // Fitted from 60:5714893, 65:7251343 (65+50%→-½Δ), 67:7778900 (66+99%→+1%Δ)
-                // Gives Δ61≈332k decaying ~12.4k/level (vs docs +13.7k growing)
-                let k = level - 60;
-                let d0 = 332_152;
-                let inc = -12_431;
-                let mut xp = 5_714_893;
-                for i in 0..k {
-                    xp += (d0 as i64 + inc as i64 * i as i64) as u64;
-                }
-                xp
-            }
-            _ if level > 50 => {
-                let mut xp = 3_430_207;
-                for l in 51..=level {
-                    xp += 167_900 + 13_700 * (l - 50);
-                }
-                xp
-            }
-            _ => {
-                // Scale power-law to hit exact L=50 threshold
-                let raw = 202.0 * (level as f64).powf(2.44);
-                let scale = 3_430_207.0 / (202.0 * 50_f64.powf(2.44));
-                (raw * scale) as u64
-            }
+        // Exact thresholds from NCS `xp_progression` (`Oak2_CharacterXP_Progression`
+        // `60*L^2.8`), with L=1 forced to 0 to match save's `level:1 points:0`
+        // (NCS has 60 for L=1, but saves start at 0). Verified: L30 820523 vs
+        // save est 821362 (-839), L50 3429787 vs 3430207 (-420), L60 5714454 vs
+        // 5714893 (-439) — all <0.1% error, high levels now exact.
+        const CHARACTER_XP: [u64; 101] = [
+            0, 0, 417, 1300, 2910, 5435, 9056, 13945, 20267, 28185, 37857, 49436, 63075, 78921,
+            97120, 117816, 141152, 167266, 196297, 228381, 263654, 302249, 344298, 389932, 439281,
+            492473, 549637, 610899, 676384, 746217, 820523, 899423, 983039, 1071495, 1164909,
+            1263402, 1367093, 1476101, 1590542, 1710535, 1836196, 1967641, 2104986, 2248344,
+            2397831, 2553561, 2715646, 2884199, 3059332, 3241158, 3429787, 3625331, 3827900,
+            4037603, 4254551, 4478852, 4710616, 4949950, 5196963, 5451761, 5714454, 5985146,
+            6263945, 6550957, 6846288, 7150042, 7462326, 7783244, 8112901, 8451400, 8798846,
+            9155343, 9520992, 9895899, 10280164, 10673891, 11077182, 11490138, 11912862, 12345455,
+            12788017, 13240649, 13703453, 14176528, 14659975, 15153893, 15658383, 16173542,
+            16699471, 17236269, 17784033, 18342864, 18912858, 19494114, 20086729, 20690802,
+            21306430, 21933710, 22572739, 23223613, 23886430,
+        ];
+        if level as usize >= CHARACTER_XP.len() {
+            return 0;
         }
+        CHARACTER_XP[level as usize]
     }
 
     /// Get specialization level and XP

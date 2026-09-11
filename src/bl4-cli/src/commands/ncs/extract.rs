@@ -105,6 +105,15 @@ pub fn extract_by_type(
         return extract_missions(path, output, json);
     }
 
+    // XP progression extraction (GbxExperienceProgressionDef)
+    if extract_type == "xp-progression"
+        || extract_type == "xp_progression"
+        || extract_type == "experience"
+        || extract_type == "experience-progression"
+    {
+        return extract_xp_progression(path, output, json);
+    }
+
     let mut extracted = Vec::new();
     let mut type_counts: BTreeMap<String, usize> = BTreeMap::new();
     let mut total_files: usize = 0;
@@ -1277,6 +1286,247 @@ fn extract_missions(path: &Path, output: Option<&Path>, json: bool) -> Result<()
                 m.dialog_script,
             );
         }
+    }
+
+    Ok(())
+}
+
+/// Extract XP progression (GbxExperienceProgressionDef) to TSV
+///
+/// Parses `xp_progression` NCS tables (e.g. `xp_progression.bin`,
+/// `xp_progression_1.bin`) which contain `Oak2_CharacterXP_Progression`,
+/// `Oak2_SpecializationXP_Progression`, etc. as `GbxExperienceProgressionDef`
+/// with `functions: [{maxlevel, multiplier, offset, power, ...}]`.
+///
+/// The actual in-game XP curve is `XP = multiplier * level^power` (offset is
+/// stored but not used for the thresholds we verified: 60*(50^2.8)=3429795 vs
+/// 3430207 exact, 60*(60^2.8)=5714461 vs 5714893 exact, <0.02% error). For
+/// `VaultCard` the function has `basemultiplier`/`basevalue` — we treat it as
+/// `XP = basevalue + basemultiplier*level + multiplier*level^power` for now
+/// and emit both raw params for inspection.
+///
+/// Output is `experience_progression.tsv` with columns
+/// `progression,level,xp,maxlevel,multiplier,offset,power,basemultiplier,basevalue,source_file`.
+fn extract_xp_progression(path: &Path, output: Option<&Path>, json: bool) -> Result<()> {
+    use bl4_ncs::document::Value;
+
+    #[derive(serde::Serialize)]
+    struct XpRow {
+        progression: String,
+        level: u32,
+        xp: u64,
+        maxlevel: u32,
+        multiplier: f64,
+        offset: f64,
+        power: f64,
+        basemultiplier: Option<f64>,
+        basevalue: Option<f64>,
+        source_file: String,
+    }
+
+    let mut rows: Vec<XpRow> = Vec::new();
+    let mut files_processed = 0;
+    let mut progressions_found = 0;
+
+    for entry in walkdir::WalkDir::new(path)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.file_type().is_file())
+    {
+        let file_path = entry.path();
+        if !file_path.extension().map(|e| e == "bin").unwrap_or(false) {
+            continue;
+        }
+
+        let Some(doc) = parse_ncs_file(file_path) else {
+            continue;
+        };
+
+        // Look for xp_progression tables (there are 4 files: xp_progression.bin + _1/2/3.bin)
+        for (table_name, table) in &doc.tables {
+            if table_name != "xp_progression" {
+                continue;
+            }
+
+            for record in &table.records {
+                for entry in &record.entries {
+                    let prog_name = entry.key.clone();
+                    let value_map = match &entry.value {
+                        Value::Map(m) => m,
+                        _ => continue,
+                    };
+
+                    // functions: [{maxlevel, multiplier, offset, power, ...}]
+                    let funcs = match value_map.get("functions") {
+                        Some(Value::Array(a)) => a,
+                        _ => continue,
+                    };
+
+                    progressions_found += 1;
+
+                    for func_val in funcs {
+                        let func_map = match func_val {
+                            Value::Map(m) => m,
+                            _ => continue,
+                        };
+
+                        let maxlevel = func_map
+                            .get("maxlevel")
+                            .and_then(|v| match v {
+                                Value::Leaf(s) => s.parse::<u32>().ok(),
+                                _ => None,
+                            })
+                            .unwrap_or(0);
+                        let multiplier = func_map
+                            .get("multiplier")
+                            .and_then(|v| match v {
+                                Value::Leaf(s) => s.parse::<f64>().ok(),
+                                _ => None,
+                            })
+                            .unwrap_or(0.0);
+                        let offset = func_map
+                            .get("offset")
+                            .and_then(|v| match v {
+                                Value::Leaf(s) => s.parse::<f64>().ok(),
+                                _ => None,
+                            })
+                            .unwrap_or(0.0);
+                        let power = func_map
+                            .get("power")
+                            .and_then(|v| match v {
+                                Value::Leaf(s) => s.parse::<f64>().ok(),
+                                _ => None,
+                            })
+                            .unwrap_or(0.0);
+                        let basemultiplier = func_map.get("basemultiplier").and_then(|v| match v {
+                            Value::Leaf(s) => s.parse::<f64>().ok(),
+                            _ => None,
+                        });
+                        let basevalue = func_map.get("basevalue").and_then(|v| match v {
+                            Value::Leaf(s) => s.parse::<f64>().ok(),
+                            _ => None,
+                        });
+
+                        // Generate XP for levels 1..=maxlevel using the verified
+                        // formula XP = multiplier * level^power (offset is stored
+                        // but not used for the thresholds we checked; VaultCard
+                        // uses basevalue + basemultiplier*level + multiplier*level^power).
+                        let max = maxlevel.min(200); // cap for output sanity
+                        for lvl in 1..=max {
+                            let xp = if basemultiplier.is_some() || basevalue.is_some() {
+                                let bm = basemultiplier.unwrap_or(0.0);
+                                let bv = basevalue.unwrap_or(0.0);
+                                (bv + bm * lvl as f64 + multiplier * (lvl as f64).powf(power))
+                                    as u64
+                            } else {
+                                (multiplier * (lvl as f64).powf(power)) as u64
+                            };
+                            rows.push(XpRow {
+                                progression: prog_name.clone(),
+                                level: lvl,
+                                xp,
+                                maxlevel,
+                                multiplier,
+                                offset,
+                                power,
+                                basemultiplier,
+                                basevalue,
+                                source_file: file_path
+                                    .file_name()
+                                    .and_then(|n| n.to_str())
+                                    .unwrap_or("")
+                                    .to_string(),
+                            });
+                        }
+                    }
+                }
+            }
+            files_processed += 1;
+        }
+    }
+
+    // Deduplicate by (progression, level) keeping first
+    let mut seen = std::collections::HashSet::new();
+    rows.retain(|r| seen.insert((r.progression.clone(), r.level)));
+
+    rows.sort_by(|a, b| {
+        a.progression
+            .cmp(&b.progression)
+            .then(a.level.cmp(&b.level))
+    });
+
+    eprintln!(
+        "\nXP progression: {} files, {} progressions, {} rows (levels 1..max)",
+        files_processed,
+        progressions_found,
+        rows.len()
+    );
+    // Quick sanity check against known thresholds
+    for (prog, lvl, expected) in [
+        ("oak2_characterxp_progression", 50, 3_430_207u64),
+        ("oak2_characterxp_progression", 60, 5_714_893u64),
+        ("oak2_characterxp_progression", 2, 1_100u64),
+        ("oak2_characterxp_progression", 30, 821_362u64),
+    ] {
+        if let Some(row) = rows
+            .iter()
+            .find(|r| r.progression.to_lowercase() == prog && r.level == lvl)
+        {
+            let err = if row.xp > expected {
+                row.xp - expected
+            } else {
+                expected - row.xp
+            };
+            let pct = err as f64 / expected as f64 * 100.0;
+            eprintln!(
+                "  check {} L{}: got {} expected {} err {} ({:.2}%)",
+                prog, lvl, row.xp, expected, err, pct
+            );
+        }
+    }
+
+    let output_str = if json {
+        serde_json::to_string_pretty(&rows)?
+    } else {
+        let mut out = String::from(
+            "progression\tlevel\txp\tmaxlevel\tmultiplier\toffset\tpower\tbasemultiplier\tbasevalue\tsource_file\n",
+        );
+        for r in &rows {
+            out.push_str(&format!(
+                "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
+                r.progression,
+                r.level,
+                r.xp,
+                r.maxlevel,
+                r.multiplier,
+                r.offset,
+                r.power,
+                r.basemultiplier.map(|v| v.to_string()).unwrap_or_default(),
+                r.basevalue.map(|v| v.to_string()).unwrap_or_default(),
+                r.source_file
+            ));
+        }
+        out
+    };
+
+    if let Some(output_path) = output {
+        // If output is a directory, write experience_progression.tsv inside it
+        let out_file = if output_path.is_dir() {
+            output_path.join("experience_progression.tsv")
+        } else if output_path.extension().is_none() && !json {
+            // Heuristic: if output is a directory-like path without extension, treat as dir
+            std::fs::create_dir_all(output_path)?;
+            output_path.join("experience_progression.tsv")
+        } else {
+            output_path.to_path_buf()
+        };
+        if let Some(parent) = out_file.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        fs::write(&out_file, &output_str)?;
+        println!("Wrote {} XP rows to {}", rows.len(), out_file.display());
+    } else {
+        println!("{}", output_str);
     }
 
     Ok(())

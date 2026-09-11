@@ -37,6 +37,7 @@ MANIFEST_FILES=(
     "$MANIFEST_DIR/part_pools.json"
     "$MANIFEST_DIR/category_names.json"
     "$MANIFEST_DIR/BL4.usmap"
+    "$MANIFEST_DIR/experience_progression.tsv"
 )
 
 # Verify all manifest files exist
