@@ -192,10 +192,7 @@ fn run_uextract(
     if !status.success() {
         bail!("uextract failed with status: {}", status);
     }
-    println!(
-        "  uextract done in {:.1}s\n",
-        start.elapsed().as_secs_f64()
-    );
+    println!("  uextract done in {:.1}s\n", start.elapsed().as_secs_f64());
     Ok(())
 }
 
