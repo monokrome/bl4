@@ -21,8 +21,8 @@ pub use rarity::RarityEstimate;
 pub use validate::{Legality, ValidationCheck, ValidationResult};
 
 use crate::parts::{
-    category_from_varbit, level_from_code, manufacturer_name, serial_id_to_parts_category,
-    varbit_divisor, weapon_info_from_first_varint,
+    category_from_varbit, manufacturer_name, serial_id_to_parts_category, varbit_divisor,
+    weapon_info_from_first_varint,
 };
 
 /// Element types for weapons
@@ -168,7 +168,7 @@ impl Rarity {
 
     /// Extract rarity from VarInt-first weapon format.
     ///
-    /// With correct bit ordering, level codes are just levels (1-50).
+    /// With correct bit ordering, level codes are just levels (1-MAX_LEVEL).
     /// Rarity is not encoded in the level code.
     /// Rarity extraction for weapons needs re-derivation.
     pub fn from_weapon_level_code(_code: u64) -> Option<Self> {
@@ -365,9 +365,9 @@ pub struct ItemSerial {
     /// Decoded fields (extracted from tokens)
     /// For VarInt-first format: Combined manufacturer + weapon type ID
     pub manufacturer: Option<u64>,
-    /// Item level (fourth VarInt for VarInt-first format), capped at 50
+    /// Item level (fourth VarInt for VarInt-first format / last VarInt before separator for equipment)
     pub level: Option<u64>,
-    /// Raw decoded level before capping (if > 50, our decoding may be wrong)
+    /// Raw decoded level (same as level — preserved for validation, not capping)
     pub raw_level: Option<u64>,
     /// Random seed for stat rolls (second VarInt after first separator)
     pub seed: Option<u64>,
@@ -901,8 +901,7 @@ fn extract_equipment_header(tokens: &[Token]) -> HeaderInfo {
 
     let (level, raw_level) = header_varints
         .last()
-        .and_then(|&code| level_from_code(code))
-        .map(|(capped, raw)| (Some(capped as u64), Some(raw as u64)))
+        .map(|&code| (Some(code), Some(code)))
         .unwrap_or((None, None));
 
     HeaderInfo {
@@ -919,15 +918,8 @@ fn extract_weapon_header(tokens: &[Token]) -> HeaderInfo {
 
     let manufacturer = header_varints.first().copied();
     let (level, raw_level) = if header_varints.len() >= 4 {
-        if let Some((capped, raw)) = level_from_code(header_varints[3]) {
-            if raw <= 50 {
-                (Some(capped as u64), Some(raw as u64))
-            } else {
-                (None, None)
-            }
-        } else {
-            (None, None)
-        }
+        let code = header_varints[3];
+        (Some(code), Some(code))
     } else {
         (None, None)
     };

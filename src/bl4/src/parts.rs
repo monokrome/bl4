@@ -148,13 +148,18 @@ pub fn category_name(category: i64) -> Option<&'static str> {
     None
 }
 
+/// Maximum valid item/character level (raised from 50 in v1.5, now 70).
+pub const MAX_LEVEL: u8 = 70;
+/// Minimum valid level.
+pub const MIN_LEVEL: u8 = 1;
+
 /// Decode a level from a raw code value.
 /// Returns (decoded_level, raw_decoded_value) tuple.
 ///
 /// With correct bit ordering, the VarInt value IS the level directly.
-/// Valid levels are 1-60 (cap raised from 50 in v1.5).
+/// Valid levels are `MIN_LEVEL..=MAX_LEVEL`.
 pub fn level_from_code(code: u64) -> Option<(u8, u8)> {
-    if matches!(code, 1..=60) {
+    if (MIN_LEVEL as u64..=MAX_LEVEL as u64).contains(&code) {
         Some((code as u8, code as u8))
     } else {
         None
@@ -165,7 +170,7 @@ pub fn level_from_code(code: u64) -> Option<(u8, u8)> {
 ///
 /// With correct bit ordering, code = level directly.
 pub fn code_from_level(level: u8) -> Option<u64> {
-    if level == 0 || level > 60 {
+    if !(MIN_LEVEL..=MAX_LEVEL).contains(&level) {
         return None;
     }
     Some(level as u64)
@@ -255,8 +260,9 @@ mod tests {
         assert_eq!(level_from_code(30), Some((30, 30)));
         assert_eq!(level_from_code(50), Some((50, 50)));
         assert_eq!(level_from_code(60), Some((60, 60)));
+        assert_eq!(level_from_code(70), Some((70, 70)));
         assert_eq!(level_from_code(0), None);
-        assert_eq!(level_from_code(61), None);
+        assert_eq!(level_from_code(71), None);
     }
 
     #[test]
@@ -287,14 +293,15 @@ mod tests {
         assert_eq!(code_from_level(30), Some(30));
         assert_eq!(code_from_level(50), Some(50));
         assert_eq!(code_from_level(60), Some(60));
+        assert_eq!(code_from_level(70), Some(70));
         // Invalid
         assert_eq!(code_from_level(0), None);
-        assert_eq!(code_from_level(61), None);
+        assert_eq!(code_from_level(71), None);
     }
 
     #[test]
     fn test_code_from_level_roundtrip() {
-        for level in 1..=50u8 {
+        for level in 1..=70u8 {
             let code = code_from_level(level).unwrap();
             let (decoded, _) = level_from_code(code).unwrap();
             assert_eq!(decoded, level, "roundtrip failed for level {}", level);

@@ -8,7 +8,7 @@ use super::rarity::{compute_rarity_estimate, RarityEstimate};
 use super::validate::ValidationResult;
 use super::{Element, ItemSerial, Rarity, ResolvedPart, ResolvedString, SerialError};
 use crate::manifest;
-use crate::parts::{category_name, level_from_code, weapon_info_from_first_varint};
+use crate::parts::{category_name, weapon_info_from_first_varint};
 
 /// Fully-resolved item with all extracted properties.
 #[derive(Debug, Clone)]
@@ -79,11 +79,7 @@ pub fn resolve_identity(mut item: DecodedItem) -> DecodedItem {
         item.weapon_type = category_name(cat).map(|s| s.to_string());
     }
 
-    item.level = item
-        .serial
-        .level
-        .and_then(level_from_code)
-        .map(|(capped, _)| capped as u64);
+    item.level = item.serial.level;
 
     item.rarity = item.serial.rarity;
     item

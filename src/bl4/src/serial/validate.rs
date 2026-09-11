@@ -62,18 +62,33 @@ fn count_parts(tokens: &[Token]) -> usize {
         .count()
 }
 
-/// Check level range: must be 1-60 if present (cap raised from 50 in v1.5)
+/// Check level range: must be 1-MAX_LEVEL if present
 fn check_level(item: &ItemSerial) -> ValidationCheck {
     match item.level {
-        Some(level) if (1..=60).contains(&level) => ValidationCheck {
-            name: "level_range",
-            passed: Some(true),
-            detail: format!("level {} in valid range 1-60", level),
-        },
+        Some(level)
+            if (crate::parts::MIN_LEVEL as u64..=crate::parts::MAX_LEVEL as u64)
+                .contains(&level) =>
+        {
+            ValidationCheck {
+                name: "level_range",
+                passed: Some(true),
+                detail: format!(
+                    "level {} in valid range {}-{}",
+                    level,
+                    crate::parts::MIN_LEVEL,
+                    crate::parts::MAX_LEVEL
+                ),
+            }
+        }
         Some(level) => ValidationCheck {
             name: "level_range",
             passed: Some(false),
-            detail: format!("level {} outside valid range 1-60", level),
+            detail: format!(
+                "level {} outside valid range {}-{}",
+                level,
+                crate::parts::MIN_LEVEL,
+                crate::parts::MAX_LEVEL
+            ),
         },
         None => ValidationCheck {
             name: "level_range",
