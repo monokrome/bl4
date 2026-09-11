@@ -41,7 +41,9 @@ pub fn walk_guobject_array(
     // Read chunk pointer array
     let chunk_ptrs_data = source.read_bytes(guobj_array.objects_ptr, num_chunks * 8)?;
     let chunk_ptrs: Vec<usize> = chunk_ptrs_data
-        .chunks_exact(8)
+        .as_chunks::<8>()
+        .0
+        .iter()
         .map(|c| LE::read_u64(c) as usize)
         .collect();
 

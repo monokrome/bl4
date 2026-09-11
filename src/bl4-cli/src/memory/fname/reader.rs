@@ -97,7 +97,12 @@ impl FNameReader {
 
         let name = if is_wide {
             let bytes = source.read_bytes(entry_addr + 2, len * 2)?;
-            let chars: Vec<u16> = bytes.chunks_exact(2).map(LE::read_u16).collect();
+            let chars: Vec<u16> = bytes
+                .as_chunks::<2>()
+                .0
+                .iter()
+                .map(|c| LE::read_u16(c))
+                .collect();
             String::from_utf16_lossy(&chars)
         } else {
             let bytes = source.read_bytes(entry_addr + 2, len)?;
@@ -178,8 +183,10 @@ impl FNameReader {
                 let name = if is_wide {
                     let end = (offset + 2 + len * 2).min(data.len());
                     let chars: Vec<u16> = data[offset + 2..end]
-                        .chunks_exact(2)
-                        .map(LE::read_u16)
+                        .as_chunks::<2>()
+                        .0
+                        .iter()
+                        .map(|c| LE::read_u16(c))
                         .collect();
                     String::from_utf16_lossy(&chars)
                 } else {

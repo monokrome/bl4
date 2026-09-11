@@ -149,7 +149,9 @@ fn find_object_address(
     let num_chunks = (guobjects.num_elements as usize).div_ceil(65536);
     let chunk_ptrs_data = source.read_bytes(guobjects.objects_ptr, num_chunks * 8)?;
     let chunk_ptrs: Vec<usize> = chunk_ptrs_data
-        .chunks_exact(8)
+        .as_chunks::<8>()
+        .0
+        .iter()
         .map(|c| LE::read_u64(c) as usize)
         .collect();
 
@@ -222,7 +224,12 @@ fn dump_single_object(
         }
         // Try to read the array data and see if it looks like XP thresholds (increasing ints)
         if let Ok(data) = source.read_bytes(ptr, count * 4) {
-            let vals: Vec<u32> = data.chunks_exact(4).map(LE::read_u32).collect();
+            let vals: Vec<u32> = data
+                .as_chunks::<4>()
+                .0
+                .iter()
+                .map(|c| LE::read_u32(c))
+                .collect();
             // Check if it's increasing and within plausible XP range (0 .. 20M)
             let mut plausible = true;
             for w in vals.windows(2) {

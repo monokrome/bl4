@@ -96,7 +96,9 @@ impl FNamePool {
                         let num_blocks = (current_block + 1) as usize;
                         let blocks_data = source.read_bytes(header_addr + 16, num_blocks * 8)?;
                         let blocks: Vec<usize> = blocks_data
-                            .chunks_exact(8)
+                            .as_chunks::<8>()
+                            .0
+                            .iter()
                             .map(|c| LE::read_u64(c) as usize)
                             .collect();
 
