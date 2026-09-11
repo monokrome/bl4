@@ -10,6 +10,15 @@ use crate::cli::*;
 use crate::commands;
 use crate::memory;
 
+fn parse_level_arg(s: &str, max: u64) -> Result<u64> {
+    if s.eq_ignore_ascii_case("max") {
+        Ok(max)
+    } else {
+        s.parse::<u64>()
+            .with_context(|| format!("Invalid level '{}', expected number or 'max'", s))
+    }
+}
+
 /// Dispatch save subcommands
 pub fn dispatch_save(args: SaveArgs) -> Result<()> {
     match args.action {
@@ -53,14 +62,26 @@ pub fn dispatch_save(args: SaveArgs) -> Result<()> {
             if args.validate_items {
                 commands::save::validate_items(&args)?;
             }
-            if let Some(level) = args.set_character_level {
+            if let Some(level_str) = args.set_character_level.as_deref() {
+                let max = bl4::SaveFile::max_level_for_progression("oak2_characterxp_progression");
+                let level = parse_level_arg(level_str, max)
+                    .with_context(|| format!("Invalid --set-character-level '{}'", level_str))?;
                 commands::save::set_character_level(&args, level)?;
             }
-            if let Some(level) = args.set_specialization_level {
+            if let Some(level_str) = args.set_specialization_level.as_deref() {
+                let max =
+                    bl4::SaveFile::max_level_for_progression("oak2_specializationxp_progression");
+                let level = parse_level_arg(level_str, max).with_context(|| {
+                    format!("Invalid --set-specialization-level '{}'", level_str)
+                })?;
                 commands::save::set_specialization_level(&args, level)?;
             }
-            if let Some(level) = args.set_item_level {
-                return commands::save::set_item_level(&args, level);
+            if let Some(level_str) = args.set_item_level.as_deref() {
+                let max = bl4::parts::MAX_LEVEL as u64;
+                let level = parse_level_arg(level_str, max)
+                    .with_context(|| format!("Invalid --set-item-level '{}'", level_str))?;
+                let level_u8: u8 = level.try_into().context("Level out of range for u8")?;
+                return commands::save::set_item_level(&args, level_u8);
             }
             if args.set_character_level.is_some() || args.set_specialization_level.is_some() {
                 return Ok(());

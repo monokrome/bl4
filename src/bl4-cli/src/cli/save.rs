@@ -20,17 +20,17 @@ pub struct SaveArgs {
     #[arg(long)]
     pub validate_items: bool,
 
-    /// Set all items to a specific level
-    #[arg(long)]
-    pub set_item_level: Option<u8>,
+    /// Set all items to a specific level (or "max" for max level)
+    #[arg(long, value_name = "LEVEL|max")]
+    pub set_item_level: Option<String>,
 
-    /// Set character XP to estimated threshold for LEVEL (game updates level after a kill)
-    #[arg(long, value_name = "LEVEL")]
-    pub set_character_level: Option<u64>,
+    /// Set character XP to threshold for LEVEL (or "max" for max, game updates level after a kill)
+    #[arg(long, value_name = "LEVEL|max")]
+    pub set_character_level: Option<String>,
 
-    /// Set specialization XP to threshold for LEVEL (game updates level after a kill)
-    #[arg(long, value_name = "LEVEL")]
-    pub set_specialization_level: Option<u64>,
+    /// Set specialization XP to threshold for LEVEL (or "max" for max, game updates level after a kill)
+    #[arg(long, value_name = "LEVEL|max")]
+    pub set_specialization_level: Option<String>,
 
     /// Steam ID (uses configured default if not provided)
     #[arg(short, long)]

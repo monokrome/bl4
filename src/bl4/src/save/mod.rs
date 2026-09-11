@@ -270,7 +270,7 @@ impl SaveFile {
         0
     }
 
-    fn max_level_for_progression(progression: &str) -> u64 {
+    pub fn max_level_for_progression(progression: &str) -> u64 {
         const TSV: &str = include_str!(concat!(env!("OUT_DIR"), "/experience_progression.tsv"));
         let mut max = 0;
         for line in TSV.lines().skip(1) {
