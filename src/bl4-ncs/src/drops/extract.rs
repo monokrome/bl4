@@ -321,10 +321,9 @@ fn parse_legendary_item_id(
     let gear_type = prefix_parts[1..].join("_").to_uppercase();
 
     let comp_lower = comp_part.to_lowercase();
-    let item_name = if let Some(pos) = comp_lower.find("comp_05_legendary_") {
+    let item_name = {
+        let pos = comp_lower.find("comp_05_legendary_")?;
         &comp_part[pos + "comp_05_legendary_".len()..]
-    } else {
-        return None;
     };
     if item_name.is_empty() {
         return None;
