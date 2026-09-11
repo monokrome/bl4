@@ -1,10 +1,10 @@
 row_name	comment	value
 WeaponMaster_Duration		18.000000
-WeaponMaster_Cooldown		50.000000
-WeaponMaster_ForgeSkill_Cooldown		60.000000
-WeaponMaster_ForgeSkill_Cooldown_Cap1		55.000000
-WeaponMaster_ForgeSkill_Cooldown_Cap2		70.000000
-WeaponMaster_ForgeSkill_Cooldown_Cap3		65.000000
+WeaponMaster_Cooldown		40.000000
+WeaponMaster_ForgeSkill_Cooldown		45.000000
+WeaponMaster_ForgeSkill_Cooldown_Cap1		40.000000
+WeaponMaster_ForgeSkill_Cooldown_Cap2		55.000000
+WeaponMaster_ForgeSkill_Cooldown_Cap3		50.000000
 WeaponMaster_ForgeSkill_MoltenSlam_DamageMultiplier		1.200000
 WeaponMaster_ForgeSkill_MoltenSlam_DamageRadius		768.000000
 WeaponMaster_ForgeSkill_MoltenSlam_SingleTarget_DamageMultiplier		1.500000

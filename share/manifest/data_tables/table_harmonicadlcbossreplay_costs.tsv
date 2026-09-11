@@ -1,0 +1,16 @@
+row_name	cost_normal	cost_trueboss	type
+Villainess	800	100	Table_DLCBossReplay_Costs, 48581397446CE5BE0C0254A2522F60A6, Plot
+M2_JuniorManager	600	100	BossReplayCosts_Harmonica, 4649DC35433CAE24234EF991C5454A2E, Plot
+M3_LavaBoss	600	100	BossReplayCosts_Harmonica, 81086BBD4C32E1AFDA312C99B6642C1A, Plot
+M3_LogisticsBoss	600	100	BossReplayCosts_Harmonica, 5AD3198E466C78DC3823ADAFCC30CF79, Plot
+M3_SpaBoss	600	100	BossReplayCosts_Harmonica, 7B4A77C140ADA43AF5A2F184C5BF9D02, Plot
+M3_TheaterBoss	600	100	BossReplayCosts_Harmonica, 18F2AB104CF17AC4F30491ABEE9A5A26, Plot
+M3_HotelBoss	600	100	BossReplayCosts_Harmonica, 44A7465C43696A9C70F1E38C44C69868, Plot
+MicroplasticsBoss	600	100	BossReplayCosts_Harmonica, AA74A4454E5D12C1F4998881970BE377, Side
+Grotto1_Boss	600	100	BossReplayCosts_Harmonica, FD8C5C434AC325EC457B0FB6D2465D6F, Grotto
+Grotto2_Boss	600	100	BossReplayCosts_Harmonica, 41BE520A4C0AB4B82D00328593F1DCDB, Grotto
+Lockdown_Boss	600	100	BossReplayCosts_Harmonica, AAF88FDA4D185126CBBEA78A1A585917, Lockdown
+LockdownA_Boss	600	100	BossReplayCosts_Harmonica, 6718C998437D78D0D76349B55E076FB0, Lockdown
+Gauntlet1_Boss	600	100	BossReplayCosts_Harmonica, 4579EFC9419388315961B3AE60639388, Gauntlet
+Gauntlet2_Boss	600	100	BossReplayCosts_Harmonica, 4579EFC9419388315961B3AE60639388, Gauntlet
+TreasureHunt_Boss	600	100	BossReplayCosts_Harmonica, 74E899E04BABEC08DC52B1BC78AEC236, TreasureHunt

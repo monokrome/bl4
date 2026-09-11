@@ -1,0 +1,5 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+Lockdown	2.000000	100.000000	75.000000	75.000000
+Lockdown_Replay	2.000000	100.000000	75.000000	75.000000
+Lockdown_Replay_True	2.000000	200.000000	150.000000	150.000000
+Lockdown_ProjBomb				

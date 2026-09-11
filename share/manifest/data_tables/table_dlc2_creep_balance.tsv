@@ -1,0 +1,11 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+Basic	0.250000		2.000000	2.000000
+Better	0.500000	3.000000	3.000000	3.000000
+Badass		7.000000	3.000000	3.000000
+Corrupt		14.000000	0.500000	0.500000
+Boss		30.000000		
+Loot	1.500000	20.000000		
+Proj_FlySwarm		1.250000		
+Proj_FloatingBomb		0.500000		
+Proj_FlowerBomb		0.250000		
+Proj_Hopper		0.330000		

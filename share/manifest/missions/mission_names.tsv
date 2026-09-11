@@ -29,6 +29,9 @@ mission_dlc1_spookystory_lucine5	Spooky Story - Lucine 5
 mission_dlc1_spookystory_lucineintro	Spooky Story - Lucine Intro
 mission_dlc1_spookystory_prettiersmile	Spooky Story - Prettier Smile
 mission_dlc1_spookystory_voodoo	Spooky Story - Voodoo Death
+mission_dlc2_digidimension	Tediore Digi-Rifts
+mission_dlc2_digidimension_debug	Tediore Digi-Rifts
+mission_dlc2_digidimension_test	Tediore Digi-Rifts
 mission_dlc_banjo	The War On Mercenary Day
 mission_dlc_cello	The Cursed Mine
 mission_dlc_harp	Murders & Acquisitions
@@ -39,6 +42,9 @@ mission_dlc_tuba	Takedown Child of Terramorphous
 mission_dlc_tuba_base	The Shape of Slaughter: Takedown at Hadron Abyss
 mission_dlc_tuba_hardcore	The Shape of Slaughter: Hardcore Takedown at Hadron Abyss
 mission_dlc_tuba_timerbase	The Shape of Slaughter: Mayhem Takedown at Hadron Abyss
+mission_dlc_viola	The Rift Crisis
+mission_dynamicevent_geyserevent	The Furious Earth
+mission_dynamicevent_geyserevent_storyvariant	The Furious Earth
 mission_dynamicevents_fight_ordernpc_mulstamp	Reinforcements
 mission_event_aircargo	Event_AirCargo
 mission_event_dogfight	DebugOnly:DogFight Event
@@ -62,6 +68,17 @@ mission_main_grasslands1	Down and Outbound
 mission_main_grasslands2	A Lot to Process
 mission_main_grasslands2b	One Fell Swoop
 mission_main_grasslands3	Rush the Gate
+mission_main_harmonica0	FL4K and the Last Resort
+mission_main_harmonica1	The Skag and the Robot
+mission_main_harmonica2	The Chase
+mission_main_harmonica2b	Clear Comms
+mission_main_harmonica3	Throwing Down the Digi-Gauntlet
+mission_main_harmonica3_hotel	Digi-Gauntlet: Team Building
+mission_main_harmonica3_lava	Digi-Gauntlet: Some Like It Hot
+mission_main_harmonica3_logistics	Digi-Gauntlet: M3_Final_v5
+mission_main_harmonica3_spa	Digi-Gauntlet: You Can't Fire Me, I Quit
+mission_main_harmonica3_theatre	Digi-Gauntlet: R&D
+mission_main_harmonica4	The Rescue
 mission_main_mountains1	Shadow of the Mountain
 mission_main_mountains2	Crystal Brawl
 mission_main_mountains2b	Dark Subject
@@ -78,7 +95,10 @@ mission_micro_backmccrackypt1	Crack This Guy's Back
 mission_micro_backmccrackypt2	Crack This Guy's Back - Setting the Mood
 mission_micro_backmccrackypt3	Crack This Guy's Back - Advanced Maneuver
 mission_micro_blackmarket	The Black Market
+mission_micro_catchingfire	Burnt Offering
 mission_micro_catnapping	The Cat's Pajamas
+mission_micro_harmonica_guarded	The Relieving of the Guard
+mission_micro_harmonica_guardedending	The Second Relieving of the Guard
 mission_micro_heistrecruits_demo	Scoundrel Roundup: Kilo
 mission_micro_heistrecruits_intro	Scoundrel Roundup: Shim
 mission_micro_heistrecruits_tech	Scoundrel Roundup: Glitch
@@ -88,10 +108,13 @@ mission_micro_huntedpart2	A Quarry of Epic Proportions
 mission_micro_huntedpart3	The Final Quarrel
 mission_micro_icefishing	Ice Fishing
 mission_micro_joeandsue	Joe & Sue
+mission_micro_managerhand1_pangolin	No Sunrise
+mission_micro_managerhand2_tediore	Disallowed Leftward
 mission_micro_operation	Doc of the Bay
 mission_micro_powercoreplinko	PowerDrop
 mission_micro_rainbowegg	Brew-ha-ha
 mission_micro_resistance	Old Tricks
+mission_micro_snowcone	Pay to Play
 mission_micro_theentertainment	La-La-Last Call
 mission_micro_thesupply	Ain't No Sham in It
 mission_micro_whackathresher	Whack-A-Thresher
@@ -162,6 +185,13 @@ mission_side_electifactionmission2	A Traitor Within
 mission_side_electifactionmission3	The Mole's Gambit
 mission_side_flatkairoser	Flat Kairoser
 mission_side_grasslandsvault	Primordial Vault: Fadefields
+mission_side_harmonica_microplastics	The Tainted Truth
+mission_side_harmonica_novacancy	The Rusty Butler
+mission_side_harmonica_rescuerangers	Rescue Rangers
+mission_side_harmonica_spatialawareness1	Spatial Awareness
+mission_side_harmonica_spatialawareness2	The Parting of the Ways
+mission_side_harmonica_spatialawarenessreward	Old Friend
+mission_side_harmonica_tradingup	Barter Up
 mission_side_heist	The Kairos Job
 mission_side_invasive1	Symbiotic Security
 mission_side_invasive2	Symbiotic Security Part 2
@@ -184,6 +214,7 @@ mission_side_planetaryescape	Exit Through the Rift Shop
 mission_side_resonatorvault	Primordial Vault: Carcadia Burn
 mission_side_romeoandromeo	Star-Crossed
 mission_side_safehaven	A Humble Abode
+mission_side_sasaenginvasion	Fandomination
 mission_side_seedsofrevolutionpart1	Bad Seed
 mission_side_seedsofrevolutionpart2	Bad Seed Pt. 2
 mission_side_summoningcircle	Summoner's Gift
@@ -196,6 +227,7 @@ mission_side_thresherrancher	Breeding Daisies
 mission_side_unfinishedbusiness	Ghost Stories
 mission_side_vault_glide	Primordial Vault: Terminus Range
 mission_side_vending	Vend of the Line
+mission_side_verymerryunfestival	A Festivus for the Electivus
 mission_side_whatlurksbeneath	One Slimy Issue
 mission_worldbossevent_creature_october	Rift Champion
 mission_worldbossevent_default	Rift Champion
@@ -224,3 +256,6 @@ mission_worldevent_enterairship_interior_wave4_lighting_normal	World Event: Sabo
 mission_worldevent_meteor_lighting_powered	World Event: Sabotage Order Base
 mission_worldevent_meteor_lighting_unpowered	World Event: Sabotage Order Base
 mission_worldevent_meteordestroyer	Creep Impact
+mission_worldevent_volcanoevent_manager	The Furious Earth
+mission_worldevent_volcanoevent_manager_test	The Furious Earth
+mission_worldevent_volcanoevent_uitimer	The Furious Earth

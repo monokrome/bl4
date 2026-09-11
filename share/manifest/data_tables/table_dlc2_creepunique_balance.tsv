@@ -1,0 +1,8 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+Boss_DigiArena		60.000000	10.000000	10.000000
+Boss_DigiArena_Replay	1.500000	80.000000	10.000000	10.000000
+Boss_DigiArena_ReplayTRUE	2.000000	160.000000	10.000000	10.000000
+Boss_Cosmicreep		60.000000	10.000000	10.000000
+Boss_Cosmicreep_Replay	1.500000	80.000000	10.000000	10.000000
+Boss_Cosmicreep_ReplayTRUE	2.000000	160.000000	10.000000	10.000000
+Boss_Braincreep_BossAdd		20.000000	10.000000	10.000000

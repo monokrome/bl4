@@ -1,5 +1,5 @@
 row_name	comment	value
-Scourge_Cooldown		60.000000
+Scourge_Cooldown		45.000000
 Scourge_Duration		18.000000
 Scourge_Shield_Cooldown		1.000000
 Scourge_Shield_DamageReduction_Base_Full	60% in Negative Scale Math	-1.500000
@@ -23,10 +23,10 @@ Scourge_Shield_Throw_DamageMultiplier		0.523000
 Scourge_Shield_Throw_Bounces_Base		2.000000
 Scourge_Shield_Throw_Bounces_Additional_Percentage		0.200000
 Scourge_Cooldown_RefundMultiplier		0.330000
-Scourge_ForgeSkill_FireWall_Cooldown		50.000000
-Scourge_ForgeSkill_Cooldown_Cap1		60.000000
-Scourge_ForgeSkill_Cooldown_Cap2		60.000000
-Scourge_ForgeSkill_Cooldown_Cap3		45.000000
+Scourge_ForgeSkill_FireWall_Cooldown		40.000000
+Scourge_ForgeSkill_Cooldown_Cap1		50.000000
+Scourge_ForgeSkill_Cooldown_Cap2		50.000000
+Scourge_ForgeSkill_Cooldown_Cap3		35.000000
 Scourge_ForgeSkill_FireWall_Duration		15.000000
 Scourge_ForgeSkill_FireWall_Buff_DamageScalar		1.250000
 Scourge_ForgeSkill_FireWall_Buff_SpeedScalar		1.500000

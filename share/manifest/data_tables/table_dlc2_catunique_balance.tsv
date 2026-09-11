@@ -1,0 +1,8 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+Mine_Boss_Grotto		35.000000	10.000000	10.000000
+Mine_Boss_Grotto_Replay	1.500000	45.000000	15.000000	10.000000
+Mine_Boss_Grotto_Replay_TRUE	2.000000	50.000000	20.000000	10.000000
+MineBoss_Bandit		5.000000	5.000000	5.000000
+Mine_Boss_Gauntlet		30.000000	10.000000	10.000000
+Mine_Boss_Gauntlet_Replay	1.500000	40.000000	15.000000	15.000000
+Mine_Boss_Gauntlet_Replay_TRUE	1.500000	60.000000	30.000000	30.000000

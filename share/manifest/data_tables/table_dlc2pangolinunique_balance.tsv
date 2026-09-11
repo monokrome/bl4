@@ -1,0 +1,9 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+Boss_Gauntlet		20.000000	30.000000	10.000000
+Boss_Gauntlet_Replay	1.500000	30.000000	40.000000	10.000000
+Boss_Gauntlet_ReplayTRUE	2.000000	60.000000	80.000000	10.000000
+Boss_Gauntlet_Turrets		10.000000	10.000000	10.000000
+Boss_Volcano		40.000000	10.000000	10.000000
+Boss_Volcano_Replay	1.500000	60.000000	10.000000	10.000000
+Boss_Volcano_ReplayTRUE	2.000000	120.000000	10.000000	10.000000
+ProjectorPango	1.500000	8.000000	4.000000	4.000000

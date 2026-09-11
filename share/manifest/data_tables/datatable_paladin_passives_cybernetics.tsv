@@ -10,7 +10,7 @@ RapidReload_Reload_SpeedScalar		-0.050000
 RapidReload_Bonus_Duration		12.000000
 DestructionEngine_ForgeSkill_DamageScalar		0.060000
 DestructionEngine_Detonation_DamageScalar		0.080000
-TemperedFlame_ForgeDrone_Axe_DamageMultiplier		0.030000
+TemperedFlame_ForgeDrone_Axe_DamageMultiplier		0.060000
 TemperedFlame_Duration		20.000000
 TemperedFlame_TwinnedArmaments_Duration_Multiplier		0.800000
 BoltAction_BonusDamage_DamageScalar		0.060000
@@ -25,7 +25,7 @@ QuickCharge_Duration		4.000000
 ThunderClap_ActionSkill_CriticalHitChance		0.030000
 ThunderClap_Shock_DamageMultiplier		0.200000
 HeraldsCall_Shock_DamageScalar		0.060000
-TemperedIce_Forgedrone_Hammer_DamageMultiplier		0.040000
+TemperedIce_Forgedrone_Hammer_DamageMultiplier		0.080000
 TemperedIce_Duration		25.000000
 TemperedIce_Cooldown		30.000000
 TemperedIce_TimeDilation	Makes Hammer a smidge slower than the rest	-0.200000
@@ -40,7 +40,7 @@ Annihilation_FireRate_Scalar		0.020000
 OrdainedHammer_ProcChance		0.400000
 EmpoweredWeapons_Forgedrone_Duration		0.080000
 EmpoweredWeapons_Forgedrone_DamageDealt		0.150000
-TemperedLightning_Forgedrone_Sword_DamageMultiplier		0.025000
+TemperedLightning_Forgedrone_Sword_DamageMultiplier		0.050000
 TemperedLightning_Duration		18.000000
 QuickenedWeapons_TimeDilation		0.070000
 SharpenedWeapons_CriticalHitChance		0.070000

@@ -1,35 +1,4 @@
 {
-  "Sniper": {
-    "name": "Sniper",
-    "path": "OakGame/Content/Gear/Weapons/Sniper",
-    "manufacturers": [
-      {
-        "code": "BOR",
-        "name": "Ripper",
-        "path": "OakGame/Content/Gear/Weapons/Sniper/BOR"
-      },
-      {
-        "code": "JAK",
-        "name": "Jakobs",
-        "path": "OakGame/Content/Gear/Weapons/Sniper/JAK"
-      },
-      {
-        "code": "MAL",
-        "name": "Maliwan",
-        "path": "OakGame/Content/Gear/Weapons/Sniper/MAL"
-      },
-      {
-        "code": "ORD",
-        "name": "Order",
-        "path": "OakGame/Content/Gear/Weapons/Sniper/ORD"
-      },
-      {
-        "code": "VLA",
-        "name": "Vladof",
-        "path": "OakGame/Content/Gear/Weapons/Sniper/VLA"
-      }
-    ]
-  },
   "AssaultRifles": {
     "name": "AssaultRifles",
     "path": "OakGame/Content/Gear/Weapons/AssaultRifles",
@@ -156,6 +125,37 @@
         "code": "VLA",
         "name": "Vladof",
         "path": "OakGame/Content/Gear/Weapons/SMG/VLA"
+      }
+    ]
+  },
+  "Sniper": {
+    "name": "Sniper",
+    "path": "OakGame/Content/Gear/Weapons/Sniper",
+    "manufacturers": [
+      {
+        "code": "BOR",
+        "name": "Ripper",
+        "path": "OakGame/Content/Gear/Weapons/Sniper/BOR"
+      },
+      {
+        "code": "JAK",
+        "name": "Jakobs",
+        "path": "OakGame/Content/Gear/Weapons/Sniper/JAK"
+      },
+      {
+        "code": "MAL",
+        "name": "Maliwan",
+        "path": "OakGame/Content/Gear/Weapons/Sniper/MAL"
+      },
+      {
+        "code": "ORD",
+        "name": "Order",
+        "path": "OakGame/Content/Gear/Weapons/Sniper/ORD"
+      },
+      {
+        "code": "VLA",
+        "name": "Vladof",
+        "path": "OakGame/Content/Gear/Weapons/Sniper/VLA"
       }
     ]
   }

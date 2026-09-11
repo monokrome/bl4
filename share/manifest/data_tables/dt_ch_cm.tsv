@@ -1,0 +1,35 @@
+row_name	comment	value
+L01_Devour_HealthPercent_Regular	Health Percentage we remove from Regular Enemies	0.300000
+L01_Devour_HealthPercent_Badass	Health Percentage we remove from Badasses	0.100000
+L01_Devour_HealthPercent_Boss	Health Percentage we remove from Bosses	0.010000
+L01_Devour_Chance	Percent Chance of the effect proccing, each Symbiosis Stack adds this amount	0.010000
+L01_Devour_Cooldown		1.000000
+L01_Devour_BaseChance		0.050000
+L02_Virophile_DamageMult	Percent of total Contagion Damage that explosion should deal (Stacks * Contagion DoT * This)	0.100000
+L03_Montage_DamageIncrease	Damage Increase while Stealthed	0.500000
+L03_Montage_NonCritProcChance		0.250000
+L03_Montage_Cooldown		8.000000
+L03_Montage_StealthDuration		2.000000
+L04_MemoryHoarder_MaxStacks		3.000000
+L04_MemoryHoarder_StackDuration		12.000000
+L04_MemoryHoarder_BonusMultiplier		1.000000
+L04_MemoryHoarder_StackAmountToGive	Probably want it to remain at 1, but just in case	1.000000
+L05_Trackstar_SpendHalf_Chance		0.250000
+L05_Trackstar_Proc_AmountToSpend		50.000000
+L05_Trackstar_FootworkGain_Delay		0.250000
+L05_TrackStar_MeleeDmgIncrease		0.007500
+L06_FunctionalHuman_MaxStacks		10.000000
+L06_FunctionalHuman_DamageScalar		0.100000
+L06_FunctionalHuman_StacksDuration		12.000000
+DLC1_Martyr_DamagePercent_Base	Damage Percent we pass to Wyrm	0.050000
+DLC1_Martyr_DamagePercent_AddPerSymbiosis	How much we increase the Damage sent to Wyrm per Symbiosis Stack	0.010000
+DLC1_Martyr_Wyrm_HealthRegen_Rate		0.007500
+Tuba_Puppetmaster_SymbiosisStackGain	How many Stacks of Symbiosis do we gain while the effect is active	1.000000
+Tube_Puppetmaster_SymbiosStackGain_Timer	How often do we gain Stacks of Symbiosis while our clones are active	3.000000
+Tuba_PuppetMaster_CooldownRefund		1.000000
+Raid2_PlagueEngineer_ProcChance		0.100000
+Raid2_PlagueEngineer_ContagionProcChance		0.200000
+Raid2_PlagueEngineer_NoSpreadDamage	If there is no spread target, percentage of SE damage to do immediately	0.500000
+DLC2_Programher_CooldownReduction	Percent	0.250000
+DLC2_Programher_FireRateIncrease		0.250000
+DLC_Programher_Duration		15.000000

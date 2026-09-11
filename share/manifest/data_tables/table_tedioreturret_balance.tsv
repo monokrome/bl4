@@ -1,0 +1,4 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+MechRocketTurret		5.000000	5.000000	5.000000
+MechMGTurret	0.750000	5.000000	5.000000	5.000000
+MissionTurret	0.600000	3.000000	3.000000	3.000000

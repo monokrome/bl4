@@ -17,8 +17,11 @@ index	name
 14	part_payload_unique_transmission
 14	part_bismuth_shock
 14	part_ordinance
+14	part_alignment
 15	part_bismuth_radiation
 16	part_bismuth_fire
 16	part_payload_unique_pellet
 17	part_bismuth_cryo
 18	part_bismuth_corrosive
+21	part_brudder
+91	part_01_mirv_brudder

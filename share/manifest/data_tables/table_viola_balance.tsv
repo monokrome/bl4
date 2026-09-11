@@ -1,0 +1,18 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+Solider_TestZero		80.000000	120.000000	
+Solider_TestZeroTRUE		80.000000	120.000000	
+Soldier_TestZero_RotatingShield		15.000000		
+Leader_VileDave		100.000000	70.000000	
+Leader_VileDaveTRUE		190.000000	130.000000	
+Leader_VileDave_Cast		15.000000		
+Thresher_HybridThresher		220.000000	7.000000	
+Thresher_HybridThresherTRUE		440.000000	14.000000	
+Thresher_HybridThresher_Grounded		110.000000		
+Thresher_HybridThresher_GroundedTRUE		220.000000		
+Thesher_HybridThresher_Clone		4.000000	4.000000	
+Viola_CatCorrupt	0.900000	40.000000	10.000000	1.500000
+Viola_CatOrdonite		80.000000	10.000000	
+Viola_MeatheadCorrupt	0.500000	30.000000	7.000000	1.500000
+Viola_RipperOrdonite		30.000000	7.000000	
+Viola_Creep_ExperimentA	0.500000	10.000000	2.000000	2.000000
+Viola_Creep_ExperimentB		40.000000	8.000000	2.000000

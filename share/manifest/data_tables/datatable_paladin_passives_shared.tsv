@@ -3,8 +3,8 @@ Weakness_Shared_Damage_DealtScalar	Negative Scale Math. 40% reduction	-0.666667
 Weakness_Shared_Damage_TakenScalar		0.200000
 Weakness_Shared_Duration		8.000000
 Weakness_Shared_MaxStacks		1.000000
-ElementalAffinity_Duration		30.000000
-ElementalAffinity_Stacks_Max		5.000000
+ElementalAffinity_Duration		60.000000
+ElementalAffinity_Stacks_Max		10.000000
 Forgeweapon_MeleeAttack_Height		600.000000
 Forgeweapon_MeleeAttack_Angle		110.000000
 Forgeweapon_MeleeAttack_Radius		800.000000

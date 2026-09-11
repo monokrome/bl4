@@ -1,0 +1,9 @@
+row_name	custom_1_desc	custom_2_desc	custom_3_desc	value_1	value_2	value_3
+MAL_SR_Clarity	ShieldRefillPercent			0.100000	2.000000	
+DAD_SG_Pragmate	Melee Scale Add	Max Stacks	Stack Duration	0.250000	20.000000	5.000000
+VLA_SM_Aura	FistScale	Chance		5.000000	0.100000	
+BOR_SM_Enumeration	RefundPercent			0.500000		
+DAD_PS_Blackout	Mode Switch Scalar			-0.500000		
+JAK_AR_FlashFuel	Overheat Threshold			0.500000		
+TOR_SG_AeroDramatic	Homing Projectiles Per Shot			4.000000		
+VLA_AR_Triplicate	Child Projectile Scalar			0.750000		

@@ -23,6 +23,7 @@ index	name
 80	part_foregrip_02_handcannon
 80	part_underbarrel_02_tether_snare_ishmael
 80	part_foregrip_03_cormano
+80	part_underbarrel_01_hotmod
 81	part_underbarrel_04_atlas
 81	part_foregrip_01_fleabag
 81	part_foregrip_01_handcannon
@@ -34,9 +35,15 @@ index	name
 83	part_foregrip_02_herald
 84	part_foregrip_01_herald
 84	part_underbarrel_02_crank_fishward
+85	part_underbarrel_02_knifelauncher_blackout
 86	part_foregrip_03_flashcyclone
+86	part_underbarrel_02_crank_flashfuel
+86	part_foregrip_03_ripple
 87	part_foregrip_02_flashcyclone
+87	part_underbarrel_02_tether_snare_ishmael_0
+87	part_foregrip_02_ripple
 88	part_foregrip_01_flashcyclone
+88	part_foregrip_01_ripple
 89	part_underbarrel_04_atlas_ball_mercredi
 90	part_underbarrel_04_atlas_mercredi
 93	part_underbarrel_02_rockets_earlyexcess

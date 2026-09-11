@@ -1,9 +1,9 @@
 row_name	comment	value
 Warforge_Cooldown		20.000000
-Warforge_ForgeSkill_Cooldown		30.000000
-Warforge_ForgeSkill_Cooldown_Cap1		30.000000
-Warforge_ForgeSkill_Cooldown_Cap2		35.000000
-Warforge_ForgeSkill_Cooldown_Cap3		40.000000
+Warforge_ForgeSkill_Cooldown		25.000000
+Warforge_ForgeSkill_Cooldown_Cap1		25.000000
+Warforge_ForgeSkill_Cooldown_Cap2		30.000000
+Warforge_ForgeSkill_Cooldown_Cap3		35.000000
 Warforge_Duration		10.000000
 Warforge_Charges		3.000000
 Warforge_Melee_DamageMultiplier		0.245000

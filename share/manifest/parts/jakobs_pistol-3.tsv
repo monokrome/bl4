@@ -84,6 +84,12 @@ index	name
 83	comp_05_legendary_shalashaska
 84	part_barrel_shoals
 85	comp_05_legendary_shoals
+86	part_barrel_infection_shock
+87	part_barrel_infection_radiation
+88	part_barrel_infection_fire
+89	part_barrel_infection_cryo
+90	part_barrel_infection_corrosive
+91	comp_05_legendary_infection
 95	comp_01_common
 96	comp_02_uncommon
 97	comp_03_rare

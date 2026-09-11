@@ -58,3 +58,5 @@ Gravitar_StasisDamage	0.100000
 Preferred_ClassMod_Weight	9.000000
 Exo_SlideDamage	0.150000
 Paladin_RicochetDamage	0.300000
+Corpo_ExecutableDamage	0.150000
+Corpo_FunctionDamage	0.100000

@@ -1,0 +1,10 @@
+row_name	custom_1_desc	custom_2_desc	custom_3_desc	custom_4_desc	custom_5_desc	value_1	value_2	value_3	value_4	value_5
+Hot_Mod	Base Drone DMG Scalar					1.200000				
+MAL_SM_Accretion	StatusEffectScale	MaxStacks	Duration			0.200000	5.000000	3.000000		
+MAL_SG_Assembler	CorrosiveShots	CorrosiveChance	CryoShots	CryoChance	FireShots	9.000000	0.450000	6.000000	0.300000	7.000000
+MAL_SG_Assembler_1	FireChance	ShockShots	ShockChance	RadiationShots	RadiationChance	0.350000	8.000000	0.400000	10.000000	0.500000
+TED_SG_Fourier	ThrowChance					0.150000				
+DAD_SM_HandFrag	ReloadDmgScalar					2.000000				
+JAK_PS_Infection	Effect Duration	Effect Chance	Status Chance Bonus	Status Damage Bonus		6.000000	0.300000	0.500000	1.000000	
+ORD_AR_Avarice	DamageScale	CashCost				3.000000	10.000000			
+JAK_SG_Hippogun	DmgScale	ReloadTimeScale	MeleeScale	Buff Duration		2.000000	-2.000000	2.000000	1.000000	

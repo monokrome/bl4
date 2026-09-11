@@ -1,0 +1,29 @@
+row_name	comment	value
+Duration		12.000000
+TargetStacks		21.000000
+MaxStacks		32.000000
+BuffAmount_Small		1.000000
+BuffAmount_Small_Stacks	less than or equal to these stacks, get small buff	10.000000
+BuffAmount_Mid		2.000000
+BuffAmount_Mid_Stacks	less than or equal to these stacks, get mid buff	15.000000
+BuffAmount_Large		3.000000
+BuffAmount_Large_Stacks	less than or equal to these stacks, get large buff	20.000000
+BuffAmount_Jackpot		4.000000
+BuffAmount_Jackpot_Stacks		21.000000
+Buff_DurationRate		-0.950000
+Buff_CooldownRate		1.000000
+Buff_SkillDamageMult		0.500000
+Buff_GunDamageMult		0.500000
+Buff_ReloadSpeed		-0.750000
+Buff_FireRate		0.750000
+Buff_MoveSpeed		0.400000
+Buff_ShieldCapacity		1.000000
+Buff_ShieldRate		1.000000
+Buff_Regen		0.100000
+Buff_MaxOvershield		0.750000
+Buff_CritChance_Skill		0.750000
+Buff_CritChance_Gun		0.500000
+Buff_CrtiChance_Melee		0.500000
+Bust_Grenades_Amount		5.000000
+Bust_Grenades_Scalar		0.650000
+Bust_Grenades_Radius		768.000000

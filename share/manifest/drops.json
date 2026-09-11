@@ -654,6 +654,94 @@
       "drop_chance": 0.0
     },
     {
+      "source": "DigiArena_Creep",
+      "source_type": "Boss",
+      "manufacturer": "JAK",
+      "gear_type": "SHIELD",
+      "item_name": "Exfoliatrix",
+      "item_id": "jak_shield.comp_05_legendary_Exfoliatrix",
+      "pool": "itempool_jak_shield_05_legendary_Exfoliatrix_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "DigiArena_Creep",
+      "source_type": "Boss",
+      "manufacturer": "VLA",
+      "gear_type": "HW",
+      "item_name": "Quattro",
+      "item_id": "VLA_HW.comp_05_legendary_Quattro",
+      "pool": "itempool_vla_hw_05_legendary_Quattro_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "DigiArena_Creep_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "JAK",
+      "gear_type": "SHIELD",
+      "item_name": "Exfoliatrix",
+      "item_id": "jak_shield.comp_05_legendary_Exfoliatrix",
+      "pool": "itempool_jak_shield_05_legendary_Exfoliatrix_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "DigiArena_Creep_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "VLA",
+      "gear_type": "HW",
+      "item_name": "Quattro",
+      "item_id": "VLA_HW.comp_05_legendary_Quattro",
+      "pool": "itempool_vla_hw_05_legendary_Quattro_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "DigiArena_Phalanx",
+      "source_type": "Boss",
+      "manufacturer": "JAK",
+      "gear_type": "SHIELD",
+      "item_name": "Exfoliatrix",
+      "item_id": "jak_shield.comp_05_legendary_Exfoliatrix",
+      "pool": "itempool_jak_shield_05_legendary_Exfoliatrix_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "DigiArena_Phalanx",
+      "source_type": "Boss",
+      "manufacturer": "VLA",
+      "gear_type": "HW",
+      "item_name": "Quattro",
+      "item_id": "VLA_HW.comp_05_legendary_Quattro",
+      "pool": "itempool_vla_hw_05_legendary_Quattro_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "DigiArena_Phalanx_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "JAK",
+      "gear_type": "SHIELD",
+      "item_name": "Exfoliatrix",
+      "item_id": "jak_shield.comp_05_legendary_Exfoliatrix",
+      "pool": "itempool_jak_shield_05_legendary_Exfoliatrix_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "DigiArena_Phalanx_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "VLA",
+      "gear_type": "HW",
+      "item_name": "Quattro",
+      "item_id": "VLA_HW.comp_05_legendary_Quattro",
+      "pool": "itempool_vla_hw_05_legendary_Quattro_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
       "source": "Donk",
       "source_display": "Donk",
       "source_type": "Boss",
@@ -867,6 +955,52 @@
       "drop_chance": 0.0
     },
     {
+      "source": "Gauntlet_Cat",
+      "source_type": "Boss",
+      "manufacturer": "TOR",
+      "gear_type": "AR",
+      "item_name": "Ripple",
+      "item_id": "TOR_AR.comp_05_legendary_Ripple",
+      "pool": "itempool_tor_ar_05_legendary_Ripple_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Gauntlet_Cat_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "TOR",
+      "gear_type": "AR",
+      "item_name": "Ripple",
+      "item_id": "TOR_AR.comp_05_legendary_Ripple",
+      "pool": "itempool_tor_ar_05_legendary_Ripple_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Gauntlet_Pangolin",
+      "source_display": "Pango, Bango",
+      "source_type": "Boss",
+      "manufacturer": "JAK",
+      "gear_type": "SG",
+      "item_name": "Hippogun",
+      "item_id": "JAK_SG.comp_05_legendary_Hippogun",
+      "pool": "itempool_jak_sg_05_legendary_Hippogun_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Gauntlet_Pangolin_TRUE",
+      "source_display": "Pango, Bango",
+      "source_type": "Boss",
+      "manufacturer": "JAK",
+      "gear_type": "SG",
+      "item_name": "Hippogun",
+      "item_id": "JAK_SG.comp_05_legendary_Hippogun",
+      "pool": "itempool_jak_sg_05_legendary_Hippogun_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
       "source": "GlidePackPsycho",
       "source_display": "Splashzone",
       "source_type": "Boss",
@@ -1075,6 +1209,30 @@
       "drop_chance": 0.0
     },
     {
+      "source": "Grasslands_Commander",
+      "source_display": "Primordial Guardian Inceptus",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "ROBODEALER",
+      "item_name": "01",
+      "item_id": "classmod_robodealer.comp_05_legendary_01",
+      "pool": "itempool_classmod_robodealer_05_legendary_01_shiny",
+      "drop_tier": "TrueBoss",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Grasslands_Commander",
+      "source_display": "Primordial Guardian Inceptus",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "CORPOHACKER",
+      "item_name": "01",
+      "item_id": "classmod_corpohacker.comp_05_legendary_01",
+      "pool": "itempool_classmod_corpohacker_05_legendary_01_shiny",
+      "drop_tier": "TrueBoss",
+      "drop_chance": 0.0
+    },
+    {
       "source": "Grasslands_Guardian",
       "source_display": "Grasslands Guardian",
       "source_type": "Boss",
@@ -1139,10 +1297,78 @@
       "source_display": "Grasslands Guardian",
       "source_type": "Boss",
       "manufacturer": "CLASSMOD",
+      "gear_type": "ROBODEALER",
+      "item_name": "02",
+      "item_id": "classmod_robodealer.comp_05_legendary_02",
+      "pool": "itempool_classmod_robodealer_05_legendary_02_shiny",
+      "drop_tier": "TrueBoss",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Grasslands_Guardian",
+      "source_display": "Grasslands Guardian",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "CORPOHACKER",
+      "item_name": "02",
+      "item_id": "classmod_corpohacker.comp_05_legendary_02",
+      "pool": "itempool_classmod_corpohacker_05_legendary_02_shiny",
+      "drop_tier": "TrueBoss",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Grasslands_Guardian",
+      "source_display": "Grasslands Guardian",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
       "gear_type": "GRAVITAR",
       "item_name": "02",
       "item_id": "classmod_gravitar.comp_05_legendary_02",
       "pool": "itempool_classmod_gravitar_05_legendary_02_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Grotto_Meathead",
+      "source_type": "Boss",
+      "manufacturer": "VLA",
+      "gear_type": "SR",
+      "item_name": "Exhibition",
+      "item_id": "VLA_SR.comp_05_legendary_Exhibition",
+      "pool": "itempool_vla_sr_05_legendary_Exhibition_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Grotto_Meathead_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "VLA",
+      "gear_type": "SR",
+      "item_name": "Exhibition",
+      "item_id": "VLA_SR.comp_05_legendary_Exhibition",
+      "pool": "itempool_vla_sr_05_legendary_Exhibition_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Grotto_cat",
+      "source_type": "Boss",
+      "manufacturer": "MAL",
+      "gear_type": "SG",
+      "item_name": "assembler",
+      "item_id": "MAL_SG.comp_05_legendary_assembler",
+      "pool": "itempool_mal_sg_05_legendary_assembler_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Grotto_cat_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "MAL",
+      "gear_type": "SG",
+      "item_name": "assembler",
+      "item_id": "MAL_SG.comp_05_legendary_assembler",
+      "pool": "itempool_mal_sg_05_legendary_assembler_shiny",
       "drop_tier": "",
       "drop_chance": 0.0
     },
@@ -1167,6 +1393,54 @@
       "item_name": "PotatoThrower",
       "item_id": "TOR_AR.comp_05_legendary_PotatoThrower",
       "pool": "itempool_tor_ar_05_legendary_PotatoThrower_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "HybridThresher",
+      "source_display": "Hybrid Thresher",
+      "source_type": "Boss",
+      "manufacturer": "DAD",
+      "gear_type": "SG",
+      "item_name": "pragmate",
+      "item_id": "DAD_SG.comp_05_legendary_pragmate",
+      "pool": "itempool_dad_sg_05_legendary_pragmate_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "HybridThresher",
+      "source_display": "Hybrid Thresher",
+      "source_type": "Boss",
+      "manufacturer": "JAK",
+      "gear_type": "SR",
+      "item_name": "outback",
+      "item_id": "JAK_SR.comp_05_legendary_outback",
+      "pool": "itempool_jak_sr_05_legendary_outback_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "HybridThresher_TRUE",
+      "source_display": "Hybrid Thresher",
+      "source_type": "Boss",
+      "manufacturer": "DAD",
+      "gear_type": "SG",
+      "item_name": "pragmate",
+      "item_id": "DAD_SG.comp_05_legendary_pragmate",
+      "pool": "itempool_dad_sg_05_legendary_pragmate_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "HybridThresher_TRUE",
+      "source_display": "Hybrid Thresher",
+      "source_type": "Boss",
+      "manufacturer": "JAK",
+      "gear_type": "SR",
+      "item_name": "outback",
+      "item_id": "JAK_SR.comp_05_legendary_outback",
+      "pool": "itempool_jak_sr_05_legendary_outback_shiny",
       "drop_tier": "",
       "drop_chance": 0.0
     },
@@ -1299,6 +1573,226 @@
       "item_name": "Chuck",
       "item_id": "TED_AR.comp_05_legendary_Chuck",
       "pool": "itempool_ted_ar_05_legendary_Chuck_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Lockdown_Glider",
+      "source_type": "Boss",
+      "manufacturer": "MAL",
+      "gear_type": "GRENADE_GADGET",
+      "item_name": "Brudder",
+      "item_id": "mal_grenade_gadget.comp_05_legendary_Brudder",
+      "pool": "itempool_mal_grenade_gadget_05_legendary_Brudder_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Lockdown_Glider_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "MAL",
+      "gear_type": "GRENADE_GADGET",
+      "item_name": "Brudder",
+      "item_id": "mal_grenade_gadget.comp_05_legendary_Brudder",
+      "pool": "itempool_mal_grenade_gadget_05_legendary_Brudder_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Lockdown_TedFrame",
+      "source_type": "Boss",
+      "manufacturer": "ORD",
+      "gear_type": "SR",
+      "item_name": "petanque",
+      "item_id": "ORD_SR.comp_05_legendary_petanque",
+      "pool": "itempool_ord_sr_05_legendary_petanque_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Lockdown_TedFrame_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "ORD",
+      "gear_type": "SR",
+      "item_name": "petanque",
+      "item_id": "ORD_SR.comp_05_legendary_petanque",
+      "pool": "itempool_ord_sr_05_legendary_petanque_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Main_HotelManager",
+      "source_type": "Boss",
+      "manufacturer": "MAL",
+      "gear_type": "SM",
+      "item_name": "accretion",
+      "item_id": "mal_sm.comp_05_legendary_accretion",
+      "pool": "itempool_mal_sm_05_legendary_accretion_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Main_HotelManager_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "MAL",
+      "gear_type": "SM",
+      "item_name": "accretion",
+      "item_id": "mal_sm.comp_05_legendary_accretion",
+      "pool": "itempool_mal_sm_05_legendary_accretion_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Main_JrManager",
+      "source_type": "Boss",
+      "manufacturer": "DAD",
+      "gear_type": "AR",
+      "item_name": "Shardenfreude",
+      "item_id": "DAD_AR.comp_05_legendary_Shardenfreude",
+      "pool": "itempool_dad_ar_05_legendary_Shardenfreude_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Main_JrManager_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "DAD",
+      "gear_type": "AR",
+      "item_name": "Shardenfreude",
+      "item_id": "DAD_AR.comp_05_legendary_Shardenfreude",
+      "pool": "itempool_dad_ar_05_legendary_Shardenfreude_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Main_LavaManager",
+      "source_type": "Boss",
+      "manufacturer": "BOR",
+      "gear_type": "SR",
+      "item_name": "devourer",
+      "item_id": "bor_sr.comp_05_legendary_devourer",
+      "pool": "itempool_bor_sr_05_legendary_devourer_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Main_LavaManager_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "BOR",
+      "gear_type": "SR",
+      "item_name": "devourer",
+      "item_id": "bor_sr.comp_05_legendary_devourer",
+      "pool": "itempool_bor_sr_05_legendary_devourer_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Main_LogiManager",
+      "source_type": "Boss",
+      "manufacturer": "TOR",
+      "gear_type": "PS",
+      "item_name": "Sledge",
+      "item_id": "TOR_PS.comp_05_legendary_Sledge",
+      "pool": "itempool_tor_ps_05_legendary_Sledge_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Main_LogiManager_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "TOR",
+      "gear_type": "PS",
+      "item_name": "Sledge",
+      "item_id": "TOR_PS.comp_05_legendary_Sledge",
+      "pool": "itempool_tor_ps_05_legendary_Sledge_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Main_SpaManager",
+      "source_type": "Boss",
+      "manufacturer": "DAD",
+      "gear_type": "SM",
+      "item_name": "handfrag",
+      "item_id": "DAD_SM.comp_05_legendary_handfrag",
+      "pool": "itempool_dad_sm_05_legendary_handfrag_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Main_SpaManager_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "DAD",
+      "gear_type": "SM",
+      "item_name": "handfrag",
+      "item_id": "DAD_SM.comp_05_legendary_handfrag",
+      "pool": "itempool_dad_sm_05_legendary_handfrag_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Main_TheaterManager",
+      "source_type": "Boss",
+      "manufacturer": "TED",
+      "gear_type": "AR",
+      "item_name": "HotMod",
+      "item_id": "TED_AR.comp_05_legendary_HotMod",
+      "pool": "itempool_ted_ar_05_legendary_HotMod_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Main_TheaterManager_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "TED",
+      "gear_type": "AR",
+      "item_name": "HotMod",
+      "item_id": "TED_AR.comp_05_legendary_HotMod",
+      "pool": "itempool_ted_ar_05_legendary_HotMod_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Main_Villianess",
+      "source_type": "Boss",
+      "manufacturer": "JAK",
+      "gear_type": "PS",
+      "item_name": "Infection",
+      "item_id": "JAK_PS.comp_05_legendary_Infection",
+      "pool": "itempool_jak_ps_05_legendary_Infection_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Main_Villianess",
+      "source_type": "Boss",
+      "manufacturer": "BOR",
+      "gear_type": "SG",
+      "item_name": "relay",
+      "item_id": "BOR_SG.comp_05_legendary_relay",
+      "pool": "itempool_bor_sg_05_legendary_relay_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Main_Villianess_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "JAK",
+      "gear_type": "PS",
+      "item_name": "Infection",
+      "item_id": "JAK_PS.comp_05_legendary_Infection",
+      "pool": "itempool_jak_ps_05_legendary_Infection_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Main_Villianess_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "BOR",
+      "gear_type": "SG",
+      "item_name": "relay",
+      "item_id": "BOR_SG.comp_05_legendary_relay",
+      "pool": "itempool_bor_sg_05_legendary_relay_shiny",
       "drop_tier": "",
       "drop_chance": 0.0
     },
@@ -1575,6 +2069,30 @@
       "drop_chance": 0.0
     },
     {
+      "source": "MountainCommander",
+      "source_display": "Primordial Guardian Radix",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "ROBODEALER",
+      "item_name": "03",
+      "item_id": "classmod_robodealer.comp_05_legendary_03",
+      "pool": "itempool_classmod_robodealer_05_legendary_03_shiny",
+      "drop_tier": "TrueBoss",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "MountainCommander",
+      "source_display": "Primordial Guardian Radix",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "CORPOHACKER",
+      "item_name": "03",
+      "item_id": "classmod_corpohacker.comp_05_legendary_03",
+      "pool": "itempool_classmod_corpohacker_05_legendary_03_shiny",
+      "drop_tier": "TrueBoss",
+      "drop_chance": 0.0
+    },
+    {
       "source": "MountainGuardian",
       "source_display": "Mountain Guardian",
       "source_type": "Boss",
@@ -1656,6 +2174,30 @@
       "item_id": "classmod_paladin.comp_05_legendary_04",
       "pool": "itempool_classmod_paladin_05_legendary_04_shiny",
       "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "MountainGuardian",
+      "source_display": "Mountain Guardian",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "ROBODEALER",
+      "item_name": "04",
+      "item_id": "classmod_robodealer.comp_05_legendary_04",
+      "pool": "itempool_classmod_robodealer_05_legendary_04_shiny",
+      "drop_tier": "TrueBoss",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "MountainGuardian",
+      "source_display": "Mountain Guardian",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "CORPOHACKER",
+      "item_name": "04",
+      "item_id": "classmod_corpohacker.comp_05_legendary_04",
+      "pool": "itempool_classmod_corpohacker_05_legendary_04_shiny",
+      "drop_tier": "TrueBoss",
       "drop_chance": 0.0
     },
     {
@@ -1791,6 +2333,17 @@
       "drop_chance": 0.0
     },
     {
+      "source": "OrdiniteFracture",
+      "source_type": "Boss",
+      "manufacturer": "JAK",
+      "gear_type": "SG",
+      "item_name": "Verce",
+      "item_id": "JAK_SG.comp_05_legendary_Verce",
+      "pool": "itempool_jak_sg_05_legendary_Verce_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
       "source": "Ordonite_Cat",
       "source_type": "Boss",
       "manufacturer": "VLA",
@@ -1908,6 +2461,17 @@
       "item_name": "conflux",
       "item_id": "MAL_SR.comp_05_legendary_conflux",
       "pool": "itempool_mal_sr_05_legendary_conflux_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Ordonite_PGG_Activity",
+      "source_type": "Boss",
+      "manufacturer": "JAK",
+      "gear_type": "SG",
+      "item_name": "Verce",
+      "item_id": "JAK_SG.comp_05_legendary_Verce",
+      "pool": "itempool_jak_sg_05_legendary_Verce_shiny",
       "drop_tier": "",
       "drop_chance": 0.0
     },
@@ -2164,6 +2728,17 @@
       "drop_chance": 0.0
     },
     {
+      "source": "Raid2_Subjugator",
+      "source_type": "Boss",
+      "manufacturer": "DAD",
+      "gear_type": "AR",
+      "item_name": "Kaos",
+      "item_id": "DAD_AR.comp_05_legendary_Kaos",
+      "pool": "itempool_dad_ar_05_legendary_Kaos_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
       "source": "Raid2_Subjugator_True",
       "source_type": "Boss",
       "manufacturer": "TED",
@@ -2197,6 +2772,17 @@
       "drop_chance": 0.0
     },
     {
+      "source": "Raid2_Subjugator_True",
+      "source_type": "Boss",
+      "manufacturer": "DAD",
+      "gear_type": "AR",
+      "item_name": "Kaos",
+      "item_id": "DAD_AR.comp_05_legendary_Kaos",
+      "pool": "itempool_dad_ar_05_legendary_Kaos_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
       "source": "Raid2_Thol",
       "source_type": "Boss",
       "manufacturer": "TOR",
@@ -2230,6 +2816,17 @@
       "drop_chance": 0.0
     },
     {
+      "source": "Raid2_Thol",
+      "source_type": "Boss",
+      "manufacturer": "JAK",
+      "gear_type": "AR",
+      "item_name": "Gomie",
+      "item_id": "JAK_AR.comp_05_legendary_Gomie",
+      "pool": "itempool_jak_ar_05_legendary_Gomie_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
       "source": "Raid2_Thol_True",
       "source_type": "Boss",
       "manufacturer": "TOR",
@@ -2259,6 +2856,17 @@
       "item_name": "Jailbroken",
       "item_id": "BOR_SM.comp_05_legendary_Jailbroken",
       "pool": "itempool_bor_sm_05_legendary_Jailbroken_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Raid2_Thol_True",
+      "source_type": "Boss",
+      "manufacturer": "JAK",
+      "gear_type": "AR",
+      "item_name": "Gomie",
+      "item_id": "JAK_AR.comp_05_legendary_Gomie",
+      "pool": "itempool_jak_ar_05_legendary_Gomie_shiny",
       "drop_tier": "",
       "drop_chance": 0.0
     },
@@ -2419,6 +3027,30 @@
       "drop_chance": 0.0
     },
     {
+      "source": "ShatterlandsCommanderFortress",
+      "source_display": "Primordial Guardian Origo",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "ROBODEALER",
+      "item_name": "05",
+      "item_id": "classmod_robodealer.comp_05_legendary_05",
+      "pool": "itempool_classmod_robodealer_05_legendary_05_shiny",
+      "drop_tier": "TrueBoss",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "ShatterlandsCommanderFortress",
+      "source_display": "Primordial Guardian Origo",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "CORPOHACKER",
+      "item_name": "05",
+      "item_id": "classmod_corpohacker.comp_05_legendary_05",
+      "pool": "itempool_classmod_corpohacker_05_legendary_05_shiny",
+      "drop_tier": "TrueBoss",
+      "drop_chance": 0.0
+    },
+    {
       "source": "ShatterlandsGuardian",
       "source_display": "Shatterlands Guardian",
       "source_type": "Boss",
@@ -2503,6 +3135,30 @@
       "drop_chance": 0.0
     },
     {
+      "source": "ShatterlandsGuardian",
+      "source_display": "Shatterlands Guardian",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "ROBODEALER",
+      "item_name": "06",
+      "item_id": "classmod_robodealer.comp_05_legendary_06",
+      "pool": "itempool_classmod_robodealer_05_legendary_06_shiny",
+      "drop_tier": "TrueBoss",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "ShatterlandsGuardian",
+      "source_display": "Shatterlands Guardian",
+      "source_type": "Boss",
+      "manufacturer": "CLASSMOD",
+      "gear_type": "CORPOHACKER",
+      "item_name": "06",
+      "item_id": "classmod_corpohacker.comp_05_legendary_06",
+      "pool": "itempool_classmod_corpohacker_05_legendary_06_shiny",
+      "drop_tier": "TrueBoss",
+      "drop_chance": 0.0
+    },
+    {
       "source": "SideCity_Psycho",
       "source_display": "Side City Psycho",
       "source_type": "Boss",
@@ -2523,6 +3179,72 @@
       "item_name": "seventh_sense",
       "item_id": "JAK_PS.comp_05_legendary_seventh_sense",
       "pool": "itempool_jak_ps_05_legendary_seventh_sense_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Side_LtBume",
+      "source_type": "Boss",
+      "manufacturer": "TED",
+      "gear_type": "SG",
+      "item_name": "Fourier",
+      "item_id": "TED_SG.comp_05_legendary_Fourier",
+      "pool": "itempool_ted_sg_05_legendary_Fourier_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Side_LtBume_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "TED",
+      "gear_type": "SG",
+      "item_name": "Fourier",
+      "item_id": "TED_SG.comp_05_legendary_Fourier",
+      "pool": "itempool_ted_sg_05_legendary_Fourier_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Side_TreasureHunt",
+      "source_type": "Boss",
+      "manufacturer": "ORD",
+      "gear_type": "AR",
+      "item_name": "Avarice",
+      "item_id": "ORD_AR.comp_05_legendary_Avarice",
+      "pool": "itempool_ord_ar_05_legendary_Avarice_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Side_TreasureHunt_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "ORD",
+      "gear_type": "AR",
+      "item_name": "Avarice",
+      "item_id": "ORD_AR.comp_05_legendary_Avarice",
+      "pool": "itempool_ord_ar_05_legendary_Avarice_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Side_VolcanoEvent",
+      "source_type": "Boss",
+      "manufacturer": "TED",
+      "gear_type": "REPAIR_KIT",
+      "item_name": "font",
+      "item_id": "ted_repair_kit.comp_05_legendary_font",
+      "pool": "itempool_ted_repair_kit_05_legendary_font_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "Side_VolcanoEvent_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "TED",
+      "gear_type": "REPAIR_KIT",
+      "item_name": "font",
+      "item_id": "ted_repair_kit.comp_05_legendary_font",
+      "pool": "itempool_ted_repair_kit_05_legendary_font_shiny",
       "drop_tier": "",
       "drop_chance": 0.0
     },
@@ -2782,6 +3504,50 @@
       "item_name": "PotatoThrower",
       "item_id": "TOR_AR.comp_05_legendary_PotatoThrower",
       "pool": "itempool_tor_ar_05_legendary_PotatoThrower_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "TestZero",
+      "source_type": "Boss",
+      "manufacturer": "VLA",
+      "gear_type": "AR",
+      "item_name": "Triplicate",
+      "item_id": "VLA_AR.comp_05_legendary_Triplicate",
+      "pool": "itempool_vla_ar_05_legendary_Triplicate_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "TestZero",
+      "source_type": "Boss",
+      "manufacturer": "BOR",
+      "gear_type": "SM",
+      "item_name": "enumeration",
+      "item_id": "BOR_SM.comp_05_legendary_enumeration",
+      "pool": "itempool_bor_sm_05_legendary_enumeration_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "TestZero_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "VLA",
+      "gear_type": "AR",
+      "item_name": "Triplicate",
+      "item_id": "VLA_AR.comp_05_legendary_Triplicate",
+      "pool": "itempool_vla_ar_05_legendary_Triplicate_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "TestZero_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "BOR",
+      "gear_type": "SM",
+      "item_name": "enumeration",
+      "item_id": "BOR_SM.comp_05_legendary_enumeration",
+      "pool": "itempool_bor_sm_05_legendary_enumeration_shiny",
       "drop_tier": "",
       "drop_chance": 0.0
     },
@@ -3098,6 +3864,72 @@
       "drop_chance": 0.0
     },
     {
+      "source": "VileDave",
+      "source_type": "Boss",
+      "manufacturer": "MAL",
+      "gear_type": "SR",
+      "item_name": "Clarity",
+      "item_id": "MAL_SR.comp_05_legendary_Clarity",
+      "pool": "itempool_mal_sr_05_legendary_Clarity_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "VileDave",
+      "source_type": "Boss",
+      "manufacturer": "TOR",
+      "gear_type": "SG",
+      "item_name": "AeroDramatic",
+      "item_id": "TOR_SG.comp_05_legendary_AeroDramatic",
+      "pool": "itempool_tor_sg_05_legendary_AeroDramatic_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "VileDave",
+      "source_type": "Boss",
+      "manufacturer": "TOR",
+      "gear_type": "REPAIR_KIT",
+      "item_name": "Outburst",
+      "item_id": "tor_repair_kit.comp_05_legendary_Outburst",
+      "pool": "itempool_tor_repair_kit_05_legendary_Outburst_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "VileDave_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "MAL",
+      "gear_type": "SR",
+      "item_name": "Clarity",
+      "item_id": "MAL_SR.comp_05_legendary_Clarity",
+      "pool": "itempool_mal_sr_05_legendary_Clarity_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "VileDave_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "TOR",
+      "gear_type": "SG",
+      "item_name": "AeroDramatic",
+      "item_id": "TOR_SG.comp_05_legendary_AeroDramatic",
+      "pool": "itempool_tor_sg_05_legendary_AeroDramatic_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
+      "source": "VileDave_TRUE",
+      "source_type": "Boss",
+      "manufacturer": "TOR",
+      "gear_type": "REPAIR_KIT",
+      "item_name": "Outburst",
+      "item_id": "tor_repair_kit.comp_05_legendary_Outburst",
+      "pool": "itempool_tor_repair_kit_05_legendary_Outburst_shiny",
+      "drop_tier": "",
+      "drop_chance": 0.0
+    },
+    {
       "source": "dAHLfATHER",
       "source_type": "Boss",
       "manufacturer": "MAL",
@@ -3160,11 +3992,23 @@
       "source_type": "WorldDrop",
       "manufacturer": "DAD",
       "gear_type": "AR",
+      "item_name": "Kaos",
+      "item_id": "DAD_AR.comp_05_legendary_Kaos",
+      "pool": "itempool_ar_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.03225806451612903
+    },
+    {
+      "source": "World Drop (Assault Rifles)",
+      "source_display": "World Drop (Assault Rifles)",
+      "source_type": "WorldDrop",
+      "manufacturer": "DAD",
+      "gear_type": "AR",
       "item_name": "Lumberjack",
       "item_id": "DAD_AR.comp_05_legendary_Lumberjack",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3176,7 +4020,19 @@
       "item_id": "DAD_AR.comp_05_legendary_OM",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
+    },
+    {
+      "source": "World Drop (Assault Rifles)",
+      "source_display": "World Drop (Assault Rifles)",
+      "source_type": "WorldDrop",
+      "manufacturer": "DAD",
+      "gear_type": "AR",
+      "item_name": "Shardenfreude",
+      "item_id": "DAD_AR.comp_05_legendary_Shardenfreude",
+      "pool": "itempool_ar_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3188,7 +4044,7 @@
       "item_id": "DAD_AR.comp_05_legendary_star_helix",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3200,7 +4056,19 @@
       "item_id": "JAK_AR.comp_05_legendary_BonnieClyde",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
+    },
+    {
+      "source": "World Drop (Assault Rifles)",
+      "source_display": "World Drop (Assault Rifles)",
+      "source_type": "WorldDrop",
+      "manufacturer": "JAK",
+      "gear_type": "AR",
+      "item_name": "Gomie",
+      "item_id": "JAK_AR.comp_05_legendary_Gomie",
+      "pool": "itempool_ar_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3212,7 +4080,7 @@
       "item_id": "JAK_AR.comp_05_legendary_rowan",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3224,7 +4092,19 @@
       "item_id": "JAK_AR.comp_05_legendary_rowdy",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
+    },
+    {
+      "source": "World Drop (Assault Rifles)",
+      "source_display": "World Drop (Assault Rifles)",
+      "source_type": "WorldDrop",
+      "manufacturer": "ORD",
+      "gear_type": "AR",
+      "item_name": "Avarice",
+      "item_id": "ORD_AR.comp_05_legendary_Avarice",
+      "pool": "itempool_ar_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3236,7 +4116,7 @@
       "item_id": "ORD_AR.comp_05_legendary_GMR",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3248,7 +4128,7 @@
       "item_id": "ORD_AR.comp_05_legendary_Goalkeeper",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3260,7 +4140,7 @@
       "item_id": "ORD_AR.comp_05_legendary_PChonk",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3272,7 +4152,7 @@
       "item_id": "ORD_AR.comp_05_legendary_crowsourced",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3284,7 +4164,7 @@
       "item_id": "TED_AR.comp_05_legendary_Chuck",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3296,7 +4176,19 @@
       "item_id": "TED_AR.comp_05_legendary_DividedFocus",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
+    },
+    {
+      "source": "World Drop (Assault Rifles)",
+      "source_display": "World Drop (Assault Rifles)",
+      "source_type": "WorldDrop",
+      "manufacturer": "TED",
+      "gear_type": "AR",
+      "item_name": "HotMod",
+      "item_id": "TED_AR.comp_05_legendary_HotMod",
+      "pool": "itempool_ar_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3308,7 +4200,7 @@
       "item_id": "TED_AR.comp_05_legendary_laserdisc",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3320,7 +4212,7 @@
       "item_id": "TOR_AR.comp_05_legendary_Bugbear",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3332,7 +4224,19 @@
       "item_id": "TOR_AR.comp_05_legendary_PotatoThrower",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
+    },
+    {
+      "source": "World Drop (Assault Rifles)",
+      "source_display": "World Drop (Assault Rifles)",
+      "source_type": "WorldDrop",
+      "manufacturer": "TOR",
+      "gear_type": "AR",
+      "item_name": "Ripple",
+      "item_id": "TOR_AR.comp_05_legendary_Ripple",
+      "pool": "itempool_ar_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3344,7 +4248,7 @@
       "item_id": "TOR_AR.comp_05_legendary_fleabag",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3356,7 +4260,7 @@
       "item_id": "TOR_AR.comp_05_legendary_lockjaw",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3368,7 +4272,7 @@
       "item_id": "VLA_AR.comp_05_Legendary_Lucian",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3380,7 +4284,7 @@
       "item_id": "VLA_AR.comp_05_Legendary_bubbles",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3392,7 +4296,19 @@
       "item_id": "VLA_AR.comp_05_legendary_DualDamage",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
+    },
+    {
+      "source": "World Drop (Assault Rifles)",
+      "source_display": "World Drop (Assault Rifles)",
+      "source_type": "WorldDrop",
+      "manufacturer": "VLA",
+      "gear_type": "AR",
+      "item_name": "Triplicate",
+      "item_id": "VLA_AR.comp_05_legendary_Triplicate",
+      "pool": "itempool_ar_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3404,7 +4320,7 @@
       "item_id": "VLA_AR.comp_05_legendary_WF",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3416,7 +4332,7 @@
       "item_id": "VLA_AR.comp_05_legendary_WomboCombo",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3428,7 +4344,7 @@
       "item_id": "VLA_AR.comp_05_legendary_lasercutter",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Assault Rifles)",
@@ -3440,7 +4356,7 @@
       "item_id": "dad_ar.comp_05_legendary_HardDark",
       "pool": "itempool_ar_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.041666666666666664
+      "drop_chance": 0.03225806451612903
     },
     {
       "source": "World Drop (Grenades)",
@@ -3452,7 +4368,7 @@
       "item_id": "borg_grenade_gadget.comp_05_legendary_buoy",
       "pool": "itempool_grenade_gadget_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05263157894736842
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (Grenades)",
@@ -3464,7 +4380,7 @@
       "item_id": "borg_grenade_gadget.comp_05_legendary_pellet",
       "pool": "itempool_grenade_gadget_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05263157894736842
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (Grenades)",
@@ -3476,7 +4392,7 @@
       "item_id": "borg_grenade_gadget.comp_05_legendary_rubber",
       "pool": "itempool_grenade_gadget_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05263157894736842
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (Grenades)",
@@ -3488,7 +4404,7 @@
       "item_id": "dad_grenade_gadget.comp_05_legendary_Axe",
       "pool": "itempool_grenade_gadget_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05263157894736842
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (Grenades)",
@@ -3500,7 +4416,7 @@
       "item_id": "dad_grenade_gadget.comp_05_legendary_fuse",
       "pool": "itempool_grenade_gadget_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05263157894736842
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (Grenades)",
@@ -3512,7 +4428,7 @@
       "item_id": "jak_grenade_gadget.comp_05_legendary_Bismuth",
       "pool": "itempool_grenade_gadget_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05263157894736842
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (Grenades)",
@@ -3524,7 +4440,19 @@
       "item_id": "jak_grenade_gadget.comp_05_legendary_ShoKunai",
       "pool": "itempool_grenade_gadget_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05263157894736842
+      "drop_chance": 0.05
+    },
+    {
+      "source": "World Drop (Grenades)",
+      "source_display": "World Drop (Grenades)",
+      "source_type": "WorldDrop",
+      "manufacturer": "MAL",
+      "gear_type": "GRENADE_GADGET",
+      "item_name": "Brudder",
+      "item_id": "mal_grenade_gadget.comp_05_legendary_Brudder",
+      "pool": "itempool_grenade_gadget_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (Grenades)",
@@ -3536,7 +4464,7 @@
       "item_id": "mal_grenade_gadget.comp_05_legendary_disco_disc",
       "pool": "itempool_grenade_gadget_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05263157894736842
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (Grenades)",
@@ -3548,7 +4476,7 @@
       "item_id": "mal_grenade_gadget.comp_05_legendary_recursive",
       "pool": "itempool_grenade_gadget_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05263157894736842
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (Grenades)",
@@ -3560,7 +4488,7 @@
       "item_id": "ord_grenade_gadget.comp_05_legendary_aggrovator",
       "pool": "itempool_grenade_gadget_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05263157894736842
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (Grenades)",
@@ -3572,7 +4500,7 @@
       "item_id": "ord_grenade_gadget.comp_05_legendary_swarm",
       "pool": "itempool_grenade_gadget_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05263157894736842
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (Grenades)",
@@ -3584,7 +4512,7 @@
       "item_id": "ted_grenade_gadget.comp_05_legendary_FaultyDetonator",
       "pool": "itempool_grenade_gadget_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05263157894736842
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (Grenades)",
@@ -3596,7 +4524,7 @@
       "item_id": "ted_grenade_gadget.comp_05_legendary_PredatorDrone",
       "pool": "itempool_grenade_gadget_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05263157894736842
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (Grenades)",
@@ -3608,7 +4536,7 @@
       "item_id": "ted_grenade_gadget.comp_05_legendary_urchin",
       "pool": "itempool_grenade_gadget_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05263157894736842
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (Grenades)",
@@ -3620,7 +4548,7 @@
       "item_id": "tor_grenade_gadget.comp_05_legendary_firepot",
       "pool": "itempool_grenade_gadget_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05263157894736842
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (Grenades)",
@@ -3632,7 +4560,7 @@
       "item_id": "tor_grenade_gadget.comp_05_legendary_slippy",
       "pool": "itempool_grenade_gadget_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05263157894736842
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (Grenades)",
@@ -3644,7 +4572,7 @@
       "item_id": "vla_grenade_gadget.comp_05_legendary_Barb",
       "pool": "itempool_grenade_gadget_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05263157894736842
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (Grenades)",
@@ -3656,7 +4584,7 @@
       "item_id": "vla_grenade_gadget.comp_05_legendary_Blockbuster",
       "pool": "itempool_grenade_gadget_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05263157894736842
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (Grenades)",
@@ -3668,7 +4596,7 @@
       "item_id": "vla_grenade_gadget.comp_05_legendary_Waterfall",
       "pool": "itempool_grenade_gadget_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05263157894736842
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (Heavy Weapons)",
@@ -3680,7 +4608,7 @@
       "item_id": "BOR_HW.comp_05_legendary_DiscJockey",
       "pool": "itempool_hw_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07142857142857142
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Heavy Weapons)",
@@ -3692,7 +4620,7 @@
       "item_id": "BOR_HW.comp_05_legendary_Streamer",
       "pool": "itempool_hw_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07142857142857142
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Heavy Weapons)",
@@ -3704,7 +4632,7 @@
       "item_id": "BOR_HW.comp_05_legendary_jetset",
       "pool": "itempool_hw_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07142857142857142
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Heavy Weapons)",
@@ -3716,7 +4644,7 @@
       "item_id": "MAL_HW.comp_05_legendary_Barrel",
       "pool": "itempool_hw_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07142857142857142
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Heavy Weapons)",
@@ -3728,7 +4656,7 @@
       "item_id": "MAL_HW.comp_05_legendary_BottledLightning",
       "pool": "itempool_hw_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07142857142857142
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Heavy Weapons)",
@@ -3740,7 +4668,7 @@
       "item_id": "MAL_HW.comp_05_legendary_GammaVoid",
       "pool": "itempool_hw_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07142857142857142
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Heavy Weapons)",
@@ -3752,7 +4680,7 @@
       "item_id": "MAL_HW.comp_05_legendary_Ichor",
       "pool": "itempool_hw_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07142857142857142
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Heavy Weapons)",
@@ -3764,7 +4692,7 @@
       "item_id": "TOR_HW.comp_05_legendary_DahlFather",
       "pool": "itempool_hw_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07142857142857142
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Heavy Weapons)",
@@ -3776,7 +4704,7 @@
       "item_id": "TOR_HW.comp_05_legendary_Loiter",
       "pool": "itempool_hw_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07142857142857142
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Heavy Weapons)",
@@ -3788,7 +4716,7 @@
       "item_id": "TOR_HW.comp_05_legendary_ravenfire",
       "pool": "itempool_hw_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07142857142857142
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Heavy Weapons)",
@@ -3800,7 +4728,7 @@
       "item_id": "VLA_HW.comp_05_legendary_AtlingGun",
       "pool": "itempool_hw_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07142857142857142
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Heavy Weapons)",
@@ -3812,7 +4740,19 @@
       "item_id": "VLA_HW.comp_05_legendary_Flak",
       "pool": "itempool_hw_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07142857142857142
+      "drop_chance": 0.06666666666666667
+    },
+    {
+      "source": "World Drop (Heavy Weapons)",
+      "source_display": "World Drop (Heavy Weapons)",
+      "source_type": "WorldDrop",
+      "manufacturer": "VLA",
+      "gear_type": "HW",
+      "item_name": "Quattro",
+      "item_id": "VLA_HW.comp_05_legendary_Quattro",
+      "pool": "itempool_hw_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Heavy Weapons)",
@@ -3824,7 +4764,7 @@
       "item_id": "VLA_HW.comp_05_legendary_Splatoon",
       "pool": "itempool_hw_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07142857142857142
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Heavy Weapons)",
@@ -3836,7 +4776,7 @@
       "item_id": "bor_hw.comp_blackmarket",
       "pool": "itempool_hw_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07142857142857142
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Pistols)",
@@ -3848,7 +4788,7 @@
       "item_id": "DAD_PS.comp_05_legendary_Zipgun",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -3860,7 +4800,7 @@
       "item_id": "DAD_PS.comp_05_legendary_rangefinder",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -3872,7 +4812,7 @@
       "item_id": "DAD_PS.comp_05_legendary_silversliver",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -3884,7 +4824,19 @@
       "item_id": "DAD_PS.comp_05_legendary_soulsurvivor",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
+    },
+    {
+      "source": "World Drop (Pistols)",
+      "source_display": "World Drop (Pistols)",
+      "source_type": "WorldDrop",
+      "manufacturer": "JAK",
+      "gear_type": "PS",
+      "item_name": "Infection",
+      "item_id": "JAK_PS.comp_05_legendary_Infection",
+      "pool": "itempool_ps_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -3896,7 +4848,7 @@
       "item_id": "JAK_PS.comp_05_legendary_QuickDraw",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -3908,7 +4860,7 @@
       "item_id": "JAK_PS.comp_05_legendary_Shalashaska",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -3920,7 +4872,7 @@
       "item_id": "JAK_PS.comp_05_legendary_kingsgambit",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -3932,7 +4884,7 @@
       "item_id": "JAK_PS.comp_05_legendary_phantom_flame",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -3944,7 +4896,7 @@
       "item_id": "JAK_PS.comp_05_legendary_seventh_sense",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -3956,7 +4908,7 @@
       "item_id": "ORD_PS.comp_05_legendary_Bully",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -3968,7 +4920,7 @@
       "item_id": "ORD_PS.comp_05_legendary_NoisyCricket",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -3980,7 +4932,7 @@
       "item_id": "ORD_PS.comp_05_legendary_RocketReload",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -3992,7 +4944,7 @@
       "item_id": "ORD_PS.comp_05_legendary_Roulette",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -4004,7 +4956,7 @@
       "item_id": "ORD_PS.comp_05_legendary_sunspot",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -4016,7 +4968,7 @@
       "item_id": "TED_PS.comp_05_legendary_ATLien",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -4028,7 +4980,7 @@
       "item_id": "TED_PS.comp_05_legendary_EarlyExcess",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -4040,7 +4992,7 @@
       "item_id": "TED_PS.comp_05_legendary_Inscriber",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -4052,7 +5004,7 @@
       "item_id": "TED_PS.comp_05_legendary_RubysGrasp",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -4064,7 +5016,7 @@
       "item_id": "TED_PS.comp_05_legendary_Shammy",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -4076,7 +5028,7 @@
       "item_id": "TED_PS.comp_05_legendary_Sideshow",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -4088,7 +5040,7 @@
       "item_id": "TOR_PS.comp_05_legendary_QueensRest",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -4100,7 +5052,7 @@
       "item_id": "TOR_PS.comp_05_legendary_Roach",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -4112,7 +5064,19 @@
       "item_id": "TOR_PS.comp_05_legendary_ScootShoot",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
+    },
+    {
+      "source": "World Drop (Pistols)",
+      "source_display": "World Drop (Pistols)",
+      "source_type": "WorldDrop",
+      "manufacturer": "TOR",
+      "gear_type": "PS",
+      "item_name": "Sledge",
+      "item_id": "TOR_PS.comp_05_legendary_Sledge",
+      "pool": "itempool_ps_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -4124,7 +5088,7 @@
       "item_id": "TOR_PS.comp_05_legendary_handcannon",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Pistols)",
@@ -4136,7 +5100,7 @@
       "item_id": "jak_ps.comp_05_legendary_Shoals",
       "pool": "itempool_ps_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.037037037037037035
     },
     {
       "source": "World Drop (Repair Kits)",
@@ -4148,7 +5112,7 @@
       "item_id": "BOR_REPAIR_KIT.comp_05_legendary_Augmenter",
       "pool": "itempool_repair_kit_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07692307692307693
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Repair Kits)",
@@ -4160,7 +5124,7 @@
       "item_id": "BOR_REPAIR_KIT.comp_05_legendary_Hugger",
       "pool": "itempool_repair_kit_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07692307692307693
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Repair Kits)",
@@ -4172,7 +5136,7 @@
       "item_id": "dad_repair_kit.comp_05_legendary_Pacemaker",
       "pool": "itempool_repair_kit_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07692307692307693
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Repair Kits)",
@@ -4184,7 +5148,7 @@
       "item_id": "dad_repair_kit.comp_05_legendary_healthraiser",
       "pool": "itempool_repair_kit_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07692307692307693
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Repair Kits)",
@@ -4196,7 +5160,7 @@
       "item_id": "jak_repair_kit.comp_05_legendary_Defibrillator",
       "pool": "itempool_repair_kit_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07692307692307693
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Repair Kits)",
@@ -4208,7 +5172,7 @@
       "item_id": "mal_repair_kit.comp_05_legendary_BloodAnalyzer",
       "pool": "itempool_repair_kit_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07692307692307693
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Repair Kits)",
@@ -4220,7 +5184,7 @@
       "item_id": "mal_repair_kit.comp_05_legendary_GeigerRoid",
       "pool": "itempool_repair_kit_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07692307692307693
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Repair Kits)",
@@ -4232,7 +5196,7 @@
       "item_id": "ord_repair_kit.comp_05_legendary_TripleBypass",
       "pool": "itempool_repair_kit_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07692307692307693
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Repair Kits)",
@@ -4244,7 +5208,7 @@
       "item_id": "ord_repair_kit.comp_05_legendary_paleblood",
       "pool": "itempool_repair_kit_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07692307692307693
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Repair Kits)",
@@ -4256,7 +5220,31 @@
       "item_id": "ted_repair_kit.comp_05_legendary_KillSpring",
       "pool": "itempool_repair_kit_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07692307692307693
+      "drop_chance": 0.06666666666666667
+    },
+    {
+      "source": "World Drop (Repair Kits)",
+      "source_display": "World Drop (Repair Kits)",
+      "source_type": "WorldDrop",
+      "manufacturer": "TED",
+      "gear_type": "REPAIR_KIT",
+      "item_name": "font",
+      "item_id": "ted_repair_kit.comp_05_legendary_font",
+      "pool": "itempool_repair_kit_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.06666666666666667
+    },
+    {
+      "source": "World Drop (Repair Kits)",
+      "source_display": "World Drop (Repair Kits)",
+      "source_type": "WorldDrop",
+      "manufacturer": "TOR",
+      "gear_type": "REPAIR_KIT",
+      "item_name": "Outburst",
+      "item_id": "tor_repair_kit.comp_05_legendary_Outburst",
+      "pool": "itempool_repair_kit_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Repair Kits)",
@@ -4268,7 +5256,7 @@
       "item_id": "tor_repair_kit.comp_05_legendary_ShinyWarPaint",
       "pool": "itempool_repair_kit_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07692307692307693
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Repair Kits)",
@@ -4280,7 +5268,7 @@
       "item_id": "vla_repair_kit.comp_05_legendary_AdrenalinePUmp",
       "pool": "itempool_repair_kit_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07692307692307693
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (Repair Kits)",
@@ -4292,7 +5280,7 @@
       "item_id": "vla_repair_kit.comp_05_legendary_BloodIron",
       "pool": "itempool_repair_kit_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.07692307692307693
+      "drop_chance": 0.06666666666666667
     },
     {
       "source": "World Drop (SMGs)",
@@ -4304,7 +5292,19 @@
       "item_id": "BOR_SM.comp_05_legendary_Jailbroken",
       "pool": "itempool_sm_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.058823529411764705
+      "drop_chance": 0.05
+    },
+    {
+      "source": "World Drop (SMGs)",
+      "source_display": "World Drop (SMGs)",
+      "source_type": "WorldDrop",
+      "manufacturer": "BOR",
+      "gear_type": "SM",
+      "item_name": "enumeration",
+      "item_id": "BOR_SM.comp_05_legendary_enumeration",
+      "pool": "itempool_sm_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (SMGs)",
@@ -4316,7 +5316,7 @@
       "item_id": "BOR_SM.comp_05_legendary_falke",
       "pool": "itempool_sm_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.058823529411764705
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (SMGs)",
@@ -4328,7 +5328,7 @@
       "item_id": "BOR_SM.comp_05_legendary_hellfire",
       "pool": "itempool_sm_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.058823529411764705
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (SMGs)",
@@ -4340,7 +5340,7 @@
       "item_id": "BOR_SM.comp_05_legendary_prince",
       "pool": "itempool_sm_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.058823529411764705
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (SMGs)",
@@ -4352,7 +5352,7 @@
       "item_id": "DAD_SM.comp_05_legendary_Luty",
       "pool": "itempool_sm_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.058823529411764705
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (SMGs)",
@@ -4364,7 +5364,7 @@
       "item_id": "DAD_SM.comp_05_legendary_Raiden",
       "pool": "itempool_sm_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.058823529411764705
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (SMGs)",
@@ -4376,7 +5376,7 @@
       "item_id": "DAD_SM.comp_05_legendary_bloodstarved",
       "pool": "itempool_sm_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.058823529411764705
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (SMGs)",
@@ -4388,7 +5388,19 @@
       "item_id": "DAD_SM.comp_05_legendary_follower",
       "pool": "itempool_sm_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.058823529411764705
+      "drop_chance": 0.05
+    },
+    {
+      "source": "World Drop (SMGs)",
+      "source_display": "World Drop (SMGs)",
+      "source_type": "WorldDrop",
+      "manufacturer": "DAD",
+      "gear_type": "SM",
+      "item_name": "handfrag",
+      "item_id": "DAD_SM.comp_05_legendary_handfrag",
+      "pool": "itempool_sm_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (SMGs)",
@@ -4400,7 +5412,7 @@
       "item_id": "MAL_SM.comp_05_legendary_OhmIGot",
       "pool": "itempool_sm_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.058823529411764705
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (SMGs)",
@@ -4412,7 +5424,7 @@
       "item_id": "MAL_SM.comp_05_legendary_PlasmaCoil",
       "pool": "itempool_sm_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.058823529411764705
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (SMGs)",
@@ -4424,7 +5436,7 @@
       "item_id": "MAL_SM.comp_05_legendary_flashcyclone",
       "pool": "itempool_sm_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.058823529411764705
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (SMGs)",
@@ -4436,7 +5448,7 @@
       "item_id": "MAL_SM.comp_05_legendary_songbird",
       "pool": "itempool_sm_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.058823529411764705
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (SMGs)",
@@ -4448,7 +5460,7 @@
       "item_id": "VLA_SM.comp_05_legendary_BeeGun",
       "pool": "itempool_sm_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.058823529411764705
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (SMGs)",
@@ -4460,7 +5472,7 @@
       "item_id": "VLA_SM.comp_05_legendary_KaoSon",
       "pool": "itempool_sm_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.058823529411764705
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (SMGs)",
@@ -4472,7 +5484,7 @@
       "item_id": "VLA_SM.comp_05_legendary_Onslaught",
       "pool": "itempool_sm_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.058823529411764705
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (SMGs)",
@@ -4484,7 +5496,19 @@
       "item_id": "VLA_SM.comp_05_legendary_mercury",
       "pool": "itempool_sm_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.058823529411764705
+      "drop_chance": 0.05
+    },
+    {
+      "source": "World Drop (SMGs)",
+      "source_display": "World Drop (SMGs)",
+      "source_type": "WorldDrop",
+      "manufacturer": "MAL",
+      "gear_type": "SM",
+      "item_name": "accretion",
+      "item_id": "mal_sm.comp_05_legendary_accretion",
+      "pool": "itempool_sm_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (SMGs)",
@@ -4496,7 +5520,7 @@
       "item_id": "vla_sm.comp_05_legendary_brickhouse",
       "pool": "itempool_sm_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.058823529411764705
+      "drop_chance": 0.05
     },
     {
       "source": "World Drop (Shields)",
@@ -4508,7 +5532,7 @@
       "item_id": "bor_shield.comp_05_legendary_Lightning",
       "pool": "itempool_shield_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.047619047619047616
     },
     {
       "source": "World Drop (Shields)",
@@ -4520,7 +5544,7 @@
       "item_id": "bor_shield.comp_05_legendary_Watts4Dinner",
       "pool": "itempool_shield_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.047619047619047616
     },
     {
       "source": "World Drop (Shields)",
@@ -4532,7 +5556,7 @@
       "item_id": "dad_shield.comp_05_legendary_SuperSoldier",
       "pool": "itempool_shield_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.047619047619047616
     },
     {
       "source": "World Drop (Shields)",
@@ -4544,7 +5568,7 @@
       "item_id": "dad_shield.comp_05_legendary_angel",
       "pool": "itempool_shield_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.047619047619047616
     },
     {
       "source": "World Drop (Shields)",
@@ -4556,7 +5580,19 @@
       "item_id": "dad_shield.comp_05_legendary_honeybadger",
       "pool": "itempool_shield_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.047619047619047616
+    },
+    {
+      "source": "World Drop (Shields)",
+      "source_display": "World Drop (Shields)",
+      "source_type": "WorldDrop",
+      "manufacturer": "JAK",
+      "gear_type": "SHIELD",
+      "item_name": "Exfoliatrix",
+      "item_id": "jak_shield.comp_05_legendary_Exfoliatrix",
+      "pool": "itempool_shield_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.047619047619047616
     },
     {
       "source": "World Drop (Shields)",
@@ -4568,7 +5604,7 @@
       "item_id": "jak_shield.comp_05_legendary_OnionLayeredGuard",
       "pool": "itempool_shield_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.047619047619047616
     },
     {
       "source": "World Drop (Shields)",
@@ -4580,7 +5616,7 @@
       "item_id": "jak_shield.comp_05_legendary_barrelAged",
       "pool": "itempool_shield_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.047619047619047616
     },
     {
       "source": "World Drop (Shields)",
@@ -4592,7 +5628,7 @@
       "item_id": "ord_shield.comp_05_legendary_ProteanCell",
       "pool": "itempool_shield_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.047619047619047616
     },
     {
       "source": "World Drop (Shields)",
@@ -4604,7 +5640,7 @@
       "item_id": "ord_shield.comp_05_legendary_cindershelly",
       "pool": "itempool_shield_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.047619047619047616
     },
     {
       "source": "World Drop (Shields)",
@@ -4616,7 +5652,7 @@
       "item_id": "ord_shield.comp_05_legendary_collector",
       "pool": "itempool_shield_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.047619047619047616
     },
     {
       "source": "World Drop (Shields)",
@@ -4628,7 +5664,7 @@
       "item_id": "ted_shield.comp_05_legendary_Hopscotch",
       "pool": "itempool_shield_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.047619047619047616
     },
     {
       "source": "World Drop (Shields)",
@@ -4640,7 +5676,7 @@
       "item_id": "ted_shield.comp_05_legendary_PocketBuddies",
       "pool": "itempool_shield_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.047619047619047616
     },
     {
       "source": "World Drop (Shields)",
@@ -4652,7 +5688,7 @@
       "item_id": "ted_shield.comp_05_legendary_ShieldBoi",
       "pool": "itempool_shield_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.047619047619047616
     },
     {
       "source": "World Drop (Shields)",
@@ -4664,7 +5700,7 @@
       "item_id": "ted_shield.comp_05_legendary_timekeeper",
       "pool": "itempool_shield_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.047619047619047616
     },
     {
       "source": "World Drop (Shields)",
@@ -4676,7 +5712,7 @@
       "item_id": "tor_shield.comp_05_legendary_compleat",
       "pool": "itempool_shield_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.047619047619047616
     },
     {
       "source": "World Drop (Shields)",
@@ -4688,7 +5724,7 @@
       "item_id": "tor_shield.comp_05_legendary_firewerks",
       "pool": "itempool_shield_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.047619047619047616
     },
     {
       "source": "World Drop (Shields)",
@@ -4700,7 +5736,7 @@
       "item_id": "tor_shield.comp_05_legendary_hydrowerks",
       "pool": "itempool_shield_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.047619047619047616
     },
     {
       "source": "World Drop (Shields)",
@@ -4712,7 +5748,7 @@
       "item_id": "vla_shield.comp_05_legendary_HeavyWeight",
       "pool": "itempool_shield_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.047619047619047616
     },
     {
       "source": "World Drop (Shields)",
@@ -4724,7 +5760,7 @@
       "item_id": "vla_shield.comp_05_legendary_Hoarder",
       "pool": "itempool_shield_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.047619047619047616
     },
     {
       "source": "World Drop (Shields)",
@@ -4736,7 +5772,7 @@
       "item_id": "vla_shield.comp_05_legendary_undershield",
       "pool": "itempool_shield_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.047619047619047616
     },
     {
       "source": "World Drop (Shotguns)",
@@ -4748,7 +5784,7 @@
       "item_id": "BOR_SG.comp_05_legendary_CrazedEarl",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -4760,7 +5796,7 @@
       "item_id": "BOR_SG.comp_05_legendary_GoldenGod",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -4772,7 +5808,7 @@
       "item_id": "BOR_SG.comp_05_legendary_GoreMaster",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -4784,7 +5820,7 @@
       "item_id": "BOR_SG.comp_05_legendary_convergence",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -4796,7 +5832,7 @@
       "item_id": "BOR_SG.comp_05_legendary_demo",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -4808,7 +5844,19 @@
       "item_id": "BOR_SG.comp_05_legendary_plumbbob",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
+    },
+    {
+      "source": "World Drop (Shotguns)",
+      "source_display": "World Drop (Shotguns)",
+      "source_type": "WorldDrop",
+      "manufacturer": "BOR",
+      "gear_type": "SG",
+      "item_name": "relay",
+      "item_id": "BOR_SG.comp_05_legendary_relay",
+      "pool": "itempool_sg_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -4820,7 +5868,7 @@
       "item_id": "DAD_SG.comp_05_legendary_HeartGUn",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -4832,7 +5880,7 @@
       "item_id": "DAD_SG.comp_05_legendary_bod",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -4844,7 +5892,19 @@
       "item_id": "DAD_SG.comp_05_legendary_cannonbrawl",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
+    },
+    {
+      "source": "World Drop (Shotguns)",
+      "source_display": "World Drop (Shotguns)",
+      "source_type": "WorldDrop",
+      "manufacturer": "DAD",
+      "gear_type": "SG",
+      "item_name": "pragmate",
+      "item_id": "DAD_SG.comp_05_legendary_pragmate",
+      "pool": "itempool_sg_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -4856,7 +5916,7 @@
       "item_id": "JAK_SG.comp_05_legendary_Doeshot",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -4868,7 +5928,19 @@
       "item_id": "JAK_SG.comp_05_legendary_Hellwalker",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
+    },
+    {
+      "source": "World Drop (Shotguns)",
+      "source_display": "World Drop (Shotguns)",
+      "source_type": "WorldDrop",
+      "manufacturer": "JAK",
+      "gear_type": "SG",
+      "item_name": "Hippogun",
+      "item_id": "JAK_SG.comp_05_legendary_Hippogun",
+      "pool": "itempool_sg_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -4880,7 +5952,7 @@
       "item_id": "JAK_SG.comp_05_legendary_RainbowVomit",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -4892,7 +5964,7 @@
       "item_id": "JAK_SG.comp_05_legendary_Slugger",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -4904,7 +5976,19 @@
       "item_id": "JAK_SG.comp_05_legendary_TKsWave",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
+    },
+    {
+      "source": "World Drop (Shotguns)",
+      "source_display": "World Drop (Shotguns)",
+      "source_type": "WorldDrop",
+      "manufacturer": "JAK",
+      "gear_type": "SG",
+      "item_name": "Verce",
+      "item_id": "JAK_SG.comp_05_legendary_Verce",
+      "pool": "itempool_sg_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -4916,7 +6000,7 @@
       "item_id": "MAL_SG.comp_05_legendary_Kaleidosplode",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -4928,7 +6012,7 @@
       "item_id": "MAL_SG.comp_05_legendary_Kickballer",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -4940,7 +6024,19 @@
       "item_id": "MAL_SG.comp_05_legendary_Reminisce",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
+    },
+    {
+      "source": "World Drop (Shotguns)",
+      "source_display": "World Drop (Shotguns)",
+      "source_type": "WorldDrop",
+      "manufacturer": "MAL",
+      "gear_type": "SG",
+      "item_name": "assembler",
+      "item_id": "MAL_SG.comp_05_legendary_assembler",
+      "pool": "itempool_sg_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -4952,7 +6048,7 @@
       "item_id": "MAL_SG.comp_05_legendary_mantra",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -4964,7 +6060,19 @@
       "item_id": "TED_SG.comp_05_legendary_Eigenburst",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
+    },
+    {
+      "source": "World Drop (Shotguns)",
+      "source_display": "World Drop (Shotguns)",
+      "source_type": "WorldDrop",
+      "manufacturer": "TED",
+      "gear_type": "SG",
+      "item_name": "Fourier",
+      "item_id": "TED_SG.comp_05_legendary_Fourier",
+      "pool": "itempool_sg_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -4976,7 +6084,7 @@
       "item_id": "TED_SG.comp_05_legendary_HeavyTurret",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -4988,7 +6096,19 @@
       "item_id": "TED_SG.comp_05_legendary_anarchy",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
+    },
+    {
+      "source": "World Drop (Shotguns)",
+      "source_display": "World Drop (Shotguns)",
+      "source_type": "WorldDrop",
+      "manufacturer": "TOR",
+      "gear_type": "SG",
+      "item_name": "AeroDramatic",
+      "item_id": "TOR_SG.comp_05_legendary_AeroDramatic",
+      "pool": "itempool_sg_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -5000,7 +6120,7 @@
       "item_id": "TOR_SG.comp_05_legendary_LeadBalloon",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -5012,7 +6132,7 @@
       "item_id": "TOR_SG.comp_05_legendary_Linebacker",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -5024,7 +6144,7 @@
       "item_id": "TOR_SG.comp_05_legendary_Unstable_Kor",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Shotguns)",
@@ -5036,7 +6156,7 @@
       "item_id": "mal_sg.comp_05_legendary_DiscyBusiness",
       "pool": "itempool_sg_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.04
+      "drop_chance": 0.03125
     },
     {
       "source": "World Drop (Sniper Rifles)",
@@ -5048,7 +6168,7 @@
       "item_id": "JAK_SR.comp_05_legendary_Boomslang",
       "pool": "itempool_sr_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.04
     },
     {
       "source": "World Drop (Sniper Rifles)",
@@ -5060,7 +6180,7 @@
       "item_id": "JAK_SR.comp_05_legendary_Burrow",
       "pool": "itempool_sr_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.04
     },
     {
       "source": "World Drop (Sniper Rifles)",
@@ -5072,7 +6192,7 @@
       "item_id": "JAK_SR.comp_05_legendary_Truck",
       "pool": "itempool_sr_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.04
     },
     {
       "source": "World Drop (Sniper Rifles)",
@@ -5084,7 +6204,7 @@
       "item_id": "JAK_SR.comp_05_legendary_ballista",
       "pool": "itempool_sr_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.04
     },
     {
       "source": "World Drop (Sniper Rifles)",
@@ -5096,7 +6216,31 @@
       "item_id": "JAK_SR.comp_05_legendary_fearstalker",
       "pool": "itempool_sr_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.04
+    },
+    {
+      "source": "World Drop (Sniper Rifles)",
+      "source_display": "World Drop (Sniper Rifles)",
+      "source_type": "WorldDrop",
+      "manufacturer": "JAK",
+      "gear_type": "SR",
+      "item_name": "outback",
+      "item_id": "JAK_SR.comp_05_legendary_outback",
+      "pool": "itempool_sr_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.04
+    },
+    {
+      "source": "World Drop (Sniper Rifles)",
+      "source_display": "World Drop (Sniper Rifles)",
+      "source_type": "WorldDrop",
+      "manufacturer": "MAL",
+      "gear_type": "SR",
+      "item_name": "Clarity",
+      "item_id": "MAL_SR.comp_05_legendary_Clarity",
+      "pool": "itempool_sr_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.04
     },
     {
       "source": "World Drop (Sniper Rifles)",
@@ -5108,7 +6252,7 @@
       "item_id": "MAL_SR.comp_05_legendary_asher",
       "pool": "itempool_sr_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.04
     },
     {
       "source": "World Drop (Sniper Rifles)",
@@ -5120,7 +6264,7 @@
       "item_id": "MAL_SR.comp_05_legendary_complex_root",
       "pool": "itempool_sr_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.04
     },
     {
       "source": "World Drop (Sniper Rifles)",
@@ -5132,7 +6276,7 @@
       "item_id": "MAL_SR.comp_05_legendary_conflux",
       "pool": "itempool_sr_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.04
     },
     {
       "source": "World Drop (Sniper Rifles)",
@@ -5144,7 +6288,7 @@
       "item_id": "MAL_SR.comp_05_legendary_katagawa",
       "pool": "itempool_sr_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.04
     },
     {
       "source": "World Drop (Sniper Rifles)",
@@ -5156,7 +6300,7 @@
       "item_id": "MAL_SR.comp_05_legendary_manifest",
       "pool": "itempool_sr_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.04
     },
     {
       "source": "World Drop (Sniper Rifles)",
@@ -5168,7 +6312,7 @@
       "item_id": "ORD_SR.comp_05_legendary_Fisheye",
       "pool": "itempool_sr_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.04
     },
     {
       "source": "World Drop (Sniper Rifles)",
@@ -5180,7 +6324,7 @@
       "item_id": "ORD_SR.comp_05_legendary_Temper",
       "pool": "itempool_sr_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.04
     },
     {
       "source": "World Drop (Sniper Rifles)",
@@ -5192,7 +6336,19 @@
       "item_id": "ORD_SR.comp_05_legendary_ishmael",
       "pool": "itempool_sr_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.04
+    },
+    {
+      "source": "World Drop (Sniper Rifles)",
+      "source_display": "World Drop (Sniper Rifles)",
+      "source_type": "WorldDrop",
+      "manufacturer": "ORD",
+      "gear_type": "SR",
+      "item_name": "petanque",
+      "item_id": "ORD_SR.comp_05_legendary_petanque",
+      "pool": "itempool_sr_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.04
     },
     {
       "source": "World Drop (Sniper Rifles)",
@@ -5204,7 +6360,19 @@
       "item_id": "ORD_SR.comp_05_legendary_symmetry",
       "pool": "itempool_sr_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.04
+    },
+    {
+      "source": "World Drop (Sniper Rifles)",
+      "source_display": "World Drop (Sniper Rifles)",
+      "source_type": "WorldDrop",
+      "manufacturer": "VLA",
+      "gear_type": "SR",
+      "item_name": "Exhibition",
+      "item_id": "VLA_SR.comp_05_legendary_Exhibition",
+      "pool": "itempool_sr_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.04
     },
     {
       "source": "World Drop (Sniper Rifles)",
@@ -5216,7 +6384,7 @@
       "item_id": "VLA_SR.comp_05_legendary_Finnty",
       "pool": "itempool_sr_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.04
     },
     {
       "source": "World Drop (Sniper Rifles)",
@@ -5228,7 +6396,7 @@
       "item_id": "VLA_SR.comp_05_legendary_Hemorrhage",
       "pool": "itempool_sr_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.04
     },
     {
       "source": "World Drop (Sniper Rifles)",
@@ -5240,7 +6408,7 @@
       "item_id": "VLA_SR.comp_05_legendary_StopGap",
       "pool": "itempool_sr_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.04
     },
     {
       "source": "World Drop (Sniper Rifles)",
@@ -5252,7 +6420,7 @@
       "item_id": "bor_sr.comp_05_legendary_Abyss",
       "pool": "itempool_sr_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.04
     },
     {
       "source": "World Drop (Sniper Rifles)",
@@ -5264,7 +6432,19 @@
       "item_id": "bor_sr.comp_05_legendary_Vamoose",
       "pool": "itempool_sr_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.04
+    },
+    {
+      "source": "World Drop (Sniper Rifles)",
+      "source_display": "World Drop (Sniper Rifles)",
+      "source_type": "WorldDrop",
+      "manufacturer": "BOR",
+      "gear_type": "SR",
+      "item_name": "devourer",
+      "item_id": "bor_sr.comp_05_legendary_devourer",
+      "pool": "itempool_sr_05_legendary",
+      "drop_tier": "",
+      "drop_chance": 0.04
     },
     {
       "source": "World Drop (Sniper Rifles)",
@@ -5276,7 +6456,7 @@
       "item_id": "bor_sr.comp_05_legendary_stray",
       "pool": "itempool_sr_05_legendary",
       "drop_tier": "",
-      "drop_chance": 0.05
+      "drop_chance": 0.04
     }
   ],
   "probabilities": {

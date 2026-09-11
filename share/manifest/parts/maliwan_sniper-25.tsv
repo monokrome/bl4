@@ -86,6 +86,9 @@ index	name
 85	part_barrel_01_manifest
 86	part_mag_05_borg_acc_manifest
 87	comp_05_legendary_manifest
+90	part_mag_05_borg_clarity
+91	part_barrel_02_clarity
+92	comp_05_legendary_clarity
 95	comp_01_common
 96	comp_02_uncommon
 97	comp_03_rare

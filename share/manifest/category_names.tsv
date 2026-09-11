@@ -30,6 +30,7 @@ category_id	name
 10026	Pearl Stat
 10027	Secondary Augment
 10028	Scope Acc
+10029	Stat Augment
 101	Invdef Pickup Grapplebox Intro
 102	Invdef Broombaplaceable
 103	Invdef Genivivcore
@@ -364,6 +365,7 @@ category_id	name
 40	Inv Contractitem Beastbone
 400	Io Pickup Powercell
 401	Io Pickup Flat Kairos
+402	Class Mod Corpohacker
 403	Invdef Pickup Mfaction4 Lictordrive Child
 404	Class Mod Robodealer
 405	Weapon Dahlgrunt Laserrifle
@@ -392,16 +394,28 @@ category_id	name
 426	Invdef Io Pickup Picture
 427	Invdef Io Pickup Lights
 428	Invdef Io Pickup Passwordlog
+429	Invdef H3 Lava Missionpickup
 43	Inv Contractitem Tools
+430	Invdef H3 Hotel Captureflag
+431	Invdef H3 Hotel Handpickup
+432	Invdef H3 Logistics Handpickup
 433	Invdef Io Pickup Dahlbadarm1
 434	Invdef Io Pickup Dahlbadarm2
 435	Invdef Io Pickup Dahlbadarm3
 436	Invdef Io Pickup Keepsake3
+437	Invdef H3 Lava Bathhousekey
+438	Invdef H4 Fl4keye
+439	Invdef H4 Temp Fl4kvirus
 44	Inv Contractitem Creepbrain
+440	Invdef Si Explosivebarrelpickup
+441	Invdef Si Projectorpickup
 442	Inv M3 Pickup Glowleaf
 443	Invdef Pickup Gumpyhat
 444	Inv Dbd Pickup Driftwood
 445	Health Booster Pickup Healthraiser
+446	Invdef Harmmain3spa Brainbomb
+447	Invdef Guarded Signpickup
+448	Invdef Vmuf Festivalmaterialspickup
 449	Invdef M3 Pickup Keystone
 45	Inv Contractitem Sparkplug
 450	Invdef M4 Pickup Dahlkeycard Warroom
@@ -412,11 +426,15 @@ category_id	name
 455	Invdef Dbd Dogtag Austin
 456	Invdef Dbd Dogtag Hays
 457	Invdef Dbd Dogtag Turner
+458	Inv H3t Pickup Accesscard
 459	Weapon Dahlmech Flamespitterunderbarrel
 46	Inv Contractitem Pangolinparts
 460	Invdef Io Pickup Staff
 461	Invdef Io Pickup Bomb
 462	Inv Echologdefault Cello
+463	Invdef Vmuf Pickup Microphone
+464	Invdef Vmuf Pickup Tenttape
+465	Invdef Vmuf Pickup Lytfestposter
 466	Inv Contractitem Dahljetpack
 467	Inv Contractitem Dahlhelmet
 468	Inv Contractitem Scavgrenade
@@ -425,19 +443,62 @@ category_id	name
 470	Weapon Turret Dahlchaingun
 471	Weapon Dahlmech Energygun
 472	Weapon Dahlgrunt Crashflamer
+473	Invdef Vmuf Pickup Borrowedturrets
+474	Weapon Tediorearmy Sprayer
+475	Weapon Tedioreglider Flamethrower
+476	Invdef Pickup Sc Buskermoney
+477	Weapon Tedioregliderarm Rocketlauncher
+478	Weapon Tedioreglidercore Rocketlauncher
+479	Weapon Tedioreturret Gatemission4
 48	Inv Contractitem Bloodpack
+480	Weapon Tedioreturret Mg
+481	Invdef Harmmain2 Mrchewcollar
+482	Weapon Tedioreturret Rapidlaser
+483	Invdef Tu Creaturecage
+484	Weapon Tedioreturret Microplasticsmg
+485	Weapon Tedioreturret Rocketlauncher
+486	Invdef Io Pickup Spatialawareness Circuitboard
 487	Invdef Io Pickup Paperscrap
 488	Invdef Io Pickup Bottle
 489	Invdef Io Pickup Digizanehead
 49	Inv Contractitem Poster
 490	Projectile Count Booster
 491	Weapon Uberhead
+496	Invdef H3 Lava Duckyhand
 5	Tediore Pistol
 50	Inv Contractitem Base
+502	Invdef H3t Pickup Managerelenaarm
+503	Weapon Tediorearmy Framesprayerr
+504	Weapon Tediorearmy Framesprayerl
+505	Invdef Pickup Harmonyhand
+506	Weapon Tedioredigishotgun
 507	Pickup Cos Shieldbooster
+508	Inv Contractitem Tediore Legpack
+509	Inv Contractitem Tediore Hand
 51	Invdef Booster
+510	Inv Contractitem Rip Satchel
+511	Inv Contractitem Rip Mask
+512	Invdef Harmmain2b Jrmanagerhand
+513	Invdef Io Pickup Rottenorder
+514	Invdef Si Pickup Detonator
+515	Invdef Tu Pickup Digicore
+516	Invdef Pickup Tu Echodevice
+517	Invdef Pickup Mip Bagofbombs
+518	Invdef Pickup Shittyrock
+519	Invdef Harmmain3 Safecode
 52	Invdef Drillkey
+520	Invdef Harmmain3spa Managerhand
+521	Weapon Tedioreglider Rapidlaser
+522	Invdef H1 Pickup Ziplinedevice
+523	Currency Money Slotmachine Singlestack
+525	Invdef Bp4 Pickup Radablasthead
+526	Invdef Pickup Davebomb Awardwinning
+527	Invdef Pickup Davebomb Custommade
+528	Invdev Pickup Fertilizer
+529	Invdef Bp4 Pickup Kratchblood
 53	Invdef Pitchfork
+530	Invdef Bp4 Pickup Motoroil
+531	Invdef Bp4 Pickup Ordertech
 54	Invdef Scythe
 55	Invdef Shovel
 56	Invdef Gardenseeds

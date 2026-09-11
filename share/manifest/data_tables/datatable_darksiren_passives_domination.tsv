@@ -9,8 +9,8 @@ Domination_SoulOrb_Health_Percentage	This is now in an Action Skill. Not a Passi
 Domination_SoulOrb_SkillDuration_Percentage	This is now in an Action Skill. Not a Passive. Move eventually.	0.200000
 Domination_SoulOrb_MoveSpeed_Percentage	This is now in an Action Skill. Not a Passive. Move eventually.	0.060000
 Domination_SoulOrb_MoveSpeed_Duration	This is now in an Action Skill. Not a Passive. Move eventually.	8.000000
-Domination_SoulOrb_BonusDamage	This is now in an Action Skill. Not a Passive. Move eventually.	0.200000
-Domination_SoulOrb_BonusDamage_Duration	This is now in an Action Skill. Not a Passive. Move eventually.	12.000000
+Domination_SoulOrb_BonusDamage	This is now in an Action Skill. Not a Passive. Move eventually.	0.300000
+Domination_SoulOrb_BonusDamage_Duration	This is now in an Action Skill. Not a Passive. Move eventually.	20.000000
 Domination_PhasePlating_MovementSpeed		0.050000
 Domination_PhasePlating_DamageReduction	Negative Scale Math: 20% Damage Reduction at 3 points.	-0.083333
 Domination_LinkedAggression_DamageDealt		0.020000
@@ -32,7 +32,7 @@ Domination_Overseer_HealthRegeneration		0.010000
 Domination_BanefulWeaponry_FireRate		0.015000
 Domination_BanefulWeaponry_Stack_Max		3.000000
 Domination_BanefulWeaponry_Stack_Duration		10.000000
-Domination_Curse_Damage_Multiplier		0.010000
+Domination_Curse_Damage_Multiplier		0.030000
 Domination_Curse_Duration		10.000000
 Domination_ExtraCursed_Damage_Multiplier		2.000000
 Domination_ExplosiveMinions_GadgetDamage		0.070000
@@ -71,7 +71,7 @@ Domination_GraveShock_Stack_Max		3.000000
 Domination_GraveShock_Stack_Duration		10.000000
 Domination_UndeadWire_SparkRemnant_DamageMultiplier		0.800000
 Domination_UndeadWire_SparkRemnant_Radius		128.000000
-Domination_UndeadWire_SparkRemnant_Cooldown		2.000000
+Domination_UndeadWire_SparkRemnant_Cooldown		1.000000
 Domination_UndeadWire_ProcChance		0.100000
 Domination_ShockingInfluence_ShockDamage		0.080000
 Domination_ShockingInfluence_ShockDamage_StatusEffect		0.060000
@@ -79,7 +79,7 @@ Domination_SpiritedAway_HealthRestoration		1.000000
 Domination_SpiritedAway_ShieldRestoration		1.000000
 Domination_SpiritedAway_Cooldown		120.000000
 Domination_SpiritedAway_InvisibilityTimer		4.000000
-Domination_PhaseExtension_KillSkillDuration		0.080000
+Domination_PhaseExtension_KillSkillDuration		2.000000
 Domination_PhaseBullets_BonusDamage		0.075000
 Domination_GravyDrain_Lifesteal		0.015000
 Domination_GravyDrain_Lifesteal_Minions		0.030000

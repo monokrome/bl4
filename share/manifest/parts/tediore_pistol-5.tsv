@@ -85,8 +85,11 @@ index	name
 84	part_mag_torgue_normal_inscriber
 85	part_barrel_02_inscriber
 86	comp_05_legendary_inscriber
+87	comp_harmony_weapon
 88	part_barrel_01_shammy
 89	comp_05_legendary_shammy
+90	part_barrel_02_tradingup
+91	comp_03_tradingup
 92	part_grip_05a_ted_legs_earlyexcess
 93	part_underbarrel_02_rockets_earlyexcess
 94	part_barrel_02_earlyexcess
@@ -95,3 +98,6 @@ index	name
 97	comp_03_rare
 98	comp_04_epic
 99	comp_05_legendary_earlyexcess
+100	part_barrel_relievingguard
+101	comp_03_relievingguard
+102	part_scope_02_lens_01_tradingup

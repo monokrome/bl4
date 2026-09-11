@@ -60,7 +60,7 @@ GravPassive_57_Move	Move Speed	CM Speed	Duration	-0.850000	3500.000000	3.000000	
 GravPassive_58	Health Regen/Enemy	Duration		0.010000	8.000000		Quantum Immortality
 GravPassive_59	Crit Chance	Additional	Duration	0.020000	0.010000	8.000000	Make Extrodinary
 GravPassive_59_Stacks	Max Stacks			10.000000			
-GravPassive_60	Gun Damage	Duration		0.060000	8.000000		Parellel Circuit
+GravPassive_60	Gun Damage	Duration		0.080000	8.000000		Parellel Circuit
 GravPassive_61	CDR			0.050000			Pulse Drive
 GravPassive_62	Elemental Damage	Status Effect Chance	Cryo Effectiveness	0.040000	0.040000	0.030000	Ignition
 GravPassive_63	Fire Rate	Duration		0.060000	8.000000		Bright Future
@@ -73,17 +73,17 @@ GravPassive_69	Duration per Enemy			0.050000			Concurrence
 GravPassive_70	Move Speed	Duration		0.080000	8.000000		Slingshot
 GravPassive_71	CDR Restore	Duration Restore		0.060000	0.020000		Control Group
 GravPassive_72	Speed Scale	Duration	Max Stacks	0.100000	7.000000	20.000000	Force of Will
-GravPassive_73	Bonus Damage	Max Stacks		0.200000	5.000000		Freeze Frame
+GravPassive_73	Bonus Damage	Max Stacks		0.300000	5.000000		Freeze Frame
 GravPassive_74	Duration	Cooldown		5.000000	10.000000		Snapshot
-GravPassive_75	Bonus Damage	Duration		0.070000	8.000000		Unstable Ice-otope
+GravPassive_75	Bonus Damage	Duration		0.100000	12.000000		Unstable Ice-otope
 GravPassive_76	Life Steal	Overshield Steal		0.030000	0.040000		Keep Ice on That
-GravPassive_77	Damage Scalar	Cooldown	Duration	0.040000	4.000000	2.000000	Endothermic Reaction
+GravPassive_77	Damage Scalar	Cooldown	Duration	0.060000	3.000000	2.000000	Endothermic Reaction
 GravPassive_77_BonusDamage	Bonus Damage			0.060000			
 GravPassive_78	Freeze Chance	Duration		0.300000	8.000000		Flash Freeze
 GravPassive_79	CDR	Duration		0.100000	8.000000		Heat Sink
 GravPassive_80	Absolute Zero	Cryo Mult		0.150000	2.000000		Triple Point
-GravPassive_81	Radius Damage			0.070000			Indiscrete Mathematics
-GravPassive_82	Damage Scalar	Cooldown	RAdius	0.090000	4.000000	256.000000	Experimentation
+GravPassive_81	Radius Damage			0.120000			Indiscrete Mathematics
+GravPassive_82	Damage Scalar	Cooldown	RAdius	0.150000	4.000000	256.000000	Experimentation
 GravPassive_83	Chance	Cooldown		0.150000	2.000000		Reproduce Findings
 GravPassive_84	Duration			0.050000			Sustained Reaction
 GravPassive_85	Chance			0.070000			Gordian Knot

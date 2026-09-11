@@ -1,0 +1,84 @@
+row_name	comment	value
+0_Symbiosis_MaxStacks		25.000000
+0_Symbiosis_DecayRate		4.000000
+0_Symbiosis_WyrmKillYield		3.000000
+0_Symbiosis_StartingStacks		5.000000
+69_StorageUpgrade_DmgIncrease		0.085000
+69_StorageUpgrade_StacksYield		1.000000
+70_Irradiated_RadDamage_Scalar		0.050000
+70_Irradiated_RadChance_Scalar		0.060000
+70_Irradiated_BonusRadDamage_PerStack		0.040000
+71_ASDurationRestore_Chance		0.100000
+71_ASDurationRestore_Scalar		0.030000
+72_HidingThePain_DamageReduction_Scalar		-0.110000
+72_HidingThePain_NegateDamageChance_Scalar		0.003000
+72_HidingWThePain_Negate_TokenGain		3.000000
+73_Overclocking_ASDmgIncrease_Scalar		0.080000
+73_Overclocking_ASDuration_Scalar		0.050000
+74_PeakPerformance_GunDmg_Scalar		0.030000
+74_PeakPerformance_MaxTokens		10.000000
+74_PeakPerformance_TokenDecay		10.000000
+74_PeakPerformance_StackPerGrade		1.000000
+75_SharingThePain_Chance		0.070000
+75_SharingThePain_GunDmg_PerStack		0.050000
+75_SharingThePain_MaxStacks		10.000000
+75_SharingThePain_Nova_Dmg		0.100000
+75_SharingThePain_Nova_Radius		350.000000
+75_SharingThePain_Stacks_Decay		8.000000
+75_SharingThePain_StackYield		1.000000
+76_PureFusion_MaxHealth_scalar		0.060000
+76_PureFusion_SymbiosisStack_Duration		1.000000
+77_Optimization_Chance	Chance for the Passive to completely refund RAM	0.075000
+77_Optimization_AutomaticRefill	Amount we refill the RAM bar to scaling with the amount o fSymbiosis Stacks	0.015000
+77_Optimization_FullRefill	Full Refill RAM after spending it, keeping as a DT entry in case we want to change it	1.000000
+77_Optimization_TokenYield	Keeping there in case we want to change it	1.000000
+78_Antvirus_Overshield_Potency		0.060000
+78_Antivirus_Overshield_DurationPerSymbiosis		0.020000
+79_SharingTactics_CritChance		0.050000
+79_SharingTactics_CritDmg_Stack		0.030000
+84_DeepConnexion_Symbiosis_MaxStacks	amount that we give per level to add symbiosis stacks	5.000000
+84_DeepConnexion_StackChance		0.080000
+85_EmpoweredWyrm_DamageIncrease_Scalar		0.080000
+85_EmpoweredWyrm_Symbiosis_AdditionalDmg_Scalar		0.025000
+86_InMemoriam_Symbiosis_StartingStacks_Increase		3.000000
+86_InMemoriam_SymbiosisStacks_Removed	Percentage	0.100000
+89_WhatsYourStatus_ElementalBonusDamage		0.080000
+89_WhatsYourStatus_RadiationBonusDamage		0.160000
+89_WhatsYourStatus_Duration		10.000000
+89_WhatsYourStatus_StacksCount	Should remain ONE but keeping in case	1.000000
+89_WhatsYourStatus_Radiation_Increase		2.000000
+89_WhatsYourStatus_EffectChance	per Symbio Stacks	0.025000
+90_ExplosiveMindset_OrdnanceDamageIncrease		0.100000
+90_ExplosiveMindset_EffectIncrease	Idea is to double the effect against enemies affected by Status Effects, but keeping as DT value in case	2.000000
+90_ExplosiveMindset_StacksScale		0.020000
+91_IHATEYOU_ShurikenDamage		0.080000
+91_IHATEYOU_Shuriken_NovaRadius	300	300.000000
+91_IHATEYOU_Shuriken_NovaDamage		0.030000
+92_IrradiateEmAll_NovaRadius		400.000000
+92_IrradiateEmAll_NovaDamage	0.08	0.120000
+93_SecondImpact_ShurikenProcChance		0.020000
+81_PowerOverwhelming_BonusElementalDamage		0.050000
+81_PowerOverwhelming_RadiationAdd	2x is the idea, but k eeping in case	2.000000
+81_PowerOverwhelming_StackScale		0.015000
+81_PowerOverwhelming_Stacks		1.000000
+81_PowerOverwhelming_Duration		7.000000
+83_Everchanging_StacksCount	Should be one, but keeping in case	1.000000
+83_Everchanging_Duration		4.000000
+82_ManipulatingRNG_CritChance		0.050000
+80_NoTimeToThink_Duration		10.000000
+80_NoTimeToThink_MeleeDamageIncrease		0.080000
+80_NoTimeToThink_StacksCount	Will be 1 for now, we'll see if we revisit	1.000000
+80_NoTimeToThink_ChanceToHeal		0.010000
+80_NoTimeToThink_PortionToHeal		0.015000
+80_NoTimeToThink_PortionToHeal_UI		0.025000
+87_SymbiosisOverflow_MaxStacksToRemove		10.000000
+87_SymbiosisOverflow_Duration		10.000000
+87_SymbiosisOverflow_IncreasePerStack		0.080000
+88_FNXDotBat_DamageRadius		400.000000
+88_FNXdotBat_Lifetime		12.000000
+88_FNXdotBat_Damage		0.050000
+88_FNXdotBat_DamageDelay	Time between bursts of damage	1.000000
+29_InsultToInjury_GunDamage		0.040000
+29_InsultToInjury_StatusEffectDamage		0.110000
+29_InsultToInjury_RAMRefill		0.100000
+29_Feedback_Duration		12.000000

@@ -82,6 +82,8 @@ index	name
 81	part_foregrip_02
 82	part_mag_torgue_normal
 83	part_mag_torgue_sticky
+84	part_unique_barrel_02_relay
+85	comp_05_legendary_relay
 95	comp_01_common
 96	comp_02_uncommon
 97	comp_03_rare

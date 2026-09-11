@@ -1,13 +1,19 @@
 np_absolution	Absolution
 np_abyss	Abyss
+np_accretion	Honeymooner
+np_aerodramatic	AeroDramatic
 np_aggrovator	Chaumurky
+np_alignment	Alignment
 np_anarchy	Anarchy
 np_anchor	Anchor
 np_angel	Guardian Angel
 np_arctic	ARC-TAN
 np_asher	Asher's Rise
+np_assembler	Decompiler
 np_atlien	Budget Deity
 np_atlinggun	Atling Gun
+np_aura	Tempered Essence
+np_avarice	Avarice
 np_axe	Buzz Axe
 np_ballista	Borstel Ballista
 np_barb	Barb'ara
@@ -15,6 +21,7 @@ np_barrel	Cooper Duper
 np_barrelaged	Oak-Aged Cask
 np_beegun	Birt's Bees
 np_bismuth	Bismuth-Tipped Dagger
+np_blackout	Shield Overflow
 np_blockbuster	Blockbuster
 np_bloodstarved	Darkbeast
 np_bod	Bod
@@ -23,6 +30,7 @@ np_boomslang	Boomslang
 np_bottledlightning	Bottled Lightning
 np_breadth	Hardpoint
 np_brickhouse	Brickhouse
+np_brudder	Li'l Brudder
 np_bubbles	Bubbles
 np_bugbear	Bugbear
 np_bully	Bully
@@ -30,6 +38,28 @@ np_buoy	Buoy
 np_burrow	PRISM
 np_chuck	Chuck
 np_cindershelly	Cindershelly
+np_clarity	Clarity
+np_cm_corpo_01	Keylogger
+np_cm_corpo_02	Hacktivist
+np_cm_corpo_03	Researcher
+np_cm_corpo_04	Assimilator
+np_cm_corpo_05	Royal We
+np_cm_corpo_06	Wyrmkind
+np_cm_corpo_07	Defragger
+np_cm_corpo_08	Corrupter
+np_cm_corpo_09	Eminence
+np_cm_corpo_10	System
+np_cm_corpo_leg_01	Devourer
+np_cm_corpo_leg_02	Virophile
+np_cm_corpo_leg_03	Montage Maker
+np_cm_corpo_leg_04	Memory Hoarder
+np_cm_corpo_leg_05	Trackstar
+np_cm_corpo_leg_06	Functional Human
+np_cm_corpo_leg_dlc1	Martyr
+np_cm_corpo_leg_dlc2	Programmer
+np_cm_corpo_leg_raid1	Boomer
+np_cm_corpo_leg_raid2	Plague Engineer
+np_cm_corpo_leg_tuba	Puppetmaster
 np_cm_ds_01	Psion
 np_cm_ds_02	Transistor
 np_cm_ds_03	Firedancer
@@ -47,6 +77,7 @@ np_cm_ds_leg_04	Kindread Spirits
 np_cm_ds_leg_05	Illusionist
 np_cm_ds_leg_06	Teen Witch
 np_cm_ds_leg_dlc1	Configuration
+np_cm_ds_leg_harmonica	GOAT
 np_cm_ds_leg_raid1	Misericorde
 np_cm_ds_leg_raid2	Grim Sister
 np_cm_exo_01	Agente
@@ -66,6 +97,7 @@ np_cm_exo_leg_04	Buster
 np_cm_exo_leg_05	Esgrimidor
 np_cm_exo_leg_06	Grenazerker
 np_cm_exo_leg_cowbell	Reaparici
+np_cm_exo_leg_harmonica	Masochist
 np_cm_exo_leg_raid1	Overdriver
 np_cm_exo_leg_raid2	Bombastic
 np_cm_grav_01	Breaker
@@ -85,6 +117,7 @@ np_cm_grav_leg_04	Driver
 np_cm_grav_leg_05	Skeptic
 np_cm_grav_leg_06	Scientist
 np_cm_grav_leg_cowbell	Phlebotomist
+np_cm_grav_leg_harmonica	Ultracapacitor
 np_cm_grav_leg_raid1	Trooper
 np_cm_grav_leg_raid2	Plasmaphile
 np_cm_pal_01	Guardian
@@ -104,6 +137,7 @@ np_cm_pal_leg_04	Shatterwight
 np_cm_pal_leg_05	Viking
 np_cm_pal_leg_06	Forge Master
 np_cm_pld_leg_cowbell	Tempest
+np_cm_pld_leg_harmonica	Wastelander
 np_cm_pld_leg_raid1	Lamplighter
 np_cm_pld_leg_raid2	Artificer
 np_cm_robo_01	Pistoleer
@@ -123,6 +157,7 @@ np_cm_robo_leg_04	Cooler
 np_cm_robo_leg_05	Whale
 np_cm_robo_leg_06	Windrider
 np_cm_robo_leg_dlc1	Gamer
+np_cm_robo_leg_harmonica	Table Hopper
 np_cm_robo_leg_raid1	Hooligan
 np_cm_robo_leg_raid2	Prestidigitator
 np_coldshoulder	Cold Shoulder
@@ -140,6 +175,7 @@ np_crowsourced	Crow-Sourced
 np_dahlfather	Heimdahl
 np_darkhard	Hard Dark
 np_demo	Hair Trigger
+np_devourer	Devourer
 np_discjockey	Disc Jockey
 np_disco_disc	Destructo Disco
 np_discybusiness	Discy Business
@@ -149,6 +185,9 @@ np_dualdamage	Aegon's Dream
 np_earlyexcess	Overconsumption
 np_eigenburst	Eigenburst
 np_elpisstar	Elpis Star
+np_enumeration	Enumeration
+np_exfoliatrix	Exfoliatrix
+np_exhibition	Exhibition
 np_extinction	Eradication
 np_falke	Falke
 np_faultydetonator	Faulty Detonator
@@ -161,11 +200,14 @@ np_firewerks	Firewerks
 np_firework	Matador's Match
 np_firstimpression	First Impression
 np_fisheye	Fisheye
+np_fl4k_weapon	Fanged Beast
 np_flak	Flak Cannon
 np_flare	Countermeasure
 np_flashcyclone	Flash Cyclone
+np_flashfuel	Flash Fuel
 np_fleabag	Fleabag
 np_follower	Prowler
+np_fourier	Fourier's Malady
 np_fuse	Fuse
 np_gammavoid	Gamma Void
 np_gmr	G.M.R.
@@ -232,6 +274,7 @@ np_gren_stat_radius	Collateral
 np_gren_stat_transfusion	Vampiric
 np_gren_stat_wideload	Double-Wide
 np_handcannon	Handcannon
+np_handfrag	Hand Frag
 np_heartgun	Acey May
 np_heavyturret	Husky Friend
 np_heavyweight	Heavyweight
@@ -239,11 +282,14 @@ np_hellfire	Hellfire
 np_hellwalker	Hellwalker
 np_hemorrhage	Hemorrhage
 np_herald	Herald
+np_hippogun	Hippo Gun
 np_hoarder	Hoarder
 np_honeybadger	Honey Badger
 np_hopscotch	Hopscotch
+np_hotmod	Lovelorn
 np_hydrowerks	Hydrowerks
 np_ichor	Ichor
+np_infection	Infection
 np_inscriber	Inscriber
 np_jailbroken	Jail-Broken Gatling
 np_javelin	Sprezzatura
@@ -279,17 +325,22 @@ np_om	Oscar Mike
 np_on_the_go	On The Go
 np_onionlayeredguard	Onion
 np_onslaught	Onslaught
+np_outback	Wind Skimmer
 np_overswarm	Over Swarm
+np_patience	Virtue
 np_pchonk	Pachonk
 np_pellet	Artillery Sphere
+np_petanque	Petanque
 np_phantom_flame	Phantom Flame
 np_plasmacoil	Plasma Coil
 np_plumbbob	Plumb Bob
 np_potatothrower	Potato Thrower IV
+np_pragmate	Pragmate
 np_predatordrone	UAV
 np_pressurecooker	Pressure Kettle
 np_prince	Prince Harming
 np_proteancell	Protean Cell
+np_quattro	Quadratus
 np_queensrest	Queen's Rest
 np_quickdraw	San Saba Songbird
 np_raiden	Raiden
@@ -298,6 +349,8 @@ np_rainmaker	Rainmaker
 np_rangefinder	Rangefinder
 np_ravenfire	Ravenfire
 np_recursive	Recursive
+np_relay	Astonisher
+np_relievingguard	Secured Relief
 np_reminisce	Reminisce
 np_repkit_aug_d_aoe_heal	Aerosolized
 np_repkit_aug_d_damage_reduction	Reinforcing
@@ -358,12 +411,15 @@ np_repkit_uni_mal_bloodanalyzer	Blood Analyzer
 np_repkit_uni_mal_geigerroid	Geiger-Roid
 np_repkit_uni_ord_paleblood	Blood Moon
 np_repkit_uni_ord_triplebypass	Triple Bypass
+np_repkit_uni_ted_font	Font of Life
 np_repkit_uni_ted_killspring	Kill Spring
+np_repkit_uni_tor_outburst	Outburst
 np_repkit_uni_tor_shinywarpaint	Shiny War Paint
 np_repkit_uni_vla_adrenalinepump	Adrenaline Pump
 np_repkit_uni_vla_bloodiron	Oxidation
 np_repkit_uni_vla_pacemaker	Pacemaker
 np_rhythm	Rhythm
+np_ripple	Ripple
 np_roach	Roach
 np_rocketreload	Lucky Clover
 np_roil	Roil
@@ -378,12 +434,14 @@ np_seamstress	Rooker
 np_seventh_sense	Seventh Sense
 np_shalashaska	Shalashaska
 np_shammy	Shammy Kablammy
+np_shardenfreude	Shardenfreude
 np_shieldboi	Principal
 np_shokunai	Sho Kunai
 np_sideshow	Sideshow
 np_sidewinder	Sidewinder
 np_silversliver	Silver Sliver
 np_skully	Skully
+np_sledge	Critical Decay
 np_slippy	Slippy
 np_slugger	Hot Slugger
 np_songbird	Broken Wings
@@ -463,7 +521,9 @@ np_term_sec_heal_thorns	Thorns2
 np_testament	Divided Glow
 np_timekeeper	Timekeeper's New Shield
 np_tkswave	T.K's Wave
+np_tradingup	Paperclip
 np_transmission	Transmitter
+np_triplicate	Triplicate
 np_truck	Truck
 np_turret_name_bor_basic	BORBASIC
 np_turret_name_bor_beam	BORBEAM

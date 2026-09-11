@@ -1,0 +1,19 @@
+row_name	comment	value
+Shuriken_Impact_Damage		0.250000
+Shuriken_Impact_CorrosiveDoT		0.010000
+RAM_MaxValue		1.000000
+RAM_ResourceValue_DrainPercentage		0.100000
+RAM_CriticalHit_Gain		0.150000
+RAM_SE_Gain		0.150000
+RAM_PauseDuration		6.000000
+RAM_Full_OrdnanceCooldown_NOTUSED		0.300000
+EmpoweredMelee_Damage		0.850000
+RAM_InformationOverload_Gain		0.050000
+RAM_Full_GunDamage		0.300000
+Footwork_Gain_Delay		0.500000
+Footwork_SpeedGain_PerStack		0.005000
+Footwork_StacksToGive	Should stay at 1, but keeping here in case	1.000000
+Footwork_MaxStacks		100.000000
+Footwork_StackGainRate		0.400000
+Contagion_SpreadProjectiles		3.000000
+Contagion_AugmentSpreadProjectiles		6.000000

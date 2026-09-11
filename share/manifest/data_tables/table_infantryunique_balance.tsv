@@ -1,0 +1,14 @@
+row_name	damagemultiplier_levelbased	healthmultiplier_01	healthmultiplier_02	healthmultiplier_03
+PlotM2_JrManager	2.000000	12.000000	10.000000	10.000000
+PlotM2_JrManager_Replay		15.000000	12.000000	12.000000
+PlotM2_JrManager_ReplayTRUE	2.000000	30.000000	24.000000	24.000000
+PlotM3_HotelManager	2.000000	8.000000	8.000000	8.000000
+PlotM3_HotelManager_Replay	2.000000	10.000000	10.000000	10.000000
+PlotM3_HotelManager_ReplayTRUE	2.000000	30.000000	30.000000	30.000000
+PlotM3_TheaterManager	2.000000	10.000000	40.000000	8.000000
+PlotM3_TheaterManagerReplay	2.000000	10.000000	70.000000	12.000000
+PlotM3_TheaterManagerReplayTRUE	2.000000	20.000000	125.000000	16.000000
+Trait_InfusedDrone		4.000000	4.000000	4.000000
+Side_Microplastics		3.000000	20.000000	20.000000
+Side_Microplastics_Replay		5.000000	25.000000	40.000000
+Side_Microplastics_ReplayTRUE		10.000000	40.000000	60.000000

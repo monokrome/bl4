@@ -78,6 +78,8 @@ index	name
 77	comp_05_legendary_murder
 78	part_barrel_01_laserdisc
 79	comp_05_legendary_laserdisc
+80	part_underbarrel_01_hotmod
+81	part_barrel_02_hotmod
 82	part_mag_01
 83	part_mag_02
 84	part_mag_03_tor
@@ -89,3 +91,4 @@ index	name
 90	comp_02_uncommon
 91	comp_03_rare
 92	comp_04_epic
+93	comp_05_legendary_hotmod

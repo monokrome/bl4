@@ -5,20 +5,20 @@ PhaseFamiliar_Pet_LeashDistance_Combat		7500.000000
 PhaseFamiliar_Pet_PingDistance		8000.000000
 PhaseFamiliar_Pet_LandDistance		1200.000000
 PhaseFamiliar_Pet_VerticalDistance		900.000000
-PhaseFamiliar_Pet_Health_Multiplier		7.000000
+PhaseFamiliar_Pet_Health_Multiplier		10.000000
 PhaseFamiliar_Pet_Overshield_Multiplier		2.500000
 PhaseFamiliar_Pet_HealthRegeneration	Passive	0.010000
 PhaseFamiliar_Pet_RestoreHealth_Percentage	On petting, restore this much Health Percentage to Trouble	0.500000
 PhaseFamiliar_Badass_Pet_Health_Multiplier		14.000000
 PhaseFamiliar_Badass_Pet_Overshield_Multiplier		5.000000
-PhaseFamiliar_Badass_Pet_Damage_Multiplier	Scale Multiply (on purpose)	1.500000
+PhaseFamiliar_Badass_Pet_Damage_Multiplier	Scale Multiply (on purpose)	2.000000
 PhaseFamiliar_Badass_Explosion_Damage_Multiplier		0.623000
 PhaseFamiliar_Badass_Explosion_Damage_Radius		768.000000
 PhaseFamiliar_Skill_Cooldown		45.000000
 PhaseFamiliar_Skill_Duration		20.000000
-PhaseFamiliar_Ranged_Damage_Multiplier		0.200000
-PhaseFamiliar_Melee_Damage_Multiplier		0.200000
-PhaseFamiliar_Melee_Leap_Damage_Multiplier		0.250000
+PhaseFamiliar_Ranged_Damage_Multiplier		0.300000
+PhaseFamiliar_Melee_Damage_Multiplier		0.300000
+PhaseFamiliar_Melee_Leap_Damage_Multiplier		0.450000
 PhaseFamiliar_Melee_Radius		600.000000
 PhaseFamiliar_Melee_WedgeAngle		100.000000
 PhaseFamiliar_Melee_Height		300.000000
@@ -28,7 +28,7 @@ PhaseFamiliar_Command_BlinkStrike_Cooldown		25.000000
 PhaseFamiliar_Command_BlinkStrike_DamageMultiplier		0.823000
 PhaseFamiliar_Command_Blinkstrike_LowHP_Threshold_Percentage		0.500000
 PhaseFamiliar_TailWhip_Damage_Height		300.000000
-PhaseFamiliar_TailWhip_Damage_Multiplier		0.325000
+PhaseFamiliar_TailWhip_Damage_Multiplier		0.650000
 PhaseFamiliar_TailWhip_Damage_Radius		512.000000
 PhaseFamiliar_TailWhip_Cooldown		15.000000
 PhaseFamiliar_ArmoredBeast_Overshield_DamageMultiplier		0.800000
