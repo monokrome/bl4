@@ -51,6 +51,7 @@ fn main() {
     copy_manifest_file(&manifest, &out_dir, "missions/mission_names.tsv");
     copy_manifest_file(&manifest, &out_dir, "skill_trees.tsv");
     copy_manifest_file(&manifest, &out_dir, "tooltips.tsv");
+    copy_manifest_file(&manifest, &out_dir, "experience_progression.tsv");
 
     build_parts_database(&manifest, &out_dir);
 }

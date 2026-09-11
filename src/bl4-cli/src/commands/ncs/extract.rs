@@ -1307,6 +1307,7 @@ fn extract_missions(path: &Path, output: Option<&Path>, json: bool) -> Result<()
 ///
 /// Output is `experience_progression.tsv` with columns
 /// `progression,level,xp,maxlevel,multiplier,offset,power,basemultiplier,basevalue,source_file`.
+#[allow(clippy::cognitive_complexity)]
 fn extract_xp_progression(path: &Path, output: Option<&Path>, json: bool) -> Result<()> {
     use bl4_ncs::document::Value;
 
@@ -1472,11 +1473,7 @@ fn extract_xp_progression(path: &Path, output: Option<&Path>, json: bool) -> Res
             .iter()
             .find(|r| r.progression.to_lowercase() == prog && r.level == lvl)
         {
-            let err = if row.xp > expected {
-                row.xp - expected
-            } else {
-                expected - row.xp
-            };
+            let err = row.xp.abs_diff(expected);
             let pct = err as f64 / expected as f64 * 100.0;
             eprintln!(
                 "  check {} L{}: got {} expected {} err {} ({:.2}%)",
