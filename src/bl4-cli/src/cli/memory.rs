@@ -261,4 +261,18 @@ pub enum MemoryAction {
         #[arg(short, long, default_value = "share/manifests/bl4.ncsmap")]
         output: PathBuf,
     },
+
+    /// Dump a single UObject by name or address (generic)
+    DumpObject {
+        /// Object name substring (case-insensitive) or hex address (e.g. 0x4e70f1c0)
+        target: String,
+
+        /// Maximum number of matching objects to dump (for name search)
+        #[arg(short, long, default_value = "3")]
+        limit: usize,
+
+        /// Output file for JSON (stdout if not specified)
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+    },
 }

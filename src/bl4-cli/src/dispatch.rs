@@ -53,8 +53,14 @@ pub fn dispatch_save(args: SaveArgs) -> Result<()> {
             if args.validate_items {
                 commands::save::validate_items(&args)?;
             }
+            if let Some(level) = args.set_character_level {
+                commands::save::set_character_level(&args, level)?;
+            }
             if let Some(level) = args.set_item_level {
                 return commands::save::set_item_level(&args, level);
+            }
+            if args.set_character_level.is_some() {
+                return Ok(());
             }
             if args.map.is_some() {
                 commands::save::map_only(&args)
@@ -310,6 +316,14 @@ fn handle_offline_memory_action(action: &MemoryAction, dump: Option<&Path>) -> R
             commands::memory::handle_extract_ncs_schema(output, dump)?;
             Ok(true)
         }
+        MemoryAction::DumpObject {
+            target,
+            limit,
+            output,
+        } => {
+            commands::memory::handle_dump_object(target, *limit, output.as_deref(), dump)?;
+            Ok(true)
+        }
         MemoryAction::Preload {
             action: preload_action,
         } => {
@@ -343,6 +357,7 @@ fn handle_live_memory_action(
         | MemoryAction::FindObjectsByPattern { .. }
         | MemoryAction::GenerateObjectMap { .. }
         | MemoryAction::ExtractNcsSchema { .. }
+        | MemoryAction::DumpObject { .. }
         | MemoryAction::Preload { .. } => unreachable!(),
 
         MemoryAction::Info => {

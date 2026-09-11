@@ -241,6 +241,20 @@ pub fn set_item_level(args: &SaveArgs, level: u8) -> Result<()> {
     })
 }
 
+/// Handle `save --set-character-level`
+pub fn set_character_level(args: &SaveArgs, level: u64) -> Result<()> {
+    with_save_file(args, |save| {
+        let xp = bl4::SaveFile::xp_for_character_level(level);
+        save.set_character_level(level)
+            .with_context(|| format!("Failed to set character level to {}", level))?;
+        eprintln!(
+            "Set character level to 1 with {} XP for target level {} (level updates after a kill)",
+            xp, level
+        );
+        Ok(())
+    })
+}
+
 /// Handle `save --validate-items`
 pub fn validate_items(args: &SaveArgs) -> Result<()> {
     use bl4::serial::Legality;

@@ -106,6 +106,8 @@ pub fn extract_by_type(
     }
 
     let mut extracted = Vec::new();
+    let mut type_counts: BTreeMap<String, usize> = BTreeMap::new();
+    let mut total_files: usize = 0;
 
     for entry in walkdir::WalkDir::new(path)
         .into_iter()
@@ -119,10 +121,13 @@ pub fn extract_by_type(
 
         if let Ok(data) = fs::read(file_path) {
             if let Some(content) = NcsContent::parse(&data) {
-                if content.type_name() == extract_type {
+                let t = content.type_name().to_string();
+                *type_counts.entry(t.clone()).or_insert(0) += 1;
+                total_files += 1;
+                if t == extract_type {
                     extracted.push(FileInfo {
                         path: file_path.to_string_lossy().to_string(),
-                        type_name: content.type_name().to_string(),
+                        type_name: t,
                         format_code: content.format_code().to_string(),
                         entry_names: content.entry_names().map(|s| s.to_string()).collect(),
                         guids: content.guids().map(|s| s.to_string()).collect(),
@@ -133,6 +138,38 @@ pub fn extract_by_type(
                     });
                 }
             }
+        }
+    }
+
+    // Summary: list extracted and skipped types
+    eprintln!("\n=== NCS Extract Summary ===");
+    eprintln!(
+        "Requested type: '{}' — extracted {} file(s) of {} total NCS files",
+        extract_type,
+        extracted.len(),
+        total_files
+    );
+    if !type_counts.is_empty() {
+        eprintln!("\nAll types encountered ({} unique):", type_counts.len());
+        for (t, count) in &type_counts {
+            let marker = if t == extract_type {
+                " [extracted]"
+            } else {
+                " [skipped]"
+            };
+            eprintln!("  {:<40} {:>4} file(s){}", t, count, marker);
+        }
+        let skipped: Vec<_> = type_counts
+            .keys()
+            .filter(|k| *k != extract_type)
+            .cloned()
+            .collect();
+        if !skipped.is_empty() {
+            eprintln!(
+                "\nSkipped {} type(s): {}",
+                skipped.len(),
+                skipped.join(", ")
+            );
         }
     }
 

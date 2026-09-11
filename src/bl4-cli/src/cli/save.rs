@@ -24,6 +24,10 @@ pub struct SaveArgs {
     #[arg(long)]
     pub set_item_level: Option<u8>,
 
+    /// Set character XP to estimated threshold for LEVEL (game updates level after a kill)
+    #[arg(long, value_name = "LEVEL")]
+    pub set_character_level: Option<u64>,
+
     /// Steam ID (uses configured default if not provided)
     #[arg(short, long)]
     pub steam_id: Option<String>,

@@ -177,6 +177,76 @@ impl SaveFile {
         )
     }
 
+    /// Set character XP for a target level
+    ///
+    /// Sets `level` to 1 and `points` to the estimated XP threshold for the
+    /// requested level (see `xp_for_character_level`). The game does not
+    /// decrease level if XP is lowered, so starting from 1 ensures it
+    /// recalculates upward after a kill. Decoding never caps — validation
+    /// does.
+    pub fn set_character_level(&mut self, level: u64) -> Result<(), SaveError> {
+        if !(crate::parts::MIN_LEVEL as u64..=crate::parts::MAX_LEVEL as u64).contains(&level) {
+            return Err(SaveError::InvalidIndex(format!(
+                "level {} outside valid range {}-{}",
+                level,
+                crate::parts::MIN_LEVEL,
+                crate::parts::MAX_LEVEL
+            )));
+        }
+        let xp = Self::xp_for_character_level(level);
+        self.set(
+            "state.experience[0].level",
+            serde_yaml::Value::Number(1.into()),
+        )?;
+        self.set(
+            "state.experience[0].points",
+            serde_yaml::Value::Number(xp.into()),
+        )
+    }
+
+    /// Estimated XP threshold for a character level
+    ///
+    /// Known exact thresholds: 1:0, 2:1100, 30:821362, 50:3430207, 60:5714893
+    /// (`docs/04-save-files.md` + 5714893). 65/67 observations used to fit
+    /// a post-60 curve: `Δ(L)=337272-14991×(L-61)` anchored to 60 (flatter
+    /// than docs `167900+13700×(L-50)` which overshot 65 by 0.5 level).
+    /// 51-60 still via docs, 61-70 via fitted linear-decay, 3-49 via scaled
+    /// power-law — all to be refined with more in-game thresholds.
+    pub fn xp_for_character_level(level: u64) -> u64 {
+        match level {
+            1 => 0,
+            2 => 1_100,
+            30 => 821_362,
+            50 => 3_430_207,
+            60 => 5_714_893,
+            _ if level > 60 => {
+                // Fitted from 60:5714893, 65:7251343 (65+50%→-½Δ), 67:7778900 (66+99%→+1%Δ)
+                // Gives Δ61≈332k decaying ~12.4k/level (vs docs +13.7k growing)
+                let k = level - 60;
+                let d0 = 332_152;
+                let inc = -12_431;
+                let mut xp = 5_714_893;
+                for i in 0..k {
+                    xp += (d0 as i64 + inc as i64 * i as i64) as u64;
+                }
+                xp
+            }
+            _ if level > 50 => {
+                let mut xp = 3_430_207;
+                for l in 51..=level {
+                    xp += 167_900 + 13_700 * (l - 50);
+                }
+                xp
+            }
+            _ => {
+                // Scale power-law to hit exact L=50 threshold
+                let raw = 202.0 * (level as f64).powf(2.44);
+                let scale = 3_430_207.0 / (202.0 * 50_f64.powf(2.44));
+                (raw * scale) as u64
+            }
+        }
+    }
+
     /// Get specialization level and XP
     pub fn get_specialization_level(&self) -> Option<(u64, u64)> {
         self.data
