@@ -179,18 +179,18 @@ impl SaveFile {
 
     /// Set character XP for a target level
     ///
-    /// Sets `level` to 1 and `points` to the estimated XP threshold for the
-    /// requested level (see `xp_for_character_level`). The game does not
-    /// decrease level if XP is lowered, so starting from 1 ensures it
-    /// recalculates upward after a kill. Decoding never caps — validation
-    /// does.
+    /// Sets `level` to 1 and `points` to the exact XP threshold for the
+    /// requested level (see `xp_for_character_level` from the manifest TSV).
+    /// Max is taken from the TSV (`oak2_characterxp_progression` currently
+    /// 100) rather than hard-coded, so future NCS bumps auto-raise the cap.
+    /// Game does not decrease level if XP is lowered, so starting from 1
+    /// ensures it recalculates upward after a kill.
     pub fn set_character_level(&mut self, level: u64) -> Result<(), SaveError> {
-        if !(crate::parts::MIN_LEVEL as u64..=crate::parts::MAX_LEVEL as u64).contains(&level) {
+        let max = Self::max_level_for_progression("oak2_characterxp_progression");
+        if !(1..=max).contains(&level) {
             return Err(SaveError::InvalidIndex(format!(
-                "level {} outside valid range {}-{}",
-                level,
-                crate::parts::MIN_LEVEL,
-                crate::parts::MAX_LEVEL
+                "level {} outside valid range 1-{}",
+                level, max
             )));
         }
         let xp = Self::xp_for_character_level(level);
@@ -270,6 +270,30 @@ impl SaveFile {
         0
     }
 
+    fn max_level_for_progression(progression: &str) -> u64 {
+        const TSV: &str = include_str!(concat!(env!("OUT_DIR"), "/experience_progression.tsv"));
+        let mut max = 0;
+        for line in TSV.lines().skip(1) {
+            let mut cols = line.split('\t');
+            let prog = cols.next().unwrap_or("");
+            if prog.to_lowercase() != progression {
+                continue;
+            }
+            if let Some(lvl_str) = cols.next() {
+                if let Ok(lvl) = lvl_str.parse::<u64>() {
+                    if lvl > max {
+                        max = lvl;
+                    }
+                }
+            }
+        }
+        if max == 0 {
+            100
+        } else {
+            max
+        }
+    }
+
     /// Set specialization level (like `set_character_level` but for `experience[1]`)
     ///
     /// Sets `level` to 1 and `points` to `xp_for_specialization_level(level)`.
@@ -277,10 +301,11 @@ impl SaveFile {
     /// Unlike character (cap 70), specialization has no 70 cap (NCS `levelcap 701`,
     /// saves seen at 85, TSV up to 100) — allow 1..=999.
     pub fn set_specialization_level(&mut self, level: u64) -> Result<(), SaveError> {
-        if !(1..=999).contains(&level) {
+        let max = Self::max_level_for_progression("oak2_specializationxp_progression");
+        if !(1..=max).contains(&level) {
             return Err(SaveError::InvalidIndex(format!(
-                "level {} outside valid range 1-999",
-                level
+                "level {} outside valid range 1-{}",
+                level, max
             )));
         }
         let xp = Self::xp_for_specialization_level(level);
