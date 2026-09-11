@@ -241,7 +241,8 @@ impl SaveFile {
     /// Exact XP threshold for a specialization level from manifest TSV
     ///
     /// Same NCS source as character but `Oak2_SpecializationXP_Progression`
-    /// `80*L^2.8` (`max 701`), pulled via `include_str!` like character.
+    /// `80*L^2.8` (`max 100` in TSV, `levelcap 701` in NCS, saves seen at 85).
+    /// Falls back to `80*L^2.8` for levels beyond the TSV (e.g. 101..701).
     pub fn xp_for_specialization_level(level: u64) -> u64 {
         const TSV: &str = include_str!(concat!(env!("OUT_DIR"), "/experience_progression.tsv"));
         for line in TSV.lines().skip(1) {
@@ -262,6 +263,10 @@ impl SaveFile {
                 }
             }
         }
+        // Beyond TSV max (100) or missing — compute via 80*L^2.8
+        if level > 1 {
+            return (80.0 * (level as f64).powf(2.8)) as u64;
+        }
         0
     }
 
@@ -269,13 +274,13 @@ impl SaveFile {
     ///
     /// Sets `level` to 1 and `points` to `xp_for_specialization_level(level)`.
     /// Game recalculates specialization level from XP after a kill/reload.
+    /// Unlike character (cap 70), specialization has no 70 cap (NCS `levelcap 701`,
+    /// saves seen at 85, TSV up to 100) — allow 1..=999.
     pub fn set_specialization_level(&mut self, level: u64) -> Result<(), SaveError> {
-        if !(crate::parts::MIN_LEVEL as u64..=crate::parts::MAX_LEVEL as u64).contains(&level) {
+        if !(1..=999).contains(&level) {
             return Err(SaveError::InvalidIndex(format!(
-                "level {} outside valid range {}-{}",
-                level,
-                crate::parts::MIN_LEVEL,
-                crate::parts::MAX_LEVEL
+                "level {} outside valid range 1-999",
+                level
             )));
         }
         let xp = Self::xp_for_specialization_level(level);
