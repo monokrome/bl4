@@ -28,6 +28,10 @@ pub struct SaveArgs {
     #[arg(long, value_name = "LEVEL")]
     pub set_character_level: Option<u64>,
 
+    /// Set specialization XP to threshold for LEVEL (game updates level after a kill)
+    #[arg(long, value_name = "LEVEL")]
+    pub set_specialization_level: Option<u64>,
+
     /// Steam ID (uses configured default if not provided)
     #[arg(short, long)]
     pub steam_id: Option<String>,

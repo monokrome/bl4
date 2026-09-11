@@ -255,6 +255,20 @@ pub fn set_character_level(args: &SaveArgs, level: u64) -> Result<()> {
     })
 }
 
+/// Handle `save --set-specialization-level`
+pub fn set_specialization_level(args: &SaveArgs, level: u64) -> Result<()> {
+    with_save_file(args, |save| {
+        let xp = bl4::SaveFile::xp_for_specialization_level(level);
+        save.set_specialization_level(level)
+            .with_context(|| format!("Failed to set specialization level to {}", level))?;
+        eprintln!(
+            "Set specialization level to 1 with {} XP for target level {} (level updates after a kill)",
+            xp, level
+        );
+        Ok(())
+    })
+}
+
 /// Handle `save --validate-items`
 pub fn validate_items(args: &SaveArgs) -> Result<()> {
     use bl4::serial::Legality;

@@ -238,6 +238,57 @@ impl SaveFile {
         0
     }
 
+    /// Exact XP threshold for a specialization level from manifest TSV
+    ///
+    /// Same NCS source as character but `Oak2_SpecializationXP_Progression`
+    /// `80*L^2.8` (`max 701`), pulled via `include_str!` like character.
+    pub fn xp_for_specialization_level(level: u64) -> u64 {
+        const TSV: &str = include_str!(concat!(env!("OUT_DIR"), "/experience_progression.tsv"));
+        for line in TSV.lines().skip(1) {
+            let mut cols = line.split('\t');
+            let prog = cols.next().unwrap_or("");
+            if prog.to_lowercase() != "oak2_specializationxp_progression" {
+                continue;
+            }
+            let lvl: u64 = cols.next().and_then(|s| s.parse().ok()).unwrap_or(0);
+            if lvl == level {
+                if let Some(xp_str) = cols.next() {
+                    if let Ok(xp) = xp_str.parse::<u64>() {
+                        if level == 1 {
+                            return 0;
+                        }
+                        return xp;
+                    }
+                }
+            }
+        }
+        0
+    }
+
+    /// Set specialization level (like `set_character_level` but for `experience[1]`)
+    ///
+    /// Sets `level` to 1 and `points` to `xp_for_specialization_level(level)`.
+    /// Game recalculates specialization level from XP after a kill/reload.
+    pub fn set_specialization_level(&mut self, level: u64) -> Result<(), SaveError> {
+        if !(crate::parts::MIN_LEVEL as u64..=crate::parts::MAX_LEVEL as u64).contains(&level) {
+            return Err(SaveError::InvalidIndex(format!(
+                "level {} outside valid range {}-{}",
+                level,
+                crate::parts::MIN_LEVEL,
+                crate::parts::MAX_LEVEL
+            )));
+        }
+        let xp = Self::xp_for_specialization_level(level);
+        self.set(
+            "state.experience[1].level",
+            serde_yaml::Value::Number(1.into()),
+        )?;
+        self.set(
+            "state.experience[1].points",
+            serde_yaml::Value::Number(xp.into()),
+        )
+    }
+
     /// Get specialization level and XP
     pub fn get_specialization_level(&self) -> Option<(u64, u64)> {
         self.data

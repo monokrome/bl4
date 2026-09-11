@@ -56,10 +56,13 @@ pub fn dispatch_save(args: SaveArgs) -> Result<()> {
             if let Some(level) = args.set_character_level {
                 commands::save::set_character_level(&args, level)?;
             }
+            if let Some(level) = args.set_specialization_level {
+                commands::save::set_specialization_level(&args, level)?;
+            }
             if let Some(level) = args.set_item_level {
                 return commands::save::set_item_level(&args, level);
             }
-            if args.set_character_level.is_some() {
+            if args.set_character_level.is_some() || args.set_specialization_level.is_some() {
                 return Ok(());
             }
             if args.map.is_some() {
