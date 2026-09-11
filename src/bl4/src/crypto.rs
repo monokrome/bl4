@@ -103,7 +103,7 @@ pub fn decrypt_sav(encrypted_data: &[u8], steam_id: &str) -> Result<Vec<u8>, Cry
 
     // Decrypt using AES-256-ECB (process 16-byte blocks)
     let mut decrypted = encrypted_data.to_vec();
-    for chunk in decrypted.chunks_exact_mut(16) {
+    for chunk in decrypted.as_chunks_mut::<16>().0 {
         #[allow(deprecated)]
         cipher.decrypt_block(GenericArray::from_mut_slice(chunk));
     }
@@ -147,7 +147,7 @@ pub fn encrypt_sav(yaml_data: &[u8], steam_id: &str) -> Result<Vec<u8>, CryptoEr
     #[allow(deprecated)]
     let cipher = Aes256::new(GenericArray::from_slice(&key));
 
-    for chunk in encrypted.chunks_exact_mut(16) {
+    for chunk in encrypted.as_chunks_mut::<16>().0 {
         #[allow(deprecated)]
         cipher.encrypt_block(GenericArray::from_mut_slice(chunk));
     }
